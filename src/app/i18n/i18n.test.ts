@@ -51,6 +51,17 @@ describe("application localization", () => {
     );
   });
 
+  it("translates static database and device-service display values", () => {
+    const key = "database.seed.fingerprint_sync_interval_minutes_b83f31a6";
+    const source = i18n.getFixedT("ar")(key);
+    expect(translateArabicSource(source, "en")).toBe(
+      i18n.getFixedT("en")(key),
+    );
+    expect(translateArabicSource(source, "ku")).toBe(
+      i18n.getFixedT("ku")(key),
+    );
+  });
+
   it("uses English fallback and preserves interpolation", async () => {
     i18n.addResource("en", "translation", "test.greeting", "Hello, {{name}}");
     expect(i18n.getFixedT("ku")("test.greeting", { name: "Ava" })).toBe("Hello, Ava");

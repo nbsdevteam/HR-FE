@@ -656,7 +656,7 @@ export function Employees() {
                     <div className="flex items-center gap-3">
                       {facePhotoPreview ? (
                         <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-primary/30">
-                          <img src={facePhotoPreview} alt="Face" className="w-full h-full object-cover" />
+                          <img src={facePhotoPreview} alt={arabicSource("common.face_image")} className="w-full h-full object-cover" />
                           <button onClick={() => { setFacePhotoPreview(null); setFacePhotoBase64(null); }} className="absolute top-0 end-0 p-0.5 bg-black/60 rounded-bl text-white hover:bg-black/80">
                             <X className="w-3 h-3" />
                           </button>

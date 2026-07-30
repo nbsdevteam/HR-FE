@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { extractLocalizableData } from "./extract-localizable-data.mjs";
 
 const localeDirectory = path.resolve("src/app/i18n/locales");
 const localeCodes = ["ar", "en", "ku"];
@@ -25,6 +26,20 @@ const auditedSources = JSON.parse(
 );
 const sourceRoot = path.resolve("src/app");
 const rawArabicFiles = [];
+const unexpectedRepositoryArabicFiles = [];
+const repositoryArabicAllowlist = new Set([
+  "database-plain-postgresql.sql",
+  "database-supabase.sql",
+  "migration-part13-biometric.sql",
+  "supabase-migration.sql",
+  "device-sync/full-verify.mjs",
+  "device-sync/hikvision-api.mjs",
+  "device-sync/quick-verify.mjs",
+  "device-sync/readme.md",
+  "device-sync/sync-service.mjs",
+  "device-sync/test-connection.mjs",
+  "src/imports/style_guide_hr_system.md",
+]);
 
 function scanRawArabic(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -41,6 +56,32 @@ function scanRawArabic(directory) {
 }
 
 scanRawArabic(sourceRoot);
+const localizableDataSources = extractLocalizableData();
+
+function scanRepositoryArabic(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if ([".git", "dist", "node_modules"].includes(entry.name)) continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      scanRepositoryArabic(absolute);
+      continue;
+    }
+    if (!/\.(?:html|js|json|md|mjs|sql|ts|tsx)$/.test(entry.name)) continue;
+    const source = fs.readFileSync(absolute, "utf8");
+    if (!/\p{Script=Arabic}/u.test(source)) continue;
+    const relative = path.relative(process.cwd(), absolute).replaceAll("\\", "/");
+    const normalized = relative.toLowerCase();
+    if (
+      normalized.startsWith("src/app/i18n/locales/") ||
+      repositoryArabicAllowlist.has(normalized)
+    ) {
+      continue;
+    }
+    unexpectedRepositoryArabicFiles.push(relative);
+  }
+}
+
+scanRepositoryArabic(process.cwd());
 
 const baseKeys = Object.keys(catalogues.en).sort();
 const errors = [];
@@ -95,9 +136,21 @@ for (const { value, locations } of auditedSources) {
   );
 }
 
+for (const source of localizableDataSources) {
+  if (!sourceMap[source]) {
+    errors.push(`data-driven Arabic display value is not catalogued: "${source}"`);
+  }
+}
+
 if (rawArabicFiles.length) {
   errors.push(
     `Arabic script remains outside the i18n layer: ${rawArabicFiles.join(", ")}`,
+  );
+}
+
+if (unexpectedRepositoryArabicFiles.length) {
+  errors.push(
+    `Arabic script found in unaudited repository files: ${unexpectedRepositoryArabicFiles.join(", ")}`,
   );
 }
 

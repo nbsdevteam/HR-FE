@@ -749,7 +749,7 @@ function FaceTab() {
               {viewFace.image ? (
                 <img
                   src={`data:image/jpeg;base64,${viewFace.image}`}
-                  alt="Face"
+                  alt={arabicSource("common.face_image")}
                   className="w-full rounded-lg"
                 />
               ) : (

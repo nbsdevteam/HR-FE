@@ -1310,7 +1310,7 @@ export function SettingsPage() {
                         value={newHoliday.name_en}
                         onChange={(e) => setNewHoliday({ ...newHoliday, name_en: e.target.value })}
                         className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary"
-                        placeholder="Eid Al-Fitr"
+                        placeholder={arabicSource("settings.eid_al_fitr")}
                       />
                     </div>
                     <div>
@@ -1412,7 +1412,7 @@ export function SettingsPage() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-4 p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <input value={newLeaveType.name_ar} onChange={e => setNewLeaveType(p => ({ ...p, name_ar: e.target.value }))} placeholder={arabicSource("settings.name_in_arabic")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
-                <input value={newLeaveType.name_en} onChange={e => setNewLeaveType(p => ({ ...p, name_en: e.target.value }))} placeholder="English Name" className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
+                <input value={newLeaveType.name_en} onChange={e => setNewLeaveType(p => ({ ...p, name_en: e.target.value }))} placeholder={arabicSource("settings.name_english")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
                 <input value={newLeaveType.code} onChange={e => setNewLeaveType(p => ({ ...p, code: e.target.value }))} placeholder={arabicSource("settings.code_annual")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
                 <input type="number" value={newLeaveType.default_days_per_year || ""} onChange={e => setNewLeaveType(p => ({ ...p, default_days_per_year: Number(e.target.value) }))} placeholder={arabicSource("settings.days_year")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
               </div>
@@ -1552,7 +1552,7 @@ export function SettingsPage() {
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
-                  placeholder="Name (English)"
+                  placeholder={arabicSource("settings.name_english")}
                   value={newContractType.name_en}
                   onChange={e => setNewContractType(p => ({ ...p, name_en: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1709,7 +1709,7 @@ export function SettingsPage() {
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
-                  placeholder="Name (English)"
+                  placeholder={arabicSource("settings.name_english")}
                   value={newDocType.name_en}
                   onChange={e => setNewDocType(p => ({ ...p, name_en: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"

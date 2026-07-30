@@ -861,7 +861,7 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
             {managerId !== null && (
               <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10">
                 {allNodes.find(n => n.id === managerId)?.photo ? (
-                  <img src={allNodes.find(n => n.id === managerId)?.photo!} alt="manager" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                  <img src={allNodes.find(n => n.id === managerId)?.photo!} alt={arabicSource("common.direct_manager")} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: allNodes.find(n => n.id === managerId)?.color }}>
                     <span className="text-white" style={{ fontSize: 10 }}>{allNodes.find(n => n.id === managerId)?.initials}</span>
@@ -1602,7 +1602,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
                 <div>
                   <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("hierarchy.job_title_english")}</label>
                   <input type="text" value={posForm.title_en} onChange={e => setPosForm(p => ({ ...p, title_en: e.target.value }))}
-                    placeholder="HR Manager" dir="ltr"
+                    placeholder={arabicSource("hierarchy.example_human_resources_manager")} dir="ltr"
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }} />
                 </div>

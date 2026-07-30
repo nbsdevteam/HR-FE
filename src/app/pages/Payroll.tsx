@@ -660,7 +660,7 @@ function OverviewTab({
   );
 }
 
-// ══════════════════════════ Upload Tab ════════════���═════════════
+// Upload tab
 
 function UploadTab({
   employees,

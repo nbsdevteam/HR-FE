@@ -9,6 +9,9 @@ import { EmptyState } from "../components/EmptyState";
 import { usePolicies, type DbPolicy } from "../lib/hooks";
 import { localizedConfirm } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
+import { useTranslation } from "react-i18next";
+import { normalizeLanguage } from "../i18n";
+import { translateArabicSource } from "../i18n/legacy";
 
 const CATEGORY_ICONS: Record<string, any> = {
   [arabicSource("common.vacations_2")]: Calendar,
@@ -43,6 +46,10 @@ interface EditPolicyForm extends CreatePolicyForm {
 }
 
 export function Policies() {
+  const { i18n } = useTranslation();
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const localizePolicyText = (value: string | null | undefined) =>
+    value ? translateArabicSource(value, language) : "";
   const { policies, loading, refetch } = usePolicies();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(arabicSource("common.all"));
@@ -325,6 +332,7 @@ export function Policies() {
           filtered.map((policy, i) => {
             const Icon = CATEGORY_ICONS[policy.category] || FileText;
             const isExpanded = expandedPolicy === policy.id;
+            const localizedContent = localizePolicyText(policy.content);
 
             return (
               <motion.div
@@ -343,9 +351,9 @@ export function Policies() {
                       <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <div className="text-start">
-                      <h3 className="text-foreground font-medium">{policy.title}</h3>
+                      <h3 className="text-foreground font-medium">{localizePolicyText(policy.title)}</h3>
                       <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-                        {policy.description || arabicSource("policies.no_description")}
+                        {localizePolicyText(policy.description) || arabicSource("policies.no_description")}
                       </p>
                     </div>
                   </div>
@@ -378,8 +386,8 @@ export function Policies() {
                         {/* Content Preview */}
                         <div className="p-4 rounded-lg bg-muted/20">
                           <p className="text-foreground whitespace-pre-line" style={{ fontSize: 13, lineHeight: 1.8 }}>
-                            {policy.content?.substring(0, 200) || arabicSource("policies.no_content")}
-                            {policy.content && policy.content.length > 200 && "..."}
+                            {localizedContent.substring(0, 200) || arabicSource("policies.no_content")}
+                            {localizedContent.length > 200 && "..."}
                           </p>
                         </div>
 
@@ -387,7 +395,7 @@ export function Policies() {
                         <div className="grid grid-cols-3 gap-3 text-xs">
                           <div>
                             <p className="text-muted-foreground">{arabicSource("common.category")}</p>
-                            <p className="text-foreground font-medium">{policy.category}</p>
+                            <p className="text-foreground font-medium">{localizePolicyText(policy.category)}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">{arabicSource("policies.latest_update")}</p>
@@ -689,8 +697,8 @@ export function Policies() {
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">{viewingPolicy.title}</h2>
-                  <p className="text-muted-foreground text-sm mt-1">{viewingPolicy.description}</p>
+                  <h2 className="text-2xl font-bold text-foreground">{localizePolicyText(viewingPolicy.title)}</h2>
+                  <p className="text-muted-foreground text-sm mt-1">{localizePolicyText(viewingPolicy.description)}</p>
                 </div>
                 <button
                   onClick={() => setShowViewModal(false)}
@@ -705,7 +713,7 @@ export function Policies() {
                 <div className="grid grid-cols-3 gap-4 pb-4 border-b border-border/20">
                   <div>
                     <p className="text-muted-foreground text-sm">{arabicSource("common.category")}</p>
-                    <p className="text-foreground font-medium">{viewingPolicy.category}</p>
+                    <p className="text-foreground font-medium">{localizePolicyText(viewingPolicy.category)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-sm">{arabicSource("common.status")}</p>
@@ -722,7 +730,7 @@ export function Policies() {
                 {/* Full Content */}
                 <div className="p-4 bg-muted/10 rounded-lg border border-border/20">
                   <p className="text-foreground whitespace-pre-wrap" style={{ lineHeight: 2 }}>
-                    {viewingPolicy.content}
+                    {localizePolicyText(viewingPolicy.content)}
                   </p>
                 </div>
 

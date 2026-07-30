@@ -207,7 +207,7 @@ export function buildSettingsFromConfig(
   };
 }
 
-// ──────────────────────── 1. Parsing ──────────────────��─────
+// 1. Parsing
 
 const COL_ALIASES: Record<string, string[]> = {
   personId: ["person id", "personid", "id", "person_id", "employee id", "emp id", arabicSource("common.job_number")],
