@@ -37,6 +37,14 @@ export function translationKeyForArabicSource(source: string): string | undefine
   return sourceKeys[source.replace(/\s+/g, " ").trim()];
 }
 
+export function translateCataloguedValue(
+  value: string,
+  language: AppLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language),
+): string {
+  const key = translationKeyForArabicSource(value);
+  return key ? i18n.getFixedT(language)(key) : value;
+}
+
 export function containsCataloguedArabicSource(value: string): boolean {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (sourceKeys[normalized]) return true;

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import i18n, {
@@ -12,6 +12,7 @@ import { translateArabicSource } from "./legacy";
 import { LocalizationProvider } from "./LocalizationProvider";
 import { employeeStatusKeys, translateBackendCode } from "./status";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { localizedConfirm } from "./native";
 
 describe("application localization", () => {
   beforeEach(async () => {
@@ -100,5 +101,16 @@ describe("application localization", () => {
       expect(document.documentElement.lang).toBe("ku");
       expect(document.documentElement.dir).toBe("rtl");
     });
+  });
+
+  it("localizes native confirmation messages produced outside React", async () => {
+    const nativeConfirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    await changeLanguage("en");
+    expect(i18n.resolvedLanguage).toBe("en");
+    localizedConfirm("هل أنت متأكد من حذف هذا الإنذار؟");
+    expect(nativeConfirm).toHaveBeenCalledWith(
+      "Are you sure you want to delete this alarm?",
+    );
+    nativeConfirm.mockRestore();
   });
 });

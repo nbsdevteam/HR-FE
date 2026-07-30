@@ -13,6 +13,7 @@ import { supabase } from "../lib/supabase";
 import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant } from "../lib/hooks";
 import { DEPARTMENTS } from "../lib/constants";
 import { formatNumber } from "../i18n/format";
+import { localizedAlert, localizedConfirm } from "../i18n/native";
 
 /* ──────── Constants ──────── */
 const STAGES = ["تقديم", "فرز أولي", "مقابلة", "اختبار", "عرض", "مقبول"] as const;
@@ -163,7 +164,7 @@ export function Recruitment() {
   }, [refetchApps]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا المتقدم؟")) return;
+    if (!localizedConfirm("هل أنت متأكد من حذف هذا المتقدم؟")) return;
     const { error } = await supabase.from("applicants").delete().eq("id", id);
     if (!error) {
       setSelectedApplicant(null);
@@ -172,7 +173,7 @@ export function Recruitment() {
   }, [refetchApps]);
 
   const handleConvertToEmployee = useCallback(async (app: DbApplicant) => {
-    if (!confirm(`هل تريد تحويل "${app.name}" إلى موظف في النظام؟`)) return;
+    if (!localizedConfirm(`هل تريد تحويل "${app.name}" إلى موظف في النظام؟`)) return;
 
     // Retry loop handles TOCTOU race on person_id (two concurrent inserts could pick same ID)
     const MAX_RETRIES = 3;
@@ -213,11 +214,11 @@ export function Recruitment() {
 
         setSelectedApplicant(null);
         refetchApps();
-        alert(`تم إضافة "${app.name}" كموظف برقم ${nextPid} بنجاح!`);
+        localizedAlert(`تم إضافة "${app.name}" كموظف برقم ${nextPid} بنجاح!`);
         return; // Success — exit retry loop
       } catch (e: any) {
         if (attempt === MAX_RETRIES - 1) {
-          alert("خطأ في تحويل المتقدم: " + e.message);
+          localizedAlert("خطأ في تحويل المتقدم: " + e.message);
         }
       }
     }

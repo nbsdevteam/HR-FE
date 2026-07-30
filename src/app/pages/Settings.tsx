@@ -32,6 +32,7 @@ import { supabase } from "../lib/supabase";
 import { useShifts, useHierarchyData, useSystemModules, useConfigurations, usePublicHolidays, useLeaveTypes, useContractTypes, useDocumentTypes, type DbShift, type DbSystemModule, type DbConfiguration, type DbPublicHoliday, type DbLeaveType, type DbContractType, type DbDocumentType } from "../lib/hooks";
 import { ShiftAssigner } from "../components/ShiftAssigner";
 import { formatDate } from "../i18n/format";
+import { localizedConfirm } from "../i18n/native";
 
 // ── Curated department color palette — 15 distinct, accessible hues ──
 const DEPT_COLOR_PALETTE = [
@@ -328,7 +329,7 @@ export function SettingsPage() {
   };
 
   const deleteShift = async (shiftId: string) => {
-    if (!window.confirm("هل تريد حقاً حذف هذه الوردية؟")) return;
+    if (!localizedConfirm("هل تريد حقاً حذف هذه الوردية؟")) return;
     try {
       const { error } = await supabase.from("shifts").delete().eq("id", shiftId);
       if (error) throw error;
@@ -1499,7 +1500,7 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (confirm("هل تريد حذف هذا النوع؟")) {
+                        if (localizedConfirm("هل تريد حذف هذا النوع؟")) {
                           await supabase.from("leave_types").delete().eq("id", lt.id);
                           refetchLeaveTypes();
                         }
@@ -1656,7 +1657,7 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (!confirm("حذف نوع العقد؟")) return;
+                        if (!localizedConfirm("حذف نوع العقد؟")) return;
                         await supabase.from("contract_types").delete().eq("id", ct.id);
                         showToast("تم حذف نوع العقد");
                         refetchContractTypes();
@@ -1798,7 +1799,7 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (!confirm("حذف نوع الوثيقة؟")) return;
+                        if (!localizedConfirm("حذف نوع الوثيقة؟")) return;
                         await supabase.from("document_types").delete().eq("id", dt.id);
                         showToast("تم حذف نوع الوثيقة");
                         refetchDocumentTypes();

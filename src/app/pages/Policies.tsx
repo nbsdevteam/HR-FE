@@ -7,6 +7,7 @@ import {
 import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";
 import { usePolicies, type DbPolicy } from "../lib/hooks";
+import { localizedConfirm } from "../i18n/native";
 
 const CATEGORY_ICONS: Record<string, any> = {
   "إجازات": Calendar,
@@ -152,7 +153,7 @@ export function Policies() {
 
   // Delete policy
   const handleDeletePolicy = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه السياسة؟")) return;
+    if (!localizedConfirm("هل أنت متأكد من حذف هذه السياسة؟")) return;
 
     setIsSubmitting(true);
     try {

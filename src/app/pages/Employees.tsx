@@ -13,6 +13,7 @@ import { supabase } from "../lib/supabase";
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS, SYNC_API } from "../lib/constants";
 import type { DbEmployee } from "../lib/hooks";
 import { employeeStatusKeys, translateBackendCode } from "../i18n/status";
+import { localizedAlert } from "../i18n/native";
 
 const deptColors = DEPT_BORDER_COLORS;
 const deptDots = DEPT_DOT_COLORS;
@@ -216,7 +217,7 @@ export function Employees() {
       setDeleteConfirm(null);
     } catch (e: any) {
       console.error("Delete failed:", e.message);
-      alert("خطأ في حذف الموظف: " + e.message);
+      localizedAlert("خطأ في حذف الموظف: " + e.message);
     }
     setDeleting(false);
   };

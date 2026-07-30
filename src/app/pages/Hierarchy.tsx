@@ -11,6 +11,7 @@ import { supabase } from "../lib/supabase";
 import i18n, { getLanguageDirection, normalizeLanguage } from "../i18n";
 import { formatDate } from "../i18n/format";
 import { translateArabicSource } from "../i18n/legacy";
+import { localizedConfirm } from "../i18n/native";
 
 interface OrgNode {
   id: number;
@@ -1452,7 +1453,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
 
   // Delete position
   const handleDeletePosition = useCallback(async (posId: string) => {
-    if (!confirm("هل تريد حذف هذا المنصب؟")) return;
+    if (!localizedConfirm("هل تريد حذف هذا المنصب؟")) return;
     setSaving(true);
     const { error } = await supabase.from("positions").delete().eq("id", posId);
     if (error) {

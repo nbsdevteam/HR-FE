@@ -13,6 +13,7 @@ import { supabase } from "../lib/supabase";
 import { useEmployees, empDisplayName, formatTime, formatWorkHours, mapAttendanceStatus, useShifts, resolveEmployeeShift, shiftToSchedule, useHierarchyData } from "../lib/hooks";
 import type { DbAttendanceRecord, DbEmployee } from "../lib/hooks";
 import type { EmployeeSchedule } from "../lib/payslip-engine";
+import { localizedAlert } from "../i18n/native";
 
 interface AttendanceRow {
   id: string;
@@ -159,7 +160,7 @@ export function Attendance() {
       } : r));
       setExcuseModal(null);
     } catch (err) {
-      alert("خطأ في حفظ الإعذار");
+      localizedAlert("خطأ في حفظ الإعذار");
     }
     setExcuseSaving(false);
   };

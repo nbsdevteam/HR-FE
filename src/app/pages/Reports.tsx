@@ -17,6 +17,7 @@ import {
   type DbReportTemplate, type DbReportHistory, empDisplayName, logAudit,
 } from "../lib/hooks";
 import { formatCurrency, formatDateTime } from "../i18n/format";
+import { translateCataloguedValue } from "../i18n/legacy";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -251,9 +252,9 @@ export function Reports() {
   const exportCSV = () => {
     if (!generatedData || !selectedTemplate) return;
     const cols = selectedTemplate.columns;
-    const header = cols.map(c => c.label).join(",");
+    const header = cols.map(c => translateCataloguedValue(c.label)).join(",");
     const csvRows = generatedData.map(row =>
-      cols.map(c => `"${String(row[c.key] || "").replace(/"/g, '""')}"`).join(",")
+      cols.map(c => `"${translateCataloguedValue(String(row[c.key] || "")).replace(/"/g, '""')}"`).join(",")
     );
     const csv = "\uFEFF" + [header, ...csvRows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });

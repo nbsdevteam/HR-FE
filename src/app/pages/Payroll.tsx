@@ -11,6 +11,7 @@ import {
 import { supabase } from "../lib/supabase";
 import { useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule, useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes, useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans, type DbShift } from "../lib/hooks";
 import { useAppSettings, formatMonthYear } from "../components/SettingsContext";
+import { localizedAlert } from "../i18n/native";
 import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "../lib/hooks";
 import {
   parseAttendanceFile,
@@ -356,7 +357,7 @@ export function Payroll() {
       setTimeout(() => setPayslipsSaved(false), 3000);
     } catch (e: any) {
       console.error("Failed to save payslips:", e.message);
-      alert("خطأ في حفظ الكشوفات: " + e.message);
+      localizedAlert("خطأ في حفظ الكشوفات: " + e.message);
     }
     setSavingPayslips(false);
   };
@@ -1165,7 +1166,7 @@ function PayrollDetailPanel({
       setEditingLedger(false);
     } catch (e: any) {
       console.error("Failed to save ledger:", e.message);
-      alert("خطأ في حفظ التعديلات: " + (e.message || "حدث خطأ غير متوقع"));
+      localizedAlert("خطأ في حفظ التعديلات: " + (e.message || "حدث خطأ غير متوقع"));
     } finally {
       setLedgerSaving(false);
     }

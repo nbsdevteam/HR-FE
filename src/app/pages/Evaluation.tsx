@@ -6,6 +6,7 @@ import {
   Calendar, BarChart3, CheckCircle, Clock, AlertCircle, Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { localizedConfirm } from "../i18n/native";
 import { useEmployees, empDisplayName } from "../lib/hooks";
 import type { DbEmployee } from "../lib/hooks";
 import { CustomBarChart } from "../components/custom-bar-chart";
@@ -637,7 +638,7 @@ function EvalDetailModal({
   };
 
   const handleDelete = async () => {
-    if (!confirm("متأكد تريد حذف هذا التقييم؟")) return;
+    if (!localizedConfirm("متأكد تريد حذف هذا التقييم؟")) return;
     setDeleting(true);
     await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
     await supabase.from("evaluations").delete().eq("id", evaluation.id);

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { localizedConfirm } from "../i18n/native";
 import {
   GraduationCap,
   Target,
@@ -233,7 +234,7 @@ export function Training() {
   };
 
   const handleDeleteProgram = async (id: string) => {
-    if (!confirm("هل تريد حذف هذا البرنامج التدريبي؟")) return;
+    if (!localizedConfirm("هل تريد حذف هذا البرنامج التدريبي؟")) return;
 
     try {
       // Delete participants first
@@ -304,7 +305,7 @@ export function Training() {
   };
 
   const handleDeleteParticipant = async (participantId: string) => {
-    if (!confirm("هل تريد حذف هذا المشارك من البرنامج؟")) return;
+    if (!localizedConfirm("هل تريد حذف هذا المشارك من البرنامج؟")) return;
 
     try {
       const { error } = await supabase

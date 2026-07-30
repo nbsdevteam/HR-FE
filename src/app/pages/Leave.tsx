@@ -15,6 +15,7 @@ import {
   useLeavePolicies,
   type DbLeaveRequest, type DbLeaveType, type DbLeaveBalance, type DbLeavePermission,
 } from "../lib/hooks";
+import { localizedAlert } from "../i18n/native";
 
 // ══════════════════════════ Styles ══════════════════════════
 
@@ -126,7 +127,7 @@ export function Leave() {
       refetchBalances();
     } catch (e: any) {
       console.error("Approve error:", e.message);
-      alert("خطأ في قبول الطلب: " + e.message);
+      localizedAlert("خطأ في قبول الطلب: " + e.message);
     }
   };
 
@@ -138,7 +139,7 @@ export function Leave() {
       refetchRequests();
     } catch (e: any) {
       console.error("Reject error:", e.message);
-      alert("خطأ في رفض الطلب: " + e.message);
+      localizedAlert("خطأ في رفض الطلب: " + e.message);
     }
   };
 
@@ -150,7 +151,7 @@ export function Leave() {
       refetchBalances();
     } catch (e: any) {
       console.error("Delete error:", e.message);
-      alert("خطأ في حذف الطلب: " + e.message);
+      localizedAlert("خطأ في حذف الطلب: " + e.message);
     }
   };
 

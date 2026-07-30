@@ -5,6 +5,7 @@ import { ViewToggle } from "../components/ViewToggle";
 import { useWarnings, useEmployees, useConfigurations, empDisplayName, DbWarning, DbEmployee } from "../lib/hooks";
 import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";
+import { localizedConfirm } from "../i18n/native";
 
 // Color gradients for warning types — auto-assigned by severity index (lightest → most severe)
 const typeColorPalette = [
@@ -201,7 +202,7 @@ export function Warnings() {
   };
 
   const handleDelete = async (warningId: string) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الإنذار؟")) return;
+    if (!localizedConfirm("هل أنت متأكد من حذف هذا الإنذار؟")) return;
 
     try {
       const { error } = await supabase
