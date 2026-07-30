@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { getIntlLocale } from "../i18n";
 
 // ── Month format types ──
 export type MonthFormat = "name" | "numeric";
@@ -53,12 +54,6 @@ export function useAppSettings() {
 
 // ── Shared month formatting utility ──
 
-const IRAQI_MONTH_NAMES: Record<string, string> = {
-  "01": "كانون الثاني", "02": "شباط", "03": "آذار", "04": "نيسان",
-  "05": "أيار", "06": "حزيران", "07": "تموز", "08": "آب",
-  "09": "أيلول", "10": "تشرين الأول", "11": "تشرين الثاني", "12": "كانون الأول",
-};
-
 /**
  * Format a "YYYY-MM" string based on user's preferred month format.
  * "name"    → "شباط 2026"
@@ -68,10 +63,12 @@ export function formatMonthYear(monthYear: string, format: MonthFormat): string 
   if (!monthYear) return "—";
   const [y, mo] = monthYear.split("-");
   if (!y || !mo) return monthYear;
-  if (format === "numeric") {
-    return `${parseInt(mo, 10)}/${y}`;
-  }
-  return `${IRAQI_MONTH_NAMES[mo] || mo} ${y}`;
+  const date = new Date(Date.UTC(Number(y), Number(mo) - 1, 1));
+  return new Intl.DateTimeFormat(getIntlLocale(), {
+    year: "numeric",
+    month: format === "numeric" ? "numeric" : "long",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 /**
@@ -81,7 +78,11 @@ export function formatMonthYear(monthYear: string, format: MonthFormat): string 
  */
 export function formatMonthOnly(monthNum: string, format: MonthFormat): string {
   if (format === "numeric") {
-    return `${parseInt(monthNum, 10)}`;
+    return new Intl.NumberFormat(getIntlLocale()).format(parseInt(monthNum, 10));
   }
-  return IRAQI_MONTH_NAMES[monthNum] || monthNum;
+  const date = new Date(Date.UTC(2024, Number(monthNum) - 1, 1));
+  return new Intl.DateTimeFormat(getIntlLocale(), {
+    month: "long",
+    timeZone: "UTC",
+  }).format(date);
 }

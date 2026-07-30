@@ -4,6 +4,7 @@
  */
 
 import * as XLSX from "xlsx";
+import { formatCurrency as formatIntlCurrency, formatNumber } from "../i18n/format";
 
 // ──────────────────────── Types ────────────────────────
 
@@ -52,6 +53,8 @@ export interface ProcessedAttendanceRecord {
   expectedStartTime?: string;
   expectedEndTime?: string;
   isScheduledWorkingDay: boolean;
+  /** Backwards-compatible schedule flag used by imported-record processing. */
+  isWorkingDay?: boolean;
   // Leave integration
   isLeaveDay?: boolean;
   leaveType?: string; // 'سنوية','مرضية','طارئة','بدون راتب','أمومة','أبوة','دراسية'
@@ -677,11 +680,12 @@ export function calculateEOS(
   joinDate: string | null,
   monthlySalary: number,
   currency: string,
-  eosConfig: EOSConfig = DEFAULT_EOS_CONFIG
+  eosConfig: EOSConfig = DEFAULT_EOS_CONFIG,
+  asOfDate: string | Date = new Date(),
 ): { years: number; months: number; amount: number; currency: string } | null {
   if (!joinDate) return null;
   const start = new Date(joinDate);
-  const now = new Date();
+  const now = new Date(asOfDate);
   const diffMs = now.getTime() - start.getTime();
   const totalMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
   const years = Math.floor(totalMonths / 12);
@@ -892,9 +896,10 @@ export function calculateSalary(
 // ──────────────────────── Helpers ────────────────────────
 
 export function formatCurrency(val: number, currency: string): string {
-  if (currency === "IQD") return `${val.toLocaleString("ar-IQ")} د.ع`;
-  if (currency === "USD") return `${val.toLocaleString("en-US")} USD`;
-  return `${val.toLocaleString()} ${currency}`;
+  if (/^[A-Z]{3}$/.test(currency)) {
+    return formatIntlCurrency(val, currency);
+  }
+  return `${formatNumber(val)} ${currency}`;
 }
 
 export function formatHoursMinutes(hours: number): string {

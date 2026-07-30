@@ -314,13 +314,13 @@ export function Warnings() {
         <div className="flex flex-col md:flex-row gap-3">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute right-3 top-3 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute end-3 top-3 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               placeholder="ابحث عن موظف أو سبب..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 px-4 pr-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+              className="w-full h-11 px-4 pe-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
             />
           </div>
 
@@ -811,7 +811,7 @@ export function Warnings() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 bg-card border border-border rounded-lg p-4 shadow-lg max-w-xs z-50"
+            className="fixed bottom-6 end-6 bg-card border border-border rounded-lg p-4 shadow-lg max-w-xs z-50"
           >
             <p className="text-foreground text-sm">{toast}</p>
           </motion.div>

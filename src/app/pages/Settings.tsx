@@ -31,6 +31,7 @@ import { useAppSettings, type MonthFormat, formatMonthYear } from "../components
 import { supabase } from "../lib/supabase";
 import { useShifts, useHierarchyData, useSystemModules, useConfigurations, usePublicHolidays, useLeaveTypes, useContractTypes, useDocumentTypes, type DbShift, type DbSystemModule, type DbConfiguration, type DbPublicHoliday, type DbLeaveType, type DbContractType, type DbDocumentType } from "../lib/hooks";
 import { ShiftAssigner } from "../components/ShiftAssigner";
+import { formatDate } from "../i18n/format";
 
 // ── Curated department color palette — 15 distinct, accessible hues ──
 const DEPT_COLOR_PALETTE = [
@@ -215,7 +216,7 @@ export function SettingsPage() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="fixed top-4 left-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg z-50"
+      className="fixed top-4 start-4 end-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg z-50"
     >
       {message}
     </motion.div>
@@ -1083,7 +1084,7 @@ export function SettingsPage() {
             <div className="space-y-6">
               {Object.entries(groupedModules).map(([category, modules]) => (
                 <div key={category}>
-                  <div className="flex items-center gap-3 mb-3 pb-2 border-l-4 border-primary pl-3">
+                  <div className="flex items-center gap-3 mb-3 pb-2 border-s-4 border-primary ps-3">
                     <h4 className="text-foreground font-medium">{categoryLabels[category] || category}</h4>
                   </div>
                   <div className="space-y-2">
@@ -1135,7 +1136,7 @@ export function SettingsPage() {
             <div className="space-y-6">
               {Object.entries(groupedConfigs).map(([category, categoryConfigs]) => (
                 <div key={category}>
-                  <div className="flex items-center gap-3 mb-3 pb-2 border-l-4 border-primary pl-3">
+                  <div className="flex items-center gap-3 mb-3 pb-2 border-s-4 border-primary ps-3">
                     <h4 className="text-foreground font-medium">{categoryLabels[category] || category}</h4>
                   </div>
                   <div className="space-y-3">
@@ -1147,8 +1148,8 @@ export function SettingsPage() {
                         <div key={config.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
                           <div className="flex-1">
                             <p className="text-foreground text-sm">{config.label_ar}</p>
-                            {config.description && (
-                              <p className="text-muted-foreground text-xs mt-1">{config.description}</p>
+                            {config.description_ar && (
+                              <p className="text-muted-foreground text-xs mt-1">{config.description_ar}</p>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
@@ -1161,7 +1162,7 @@ export function SettingsPage() {
                                   saveConfigValue(config.id, newVal);
                                 }}
                               />
-                            ) : config.value_type === "select" && config.key === "attendance.absence_basis" ? (
+                            ) : config.value_type === "select" && config.config_key === "attendance.absence_basis" ? (
                               <div className="flex items-center gap-2">
                                 <select
                                   value={currentValue || "30_days"}
@@ -1359,7 +1360,7 @@ export function SettingsPage() {
                       <div className="flex-1">
                         <p className="text-foreground text-sm">{holiday.name_ar}</p>
                         <p className="text-muted-foreground text-xs mt-1">
-                          {new Date(holiday.date).toLocaleDateString("ar-IQ")}
+                          {formatDate(holiday.date)}
                           {holiday.is_recurring && " (تكرار سنوي)"}
                         </p>
                       </div>

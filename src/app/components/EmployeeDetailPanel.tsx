@@ -69,7 +69,7 @@ export interface EmployeeOption {
   position: string;
 }
 
-const departments = [...DEPARTMENTS];
+const departments: string[] = [...DEPARTMENTS];
 import { formatCurrency } from "../lib/payslip-engine";
 
 const statusColors: Record<string, string> = {

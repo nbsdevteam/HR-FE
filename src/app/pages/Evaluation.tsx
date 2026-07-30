@@ -70,6 +70,7 @@ interface DbEvaluation {
   id: string;
   employee_id: string;
   evaluator_id: string | null;
+  evaluator_name?: string | null;
   period: string;
   overall_rating: number;
   status: string;

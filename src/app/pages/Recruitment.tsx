@@ -12,6 +12,7 @@ import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { supabase } from "../lib/supabase";
 import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant } from "../lib/hooks";
 import { DEPARTMENTS } from "../lib/constants";
+import { formatNumber } from "../i18n/format";
 
 /* ──────── Constants ──────── */
 const STAGES = ["تقديم", "فرز أولي", "مقابلة", "اختبار", "عرض", "مقبول"] as const;
@@ -483,6 +484,9 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
   onUpdateRating: (id: string, r: number) => void;
   onUpdateStage: (id: string, s: string) => void;
 }) {
+  const [sortBy, setSortBy] = useState("rank");
+  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
+
   if (applicants.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -861,7 +865,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
             <div className="p-3 rounded-lg bg-muted/20 border border-border/20">
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>الراتب المتوقع: </span>
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                {Number(applicant.expected_salary).toLocaleString("ar-IQ")} {applicant.salary_currency || "IQD"}
+                {formatNumber(Number(applicant.expected_salary))} {applicant.salary_currency || "IQD"}
               </span>
             </div>
           )}

@@ -8,6 +8,9 @@ import {
 import { useHierarchyData, usePositions, empDisplayName } from "../lib/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "../lib/hooks";
 import { supabase } from "../lib/supabase";
+import i18n, { getLanguageDirection, normalizeLanguage } from "../i18n";
+import { formatDate } from "../i18n/format";
+import { translateArabicSource } from "../i18n/legacy";
 
 interface OrgNode {
   id: number;
@@ -740,7 +743,7 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
 
   // Find current manager id
   useEffect(() => {
-    const findManagerId = (searchNode: OrgNode, targetId: number): number | null => {
+    const findManagerId = (searchNode: OrgNode, targetId: number): number | null | undefined => {
       for (const child of searchNode.children) {
         if (child.id === targetId) return searchNode.dbId === "__root__" ? null : searchNode.id;
         const result = findManagerId(child, targetId);
@@ -1918,7 +1921,7 @@ export function Hierarchy() {
       if (e3) { console.error("COO insert error:", e3); setToast(`خطأ إنشاء COO: ${e3.message}`); setSaving(false); return; }
 
       // 4. Move all existing root employees (no manager) under CEO, EXCLUDING the newly created ones
-      const newIds = new Set([ownerId, ceoId, cooId]);
+      const newIds = new Set<string>([ownerId, ceoId, cooId]);
       const rootEmpIds = dbEmployees
         .filter(e => !e.manager_id && !newIds.has(e.id))
         .map(e => e.id);
@@ -2074,16 +2077,22 @@ export function Hierarchy() {
   const handlePrint = useCallback(() => {
     if (!chartContentRef.current) return;
     const w = window.open("", "_blank"); if (!w) return;
-    w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>الهيكل التنظيمي</title>
+    const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+    const direction = getLanguageDirection(language);
+    const title = translateArabicSource("الهيكل التنظيمي", language);
+    const subtitle = translateArabicSource("بنية المؤسسة وخريطة الأقسام", language);
+    const footer = translateArabicSource("تم إنشاء هذا التقرير بتاريخ", language);
+    const product = translateArabicSource("نظام الموارد البشرية", language);
+    w.document.write(`<!DOCTYPE html><html dir="${direction}" lang="${language}"><head><meta charset="UTF-8"><title>${title}</title>
       <style>@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-      *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}body{background:#fff;padding:40px 20px;direction:rtl}
+      *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}body{background:#fff;padding:40px 20px;direction:${direction}}
       .ph{text-align:center;margin-bottom:30px;border-bottom:2px solid #e5e7eb;padding-bottom:20px}
       .ph h1{font-size:24px;color:#1f2937}.ph p{font-size:14px;color:#6b7280;margin-top:5px}
       .pf{text-align:center;margin-top:30px;padding-top:15px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af}
       @media print{body{padding:10px}@page{size:landscape;margin:15mm}}</style></head>
-      <body><div class="ph"><h1>الهيكل التنظيمي</h1><p>بنية المؤسسة وخريطة الأقسام</p></div>
+      <body><div class="ph"><h1>${title}</h1><p>${subtitle}</p></div>
       <div style="overflow:auto">${chartContentRef.current.innerHTML}</div>
-      <div class="pf">تم إنشاء هذا التقرير بتاريخ ${new Date().toLocaleDateString("ar-IQ")} — نظام الموارد البشرية</div></body></html>`);
+      <div class="pf">${footer} ${formatDate(new Date())} — ${product}</div></body></html>`);
     w.document.close(); setTimeout(() => w.print(), 500);
   }, []);
 
@@ -2097,7 +2106,7 @@ export function Hierarchy() {
         <foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="background:#0F0F0F;color:#FFF8E1;font-family:Tajawal,sans-serif;direction:rtl">${el.innerHTML}</div></foreignObject></svg>`;
       const img = new Image(); const blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" }); const url = URL.createObjectURL(blob);
       img.onload = () => { ctx.scale(scale, scale); ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url);
-        canvas.toBlob(b => { if (!b) return; const a = document.createElement("a"); a.download = `الهيكل-التنظيمي-${new Date().toLocaleDateString("ar-IQ")}.png`; a.href = URL.createObjectURL(b); a.click(); URL.revokeObjectURL(a.href); }); };
+        canvas.toBlob(b => { if (!b) return; const a = document.createElement("a"); a.download = `${translateArabicSource("الهيكل التنظيمي").replace(/\s+/g, "-")}-${formatDate(new Date()).replace(/[\\/:]/g, "-")}.png`; a.href = URL.createObjectURL(b); a.click(); URL.revokeObjectURL(a.href); }); };
       img.onerror = () => { URL.revokeObjectURL(url); handlePrint(); }; img.src = url;
     } catch { handlePrint(); }
   }, [handlePrint]);

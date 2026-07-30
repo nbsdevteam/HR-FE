@@ -159,7 +159,9 @@ export interface DbConfiguration {
   category: string;
   label_ar: string;
   label_en: string;
-  description_ar: string | null;
+    description_ar: string | null;
+    description?: string | null;
+    key?: string;
   min_value: number | null;
   max_value: number | null;
   options: string | null;
@@ -368,7 +370,8 @@ export interface DbLeaveBalance {
   leave_type: string;
   leave_type_id: string | null;
   year: number;
-  total_days: number;
+    total_days: number;
+    entitlement_days?: number;
   used_days: number;
   carryover_days: number;
   accrued_days: number;
@@ -1250,7 +1253,8 @@ export function useApplicants() {
 export interface DbEvaluation {
   id: string;
   employee_id: string;
-  evaluator_id: string | null;
+    evaluator_id: string | null;
+    evaluator_name?: string | null;
   period: string;
   overall_rating: number;
   status: string;

@@ -16,6 +16,7 @@ import {
   useDeductionTypes, useEmployeeDeductions,
   type DbReportTemplate, type DbReportHistory, empDisplayName, logAudit,
 } from "../lib/hooks";
+import { formatCurrency, formatDateTime } from "../i18n/format";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -43,7 +44,7 @@ const categoryLabels: Record<string, string> = {
   custom: "مخصص",
 };
 
-const formatIQD = (val: number) => `${val.toLocaleString("ar-IQ")} د.ع`;
+const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
 
 export function Reports() {
   const { templates, loading: templatesLoading } = useReportTemplates();
@@ -154,9 +155,9 @@ export function Reports() {
           return {
             employee_name: empMap[b.employee_id] || b.employee_id,
             leave_type: lt?.name_ar || "—",
-            entitlement: b.entitlement_days,
+            entitlement: b.total_days,
             used: b.used_days,
-            remaining: b.entitlement_days - b.used_days,
+            remaining: b.total_days - b.used_days,
             carryover: b.carryover_days || 0,
           };
         });
@@ -344,7 +345,7 @@ export function Reports() {
                       <p className="text-sm text-foreground">{h.report_name}</p>
                       <p className="text-xs text-muted-foreground">{h.row_count} سجل · بواسطة {h.generated_by}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground" dir="ltr">{new Date(h.generated_at).toLocaleString("ar-IQ")}</span>
+                    <span className="text-xs text-muted-foreground" dir="ltr">{formatDateTime(h.generated_at)}</span>
                   </div>
                 ))}
               </div>

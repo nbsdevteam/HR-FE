@@ -497,13 +497,13 @@ export function Training() {
       {/* Search and Filter */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex-1 min-w-64 relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="البحث عن برنامج..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-4 pr-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
+            className="w-full ps-4 pe-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -660,7 +660,7 @@ export function Training() {
                             </span>
                           </div>
                           {p.score && (
-                            <span className="text-xs text-primary font-semibold ml-2">{p.score}%</span>
+                            <span className="text-xs text-primary font-semibold ms-2">{p.score}%</span>
                           )}
                           {p.completion_status !== "مكتمل" && (
                             <button

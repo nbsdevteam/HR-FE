@@ -4,7 +4,7 @@ import {
   Fingerprint, ScanFace, CreditCard, Server, Users, Activity,
   Search, RefreshCw, DoorOpen, DoorClosed,
   HardDrive, Loader2,
-  Shield, Camera, Eye, Upload,
+  Shield, Camera, Eye, Upload, X, Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";

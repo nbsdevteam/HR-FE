@@ -12,6 +12,7 @@ import { useEmployees, empNumber, empDisplayName } from "../lib/hooks";
 import { supabase } from "../lib/supabase";
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS, SYNC_API } from "../lib/constants";
 import type { DbEmployee } from "../lib/hooks";
+import { employeeStatusKeys, translateBackendCode } from "../i18n/status";
 
 const deptColors = DEPT_BORDER_COLORS;
 const deptDots = DEPT_DOT_COLORS;
@@ -442,7 +443,7 @@ export function Employees() {
                       <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp.position}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-md border ${statusColors[emp.status]}`} style={{ fontSize: 12 }}>
-                          {emp.status}
+                          {translateBackendCode(emp.status, employeeStatusKeys)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -547,7 +548,7 @@ export function Employees() {
                               <p className="text-foreground truncate" style={{ fontSize: 12 }}>{emp.name}</p>
                               <p className="text-muted-foreground truncate mt-0.5" style={{ fontSize: 10 }}>{emp.position}</p>
                               <div className="flex items-center justify-center gap-2 mt-2">
-                                <span className={`px-1.5 py-0.5 rounded border ${statusColors[emp.status]}`} style={{ fontSize: 9 }}>{emp.status}</span>
+                                <span className={`px-1.5 py-0.5 rounded border ${statusColors[emp.status]}`} style={{ fontSize: 9 }}>{translateBackendCode(emp.status, employeeStatusKeys)}</span>
                                 {(() => {
                                   const dbEmp = dbEmployees.find(e => e.person_id === emp.id);
                                   return dbEmp?.device_employee_no ? (

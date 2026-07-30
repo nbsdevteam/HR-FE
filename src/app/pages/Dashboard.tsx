@@ -23,8 +23,9 @@ import {
   useConfigurations, empDisplayName,
 } from "../lib/hooks";
 import { useAppSettings, formatMonthOnly } from "../components/SettingsContext";
+import { formatCurrency, formatDateTime } from "../i18n/format";
 
-const formatIQD = (val: number) => `${val.toLocaleString("ar-IQ")} د.ع`;
+const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
 const formatK = (val: number) => val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val);
 const pct = (n: number, d: number) => d > 0 ? Math.round((n / d) * 100) : 0;
 const pctDec = (n: number, d: number) => d > 0 ? Math.round((n / d) * 1000) / 10 : 0;
@@ -906,7 +907,7 @@ export function Dashboard() {
                     <Bell className={`w-3.5 h-3.5 mt-0.5 ${n.type === "warning" ? "text-amber-400" : n.type === "error" ? "text-red-400" : "text-primary"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-foreground truncate" style={{ fontSize: 12 }}>{n.title}</p>
-                      <p className="text-muted-foreground" style={{ fontSize: 10 }}>{new Date(n.created_at).toLocaleString("ar-IQ")}</p>
+                      <p className="text-muted-foreground" style={{ fontSize: 10 }}>{formatDateTime(n.created_at)}</p>
                     </div>
                   </div>
                 ))}

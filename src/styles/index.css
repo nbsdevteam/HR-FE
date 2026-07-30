@@ -1,3 +1,20 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* Directional navigation glyphs follow the active writing direction. */
+html[dir="rtl"] :where(
+  .lucide-chevron-left,
+  .lucide-chevron-right,
+  .lucide-arrow-left,
+  .lucide-arrow-right,
+  .lucide-log-in,
+  .lucide-log-out
+) {
+  transform: scaleX(-1);
+}
+
+/* Keep technical values predictable inside mixed-direction content. */
+[dir="ltr"] {
+  unicode-bidi: isolate;
+}

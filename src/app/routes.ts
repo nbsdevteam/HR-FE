@@ -17,6 +17,7 @@ import { Lifecycle } from "./pages/Lifecycle";
 import { AuditCenter } from "./pages/AuditCenter";
 import { Diagnostics } from "./pages/Diagnostics";
 import { DeviceManagement } from "./pages/DeviceManagement";
+import { NotFound } from "./pages/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -40,7 +41,7 @@ export const router = createBrowserRouter([
       { path: "devices", Component: DeviceManagement },
       { path: "settings", Component: SettingsPage },
       { path: "diagnostics", Component: Diagnostics },
-      { path: "*", Component: Dashboard },
+      { path: "*", Component: NotFound },
     ],
   },
 ]);

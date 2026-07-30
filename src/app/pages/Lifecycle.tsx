@@ -15,7 +15,8 @@ import {
   type DbContractType, type DbEmployeeContract, type DbDocumentType,
   type DbEmployeeDocument, type DbExitProcess, type DbExitChecklist, type DbExitChecklistItem,
 } from "../lib/hooks";
-import { calculateEOS } from "../lib/payslip-engine";
+import { calculateEOS, DEFAULT_EOS_CONFIG } from "../lib/payslip-engine";
+import { formatDate, formatNumber } from "../i18n/format";
 
 const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg";
 const inputCls = "w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none";
@@ -658,7 +659,13 @@ function ExitTab({
     const emp = empMap[formData.employee_id];
     let eosAmount = 0;
     if (emp?.join_date && emp?.monthly_salary) {
-      eosAmount = calculateEOS(emp.join_date, formData.exit_date, emp.monthly_salary);
+      eosAmount = calculateEOS(
+        emp.join_date,
+        emp.monthly_salary,
+        emp.currency || "IQD",
+        DEFAULT_EOS_CONFIG,
+        formData.exit_date,
+      )?.amount ?? 0;
     }
 
     const { data: proc } = await supabase.from("employee_exit_processes").insert({
@@ -749,7 +756,7 @@ function ExitTab({
           <div className={`${cardCls} p-4`}>
             <p className="text-muted-foreground" style={{ fontSize: 12 }}>مستحقات نهاية الخدمة</p>
             <p className="text-gradient-gold mt-1" style={{ fontSize: 22 }} dir="ltr">
-              {proc.eos_amount ? `${Number(proc.eos_amount).toLocaleString("ar-IQ")} ${proc.eos_currency}` : "—"}
+              {proc.eos_amount ? `${formatNumber(Number(proc.eos_amount))} ${proc.eos_currency}` : "—"}
             </p>
           </div>
           <div className={`${cardCls} p-4`}>
@@ -820,7 +827,7 @@ function ExitTab({
                         </span>
                         {c.completed_at && (
                           <span className="text-muted-foreground" style={{ fontSize: 10 }}>
-                            {new Date(c.completed_at).toLocaleDateString("ar-IQ")}
+                            {formatDate(c.completed_at)}
                           </span>
                         )}
                       </div>
@@ -915,7 +922,7 @@ function ExitTab({
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{exitTypeLabels[p.exit_type] || p.exit_type}</td>
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.exit_date}</td>
                     <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">
-                      {p.eos_amount ? `${Number(p.eos_amount).toLocaleString("ar-IQ")} ${p.eos_currency}` : "—"}
+                      {p.eos_amount ? `${formatNumber(Number(p.eos_amount))} ${p.eos_currency}` : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded-md border ${statusColors[p.status] || ""}`} style={{ fontSize: 12 }}>

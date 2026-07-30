@@ -36,3 +36,5 @@ Thumbs.db
 .turbo/
 coverage/
 *.tsbuildinfo
+.i18n-cache/
+.tmp-i18n-strings.json

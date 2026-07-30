@@ -11,6 +11,7 @@ import {
   useNotifications, useAuditLog, useEmployees,
   type DbNotification, type DbAuditLog, empDisplayName,
 } from "../lib/hooks";
+import { formatDateTime } from "../i18n/format";
 
 const actionLabels: Record<string, string> = {
   create: "إنشاء",
@@ -271,7 +272,7 @@ function NotificationsTab() {
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <span className="text-xs px-2 py-0.5 rounded bg-muted/30 text-muted-foreground">{n.category}</span>
-                    <span className="text-xs text-muted-foreground" dir="ltr">{new Date(n.created_at).toLocaleString("ar-IQ")}</span>
+                    <span className="text-xs text-muted-foreground" dir="ltr">{formatDateTime(n.created_at)}</span>
                   </div>
                 </div>
               </motion.div>
@@ -433,7 +434,7 @@ function AuditTrailTab() {
                         <td className="p-3 text-foreground">{log.entity_label || "—"}</td>
                         <td className="p-3 text-muted-foreground">{log.actor_name}</td>
                         <td className="p-3 text-muted-foreground text-xs" dir="ltr">
-                          {new Date(log.created_at).toLocaleString("ar-IQ")}
+                          {formatDateTime(log.created_at)}
                         </td>
                         <td className="p-3">
                           {log.details && Object.keys(log.details).length > 0 && (

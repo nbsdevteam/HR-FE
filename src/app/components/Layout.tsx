@@ -4,10 +4,12 @@ import { TopBar } from "./TopBar";
 import { motion } from "motion/react";
 import { ThemeProvider } from "./ThemeContext";
 import { SettingsProvider } from "./SettingsContext";
+import { useTranslation } from "react-i18next";
 
 function LayoutInner() {
+  const { i18n } = useTranslation();
   return (
-    <div dir="rtl" className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+    <div dir={i18n.dir()} className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: "'Tajawal', sans-serif" }}>
       {/* Animated background orbs — colors driven by CSS variables */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <motion.div

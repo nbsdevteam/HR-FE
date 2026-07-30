@@ -3,6 +3,7 @@ import { Bell, MessageSquare, Settings, Search, User, CheckCircle, AlertTriangle
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { useDeviceStatus } from "../lib/hooks";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const quotes = [
   "النجاح هو نتيجة الإعداد والعمل الجاد والتعلم من الفشل",
@@ -89,6 +90,7 @@ export function TopBar() {
 
       {/* Search + Actions */}
       <div className="flex items-center gap-3">
+        <LanguageSwitcher />
         <div className="relative">
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
