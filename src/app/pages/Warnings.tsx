@@ -139,9 +139,6 @@ export function Warnings() {
 
     setSaving(true);
     try {
-      const currentUser = await supabase.auth.getUser();
-      const issuedById = currentUser?.data?.user?.id || "system";
-
       if (editingId) {
         // Update existing warning
         const { error } = await supabase
@@ -168,7 +165,6 @@ export function Warnings() {
             reason: formData.reason,
             details: formData.details || null,
             date: new Date().toISOString().split("T")[0],
-            issued_by: issuedById,
             status: arabicSource("common.is_active"),
             expiry_date: formData.expiryDate || null,
           });

@@ -4,9 +4,8 @@ import { motion } from "motion/react";
 import {
   Home, Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle,
   FileText, GitBranch, UserPlus, GraduationCap, Clock, BarChart3,
-  Settings, ChevronRight, Shield, Briefcase, Fingerprint, LogOut
+  Settings, ChevronRight, Shield, Briefcase, Fingerprint
 } from "lucide-react";
-import { useAuth } from "../lib/auth";
 import { arabicSource } from "../i18n/source";
 
 const menuItems = [
@@ -32,7 +31,6 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const { signOut, user } = useAuth();
 
   return (
     <motion.aside
@@ -83,23 +81,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* User & Sign out */}
-      <div className="border-t border-sidebar-border relative z-10">
-        {user && !collapsed && (
-          <div className="px-4 py-2 text-muted-foreground truncate" style={{ fontSize: 11 }} dir="ltr">
-            {user.email}
-          </div>
-        )}
-        <button
-          onClick={() => signOut()}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-          title={arabicSource("common.log_out")}
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span style={{ fontSize: 13 }}>{arabicSource("common.log_out")}</span>}
-        </button>
-      </div>
 
       {/* Collapse button */}
       <button
