@@ -14,6 +14,7 @@ import { CustomRadarChart } from "../components/custom-radar-chart";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { EmptyState } from "../components/EmptyState";
+import { arabicSource } from "../i18n/source";
 
 // ──────────────────────── Types & Constants ────────────────────────
 
@@ -21,50 +22,50 @@ const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl 
 const inputCls = "w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none";
 
 const RATING_SCALE = [
-  { value: 1, label: "لم يتحقق", labelEn: "No Achieve", color: "#DC2626", bgColor: "bg-red-500/10 border-red-500/20 text-red-400" },
-  { value: 2, label: "دون التوقعات", labelEn: "Below Expectation", color: "#F59E0B", bgColor: "bg-yellow-500/10 border-yellow-500/20 text-yellow-400" },
-  { value: 3, label: "ضمن المتوقع", labelEn: "Within Expected", color: "#3B82F6", bgColor: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
-  { value: 4, label: "تجاوز التوقعات", labelEn: "Exceeded Expectation", color: "#22C55E", bgColor: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
-  { value: 5, label: "أداء متميز", labelEn: "Outstanding / Distinguished", color: "#D4AF37", bgColor: "bg-primary/10 border-primary/20 text-primary" },
+  { value: 1, label: arabicSource("evaluation.not_achieved"), labelEn: "No Achieve", color: "#DC2626", bgColor: "bg-red-500/10 border-red-500/20 text-red-400" },
+  { value: 2, label: arabicSource("evaluation.below_expectations"), labelEn: "Below Expectation", color: "#F59E0B", bgColor: "bg-yellow-500/10 border-yellow-500/20 text-yellow-400" },
+  { value: 3, label: arabicSource("evaluation.is_within_expected"), labelEn: "Within Expected", color: "#3B82F6", bgColor: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
+  { value: 4, label: arabicSource("evaluation.exceeded_expectations"), labelEn: "Exceeded Expectation", color: "#22C55E", bgColor: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
+  { value: 5, label: arabicSource("evaluation.outstanding_performance"), labelEn: "Outstanding / Distinguished", color: "#D4AF37", bgColor: "bg-primary/10 border-primary/20 text-primary" },
 ];
 
 const DEFAULT_CRITERIA = [
-  "جودة العمل",
-  "الالتزام",
-  "العمل الجماعي",
-  "المبادرة",
-  "المهارات القيادية",
-  "التواصل",
+  arabicSource("evaluation.quality_of_work"),
+  arabicSource("evaluation.commitment"),
+  arabicSource("evaluation.teamwork"),
+  arabicSource("evaluation.initiative"),
+  arabicSource("evaluation.leadership_skills"),
+  arabicSource("evaluation.communication"),
 ];
 
 const EVAL_CYCLES = [
-  { value: "ربع سنوي", label: "ربع سنوي (كل 3 أشهر)", icon: CalendarRange },
-  { value: "نصف سنوي", label: "نصف سنوي (كل 6 أشهر)", icon: Calendar },
-  { value: "سنوي", label: "سنوي", icon: BarChart3 },
-  { value: "فترة تجربة", label: "فترة تجربة (للموظفين الجدد)", icon: UserCheck },
+  { value: arabicSource("common.quarterly"), label: arabicSource("evaluation.quarterly_every_3_months"), icon: CalendarRange },
+  { value: arabicSource("common.semi_annually"), label: arabicSource("evaluation.semi_annually_every_6_months"), icon: Calendar },
+  { value: arabicSource("common.annual"), label: arabicSource("common.annual"), icon: BarChart3 },
+  { value: arabicSource("common.probationary_period"), label: arabicSource("evaluation.probation_period_for_new_employees"), icon: UserCheck },
 ] as const;
 
 type EvalCycleType = typeof EVAL_CYCLES[number]["value"];
 
 function getPeriodOptions(cycle: EvalCycleType, year: number): string[] {
   switch (cycle) {
-    case "ربع سنوي":
-      return [`الربع الأول ${year}`, `الربع الثاني ${year}`, `الربع الثالث ${year}`, `الربع الرابع ${year}`];
-    case "نصف سنوي":
-      return [`النصف الأول ${year}`, `النصف الثاني ${year}`];
-    case "سنوي":
-      return [`السنة ${year}`];
-    case "فترة تجربة":
-      return [`فترة التجربة ${year}`];
+    case arabicSource("common.quarterly"):
+      return [`${arabicSource("evaluation.first_quarter")} ${year}`, `${arabicSource("evaluation.second_quarter")} ${year}`, `${arabicSource("evaluation.third_quarter")} ${year}`, `${arabicSource("evaluation.fourth_quarter")} ${year}`];
+    case arabicSource("common.semi_annually"):
+      return [`${arabicSource("evaluation.first_half")} ${year}`, `${arabicSource("evaluation.the_second_half")} ${year}`];
+    case arabicSource("common.annual"):
+      return [`${arabicSource("evaluation.year")} ${year}`];
+    case arabicSource("common.probationary_period"):
+      return [`${arabicSource("common.probation_period")} ${year}`];
     default:
       return [];
   }
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  "مكتمل": "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "قيد التقييم": "bg-primary/10 border-primary/20 text-primary",
-  "لم يبدأ": "bg-muted/30 border-border text-muted-foreground",
+  [arabicSource("common.complete")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  [arabicSource("common.under_evaluation")]: "bg-primary/10 border-primary/20 text-primary",
+  [arabicSource("common.did_not_start")]: "bg-muted/30 border-border text-muted-foreground",
 };
 
 interface DbEvaluation {
@@ -115,8 +116,8 @@ export function EvaluationPage() {
   const [showNewEval, setShowNewEval] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [searchText, setSearchText] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("الكل");
-  const [filterCycle, setFilterCycle] = useState<string>("الكل");
+  const [filterStatus, setFilterStatus] = useState<string>(arabicSource("common.all"));
+  const [filterCycle, setFilterCycle] = useState<string>(arabicSource("common.all"));
   const [evalSortBy, setEvalSortBy] = useState<"employee" | "department" | "evaluator" | "period" | "rating" | "status">("period");
   const [evalSortDir, setEvalSortDir] = useState<"asc" | "desc">("desc");
 
@@ -143,7 +144,7 @@ export function EvaluationPage() {
   // Filtered evaluations
   const filtered = useMemo(() => {
     let result = [...evaluations];
-    if (filterStatus !== "الكل") {
+    if (filterStatus !== arabicSource("common.all")) {
       result = result.filter(e => e.status === filterStatus);
     }
     if (searchText) {
@@ -176,23 +177,23 @@ export function EvaluationPage() {
 
   // Stats
   const totalEvals = evaluations.length;
-  const completedCount = evaluations.filter(e => e.status === "مكتمل").length;
-  const inProgressCount = evaluations.filter(e => e.status === "قيد التقييم").length;
+  const completedCount = evaluations.filter(e => e.status === arabicSource("common.complete")).length;
+  const inProgressCount = evaluations.filter(e => e.status === arabicSource("common.under_evaluation")).length;
   const avgRating = completedCount > 0
-    ? (evaluations.filter(e => e.status === "مكتمل" && e.overall_rating > 0).reduce((s, e) => s + e.overall_rating, 0) / completedCount).toFixed(1)
+    ? (evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating > 0).reduce((s, e) => s + e.overall_rating, 0) / completedCount).toFixed(1)
     : "—";
 
   // Rating distribution
   const ratingDistribution = RATING_SCALE.map(scale => ({
     label: scale.label,
-    value: evaluations.filter(e => e.overall_rating === scale.value && e.status === "مكتمل").length,
+    value: evaluations.filter(e => e.overall_rating === scale.value && e.status === arabicSource("common.complete")).length,
   }));
 
   if (loading || empLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل التقييمات...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("evaluation.loading_reviews")}</span>
       </div>
     );
   }
@@ -202,8 +203,8 @@ export function EvaluationPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-gradient-gold">تقييم الأداء</h1>
-          <p className="text-muted-foreground mt-1">نظام التقييم بمقياس الأداء الخماسي — المدير المباشر يقيّم موظفيه</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.performance_evaluation")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("evaluation.five_point_performance_scale_evaluation_system_the_line_manager")}</p>
         </div>
         <div className="flex items-center gap-3">
           <ViewToggle view={viewMode} onChange={setViewMode} />
@@ -214,16 +215,16 @@ export function EvaluationPage() {
             className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
           >
             <Plus className="w-5 h-5" />
-            تقييم جديد
+            {arabicSource("evaluation.new_evaluation")}
           </motion.button>
         </div>
       </div>
 
       {/* Evaluation Cycle Info */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`${cardCls} p-6`}>
-        <h3 className="text-foreground mb-2">كيف يعمل نظام التقييم؟</h3>
+        <h3 className="text-foreground mb-2">{arabicSource("evaluation.how_does_the_evaluation_system_work")}</h3>
         <p className="text-muted-foreground mb-4" style={{ fontSize: 13 }}>
-          المدير المباشر (حسب الهيكل التنظيمي) هو المسؤول عن تقييم موظفيه. يتم التقييم بناءً على 6 معايير أساسية بمقياس خماسي، ويمكن اختيار دورة التقييم المناسبة.
+          {arabicSource("evaluation.the_line_manager_depending_on_the_organizational_structure_is_re")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {EVAL_CYCLES.map(cycle => {
@@ -245,7 +246,7 @@ export function EvaluationPage() {
 
       {/* Rating Scale Reference */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className={`${cardCls} p-6`}>
-        <h3 className="text-foreground mb-4">مقياس التقييم الخماسي</h3>
+        <h3 className="text-foreground mb-4">{arabicSource("evaluation.five_point_rating_scale")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {RATING_SCALE.map(scale => (
             <div key={scale.value} className={`p-3 rounded-lg border ${scale.bgColor} text-center`}>
@@ -260,10 +261,10 @@ export function EvaluationPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: "إجمالي التقييمات", value: totalEvals, icon: ClipboardCheck },
-          { label: "مكتملة", value: completedCount, icon: Award },
-          { label: "قيد التقييم", value: inProgressCount, icon: Target },
-          { label: "متوسط التقييم", value: avgRating, icon: TrendingUp },
+          { label: arabicSource("evaluation.total_ratings"), value: totalEvals, icon: ClipboardCheck },
+          { label: arabicSource("common.complete_2"), value: completedCount, icon: Award },
+          { label: arabicSource("common.under_evaluation"), value: inProgressCount, icon: Target },
+          { label: arabicSource("evaluation.average_rating"), value: avgRating, icon: TrendingUp },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -292,8 +293,8 @@ export function EvaluationPage() {
 
       {/* Rating Distribution */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`${cardCls} p-6`}>
-        <h3 className="text-foreground mb-4">توزيع التقييمات</h3>
-        <CustomBarChart data={ratingDistribution} barLabel="عدد الموظفين" height={250} color="#D4AF37" />
+        <h3 className="text-foreground mb-4">{arabicSource("evaluation.distribution_of_ratings")}</h3>
+        <CustomBarChart data={ratingDistribution} barLabel={arabicSource("common.number_of_employees")} height={250} color="#D4AF37" />
       </motion.div>
 
       {/* Filters */}
@@ -304,7 +305,7 @@ export function EvaluationPage() {
             type="text"
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
-            placeholder="بحث بالاسم أو الفترة..."
+            placeholder={arabicSource("evaluation.search_by_name_or_period")}
             className={`${inputCls} flex-1`}
             style={{ height: 38 }}
           />
@@ -315,10 +316,10 @@ export function EvaluationPage() {
           className={inputCls}
           style={{ width: 160, height: 38 }}
         >
-          <option value="الكل">الكل</option>
-          <option value="مكتمل">مكتمل</option>
-          <option value="قيد التقييم">قيد التقييم</option>
-          <option value="لم يبدأ">لم يبدأ</option>
+          <option value={arabicSource("common.all")}>{arabicSource("common.all")}</option>
+          <option value={arabicSource("common.complete")}>{arabicSource("common.complete")}</option>
+          <option value={arabicSource("common.under_evaluation")}>{arabicSource("common.under_evaluation")}</option>
+          <option value={arabicSource("common.did_not_start")}>{arabicSource("common.did_not_start")}</option>
         </select>
       </div>
 
@@ -337,13 +338,13 @@ export function EvaluationPage() {
                 <thead>
                   <SortableHeaderRow
                     columns={[
-                      { label: "الموظف", key: "employee" },
-                      { label: "القسم", key: "department" },
-                      { label: "المقيّم", key: "evaluator" },
-                      { label: "الفترة", key: "period" },
-                      { label: "التقييم", key: "rating" },
-                      { label: "الحالة", key: "status" },
-                      { label: "إجراءات", key: null },
+                      { label: arabicSource("common.employee"), key: "employee" },
+                      { label: arabicSource("common.section"), key: "department" },
+                      { label: arabicSource("evaluation.assessor_2"), key: "evaluator" },
+                      { label: arabicSource("common.period"), key: "period" },
+                      { label: arabicSource("common.evaluation"), key: "rating" },
+                      { label: arabicSource("common.status"), key: "status" },
+                      { label: arabicSource("common.procedures"), key: null },
                     ]}
                     sortBy={evalSortBy}
                     sortDir={evalSortDir}
@@ -356,8 +357,8 @@ export function EvaluationPage() {
                       <td colSpan={7}>
                         <EmptyState
                           icon={ClipboardCheck}
-                          message={evaluations.length === 0 ? "لا توجد تقييمات بعد" : "لا توجد نتائج تطابق البحث"}
-                          hint={evaluations.length === 0 ? "ابدأ بإنشاء تقييم جديد" : undefined}
+                          message={evaluations.length === 0 ? arabicSource("evaluation.there_are_no_reviews_yet") : arabicSource("evaluation.there_are_no_results_matching_your_search")}
+                          hint={evaluations.length === 0 ? arabicSource("evaluation.start_creating_a_new_assessment") : undefined}
                         />
                       </td>
                     </tr>
@@ -405,7 +406,7 @@ export function EvaluationPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-md border ${STATUS_COLORS[ev.status] || STATUS_COLORS["لم يبدأ"]}`} style={{ fontSize: 12 }}>
+                          <span className={`px-2 py-0.5 rounded-md border ${STATUS_COLORS[ev.status] || STATUS_COLORS[arabicSource("common.did_not_start")]}`} style={{ fontSize: 12 }}>
                             {ev.status}
                           </span>
                         </td>
@@ -414,7 +415,7 @@ export function EvaluationPage() {
                             <button
                               onClick={() => setSelectedEval(ev)}
                               className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
-                              title="عرض التفاصيل"
+                              title={arabicSource("common.show_details")}
                             >
                               <Eye className="w-4 h-4 text-muted-foreground" />
                             </button>
@@ -480,9 +481,9 @@ function KanbanView({
   onSelect: (ev: DbEvaluation) => void;
 }) {
   const columns = [
-    { key: "مكتمل", label: "مكتمل", accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
-    { key: "قيد التقييم", label: "قيد التقييم", accent: "border-primary/40", dotColor: "bg-primary" },
-    { key: "لم يبدأ", label: "لم يبدأ", accent: "border-muted-foreground/40", dotColor: "bg-muted-foreground" },
+    { key: arabicSource("common.complete"), label: arabicSource("common.complete"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
+    { key: arabicSource("common.under_evaluation"), label: arabicSource("common.under_evaluation"), accent: "border-primary/40", dotColor: "bg-primary" },
+    { key: arabicSource("common.did_not_start"), label: arabicSource("common.did_not_start"), accent: "border-muted-foreground/40", dotColor: "bg-muted-foreground" },
   ];
 
   return (
@@ -546,7 +547,7 @@ function KanbanView({
                         </span>
                       </div>
                     ) : (
-                      <p className="text-muted-foreground" style={{ fontSize: 11 }}>لم يتم التقييم بعد</p>
+                      <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("evaluation.not_evaluated_yet")}</p>
                     )}
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-muted-foreground" style={{ fontSize: 10 }}>
@@ -557,7 +558,7 @@ function KanbanView({
                   </motion.div>
                 );
               }) : (
-                <EmptyState icon={ClipboardCheck} message="لا توجد تقييمات" className="py-8" />
+                <EmptyState icon={ClipboardCheck} message={arabicSource("evaluation.there_are_no_reviews")} className="py-8" />
               )}
             </div>
           </motion.div>
@@ -588,7 +589,7 @@ function EvalDetailModal({
   const evaluator = evaluation.evaluator_id ? empMap[evaluation.evaluator_id] : null;
   const ratingInfo = getRatingInfo(evaluation.overall_rating);
 
-  const [editing, setEditing] = useState(evaluation.status !== "مكتمل");
+  const [editing, setEditing] = useState(evaluation.status !== arabicSource("common.complete"));
   const [scores, setScores] = useState<Record<string, number>>({});
   const [comments, setComments] = useState(evaluation.comments || "");
   const [saving, setSaving] = useState(false);
@@ -611,7 +612,7 @@ function EvalDetailModal({
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [scores]);
 
-  const handleSave = async (status: "قيد التقييم" | "مكتمل") => {
+  const handleSave = async (status: string | string) => {
     setSaving(true);
     // Update evaluation
     await supabase.from("evaluations").update({
@@ -634,11 +635,11 @@ function EvalDetailModal({
     setSaving(false);
     setEditing(false);
     onUpdate();
-    if (status === "مكتمل") onClose();
+    if (status === arabicSource("common.complete")) onClose();
   };
 
   const handleDelete = async () => {
-    if (!localizedConfirm("متأكد تريد حذف هذا التقييم؟")) return;
+    if (!localizedConfirm(arabicSource("evaluation.are_you_sure_you_want_to_delete_this_review"))) return;
     setDeleting(true);
     await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
     await supabase.from("evaluations").delete().eq("id", evaluation.id);
@@ -665,10 +666,10 @@ function EvalDetailModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-foreground">تفاصيل التقييم — {emp ? empDisplayName(emp) : "—"}</h2>
+            <h2 className="text-foreground">{arabicSource("evaluation.evaluation_details")} {emp ? empDisplayName(emp) : "—"}</h2>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>
-                المقيّم: {evaluator ? empDisplayName(evaluator) : "—"}
+                {arabicSource("evaluation.assessor_3")} {evaluator ? empDisplayName(evaluator) : "—"}
               </span>
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>|</span>
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>{evaluation.period}</span>
@@ -678,11 +679,11 @@ function EvalDetailModal({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {evaluation.status !== "مكتمل" && !editing && (
+            {evaluation.status !== arabicSource("common.complete") && !editing && (
               <button
                 onClick={() => setEditing(true)}
                 className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-                title="تعديل"
+                title={arabicSource("common.edit")}
               >
                 <Pencil className="w-4 h-4 text-muted-foreground" />
               </button>
@@ -691,7 +692,7 @@ function EvalDetailModal({
               onClick={handleDelete}
               disabled={deleting}
               className="p-2 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer"
-              title="حذف"
+              title={arabicSource("common.delete")}
             >
               {deleting ? <Loader2 className="w-4 h-4 animate-spin text-destructive" /> : <Trash2 className="w-4 h-4 text-destructive" />}
             </button>
@@ -703,14 +704,14 @@ function EvalDetailModal({
 
         {/* Overall Rating */}
         <div className="text-center p-4 rounded-xl bg-muted/20 border border-border/40 mb-6">
-          <p className="text-muted-foreground mb-2">التقييم العام</p>
+          <p className="text-muted-foreground mb-2">{arabicSource("evaluation.overall_evaluation")}</p>
           <div className="flex justify-center mb-2">{renderStars(editing ? overallRating : evaluation.overall_rating)}</div>
           <span className={`inline-block px-3 py-1 rounded-md border ${getRatingInfo(editing ? overallRating : evaluation.overall_rating).bgColor}`}>
             {getRatingInfo(editing ? overallRating : evaluation.overall_rating).label}
           </span>
           {editing && (
             <p className="text-muted-foreground mt-2" style={{ fontSize: 11 }}>
-              يُحسب تلقائياً من متوسط درجات المعايير
+              {arabicSource("evaluation.is_automatically_calculated_from_the_average_of_the_criteria_sco")}
             </p>
           )}
         </div>
@@ -718,7 +719,7 @@ function EvalDetailModal({
         {/* Radar Chart (view mode only) */}
         {!editing && criteria.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-foreground mb-3">تحليل المعايير</h3>
+            <h3 className="text-foreground mb-3">{arabicSource("evaluation.criteria_analysis")}</h3>
             <CustomRadarChart
               data={criteria.map(c => ({ name: c.criterion_name, score: c.score }))}
               maxValue={5}
@@ -729,7 +730,7 @@ function EvalDetailModal({
 
         {/* Criteria */}
         <div className="space-y-3 mb-6">
-          <h3 className="text-foreground">المعايير</h3>
+          <h3 className="text-foreground">{arabicSource("evaluation.standards")}</h3>
           {(editing ? DEFAULT_CRITERIA : criteria.map(c => c.criterion_name)).map((name, i) => {
             const criterionName = typeof name === "string" ? name : "";
             const score = scores[criterionName] || 3;
@@ -767,18 +768,18 @@ function EvalDetailModal({
 
         {/* Comments */}
         <div className="mb-6">
-          <h3 className="text-foreground mb-2">ملاحظات المقيّم</h3>
+          <h3 className="text-foreground mb-2">{arabicSource("evaluation.evaluator_s_notes")}</h3>
           {editing ? (
             <textarea
               rows={3}
               value={comments}
               onChange={e => setComments(e.target.value)}
-              placeholder="ملاحظات حول أداء الموظف..."
+              placeholder={arabicSource("common.observations_about_the_employee_s_performance")}
               className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />
           ) : (
             <div className="p-4 rounded-xl bg-muted/20 border border-border/40">
-              <p className="text-foreground">{evaluation.comments || "لا توجد ملاحظات"}</p>
+              <p className="text-foreground">{evaluation.comments || arabicSource("evaluation.no_notes")}</p>
             </div>
           )}
         </div>
@@ -787,32 +788,32 @@ function EvalDetailModal({
         {editing && (
           <div className="flex gap-3">
             <button
-              onClick={() => handleSave("قيد التقييم")}
+              onClick={() => handleSave(arabicSource("common.under_evaluation"))}
               disabled={saving}
               className="flex-1 h-11 rounded-lg border-2 border-primary text-primary hover:bg-primary/10 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              حفظ كمسودة
+              {arabicSource("common.save_as_draft")}
             </button>
             <button
-              onClick={() => handleSave("مكتمل")}
+              onClick={() => handleSave(arabicSource("common.complete"))}
               disabled={saving}
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              إكمال التقييم
+              {arabicSource("common.complete_the_assessment")}
             </button>
           </div>
         )}
 
         {/* Edit button for completed evaluations */}
-        {!editing && evaluation.status === "مكتمل" && (
+        {!editing && evaluation.status === arabicSource("common.complete") && (
           <button
             onClick={() => setEditing(true)}
             className="w-full h-10 rounded-lg border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer flex items-center justify-center gap-2"
           >
             <Pencil className="w-4 h-4" />
-            تعديل التقييم
+            {arabicSource("evaluation.edit_rating")}
           </button>
         )}
       </motion.div>
@@ -833,10 +834,10 @@ function NewEvalPanel({
   onClose: () => void;
   onCreated: () => void;
 }) {
-  const activeEmployees = employees.filter(e => !e.status || e.status === "نشط");
+  const activeEmployees = employees.filter(e => !e.status || e.status === arabicSource("common.is_active"));
   const [selectedEmpId, setSelectedEmpId] = useState("");
   const [evaluatorId, setEvaluatorId] = useState("");
-  const [cycle, setCycle] = useState<EvalCycleType>("ربع سنوي");
+  const [cycle, setCycle] = useState<EvalCycleType>(arabicSource("common.quarterly"));
   const [period, setPeriod] = useState("");
   const [scores, setScores] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {};
@@ -875,7 +876,7 @@ function NewEvalPanel({
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [scores]);
 
-  const handleCreate = async (status: "قيد التقييم" | "مكتمل") => {
+  const handleCreate = async (status: string | string) => {
     if (!selectedEmpId || !period) return;
     setSaving(true);
 
@@ -924,9 +925,9 @@ function NewEvalPanel({
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-foreground">تقييم أداء جديد</h2>
+            <h2 className="text-foreground">{arabicSource("evaluation.new_performance_evaluation")}</h2>
             <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-              {step === 1 ? "اختر الموظف والفترة" : "قيّم أداء الموظف"}
+              {step === 1 ? arabicSource("evaluation.select_employee_and_period") : arabicSource("evaluation.evaluate_the_employee_s_performance")}
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
@@ -938,13 +939,13 @@ function NewEvalPanel({
           <div className="space-y-4">
             {/* Employee Selection */}
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>الموظف</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
               <select
                 value={selectedEmpId}
                 onChange={e => setSelectedEmpId(e.target.value)}
                 className={inputCls}
               >
-                <option value="">اختر الموظف</option>
+                <option value="">{arabicSource("evaluation.select_employee")}</option>
                 {activeEmployees.map(e => (
                   <option key={e.id} value={e.id}>{empDisplayName(e)} — {e.department || ""}</option>
                 ))}
@@ -956,7 +957,7 @@ function NewEvalPanel({
               <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
                 <div className="flex items-center gap-2 mb-1">
                   <UserCheck className="w-4 h-4 text-primary" />
-                  <span className="text-foreground" style={{ fontSize: 13 }}>المقيّم (المدير المباشر)</span>
+                  <span className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("evaluation.evaluator_direct_manager")}</span>
                 </div>
                 {evaluatorEmp ? (
                   <p className="text-primary ps-6" style={{ fontSize: 14 }}>
@@ -965,14 +966,14 @@ function NewEvalPanel({
                   </p>
                 ) : (
                   <div className="ps-6">
-                    <p className="text-muted-foreground" style={{ fontSize: 12 }}>لا يوجد مدير مباشر مُعيّن — اختر مقيّم يدوياً</p>
+                    <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("evaluation.there_is_no_direct_manager_assigned_choose_an_evaluator_manually")}</p>
                     <select
                       value={evaluatorId}
                       onChange={e => setEvaluatorId(e.target.value)}
                       className={`${inputCls} mt-2`}
                       style={{ height: 38 }}
                     >
-                      <option value="">اختر المقيّم</option>
+                      <option value="">{arabicSource("common.select_evaluator")}</option>
                       {activeEmployees.filter(e => e.id !== selectedEmpId).map(e => (
                         <option key={e.id} value={e.id}>{empDisplayName(e)}</option>
                       ))}
@@ -985,7 +986,7 @@ function NewEvalPanel({
                     className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer ps-6 mt-1"
                     style={{ fontSize: 11 }}
                   >
-                    تغيير المقيّم
+                    {arabicSource("evaluation.change_assessor")}
                   </button>
                 )}
                 {!evaluatorEmp && evaluatorId === "" && selectedEmp.manager_id === null && (
@@ -994,16 +995,16 @@ function NewEvalPanel({
               </div>
             )}
 
-            {/* Override evaluator if user clicked "تغيير المقيّم" */}
+            {/* Override the evaluator when the user chooses the change-evaluator action. */}
             {selectedEmp && evaluatorId === "" && selectedEmp.manager_id && (
               <div>
-                <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>اختر مقيّم آخر</label>
+                <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.choose_another_rater")}</label>
                 <select
                   value={evaluatorId}
                   onChange={e => setEvaluatorId(e.target.value)}
                   className={inputCls}
                 >
-                  <option value="">اختر المقيّم</option>
+                  <option value="">{arabicSource("common.select_evaluator")}</option>
                   {activeEmployees.filter(e => e.id !== selectedEmpId).map(e => (
                     <option key={e.id} value={e.id}>{empDisplayName(e)}</option>
                   ))}
@@ -1013,7 +1014,7 @@ function NewEvalPanel({
 
             {/* Evaluation Cycle */}
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>دورة التقييم</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.evaluation_cycle")}</label>
               <div className="grid grid-cols-2 gap-2">
                 {EVAL_CYCLES.map(c => {
                   const Icon = c.icon;
@@ -1038,7 +1039,7 @@ function NewEvalPanel({
 
             {/* Period */}
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>الفترة</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.period")}</label>
               <select
                 value={period}
                 onChange={e => setPeriod(e.target.value)}
@@ -1056,7 +1057,7 @@ function NewEvalPanel({
               disabled={!selectedEmpId || !period}
               className="w-full h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              التالي — تقييم المعايير
+              {arabicSource("evaluation.next_evaluation_of_criteria")}
               <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
             </button>
           </div>
@@ -1073,7 +1074,7 @@ function NewEvalPanel({
                 <p className="text-foreground">{selectedEmp ? empDisplayName(selectedEmp) : "—"}</p>
                 <p className="text-muted-foreground" style={{ fontSize: 11 }}>
                   {selectedEmp?.department} — {period}
-                  {evaluatorEmp && ` — المقيّم: ${empDisplayName(evaluatorEmp)}`}
+                  {evaluatorEmp && ` ${arabicSource("evaluation.assessor")} ${empDisplayName(evaluatorEmp)}`}
                 </p>
               </div>
               <button
@@ -1081,7 +1082,7 @@ function NewEvalPanel({
                 className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 style={{ fontSize: 11 }}
               >
-                تغيير
+                {arabicSource("evaluation.change")}
               </button>
             </div>
 
@@ -1091,12 +1092,12 @@ function NewEvalPanel({
               <span className={`inline-block px-2 py-0.5 rounded-md border ${getRatingInfo(overallRating).bgColor}`} style={{ fontSize: 11 }}>
                 {getRatingInfo(overallRating).label}
               </span>
-              <p className="text-muted-foreground mt-1" style={{ fontSize: 10 }}>متوسط تلقائي</p>
+              <p className="text-muted-foreground mt-1" style={{ fontSize: 10 }}>{arabicSource("evaluation.auto_average")}</p>
             </div>
 
             {/* Criteria Scoring */}
             <div className="space-y-2">
-              <label className="text-foreground block" style={{ fontSize: 13 }}>معايير التقييم</label>
+              <label className="text-foreground block" style={{ fontSize: 13 }}>{arabicSource("evaluation.evaluation_criteria")}</label>
               {DEFAULT_CRITERIA.map(criterion => {
                 const score = scores[criterion] || 3;
                 const cRatingInfo = getRatingInfo(score);
@@ -1126,12 +1127,12 @@ function NewEvalPanel({
 
             {/* Comments */}
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>ملاحظات</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.notes")}</label>
               <textarea
                 rows={3}
                 value={comments}
                 onChange={e => setComments(e.target.value)}
-                placeholder="ملاحظات حول أداء الموظف..."
+                placeholder={arabicSource("common.observations_about_the_employee_s_performance")}
                 className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
               />
             </div>
@@ -1139,27 +1140,27 @@ function NewEvalPanel({
             {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button
-                onClick={() => handleCreate("قيد التقييم")}
+                onClick={() => handleCreate(arabicSource("common.under_evaluation"))}
                 disabled={saving}
                 className="flex-1 h-11 rounded-lg border-2 border-primary text-primary hover:bg-primary/10 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                حفظ كمسودة
+                {arabicSource("common.save_as_draft")}
               </button>
               <button
-                onClick={() => handleCreate("مكتمل")}
+                onClick={() => handleCreate(arabicSource("common.complete"))}
                 disabled={saving}
                 className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                إكمال التقييم
+                {arabicSource("common.complete_the_assessment")}
               </button>
             </div>
             <button
               onClick={onClose}
               className="w-full h-10 rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
             >
-              إلغاء
+              {arabicSource("common.cancel")}
             </button>
           </div>
         )}

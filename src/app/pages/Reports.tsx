@@ -18,6 +18,7 @@ import {
 } from "../lib/hooks";
 import { formatCurrency, formatDateTime } from "../i18n/format";
 import { translateCataloguedValue } from "../i18n/legacy";
+import { arabicSource } from "../i18n/source";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -33,16 +34,16 @@ const categoryIcons: Record<string, any> = {
 };
 
 const categoryLabels: Record<string, string> = {
-  attendance: "حضور",
-  payroll: "مالية",
-  leave: "إجازات",
-  employee: "موظفين",
-  contract: "عقود",
-  document: "وثائق",
-  recruitment: "توظيف",
-  training: "تدريب",
-  warnings: "إنذارات",
-  custom: "مخصص",
+  attendance: arabicSource("common.attendance_2"),
+  payroll: arabicSource("reports.financial"),
+  leave: arabicSource("common.vacations_2"),
+  employee: arabicSource("reports.employees"),
+  contract: arabicSource("common.contracts"),
+  document: arabicSource("common.documentation"),
+  recruitment: arabicSource("reports.recruitment"),
+  training: arabicSource("common.training"),
+  warnings: arabicSource("common.alarms_2"),
+  custom: arabicSource("reports.custom"),
 };
 
 const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
@@ -125,7 +126,7 @@ export function Reports() {
           date: r.date,
           check_in: r.check_in_time || "—",
           check_out: r.check_out_time || "—",
-          status: r.status === "complete" ? (r.is_late ? "متأخر" : "حاضر") : r.status === "absent" ? "غائب" : r.status,
+          status: r.status === "complete" ? (r.is_late ? arabicSource("common.late") : arabicSource("common.present")) : r.status === "absent" ? arabicSource("common.absent") : r.status,
           delay_minutes: r.late_minutes || 0,
           overtime_hours: r.overtime_hours ? r.overtime_hours.toFixed(1) : "0",
         }));
@@ -175,7 +176,7 @@ export function Reports() {
           position: e.position || "—",
           join_date: e.join_date || "—",
           monthly_salary: formatIQD(e.monthly_salary || 0),
-          status: e.status || "نشط",
+          status: e.status || arabicSource("common.is_active"),
         }));
         break;
       }
@@ -191,9 +192,9 @@ export function Reports() {
             employee_name: empMap[c.employee_id] || c.employee_id,
             contract_type: ct?.name_ar || "—",
             start_date: c.start_date,
-            end_date: c.end_date || "غير محدد",
-            status: c.status === "active" ? "نشط" : c.status === "expired" ? "منتهي" : c.status === "terminated" ? "ملغي" : c.status,
-            probation_status: c.probation_status === "in_progress" ? "جارية" : c.probation_status === "passed" ? "ناجح" : c.probation_status === "failed" ? "فاشل" : c.probation_status === "not_applicable" ? "—" : c.probation_status,
+            end_date: c.end_date || arabicSource("common.not_specified"),
+            status: c.status === "active" ? arabicSource("common.is_active") : c.status === "expired" ? arabicSource("common.finished") : c.status === "terminated" ? arabicSource("common.canceled") : c.status,
+            probation_status: c.probation_status === "in_progress" ? arabicSource("reports.underway") : c.probation_status === "passed" ? arabicSource("common.successful") : c.probation_status === "failed" ? arabicSource("common.failed") : c.probation_status === "not_applicable" ? "—" : c.probation_status,
           };
         });
         break;
@@ -209,9 +210,9 @@ export function Reports() {
           const dt = documentTypes.find(t => t.id === d.document_type_id);
           const expiry = new Date(d.expiry_date!);
           const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          let status = "سارية";
-          if (daysLeft < 0) status = "منتهية";
-          else if (daysLeft <= (dt?.expiry_warning_days || 30)) status = "قريبة الانتهاء";
+          let status = arabicSource("reports.mast");
+          if (daysLeft < 0) status = arabicSource("reports.finished");
+          else if (daysLeft <= (dt?.expiry_warning_days || 30)) status = arabicSource("reports.nearly_completed");
           return {
             employee_name: empMap[d.employee_id] || d.employee_id,
             document_type: dt?.name_ar || "—",
@@ -223,7 +224,7 @@ export function Reports() {
         break;
       }
       default: {
-        rows = [{ info: "لا توجد بيانات متاحة لهذا التقرير حالياً" }];
+        rows = [{ info: arabicSource("reports.there_is_currently_no_data_available_for_this_report") }];
       }
     }
 
@@ -233,7 +234,7 @@ export function Reports() {
       report_name: template.name_ar,
       filters_used: { dateFrom, dateTo, department: filterDept },
       row_count: rows.length,
-      generated_by: "مدير الموارد البشرية",
+      generated_by: arabicSource("common.human_resources_manager"),
     });
     await logAudit({
       action: "export",
@@ -269,18 +270,18 @@ export function Reports() {
   const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg";
 
   const quickStats = [
-    { label: "قوالب التقارير", value: templates.length, icon: BarChart3 },
-    { label: "تقارير تم إنشاؤها", value: history.length, icon: FileText },
-    { label: "أقسام", value: departments.length, icon: Users },
-    { label: "إجمالي الموظفين", value: employees.length, icon: ClipboardCheck },
+    { label: arabicSource("reports.report_templates"), value: templates.length, icon: BarChart3 },
+    { label: arabicSource("reports.reports_generated"), value: history.length, icon: FileText },
+    { label: arabicSource("common.sections"), value: departments.length, icon: Users },
+    { label: arabicSource("common.total_employees"), value: employees.length, icon: ClipboardCheck },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">التقارير</h1>
-          <p className="text-muted-foreground mt-1">محرك التقارير — بيانات حية من قاعدة البيانات</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.reports")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("reports.reporting_engine_live_data_from_the_database")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -288,7 +289,7 @@ export function Reports() {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors cursor-pointer ${showHistory ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
           >
             <History className="w-4 h-4" />
-            سجل التقارير
+            {arabicSource("reports.report_log")}
           </button>
         </div>
       </div>
@@ -330,21 +331,21 @@ export function Reports() {
           >
             <h3 className="text-foreground mb-4 flex items-center gap-2">
               <History className="w-5 h-5 text-primary" />
-              سجل التقارير المُنشأة
+              {arabicSource("reports.log_of_generated_reports")}
             </h3>
             {historyLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 text-primary animate-spin" />
               </div>
             ) : history.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-4">لم يتم إنشاء أي تقارير بعد</p>
+              <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("reports.no_reports_have_been_generated_yet")}</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {history.slice(0, 20).map(h => (
                   <div key={h.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
                     <div>
                       <p className="text-sm text-foreground">{h.report_name}</p>
-                      <p className="text-xs text-muted-foreground">{h.row_count} سجل · بواسطة {h.generated_by}</p>
+                      <p className="text-xs text-muted-foreground">{h.row_count} {arabicSource("reports.register_by")} {h.generated_by}</p>
                     </div>
                     <span className="text-xs text-muted-foreground" dir="ltr">{formatDateTime(h.generated_at)}</span>
                   </div>
@@ -361,7 +362,7 @@ export function Reports() {
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
             <Search className="w-4 h-4 text-muted-foreground" />
             <input
-              placeholder="بحث في التقارير..."
+              placeholder={arabicSource("reports.search_reports")}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
@@ -372,7 +373,7 @@ export function Reports() {
             onChange={e => setFilterCategory(e.target.value)}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           >
-            <option value="all">جميع الفئات</option>
+            <option value="all">{arabicSource("common.all_categories")}</option>
             {Object.entries(categoryLabels).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -382,7 +383,7 @@ export function Reports() {
             onChange={e => setFilterDept(e.target.value)}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           >
-            <option value="">جميع الأقسام</option>
+            <option value="">{arabicSource("reports.all_sections")}</option>
             {departments.map(d => (
               <option key={d.id} value={d.name}>{d.name}</option>
             ))}
@@ -394,7 +395,7 @@ export function Reports() {
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
             dir="ltr"
           />
-          <span className="text-muted-foreground text-sm">إلى</span>
+          <span className="text-muted-foreground text-sm">{arabicSource("common.to")}</span>
           <input
             type="date"
             value={dateTo}
@@ -452,7 +453,7 @@ export function Reports() {
                     {categoryLabels[template.category] || template.category}
                   </span>
                   <span className="text-muted-foreground" style={{ fontSize: 11 }}>
-                    {template.columns.length} عمود
+                    {template.columns.length} {arabicSource("common.column")}
                   </span>
                 </div>
 
@@ -463,7 +464,7 @@ export function Reports() {
                   className="w-full flex items-center justify-center gap-2 h-9 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
-                  إنشاء التقرير
+                  {arabicSource("reports.create_the_report")}
                 </motion.button>
               </motion.div>
             );
@@ -476,11 +477,11 @@ export function Reports() {
               <thead>
                 <SortableHeaderRow
                   columns={[
-                    { label: "التقرير", key: "name" },
-                    { label: "الفئة", key: "category" },
-                    { label: "الأعمدة", key: null },
-                    { label: "الصيغة", key: null },
-                    { label: "إجراء", key: null },
+                    { label: arabicSource("reports.report"), key: "name" },
+                    { label: arabicSource("common.category"), key: "category" },
+                    { label: arabicSource("reports.columns"), key: null },
+                    { label: arabicSource("reports.formula"), key: null },
+                    { label: arabicSource("reports.procedure"), key: null },
                   ]}
                   sortBy={rptSortBy}
                   sortDir={rptSortDir}
@@ -510,7 +511,7 @@ export function Reports() {
                           onClick={() => { setSelectedTemplate(template); setGeneratedData(null); }}
                           className="px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer text-xs"
                         >
-                          إنشاء
+                          {arabicSource("common.create")}
                         </button>
                       </td>
                     </tr>
@@ -555,7 +556,7 @@ export function Reports() {
                       className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
                     >
                       {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />}
-                      {generating ? "جاري الإنشاء..." : "إنشاء"}
+                      {generating ? arabicSource("reports.construction_underway") : arabicSource("common.create")}
                     </motion.button>
                   ) : (
                     <>
@@ -564,14 +565,14 @@ export function Reports() {
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 transition-colors cursor-pointer"
                       >
                         <Download className="w-4 h-4" />
-                        تصدير CSV
+                        {arabicSource("reports.csv_export")}
                       </button>
                       <button
                         onClick={() => window.print()}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/30 transition-colors cursor-pointer"
                       >
                         <Printer className="w-4 h-4" />
-                        طباعة
+                        {arabicSource("common.print")}
                       </button>
                     </>
                   )}
@@ -589,27 +590,27 @@ export function Reports() {
                 {generating ? (
                   <div className="flex flex-col items-center justify-center py-16">
                     <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                    <p className="text-muted-foreground">جاري تجميع بيانات التقرير...</p>
+                    <p className="text-muted-foreground">{arabicSource("reports.collecting_report_data")}</p>
                   </div>
                 ) : !generatedData ? (
                   <div className="flex flex-col items-center justify-center py-16">
                     <BarChart3 className="w-16 h-16 text-muted-foreground/30 mb-4" />
-                    <p className="text-muted-foreground mb-2">اضغط "إنشاء" لتوليد التقرير</p>
-                    <p className="text-muted-foreground/60 text-xs">سيتم استخدام الفلاتر المحددة أعلاه (القسم، التاريخ)</p>
+                    <p className="text-muted-foreground mb-2">{arabicSource("reports.click_generate_to_generate_the_report")}</p>
+                    <p className="text-muted-foreground/60 text-xs">{arabicSource("reports.the_filters_specified_above_department_date_will_be_used")}</p>
                   </div>
                 ) : generatedData.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16">
                     <FileText className="w-16 h-16 text-muted-foreground/30 mb-4" />
-                    <p className="text-muted-foreground">لا توجد بيانات مطابقة للفلاتر المحددة</p>
+                    <p className="text-muted-foreground">{arabicSource("reports.there_is_no_matching_data_for_the_specified_filters")}</p>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm text-muted-foreground">
-                        {generatedData.length} سجل
-                        {filterDept && ` · قسم: ${filterDept}`}
-                        {dateFrom && ` · من: ${dateFrom}`}
-                        {dateTo && ` · إلى: ${dateTo}`}
+                        {generatedData.length} {arabicSource("common.record")}
+                        {filterDept && ` ${arabicSource("reports.section")} ${filterDept}`}
+                        {dateFrom && ` ${arabicSource("reports.from")} ${dateFrom}`}
+                        {dateTo && ` ${arabicSource("reports.to")} ${dateTo}`}
                       </p>
                     </div>
                     <div className="overflow-x-auto border border-border/30 rounded-xl">
@@ -640,7 +641,7 @@ export function Reports() {
                     </div>
                     {generatedData.length > 200 && (
                       <p className="text-center text-muted-foreground text-xs mt-3">
-                        يتم عرض أول 200 سجل من أصل {generatedData.length}. قم بالتصدير للحصول على البيانات الكاملة.
+                        {arabicSource("reports.the_first_200_records_of_a_parent_are_displayed")} {generatedData.length}{arabicSource("reports.export_to_get_full_data")}
                       </p>
                     )}
                   </div>

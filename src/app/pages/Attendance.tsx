@@ -14,6 +14,7 @@ import { useEmployees, empDisplayName, formatTime, formatWorkHours, mapAttendanc
 import type { DbAttendanceRecord, DbEmployee } from "../lib/hooks";
 import type { EmployeeSchedule } from "../lib/payslip-engine";
 import { localizedAlert } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 interface AttendanceRow {
   id: string;
@@ -26,7 +27,7 @@ interface AttendanceRow {
   checkOut: string;
   rawCheckIn: string | null;
   rawCheckOut: string | null;
-  status: "حاضر" | "متأخر" | "غائب" | "إجازة";
+  status: string | string | string | string;
   rawStatus: string;
   workHours: string;
   workHoursNum: number;
@@ -60,7 +61,7 @@ function ElapsedTime({ checkIn }: { checkIn: string }) {
   const elapsed = Math.max(0, nowMinutes - checkInMinutes);
   const hrs = Math.floor(elapsed / 60);
   const mins = elapsed % 60;
-  const label = hrs > 0 ? `${hrs}:${String(mins).padStart(2, "0")}` : `${mins}د`;
+  const label = hrs > 0 ? `${hrs}:${String(mins).padStart(2, "0")}` : `${mins}${arabicSource("attendance.d")}`;
 
   return (
     <div className="flex items-center justify-center gap-1" dir="ltr">
@@ -71,29 +72,29 @@ function ElapsedTime({ checkIn }: { checkIn: string }) {
 }
 
 const attendanceSeries = [
-  { key: "present", label: "حاضر", color: "#22C55E" },
-  { key: "late", label: "متأخر", color: "#D4AF37" },
-  { key: "absent", label: "غائب", color: "#DC2626" },
-  { key: "leave", label: "إجازة", color: "#3B82F6" },
+  { key: "present", label: arabicSource("common.present"), color: "#22C55E" },
+  { key: "late", label: arabicSource("common.late"), color: "#D4AF37" },
+  { key: "absent", label: arabicSource("common.absent"), color: "#DC2626" },
+  { key: "leave", label: arabicSource("common.leave"), color: "#3B82F6" },
 ];
 
 const statusColors: Record<string, string> = {
-  "حاضر": "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "متأخر": "bg-primary/10 border-primary/20 text-primary",
-  "غائب": "bg-destructive/10 border-destructive/20 text-destructive",
-  "إجازة": "bg-blue-500/10 border-blue-500/20 text-blue-400",
+  [arabicSource("common.present")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  [arabicSource("common.late")]: "bg-primary/10 border-primary/20 text-primary",
+  [arabicSource("common.absent")]: "bg-destructive/10 border-destructive/20 text-destructive",
+  [arabicSource("common.leave")]: "bg-blue-500/10 border-blue-500/20 text-blue-400",
 };
 
 const statusDotColors: Record<string, string> = {
-  "حاضر": "bg-emerald-400",
-  "متأخر": "bg-primary",
-  "غائب": "bg-destructive",
-  "إجازة": "bg-blue-400",
+  [arabicSource("common.present")]: "bg-emerald-400",
+  [arabicSource("common.late")]: "bg-primary",
+  [arabicSource("common.absent")]: "bg-destructive",
+  [arabicSource("common.leave")]: "bg-blue-400",
 };
 
 const dayNames: Record<string, string> = {
-  sunday: "الأحد", monday: "الاثنين", tuesday: "الثلاثاء",
-  wednesday: "الأربعاء", thursday: "الخميس", friday: "الجمعة", saturday: "السبت",
+  sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
+  wednesday: arabicSource("common.wednesday"), thursday: arabicSource("common.thursday"), friday: arabicSource("common.friday"), saturday: arabicSource("common.saturday"),
 };
 
 export function Attendance() {
@@ -105,7 +106,7 @@ export function Attendance() {
   const [selectedDate, setSelectedDate] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("الكل");
+  const [statusFilter, setStatusFilter] = useState<string>(arabicSource("common.all"));
   const [sortBy, setSortBy] = useState<"name" | "deviceNo" | "department" | "checkIn" | "checkOut" | "hours" | "status">("checkIn");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
@@ -160,7 +161,7 @@ export function Attendance() {
       } : r));
       setExcuseModal(null);
     } catch (err) {
-      localizedAlert("خطأ في حفظ الإعذار");
+      localizedAlert(arabicSource("attendance.error_saving_excuse"));
     }
     setExcuseSaving(false);
   };
@@ -230,7 +231,7 @@ export function Attendance() {
         r.employee.includes(searchTerm) || r.deviceNo.includes(searchTerm) || r.department.includes(searchTerm)
       );
     }
-    if (statusFilter !== "الكل") {
+    if (statusFilter !== arabicSource("common.all")) {
       filtered = filtered.filter(r => r.status === statusFilter);
     }
 
@@ -253,10 +254,10 @@ export function Attendance() {
   [rawRecords, selectedDate]);
 
   const todayStats = {
-    present: allDayRows.filter(s => s === "حاضر").length,
-    late: allDayRows.filter(s => s === "متأخر").length,
-    absent: allDayRows.filter(s => s === "غائب").length,
-    leave: allDayRows.filter(s => s === "إجازة").length,
+    present: allDayRows.filter(s => s === arabicSource("common.present")).length,
+    late: allDayRows.filter(s => s === arabicSource("common.late")).length,
+    absent: allDayRows.filter(s => s === arabicSource("common.absent")).length,
+    leave: allDayRows.filter(s => s === arabicSource("common.leave")).length,
     total: allDayRows.length,
     avgHours: (() => {
       const recs = rawRecords.filter(r => r.date === selectedDate && r.working_hours > 0);
@@ -268,36 +269,36 @@ export function Attendance() {
 
   // Helper: verify mode icon
   function verifyModeLabel(mode: string | null): string {
-    if (!mode) return "جهاز";
+    if (!mode) return arabicSource("common.device");
     const m = mode.toLowerCase().trim();
     // Multi-mode combos first
-    if (m.includes("fpandcardandpw") || (m.includes("fp") && m.includes("card"))) return "بصمة+بطاقة";
-    if (m.includes("cardandpw") || (m.includes("card") && m.includes("pw"))) return "بطاقة+رمز";
-    if (m.includes("faceandcard")) return "وجه+بطاقة";
+    if (m.includes("fpandcardandpw") || (m.includes("fp") && m.includes("card"))) return arabicSource("attendance.fingerprint_card");
+    if (m.includes("cardandpw") || (m.includes("card") && m.includes("pw"))) return arabicSource("attendance.card_token");
+    if (m.includes("faceandcard")) return arabicSource("attendance.face_card");
     // Single modes
-    if (m.includes("fp") || m.includes("finger")) return "بصمة";
-    if (m.includes("face")) return "وجه";
-    if (m.includes("card")) return "بطاقة";
-    if (m.includes("iris")) return "قزحية";
-    if (m.includes("pw") || m.includes("password")) return "رمز";
-    return "جهاز";
+    if (m.includes("fp") || m.includes("finger")) return arabicSource("common.fingerprint");
+    if (m.includes("face")) return arabicSource("common.face");
+    if (m.includes("card")) return arabicSource("common.card");
+    if (m.includes("iris")) return arabicSource("attendance.iris");
+    if (m.includes("pw") || m.includes("password")) return arabicSource("attendance.code");
+    return arabicSource("common.device");
   }
 
   function VerifyIcon({ mode }: { mode: string | null }) {
     if (!mode) return null;
     const m = mode.toLowerCase();
-    if (m.includes("وجه") || m.includes("face")) return <ScanFace className="w-3.5 h-3.5 text-blue-400" />;
-    if (m.includes("بصمة") || m.includes("finger") || m.includes("fp")) return <Fingerprint className="w-3.5 h-3.5 text-emerald-400" />;
-    if (m.includes("بطاقة") || m.includes("card")) return <CreditCard className="w-3.5 h-3.5 text-amber-400" />;
+    if (m.includes(arabicSource("common.face")) || m.includes("face")) return <ScanFace className="w-3.5 h-3.5 text-blue-400" />;
+    if (m.includes(arabicSource("common.fingerprint")) || m.includes("finger") || m.includes("fp")) return <Fingerprint className="w-3.5 h-3.5 text-emerald-400" />;
+    if (m.includes(arabicSource("common.card")) || m.includes("card")) return <CreditCard className="w-3.5 h-3.5 text-amber-400" />;
     return <Smartphone className="w-3.5 h-3.5 text-muted-foreground" />;
   }
 
   // Status detail label (Arabic)
   function statusDetail(row: AttendanceRow): string | null {
-    if (row.rawStatus === "auto_checkout") return "خروج تلقائي";
-    if (row.rawStatus === "missing_checkin") return "بدون دخول";
-    if (row.rawStatus === "checked_in") return "لم يسجل خروج";
-    if (row.rawStatus === "missing_checkout") return "بدون خروج";
+    if (row.rawStatus === "auto_checkout") return arabicSource("attendance.auto_exit");
+    if (row.rawStatus === "missing_checkin") return arabicSource("attendance.no_entry");
+    if (row.rawStatus === "checked_in") return arabicSource("attendance.did_not_log_out");
+    if (row.rawStatus === "missing_checkout") return arabicSource("attendance.no_exit");
     return null;
   }
 
@@ -310,10 +311,10 @@ export function Attendance() {
       const d = r.day_of_week?.toLowerCase();
       if (!dayMap[d]) return;
       const st = mapAttendanceStatus(r.status, r.is_late);
-      if (st === "حاضر") dayMap[d].present++;
-      else if (st === "متأخر") dayMap[d].late++;
-      else if (st === "غائب") dayMap[d].absent++;
-      else if (st === "إجازة") dayMap[d].leave++;
+      if (st === arabicSource("common.present")) dayMap[d].present++;
+      else if (st === arabicSource("common.late")) dayMap[d].late++;
+      else if (st === arabicSource("common.absent")) dayMap[d].absent++;
+      else if (st === arabicSource("common.leave")) dayMap[d].leave++;
     });
     return orderedDays.map(d => ({ day: dayNames[d] || d, ...dayMap[d] })).reverse();
   }, [rawRecords]);
@@ -327,7 +328,7 @@ export function Attendance() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل سجلات الحضور...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("attendance.loading_attendance_records")}</span>
       </div>
     );
   }
@@ -337,8 +338,8 @@ export function Attendance() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">الحضور والانصراف</h1>
-          <p className="text-muted-foreground mt-1">متابعة حضور وانصراف الموظفين — بيانات حية</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.attendance_and_departure")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("attendance.follow_up_on_employee_attendance_and_dismissal_live_data")}</p>
         </div>
         <div className="flex items-center gap-3">
           <ViewToggle view={viewMode} onChange={setViewMode} />
@@ -355,11 +356,11 @@ export function Attendance() {
       {/* Stats Cards — 5 columns */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: "حاضرون", value: todayStats.present, icon: CheckCircle, color: "text-emerald-400", accent: "from-emerald-500/10" },
-          { label: "متأخرون", value: todayStats.late, icon: Clock, color: "text-primary", accent: "from-primary/10" },
-          { label: "غائبون", value: todayStats.absent, icon: XCircle, color: "text-destructive", accent: "from-destructive/10" },
-          { label: "إجازة", value: todayStats.leave, icon: Calendar, color: "text-blue-400", accent: "from-blue-500/10" },
-          { label: "متوسط الساعات", value: todayStats.avgHours, icon: Timer, color: "text-amber-400", accent: "from-amber-500/10", suffix: "ساعة" },
+          { label: arabicSource("attendance.are_present"), value: todayStats.present, icon: CheckCircle, color: "text-emerald-400", accent: "from-emerald-500/10" },
+          { label: arabicSource("attendance.are_late"), value: todayStats.late, icon: Clock, color: "text-primary", accent: "from-primary/10" },
+          { label: arabicSource("attendance.are_absent"), value: todayStats.absent, icon: XCircle, color: "text-destructive", accent: "from-destructive/10" },
+          { label: arabicSource("common.leave"), value: todayStats.leave, icon: Calendar, color: "text-blue-400", accent: "from-blue-500/10" },
+          { label: arabicSource("attendance.average_hours"), value: todayStats.avgHours, icon: Timer, color: "text-amber-400", accent: "from-amber-500/10", suffix: arabicSource("common.hours") },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -394,13 +395,13 @@ export function Attendance() {
         {todayStats.total > 0 && (
           <div className="flex items-center gap-1.5">
             <Fingerprint className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-muted-foreground" style={{ fontSize: 11 }}>جهاز البصمة: {rawRecords.filter(r => r.date === selectedDate && r.source === "device").length} سجل</span>
+            <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.fingerprint_device_2")} {rawRecords.filter(r => r.date === selectedDate && r.source === "device").length} {arabicSource("common.record")}</span>
           </div>
         )}
         {todayStats.autoCheckouts > 0 && (
           <div className="flex items-center gap-1.5">
             <Timer className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-amber-400/80" style={{ fontSize: 11 }}>خروج تلقائي: {todayStats.autoCheckouts}</span>
+            <span className="text-amber-400/80" style={{ fontSize: 11 }}>{arabicSource("attendance.auto_exit_2")} {todayStats.autoCheckouts}</span>
           </div>
         )}
       </div>
@@ -418,7 +419,7 @@ export function Attendance() {
         >
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-foreground" style={{ fontSize: 15 }}>الحضور الأسبوعي</h3>
+            <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("attendance.weekly_attendance")}</h3>
           </div>
           {chartExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
@@ -443,7 +444,7 @@ export function Attendance() {
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="بحث بالاسم، رقم البصمة، أو القسم..."
+            placeholder={arabicSource("attendance.search_by_name_fingerprint_number_or_department")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-10 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -451,7 +452,7 @@ export function Attendance() {
           />
         </div>
         <div className="flex items-center gap-1.5">
-          {["الكل", "حاضر", "متأخر", "غائب", "إجازة"].map(f => (
+          {[arabicSource("common.all"), arabicSource("common.present"), arabicSource("common.late"), arabicSource("common.absent"), arabicSource("common.leave")].map(f => (
             <button
               key={f}
               onClick={() => setStatusFilter(f)}
@@ -467,9 +468,9 @@ export function Attendance() {
         <div className="flex items-center gap-1.5 border-s border-border/30 ps-3">
           <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
           {([
-            { key: "checkIn" as const, label: "الوقت" },
-            { key: "name" as const, label: "الاسم" },
-            { key: "hours" as const, label: "الساعات" },
+            { key: "checkIn" as const, label: arabicSource("common.time") },
+            { key: "name" as const, label: arabicSource("common.name") },
+            { key: "hours" as const, label: arabicSource("common.hours_2") },
           ]).map(s => (
             <button
               key={s.key}
@@ -488,7 +489,7 @@ export function Attendance() {
       {/* Results count */}
       <div className="px-1">
         <span className="text-muted-foreground" style={{ fontSize: 12 }}>
-          {attendanceRows.length} سجل {statusFilter !== "الكل" ? `(${statusFilter})` : ""} {searchTerm ? `— بحث: "${searchTerm}"` : ""}
+          {attendanceRows.length} {arabicSource("common.record")} {statusFilter !== arabicSource("common.all") ? `(${statusFilter})` : ""} {searchTerm ? `${arabicSource("attendance.search")}${searchTerm}"` : ""}
         </span>
       </div>
 
@@ -519,14 +520,14 @@ export function Attendance() {
               <thead>
                 <SortableHeaderRow
                   columns={[
-                    { label: "الموظف", key: "name" },
-                    { label: "رقم البصمة", key: "deviceNo", center: true },
-                    { label: "القسم", key: "department" },
-                    { label: "الحضور", key: "checkIn", center: true },
-                    { label: "الانصراف", key: "checkOut", center: true },
-                    { label: "ساعات العمل", key: "hours", center: true },
-                    { label: "المصدر", key: null },
-                    { label: "الحالة", key: "status" },
+                    { label: arabicSource("common.employee"), key: "name" },
+                    { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
+                    { label: arabicSource("common.section"), key: "department" },
+                    { label: arabicSource("common.attendance"), key: "checkIn", center: true },
+                    { label: arabicSource("common.dismissal"), key: "checkOut", center: true },
+                    { label: arabicSource("common.working_hours"), key: "hours", center: true },
+                    { label: arabicSource("common.source"), key: null },
+                    { label: arabicSource("common.status"), key: "status" },
                   ]}
                   sortBy={sortBy}
                   sortDir={sortDir}
@@ -622,7 +623,7 @@ export function Attendance() {
                               )}
                             </div>
                             {record.overtimeHours > 0 && (
-                              <span className="text-primary/70" style={{ fontSize: 9 }}>+{record.overtimeHours.toFixed(1)} إضافي</span>
+                              <span className="text-primary/70" style={{ fontSize: 9 }}>+{record.overtimeHours.toFixed(1)} {arabicSource("common.additional")}</span>
                             )}
                           </div>
                         ) : record.rawCheckIn && !record.rawCheckOut ? (
@@ -641,9 +642,9 @@ export function Attendance() {
                           <span className="text-muted-foreground" style={{ fontSize: 11 }}>{verifyModeLabel(record.verifyMode)}</span>
                         </div>
                       ) : record.source === "system" ? (
-                        <span className="text-muted-foreground/60" style={{ fontSize: 11 }}>نظام</span>
+                        <span className="text-muted-foreground/60" style={{ fontSize: 11 }}>{arabicSource("attendance.system")}</span>
                       ) : (
-                        <span className="text-muted-foreground/60" style={{ fontSize: 11 }}>يدوي</span>
+                        <span className="text-muted-foreground/60" style={{ fontSize: 11 }}>{arabicSource("attendance.manual")}</span>
                       )}
                     </td>
 
@@ -655,7 +656,7 @@ export function Attendance() {
                             {record.status}
                           </span>
                           {record.lateMinutes > 0 && (
-                            <span className="text-primary/70" style={{ fontSize: 10 }}>({record.lateMinutes} د)</span>
+                            <span className="text-primary/70" style={{ fontSize: 10 }}>({record.lateMinutes} {arabicSource("attendance.d_2")}</span>
                           )}
                         </div>
                         {statusDetail(record) && (
@@ -667,7 +668,7 @@ export function Attendance() {
                 )) : (
                   <tr>
                     <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-                      لا توجد سجلات حضور لهذا التاريخ
+                      {arabicSource("attendance.there_are_no_attendance_records_for_this_date")}
                     </td>
                   </tr>
                 )}
@@ -679,10 +680,10 @@ export function Attendance() {
         /* Kanban View — empty columns collapse to slim strips */
         (() => {
           const kanbanCols = [
-            { key: "حاضر" as const, label: "حاضر", accent: "border-emerald-500/40", dotColor: "bg-emerald-500", textColor: "text-emerald-500", icon: UserCheck },
-            { key: "متأخر" as const, label: "متأخر", accent: "border-primary/40", dotColor: "bg-primary", textColor: "text-primary", icon: Clock },
-            { key: "غائب" as const, label: "غائب", accent: "border-destructive/40", dotColor: "bg-destructive", textColor: "text-destructive", icon: UserX },
-            { key: "إجازة" as const, label: "إجازة", accent: "border-blue-500/40", dotColor: "bg-blue-500", textColor: "text-blue-500", icon: Calendar },
+            { key: arabicSource("common.present"), label: arabicSource("common.present"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500", textColor: "text-emerald-500", icon: UserCheck },
+            { key: arabicSource("common.late"), label: arabicSource("common.late"), accent: "border-primary/40", dotColor: "bg-primary", textColor: "text-primary", icon: Clock },
+            { key: arabicSource("common.absent"), label: arabicSource("common.absent"), accent: "border-destructive/40", dotColor: "bg-destructive", textColor: "text-destructive", icon: UserX },
+            { key: arabicSource("common.leave"), label: arabicSource("common.leave"), accent: "border-blue-500/40", dotColor: "bg-blue-500", textColor: "text-blue-500", icon: Calendar },
           ];
           const colCounts = kanbanCols.map(c => attendanceRows.filter(a => a.status === c.key).length);
           const filledCount = colCounts.filter(n => n > 0).length;
@@ -784,12 +785,12 @@ export function Attendance() {
                           </div>
                           {record.lateMinutes > 0 && (
                             <div className="mt-1.5 text-primary/70" style={{ fontSize: 10 }}>
-                              تأخر {record.lateMinutes} دقيقة
+                              {arabicSource("attendance.delayed")} {record.lateMinutes} {arabicSource("common.min")}
                             </div>
                           )}
                           {record.overtimeHours > 0 && (
                             <div className="mt-0.5 text-emerald-400/70" style={{ fontSize: 10 }}>
-                              إضافي {record.overtimeHours.toFixed(1)} ساعة
+                              {arabicSource("common.additional")} {record.overtimeHours.toFixed(1)} {arabicSource("common.hours")}
                             </div>
                           )}
                         </motion.div>
@@ -819,7 +820,7 @@ export function Attendance() {
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-border/30">
                 <div>
-                  <h3 className="text-foreground" style={{ fontSize: 16 }}>إعذار الموظف</h3>
+                  <h3 className="text-foreground" style={{ fontSize: 16 }}>{arabicSource("attendance.employee_s_excuse")}</h3>
                   <p className="text-muted-foreground mt-0.5" style={{ fontSize: 12 }}>
                     {excuseModal.record.employee} — {excuseModal.record.date}
                   </p>
@@ -834,14 +835,14 @@ export function Attendance() {
                 {/* Info chips */}
                 <div className="flex flex-wrap gap-2" style={{ fontSize: 12 }}>
                   <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                    الحضور: {excuseModal.record.checkIn || "—"}
+                    {arabicSource("attendance.attendance")} {excuseModal.record.checkIn || "—"}
                   </span>
                   <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                    الانصراف: {excuseModal.record.checkOut || "—"}
+                    {arabicSource("attendance.dismissal")} {excuseModal.record.checkOut || "—"}
                   </span>
                   {excuseModal.record.lateMinutes > 0 && (
                     <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      تأخير: {excuseModal.record.lateMinutes} دقيقة
+                      {arabicSource("attendance.delay")} {excuseModal.record.lateMinutes} {arabicSource("common.min")}
                     </span>
                   )}
                 </div>
@@ -849,9 +850,9 @@ export function Attendance() {
                 {/* Excuse toggles */}
                 <div className="space-y-3">
                   {[
-                    { key: "late" as const, label: "إعذار التأخير", desc: "لن يُحسب التأخير في الراتب", show: excuseModal.record.lateMinutes > 0 || excuseModal.record.status === "متأخر" },
-                    { key: "shortfall" as const, label: "إعذار نقص الساعات", desc: "لن يُخصم نقص ساعات هذا اليوم", show: true },
-                    { key: "absence" as const, label: "إعذار الغياب", desc: "لن يُحسب هذا اليوم كغياب", show: excuseModal.record.status === "غائب" || excuseModal.record.rawStatus === "absent" },
+                    { key: "late" as const, label: arabicSource("attendance.excuse_for_delay"), desc: arabicSource("attendance.late_salary_will_not_be_counted"), show: excuseModal.record.lateMinutes > 0 || excuseModal.record.status === arabicSource("common.late") },
+                    { key: "shortfall" as const, label: arabicSource("attendance.excuse_of_lack_of_hours"), desc: arabicSource("attendance.short_hours_for_this_day_will_not_be_deducted"), show: true },
+                    { key: "absence" as const, label: arabicSource("attendance.absence_excuse"), desc: arabicSource("attendance.this_day_will_not_be_counted_as_an_absence"), show: excuseModal.record.status === arabicSource("common.absent") || excuseModal.record.rawStatus === "absent" },
                   ].filter(t => t.show).map(toggle => (
                     <label key={toggle.key} className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:border-primary/30 transition-colors cursor-pointer">
                       <div>
@@ -870,11 +871,11 @@ export function Attendance() {
 
                 {/* Note */}
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>سبب الإعذار</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("attendance.reason_for_excuse")}</label>
                   <textarea
                     value={excuseForm.note}
                     onChange={(e) => setExcuseForm(f => ({ ...f, note: e.target.value }))}
-                    placeholder="أدخل سبب الإعذار..."
+                    placeholder={arabicSource("attendance.enter_the_reason_for_the_excuse")}
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none resize-none"
                     style={{ fontSize: 13 }}
@@ -885,7 +886,7 @@ export function Attendance() {
               {/* Footer */}
               <div className="flex items-center justify-between p-5 border-t border-border/30 bg-muted/5">
                 {excuseModal.record.excuseNote && (
-                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>آخر إعذار: {excuseModal.record.excuseNote.substring(0, 40)}</p>
+                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("attendance.latest_excuse")} {excuseModal.record.excuseNote.substring(0, 40)}</p>
                 )}
                 <div className="flex items-center gap-2 ms-auto">
                   <button
@@ -893,7 +894,7 @@ export function Attendance() {
                     className="px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                     style={{ fontSize: 13 }}
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                   <button
                     onClick={handleSaveExcuse}
@@ -902,7 +903,7 @@ export function Attendance() {
                     style={{ fontSize: 13 }}
                   >
                     {excuseSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                    حفظ الإعذار
+                    {arabicSource("attendance.save_excuses")}
                   </button>
                 </div>
               </div>
@@ -921,9 +922,9 @@ export function Attendance() {
 const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg";
 
 const DETAIL_TABS = [
-  { id: "calendar" as const, label: "التقويم", icon: CalendarDays },
-  { id: "monthly" as const, label: "الملخص الشهري", icon: BarChart3 },
-  { id: "overall" as const, label: "الملخص الكلي", icon: TrendingUp },
+  { id: "calendar" as const, label: arabicSource("common.calendar"), icon: CalendarDays },
+  { id: "monthly" as const, label: arabicSource("attendance.monthly_summary"), icon: BarChart3 },
+  { id: "overall" as const, label: arabicSource("attendance.overall_summary"), icon: TrendingUp },
 ];
 type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
 
@@ -993,7 +994,7 @@ function EmployeeAttendanceDetail({
   // Month display name
   const monthLabel = useMemo(() => {
     const [y, m] = calMonth.split("-").map(Number);
-    const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    const months = [arabicSource("common.january"), arabicSource("common.february"), arabicSource("common.march"), arabicSource("common.april"), arabicSource("common.may"), arabicSource("common.jun"), arabicSource("common.july"), arabicSource("common.august"), arabicSource("common.september"), arabicSource("common.october_additional"), arabicSource("common.november"), arabicSource("common.december")];
     return `${months[m - 1]} ${y}`;
   }, [calMonth]);
 
@@ -1091,7 +1092,7 @@ function EmployeeAttendanceDetail({
               <span className="text-primary text-lg">{empInfo?.name?.charAt(0) || "?"}</span>
             </div>
             <div>
-              <h2 className="text-foreground text-lg">{empInfo?.name || "موظف"}</h2>
+              <h2 className="text-foreground text-lg">{empInfo?.name || arabicSource("common.employee_2")}</h2>
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-muted-foreground" style={{ fontSize: 12 }}>{empInfo?.dept}</span>
                 {empInfo?.deviceNo && empInfo.deviceNo !== "—" && (
@@ -1138,7 +1139,7 @@ function EmployeeAttendanceDetail({
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <Loader2 className="w-6 h-6 text-primary animate-spin" />
-              <span className="text-muted-foreground ms-3">جاري تحميل البيانات...</span>
+              <span className="text-muted-foreground ms-3">{arabicSource("attendance.loading_data")}</span>
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -1215,13 +1216,13 @@ function AttendanceCalendarView({
   }
 
   const dayHeaders = [
-    { label: "الأحد", dow: 0 },
-    { label: "الاثنين", dow: 1 },
-    { label: "الثلاثاء", dow: 2 },
-    { label: "الأربعاء", dow: 3 },
-    { label: "الخميس", dow: 4 },
-    { label: "الجمعة", dow: 5 },
-    { label: "السبت", dow: 6 },
+    { label: arabicSource("common.sunday_2"), dow: 0 },
+    { label: arabicSource("common.monday"), dow: 1 },
+    { label: arabicSource("common.tuesday"), dow: 2 },
+    { label: arabicSource("common.wednesday"), dow: 3 },
+    { label: arabicSource("common.thursday"), dow: 4 },
+    { label: arabicSource("common.friday"), dow: 5 },
+    { label: arabicSource("common.saturday"), dow: 6 },
   ];
 
   // Rest days come from the employee's shift schedule — nothing hardcoded
@@ -1240,11 +1241,11 @@ function AttendanceCalendarView({
       {/* Month stats — compact row */}
       <div className="grid grid-cols-5 gap-3">
         {[
-          { label: "أيام العمل", value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400", bg: "from-emerald-500/10" },
-          { label: "إجمالي الساعات", value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400", bg: "from-blue-500/10" },
-          { label: "المتوسط/يوم", value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400", bg: "from-amber-500/10" },
-          { label: "الإضافي", value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400", bg: "from-emerald-500/10" },
-          { label: "الغياب", value: stats.absentCount, icon: XCircle, color: "text-destructive", bg: "from-destructive/10" },
+          { label: arabicSource("common.working_days"), value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400", bg: "from-emerald-500/10" },
+          { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400", bg: "from-blue-500/10" },
+          { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400", bg: "from-amber-500/10" },
+          { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400", bg: "from-emerald-500/10" },
+          { label: arabicSource("common.absence"), value: stats.absentCount, icon: XCircle, color: "text-destructive", bg: "from-destructive/10" },
         ].map((chip, i) => {
           const Icon = chip.icon;
           return (
@@ -1271,14 +1272,14 @@ function AttendanceCalendarView({
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/30">
           <button onClick={onPrev} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
             <ChevronRight className="w-4 h-4" />
-            <span style={{ fontSize: 12 }}>السابق</span>
+            <span style={{ fontSize: 12 }}>{arabicSource("attendance.previous")}</span>
           </button>
           <h3 className="text-foreground flex items-center gap-2 text-lg">
             <CalendarDays className="w-5 h-5 text-primary" />
             {monthLabel}
           </h3>
           <button onClick={onNext} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
-            <span style={{ fontSize: 12 }}>التالي</span>
+            <span style={{ fontSize: 12 }}>{arabicSource("attendance.next")}</span>
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
@@ -1388,15 +1389,15 @@ function AttendanceCalendarView({
                   </div>
                 ) : rec?.status === "absent" ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <span className="text-destructive font-medium" style={{ fontSize: 11 }}>غياب</span>
+                    <span className="text-destructive font-medium" style={{ fontSize: 11 }}>{arabicSource("common.absence_2")}</span>
                   </div>
                 ) : rec?.status === "leave" ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <span className="text-blue-400 font-medium" style={{ fontSize: 11 }}>إجازة</span>
+                    <span className="text-blue-400 font-medium" style={{ fontSize: 11 }}>{arabicSource("common.leave")}</span>
                   </div>
                 ) : isRest ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <span className="text-muted-foreground/25" style={{ fontSize: 10 }}>إجازة</span>
+                    <span className="text-muted-foreground/25" style={{ fontSize: 10 }}>{arabicSource("common.leave")}</span>
                   </div>
                 ) : isFuture ? (
                   <div className="flex-1" />
@@ -1413,12 +1414,12 @@ function AttendanceCalendarView({
         {/* Legend — prominent bar */}
         <div className="flex flex-wrap items-center justify-center gap-5 px-5 py-3.5 border-t border-border/30 bg-muted/10">
           {[
-            { label: "حاضر", dot: "bg-emerald-500" },
-            { label: "متأخر", dot: "bg-amber-400" },
-            { label: "دخول فقط", dot: "bg-orange-400" },
-            { label: "غياب", dot: "bg-destructive" },
-            { label: "إجازة", dot: "bg-blue-400" },
-            { label: "يوم راحة", dot: "bg-muted-foreground/30" },
+            { label: arabicSource("common.present"), dot: "bg-emerald-500" },
+            { label: arabicSource("common.late"), dot: "bg-amber-400" },
+            { label: arabicSource("attendance.login_only"), dot: "bg-orange-400" },
+            { label: arabicSource("common.absence_2"), dot: "bg-destructive" },
+            { label: arabicSource("common.leave"), dot: "bg-blue-400" },
+            { label: arabicSource("common.a_day_of_rest"), dot: "bg-muted-foreground/30" },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-2">
               <div className={`w-2.5 h-2.5 rounded-full ${l.dot}`} />
@@ -1454,8 +1455,8 @@ function MonthlySummaryView({
   [records]);
 
   const dayNamesShort: Record<string, string> = {
-    sunday: "أحد", monday: "اثنين", tuesday: "ثلاثاء",
-    wednesday: "أربعاء", thursday: "خميس", friday: "جمعة", saturday: "سبت",
+    sunday: arabicSource("common.sunday"), monday: arabicSource("attendance.two"), tuesday: arabicSource("attendance.tuesday"),
+    wednesday: arabicSource("attendance.wed"), thursday: arabicSource("attendance.thursday"), friday: arabicSource("attendance.friday"), saturday: arabicSource("common.sat"),
   };
 
   return (
@@ -1474,12 +1475,12 @@ function MonthlySummaryView({
       {/* Stats grid */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {[
-          { label: "أيام العمل", value: stats.daysWorked, color: "text-emerald-400", icon: CalendarDays },
-          { label: "الساعات", value: formatWorkHours(stats.totalHours), color: "text-blue-400", icon: Clock },
-          { label: "المتوسط/يوم", value: formatWorkHours(stats.avgHours), color: "text-amber-400", icon: Timer },
-          { label: "الإضافي", value: formatWorkHours(stats.overtime), color: "text-emerald-400", icon: TrendingUp },
-          { label: "التأخر", value: `${stats.lateCount} يوم`, color: "text-primary", icon: AlertTriangle },
-          { label: "الغياب", value: `${stats.absentCount}`, color: "text-destructive", icon: XCircle },
+          { label: arabicSource("common.working_days"), value: stats.daysWorked, color: "text-emerald-400", icon: CalendarDays },
+          { label: arabicSource("common.hours_2"), value: formatWorkHours(stats.totalHours), color: "text-blue-400", icon: Clock },
+          { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), color: "text-amber-400", icon: Timer },
+          { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), color: "text-emerald-400", icon: TrendingUp },
+          { label: arabicSource("common.delay"), value: `${stats.lateCount} ${arabicSource("common.days_2")}`, color: "text-primary", icon: AlertTriangle },
+          { label: arabicSource("common.absence"), value: `${stats.absentCount}`, color: "text-destructive", icon: XCircle },
         ].map((s, i) => {
           const Icon = s.icon;
           return (
@@ -1502,13 +1503,13 @@ function MonthlySummaryView({
       {/* Daily records table */}
       <div className={`${cardCls} overflow-hidden`}>
         <div className="px-4 py-3 border-b border-border/20">
-          <h4 className="text-foreground" style={{ fontSize: 14 }}>تفاصيل الأيام</h4>
+          <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("attendance.days_details")}</h4>
         </div>
         <div className="overflow-x-auto max-h-[350px] overflow-y-auto">
           <table className="w-full">
             <thead className="sticky top-0 bg-card/90 backdrop-blur-sm">
               <tr className="border-b border-border/20">
-                {["التاريخ", "اليوم", "الحضور", "الانصراف", "الساعات", "الإضافي", "الحالة"].map(h => (
+                {[arabicSource("common.date"), arabicSource("common.today"), arabicSource("common.attendance"), arabicSource("common.dismissal"), arabicSource("common.hours_2"), arabicSource("common.additional_label"), arabicSource("common.status")].map(h => (
                   <th key={h} className="px-3 py-2.5 text-muted-foreground text-center whitespace-nowrap" style={{ fontSize: 11 }}>{h}</th>
                 ))}
               </tr>
@@ -1547,7 +1548,7 @@ function MonthlySummaryView({
               }) : (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground" style={{ fontSize: 13 }}>
-                    لا توجد سجلات لهذا الشهر
+                    {arabicSource("attendance.there_are_no_records_for_this_month")}
                   </td>
                 </tr>
               )}
@@ -1573,9 +1574,9 @@ function OverallSummaryView({
   breakdown: Array<{ month: string; days: number; hours: number; overtime: number; late: number; absent: number }>;
 }) {
   const monthNames: Record<string, string> = {
-    "01": "يناير", "02": "فبراير", "03": "مارس", "04": "أبريل",
-    "05": "مايو", "06": "يونيو", "07": "يوليو", "08": "أغسطس",
-    "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر",
+    "01": arabicSource("common.january"), "02": arabicSource("common.february"), "03": arabicSource("common.march"), "04": arabicSource("common.april"),
+    "05": arabicSource("common.may"), "06": arabicSource("common.jun"), "07": arabicSource("common.july"), "08": arabicSource("common.august"),
+    "09": arabicSource("common.september"), "10": arabicSource("common.october_additional"), "11": arabicSource("common.november"), "12": arabicSource("common.december"),
   };
 
   return (
@@ -1583,10 +1584,10 @@ function OverallSummaryView({
       {/* Top stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "إجمالي أيام العمل", value: stats.daysWorked, color: "text-emerald-400", icon: CalendarDays },
-          { label: "إجمالي الساعات", value: formatWorkHours(stats.totalHours), color: "text-blue-400", icon: Clock },
-          { label: "نسبة الحضور", value: `${stats.attendanceRate}%`, color: stats.attendanceRate >= 80 ? "text-emerald-400" : "text-amber-400", icon: Award },
-          { label: "عدد الأشهر", value: stats.monthsCount, color: "text-primary", icon: Calendar },
+          { label: arabicSource("attendance.total_working_days"), value: stats.daysWorked, color: "text-emerald-400", icon: CalendarDays },
+          { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), color: "text-blue-400", icon: Clock },
+          { label: arabicSource("attendance.attendance_rate"), value: `${stats.attendanceRate}%`, color: stats.attendanceRate >= 80 ? "text-emerald-400" : "text-amber-400", icon: Award },
+          { label: arabicSource("attendance.number_of_months"), value: stats.monthsCount, color: "text-primary", icon: Calendar },
         ].map(s => {
           const Icon = s.icon;
           return (
@@ -1602,10 +1603,10 @@ function OverallSummaryView({
       {/* Secondary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "المتوسط/يوم", value: formatWorkHours(stats.avgHours) },
-          { label: "الإضافي الكلي", value: formatWorkHours(stats.overtime) },
-          { label: "أيام التأخر", value: `${stats.lateCount} يوم` },
-          { label: "أيام الغياب", value: `${stats.absentCount} يوم` },
+          { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours) },
+          { label: arabicSource("attendance.total_additional"), value: formatWorkHours(stats.overtime) },
+          { label: arabicSource("attendance.days_late"), value: `${stats.lateCount} ${arabicSource("common.days_2")}` },
+          { label: arabicSource("attendance.days_of_absence"), value: `${stats.absentCount} ${arabicSource("common.days_2")}` },
         ].map(s => (
           <div key={s.label} className={`${cardCls} p-3`}>
             <div className="text-muted-foreground" style={{ fontSize: 10 }}>{s.label}</div>
@@ -1616,20 +1617,20 @@ function OverallSummaryView({
 
       {/* Date range */}
       <div className={`${cardCls} px-4 py-3 flex items-center justify-between`}>
-        <span className="text-muted-foreground" style={{ fontSize: 12 }}>فترة البيانات</span>
+        <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("attendance.data_period")}</span>
         <span className="text-foreground font-mono" style={{ fontSize: 13 }}>{stats.firstDate} → {stats.lastDate}</span>
       </div>
 
       {/* Monthly breakdown table */}
       <div className={`${cardCls} overflow-hidden`}>
         <div className="px-4 py-3 border-b border-border/20">
-          <h4 className="text-foreground" style={{ fontSize: 14 }}>تفاصيل الأشهر</h4>
+          <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("attendance.months_details")}</h4>
         </div>
         <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
           <table className="w-full">
             <thead className="sticky top-0 bg-card/90 backdrop-blur-sm">
               <tr className="border-b border-border/20">
-                {["الشهر", "الأيام", "الساعات", "المتوسط", "الإضافي", "التأخر", "الغياب"].map(h => (
+                {[arabicSource("attendance.month"), arabicSource("attendance.days"), arabicSource("common.hours_2"), arabicSource("attendance.average"), arabicSource("common.additional_label"), arabicSource("common.delay"), arabicSource("common.absence")].map(h => (
                   <th key={h} className="px-3 py-2.5 text-muted-foreground text-center whitespace-nowrap" style={{ fontSize: 11 }}>{h}</th>
                 ))}
               </tr>

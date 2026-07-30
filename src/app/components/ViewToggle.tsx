@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { LayoutList, Columns3 } from "lucide-react";
+import { arabicSource } from "../i18n/source";
 
 interface ViewToggleProps {
   view: "list" | "kanban";
@@ -12,7 +13,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
       <button
         onClick={() => onChange("list")}
         className="relative p-2 rounded-md cursor-pointer transition-colors"
-        title="عرض قائمة"
+        title={arabicSource("shared.show_list")}
       >
         {view === "list" && (
           <motion.div
@@ -26,7 +27,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
       <button
         onClick={() => onChange("kanban")}
         className="relative p-2 rounded-md cursor-pointer transition-colors"
-        title="عرض كانبان"
+        title={arabicSource("shared.kanban_view")}
       >
         {view === "kanban" && (
           <motion.div

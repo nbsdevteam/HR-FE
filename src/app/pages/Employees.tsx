@@ -19,11 +19,12 @@ const deptColors = DEPT_BORDER_COLORS;
 const deptDots = DEPT_DOT_COLORS;
 const accentColors = ["#F0C419", "#22C55E", "#3B82F6", "#8B5CF6", "#06B6D4", "#EC4899", "#F97316", "#E74C3C"];
 import { formatCurrency } from "../lib/payslip-engine";
+import { arabicSource } from "../i18n/source";
 const statusColors: Record<string, string> = {
-  "نشط": "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "إجازة": "bg-primary/10 border-primary/20 text-primary",
-  "منتهي": "bg-destructive/10 border-destructive/20 text-destructive",
-  "معلق": "bg-amber-500/10 border-amber-500/20 text-amber-400",
+  [arabicSource("common.is_active")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  [arabicSource("common.leave")]: "bg-primary/10 border-primary/20 text-primary",
+  [arabicSource("common.finished")]: "bg-destructive/10 border-destructive/20 text-destructive",
+  [arabicSource("common.pending")]: "bg-amber-500/10 border-amber-500/20 text-amber-400",
 };
 
 /** Convert a DB employee to the UI Employee type */
@@ -31,10 +32,10 @@ function toEmployee(e: DbEmployee, allDb: DbEmployee[]): Employee {
   const name = empDisplayName(e);
   const joinDate = e.join_date || (e.created_at ? e.created_at.substring(0, 10) : "");
   const statusMap: Record<string, string> = {
-    "نشط": "نشط",
-    "إجازة": "إجازة",
-    "منتهي": "منتهي",
-    "معلق": "معلق",
+    [arabicSource("common.is_active")]: arabicSource("common.is_active"),
+    [arabicSource("common.leave")]: arabicSource("common.leave"),
+    [arabicSource("common.finished")]: arabicSource("common.finished"),
+    [arabicSource("common.pending")]: arabicSource("common.pending"),
   } as const;
   const manager = e.manager_id ? allDb.find(m => m.id === e.manager_id) : null;
   return {
@@ -43,7 +44,7 @@ function toEmployee(e: DbEmployee, allDb: DbEmployee[]): Employee {
     employeeNumber: empNumber(e.person_id),
     name,
     position: e.position || e.department || "—",
-    department: e.department || "غير محدد",
+    department: e.department || arabicSource("common.not_specified"),
     email: e.email || `${e.name?.replace(/\s+/g, ".").toLowerCase() || "emp"}@company.iq`,
     personalPhone: e.personal_phone || "—",
     companyPhone: e.company_phone || "—",
@@ -51,7 +52,7 @@ function toEmployee(e: DbEmployee, allDb: DbEmployee[]): Employee {
     joinDate: joinDate,
     startDate: joinDate,
     endDate: e.end_date || null,
-    status: (statusMap[e.status || "نشط"] || "نشط") as Employee["status"],
+    status: (statusMap[e.status || arabicSource("common.is_active")] || arabicSource("common.is_active")) as Employee["status"],
     salary: e.monthly_salary || 0,
     currency: e.currency || "IQD",
     photo: e.profile_picture || "",
@@ -61,7 +62,7 @@ function toEmployee(e: DbEmployee, allDb: DbEmployee[]): Employee {
     emergencyPhone: e.emergency_phone || "—",
     bloodType: e.blood_type || "—",
     managerId: e.manager_id || null,
-    managerName: manager ? empDisplayName(manager) : "— بدون مدير",
+    managerName: manager ? empDisplayName(manager) : arabicSource("common.no_manager"),
     custodies: [],
     leaves: [],
     attachments: [],
@@ -71,7 +72,7 @@ function toEmployee(e: DbEmployee, allDb: DbEmployee[]): Employee {
 export function Employees() {
   const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
   const [search, setSearch] = useState("");
-  const [selectedDept, setSelectedDept] = useState("الكل");
+  const [selectedDept, setSelectedDept] = useState(arabicSource("common.all"));
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -134,8 +135,8 @@ export function Employees() {
   };
 
   const handleAddEmployee = async () => {
-    if (!addForm.name.trim()) { setAddError("الاسم مطلوب"); return; }
-    if (!nextEmployeeId) { setAddError("لم يتم تحديد رقم الموظف"); return; }
+    if (!addForm.name.trim()) { setAddError(arabicSource("employees.name_required")); return; }
+    if (!nextEmployeeId) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
     setAddSaving(true);
     setAddError(null);
 
@@ -152,12 +153,12 @@ export function Employees() {
         company_phone: addForm.companyPhone || null,
         position: addForm.position || null,
         address: addForm.address || null,
-        department: addForm.department || "غير محدد",
+        department: addForm.department || arabicSource("common.not_specified"),
         monthly_salary: parseFloat(addForm.salary) || 0,
         currency: "IQD",
         join_date: addForm.joinDate || null,
         national_id: addForm.nationalId || null,
-        status: "نشط",
+        status: arabicSource("common.is_active"),
         overtime_rate: 1.5,
         overtime_enabled: false,
         allowed_late_minutes: 15,
@@ -211,13 +212,13 @@ export function Employees() {
         } catch { /* device removal is best-effort */ }
       }
       // Soft-delete: mark as inactive instead of hard-delete to preserve referential integrity
-      const { error } = await supabase.from("employees").update({ status: "غير نشط", termination_date: new Date().toISOString().substring(0, 10) }).eq("id", deleteConfirm.id);
+      const { error } = await supabase.from("employees").update({ status: arabicSource("common.is_inactive"), termination_date: new Date().toISOString().substring(0, 10) }).eq("id", deleteConfirm.id);
       if (error) throw error;
       refetch();
       setDeleteConfirm(null);
     } catch (e: any) {
       console.error("Delete failed:", e.message);
-      localizedAlert("خطأ في حذف الموظف: " + e.message);
+      localizedAlert(arabicSource("employees.error_deleting_employee") + " " + e.message);
     }
     setDeleting(false);
   };
@@ -236,7 +237,7 @@ export function Employees() {
   // Extract unique departments from real data
   const realDepts = useMemo(() => {
     const depts = new Set(allEmployees.map(e => e.department));
-    return ["الكل", ...Array.from(depts)];
+    return [arabicSource("common.all"), ...Array.from(depts)];
   }, [allEmployees]);
 
   // Track which employees have device_employee_no set (synced to device)
@@ -248,15 +249,15 @@ export function Employees() {
     return set;
   }, [dbEmployees]);
 
-  // Track employees with status "معلق" (auto-created from device, pending completion)
+  // Track pending employees that were auto-created from the device.
   const pendingEmployees = useMemo(() => {
-    return new Set(dbEmployees.filter(e => e.status === "معلق").map(e => e.person_id));
+    return new Set(dbEmployees.filter(e => e.status === arabicSource("common.pending")).map(e => e.person_id));
   }, [dbEmployees]);
 
   const filtered = useMemo(() => {
     let list = allEmployees.filter(emp => {
       const matchSearch = emp.name.includes(search) || emp.position.includes(search) || emp.employeeNumber.includes(search);
-      const matchDept = selectedDept === "الكل" || emp.department === selectedDept;
+      const matchDept = selectedDept === arabicSource("common.all") || emp.department === selectedDept;
       return matchSearch && matchDept;
     });
     const dir = sortDir === "asc" ? 1 : -1;
@@ -274,13 +275,13 @@ export function Employees() {
     return list;
   }, [allEmployees, search, selectedDept, sortBy, sortDir]);
 
-  const kanbanDepts = realDepts.filter(d => d !== "الكل");
+  const kanbanDepts = realDepts.filter(d => d !== arabicSource("common.all"));
 
   if (dbLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل بيانات الموظفين...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("employees.loading_employee_data")}</span>
       </div>
     );
   }
@@ -289,8 +290,8 @@ export function Employees() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">الموظفون</h1>
-          <p className="text-muted-foreground mt-1">إدارة بيانات الموظفين</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.employees")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("employees.employee_data_management")}</p>
         </div>
         <div className="flex items-center gap-3">
           <ViewToggle view={viewMode} onChange={setViewMode} />
@@ -301,7 +302,7 @@ export function Employees() {
             className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
           >
             <Plus className="w-5 h-5" />
-            إضافة موظف
+            {arabicSource("common.add_an_employee")}
           </motion.button>
         </div>
       </div>
@@ -309,10 +310,10 @@ export function Employees() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "إجمالي الموظفين", value: allEmployees.length, icon: Users },
-          { label: "نشطون", value: allEmployees.filter(e => e.status === "نشط").length, icon: CheckCircle2 },
-          { label: "في إجازة", value: allEmployees.filter(e => e.status === "إجازة").length, icon: Calendar },
-          { label: "متزامنون مع الجهاز", value: deviceSyncedSet.size, icon: Fingerprint },
+          { label: arabicSource("common.total_employees"), value: allEmployees.length, icon: Users },
+          { label: arabicSource("employees.are_active"), value: allEmployees.filter(e => e.status === arabicSource("common.is_active")).length, icon: CheckCircle2 },
+          { label: arabicSource("employees.is_on_vacation"), value: allEmployees.filter(e => e.status === arabicSource("common.leave")).length, icon: Calendar },
+          { label: arabicSource("employees.are_synchronized_with_the_device"), value: deviceSyncedSet.size, icon: Fingerprint },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -345,7 +346,7 @@ export function Employees() {
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="بحث عن موظف..."
+            placeholder={arabicSource("common.search_for_an_employee")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none"
@@ -385,16 +386,16 @@ export function Employees() {
                 <thead>
                   <SortableHeaderRow
                     columns={[
-                      { label: "الموظف", key: "name" },
-                      { label: "الرقم الوظيفي", key: "employeeNumber" },
-                      { label: "رقم البصمة", key: "deviceNo", center: true },
-                      { label: "القسم", key: "department" },
-                      { label: "المنصب", key: "position" },
-                      { label: "الحالة", key: "status" },
-                      { label: "البصمة", key: null },
-                      { label: "تاريخ المباشرة", key: "joinDate" },
-                      { label: "الراتب", key: "salary" },
-                      { label: "إجراءات", key: null },
+                      { label: arabicSource("common.employee"), key: "name" },
+                      { label: arabicSource("common.job_number"), key: "employeeNumber" },
+                      { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
+                      { label: arabicSource("common.section"), key: "department" },
+                      { label: arabicSource("common.position"), key: "position" },
+                      { label: arabicSource("common.status"), key: "status" },
+                      { label: arabicSource("common.footprint"), key: null },
+                      { label: arabicSource("common.direct_date"), key: "joinDate" },
+                      { label: arabicSource("common.salary"), key: "salary" },
+                      { label: arabicSource("common.procedures"), key: null },
                     ]}
                     sortBy={sortBy}
                     sortDir={sortDir}
@@ -450,15 +451,15 @@ export function Employees() {
                       <td className="px-4 py-3">
                         {pendingEmployees.has(emp.id) ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400" style={{ fontSize: 11 }}>
-                            <AlertCircle className="w-3 h-3" /> بيانات ناقصة
+                            <AlertCircle className="w-3 h-3" /> {arabicSource("employees.missing_data")}
                           </span>
                         ) : deviceSyncedSet.has(emp.id) ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }}>
-                            <Fingerprint className="w-3 h-3" /> مسجّل
+                            <Fingerprint className="w-3 h-3" /> {arabicSource("employees.registered")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-muted-foreground/20 bg-muted/10 text-muted-foreground" style={{ fontSize: 11 }}>
-                            <Fingerprint className="w-3 h-3" /> غير مسجّل
+                            <Fingerprint className="w-3 h-3" /> {arabicSource("employees.is_not_registered")}
                           </span>
                         )}
                       </td>
@@ -494,7 +495,7 @@ export function Employees() {
           >
             {kanbanDepts.map((dept, ci) => {
               const items = filtered.filter(e => e.department === dept);
-              if (selectedDept !== "الكل" && selectedDept !== dept) return null;
+              if (selectedDept !== arabicSource("common.all") && selectedDept !== dept) return null;
               return (
                 <motion.div
                   key={dept}
@@ -575,7 +576,7 @@ export function Employees() {
                         </motion.div>
                       );
                     }) : (
-                      <div className="flex items-center justify-center h-[80px] text-muted-foreground" style={{ fontSize: 13 }}>لا يوجد موظفون</div>
+                      <div className="flex items-center justify-center h-[80px] text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("employees.there_are_no_employees")}</div>
                     )}
                   </div>
                 </motion.div>
@@ -618,7 +619,7 @@ export function Employees() {
               className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[80vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-foreground">إضافة موظف جديد</h2>
+                <h2 className="text-foreground">{arabicSource("common.add_a_new_employee")}</h2>
                 <button onClick={() => { if (!addSaving) { setShowAddModal(false); resetAddForm(); } }} className="p-1 rounded hover:bg-secondary cursor-pointer">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -626,32 +627,32 @@ export function Employees() {
               <div className="space-y-4">
                 {/* Section: Device Registration */}
                 <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-                  <p className="text-xs text-primary mb-3 flex items-center gap-1.5"><Fingerprint className="w-3.5 h-3.5" /> بيانات جهاز البصمة (إجبارية)</p>
+                  <p className="text-xs text-primary mb-3 flex items-center gap-1.5"><Fingerprint className="w-3.5 h-3.5" /> {arabicSource("employees.fingerprint_device_data_mandatory")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     {/* Employee ID — auto-generated, read-only */}
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>رقم الموظف *</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.employee_number")}</label>
                       <div className="w-full h-11 px-4 rounded-lg border border-border bg-muted/30 text-foreground flex items-center font-mono" dir="ltr">
                         {loadingNextId ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : nextEmployeeId ? `#${nextEmployeeId}` : "—"}
-                        <span className="text-muted-foreground text-[10px] ms-2">(تلقائي)</span>
+                        <span className="text-muted-foreground text-[10px] ms-2">{arabicSource("employees.automatic")}</span>
                       </div>
                     </div>
                     {/* Gender */}
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الجنس *</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.gender")}</label>
                       <select
                         value={addForm.gender}
                         onChange={(e) => setAddForm(f => ({ ...f, gender: e.target.value as "male" | "female" }))}
                         className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none"
                       >
-                        <option value="male">ذكر</option>
-                        <option value="female">أنثى</option>
+                        <option value="male">{arabicSource("common.male")}</option>
+                        <option value="female">{arabicSource("common.female")}</option>
                       </select>
                     </div>
                   </div>
                   {/* Face photo upload */}
                   <div className="mt-3">
-                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>صورة الوجه <span className="text-muted-foreground">(اختياري — يمكن إضافتها لاحقاً)</span></label>
+                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.face_image")} <span className="text-muted-foreground">{arabicSource("employees.optional_can_be_added_later")}</span></label>
                     <div className="flex items-center gap-3">
                       {facePhotoPreview ? (
                         <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-primary/30">
@@ -663,63 +664,63 @@ export function Employees() {
                       ) : (
                         <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/40 cursor-pointer transition-colors">
                           <Upload className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">رفع صورة</span>
+                          <span className="text-sm text-muted-foreground">{arabicSource("employees.upload_an_image")}</span>
                           <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFacePhoto(f); e.target.value = ""; }} />
                         </label>
                       )}
-                      <span className="text-[10px] text-muted-foreground/60">JPG أو PNG — حد أقصى 200KB</span>
+                      <span className="text-[10px] text-muted-foreground/60">{arabicSource("employees.jpg_or_png_max_200kb")}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Section: HR Information */}
                 <div className="border-t border-border/20 pt-3">
-                  <p className="text-xs text-muted-foreground mb-3">بيانات الموظف</p>
+                  <p className="text-xs text-muted-foreground mb-3">{arabicSource("employees.employee_data")}</p>
                   {/* Name — mandatory */}
                   <div className="mb-3">
-                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الاسم الكامل *</label>
-                    <input type="text" value={addForm.name} onChange={(e) => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="أدخل اسم الموظف" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.full_name")}</label>
+                    <input type="text" value={addForm.name} onChange={(e) => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder={arabicSource("employees.enter_the_employee_s_name")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>رقم الهوية</label>
-                      <input type="text" value={addForm.nationalId} onChange={(e) => setAddForm(f => ({ ...f, nationalId: e.target.value }))} placeholder="رقم الهوية الوطنية" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.id_number")}</label>
+                      <input type="text" value={addForm.nationalId} onChange={(e) => setAddForm(f => ({ ...f, nationalId: e.target.value }))} placeholder={arabicSource("employees.national_id_number")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>البريد الإلكتروني</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.email")}</label>
                       <input type="text" value={addForm.email} onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="example@company.iq" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الهاتف الشخصي</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.personal_phone")}</label>
                       <input type="text" value={addForm.personalPhone} onChange={(e) => setAddForm(f => ({ ...f, personalPhone: e.target.value }))} placeholder="07XXXXXXXXX" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>هاتف الشركة</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.company_phone")}</label>
                       <input type="text" value={addForm.companyPhone} onChange={(e) => setAddForm(f => ({ ...f, companyPhone: e.target.value }))} placeholder="07XXXXXXXXX" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>المنصب الوظيفي</label>
-                      <input type="text" value={addForm.position} onChange={(e) => setAddForm(f => ({ ...f, position: e.target.value }))} placeholder="المنصب" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.job_position")}</label>
+                      <input type="text" value={addForm.position} onChange={(e) => setAddForm(f => ({ ...f, position: e.target.value }))} placeholder={arabicSource("common.position")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>القسم</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
                       <select value={addForm.department} onChange={(e) => setAddForm(f => ({ ...f, department: e.target.value }))} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                        <option value="">اختر القسم</option>
-                        {realDepts.filter(d => d !== "الكل").map(d => (<option key={d} value={d}>{d}</option>))}
+                        <option value="">{arabicSource("employees.select_the_section")}</option>
+                        {realDepts.filter(d => d !== arabicSource("common.all")).map(d => (<option key={d} value={d}>{d}</option>))}
                       </select>
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الراتب (د.ع)</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.salary_iqd")}</label>
                       <input type="number" value={addForm.salary} onChange={(e) => setAddForm(f => ({ ...f, salary: e.target.value }))} placeholder="0" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" dir="ltr" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>تاريخ المباشرة</label>
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.direct_date")}</label>
                       <input type="date" value={addForm.joinDate} onChange={(e) => setAddForm(f => ({ ...f, joinDate: e.target.value }))} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" dir="ltr" />
                     </div>
                   </div>
                   <div className="mt-3">
-                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>العنوان</label>
-                    <input type="text" value={addForm.address} onChange={(e) => setAddForm(f => ({ ...f, address: e.target.value }))} placeholder="بغداد - المنطقة" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+                    <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.address")}</label>
+                    <input type="text" value={addForm.address} onChange={(e) => setAddForm(f => ({ ...f, address: e.target.value }))} placeholder={arabicSource("employees.baghdad_region")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                   </div>
                 </div>
 
@@ -730,9 +731,9 @@ export function Employees() {
                     deviceSyncStatus === "success" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" :
                     "border-amber-500/30 bg-amber-500/10 text-amber-400"
                   }`}>
-                    {deviceSyncStatus === "syncing" && <><Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">جاري مزامنة البيانات مع جهاز البصمة...</span></>}
-                    {deviceSyncStatus === "success" && <><CheckCircle2 className="w-4 h-4" /><span className="text-sm">تم إنشاء الموظف وتسجيله على جهاز البصمة بنجاح</span></>}
-                    {deviceSyncStatus === "error" && <><AlertCircle className="w-4 h-4" /><span className="text-sm">تم الحفظ في النظام، لكن المزامنة مع الجهاز فشلت (سيتم المحاولة لاحقاً)</span></>}
+                    {deviceSyncStatus === "syncing" && <><Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">{arabicSource("employees.synchronizing_data_with_the_fingerprint_device")}</span></>}
+                    {deviceSyncStatus === "success" && <><CheckCircle2 className="w-4 h-4" /><span className="text-sm">{arabicSource("employees.the_employee_was_successfully_created_and_registered_on_the_fing")}</span></>}
+                    {deviceSyncStatus === "error" && <><AlertCircle className="w-4 h-4" /><span className="text-sm">{arabicSource("employees.saved_to_the_system_but_synchronization_with_the_device_failed_w")}</span></>}
                   </div>
                 )}
 
@@ -747,14 +748,14 @@ export function Employees() {
                     className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {addSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Fingerprint className="w-4 h-4" /><Plus className="w-4 h-4" /></>}
-                    {addSaving ? "جاري الحفظ..." : "حفظ وتسجيل على الجهاز"}
+                    {addSaving ? arabicSource("common.saving") : arabicSource("employees.save_and_record_on_the_device")}
                   </button>
                   <button
                     onClick={() => { if (!addSaving) { setShowAddModal(false); resetAddForm(); } }}
                     disabled={addSaving}
                     className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -780,10 +781,10 @@ export function Employees() {
                 <div className="p-2 rounded-xl bg-destructive/10">
                   <Trash2 className="w-5 h-5 text-destructive" />
                 </div>
-                <h3 className="text-foreground font-semibold" style={{ fontSize: 16 }}>تأكيد الحذف</h3>
+                <h3 className="text-foreground font-semibold" style={{ fontSize: 16 }}>{arabicSource("employees.confirm_deletion")}</h3>
               </div>
               <p className="text-muted-foreground mb-6" style={{ fontSize: 14 }}>
-                هل أنت متأكد من حذف الموظف <span className="text-foreground font-medium">{deleteConfirm.name}</span>؟ سيتم حذف جميع بياناته من النظام وإزالته من جهاز البصمة.
+                {arabicSource("employees.are_you_sure_you_want_to_delete_the_employee")} <span className="text-foreground font-medium">{deleteConfirm.name}</span>{arabicSource("employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo")}
               </p>
               <div className="flex items-center gap-3 justify-end">
                 <button
@@ -792,7 +793,7 @@ export function Employees() {
                   className="px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
                   style={{ fontSize: 13 }}
                 >
-                  إلغاء
+                  {arabicSource("common.cancel")}
                 </button>
                 <button
                   onClick={handleDeleteEmployee}
@@ -801,7 +802,7 @@ export function Employees() {
                   style={{ fontSize: 13 }}
                 >
                   {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                  {deleting ? "جاري الحذف..." : "حذف الموظف"}
+                  {deleting ? arabicSource("employees.deleting") : arabicSource("employees.delete_employee")}
                 </button>
               </div>
             </motion.div>

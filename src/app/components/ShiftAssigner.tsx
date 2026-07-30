@@ -8,6 +8,7 @@ import {
   useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
   type DbEmployee, type DbShift, type DbEmployeeShiftAssignment,
 } from "../lib/hooks";
+import { arabicSource } from "../i18n/source";
 
 // ── Draggable Employee Card ──
 
@@ -60,7 +61,7 @@ function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: {
 
   // Build working days summary
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const dayLabelsAr = ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"];
+  const dayLabelsAr = [arabicSource("common.sunday"), arabicSource("shared.monday"), arabicSource("shared.three"), arabicSource("shared.arb"), arabicSource("shared.khmi"), arabicSource("shared.plural"), arabicSource("common.sat")];
   const workingDays = days.filter(d => (shift as any)[`${d}_is_working`]);
   const workingDayLabels = workingDays.map(d => dayLabelsAr[days.indexOf(d)]);
 
@@ -81,7 +82,7 @@ function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: {
             <div>
               <p className="text-foreground" style={{ fontSize: 13 }}>{shift.name}</p>
               <p className="text-muted-foreground" style={{ fontSize: 10 }}>
-                {workingDayLabels.join(" · ")} | {shift.target_hours_per_day}س/يوم
+                {workingDayLabels.join(" · ")} | {shift.target_hours_per_day}{arabicSource("shared.h_day")}
               </p>
             </div>
           </div>
@@ -108,7 +109,7 @@ function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: {
               <span className="text-foreground truncate flex-1" style={{ fontSize: 11 }}>{name}</span>
               <button onClick={() => onRemove(emp.id)}
                 className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-red-500/20 transition-colors shrink-0"
-                title="إلغاء التعيين">
+                title={arabicSource("shared.cancel_assignment")}>
                 <X className="w-3 h-3 text-red-400" />
               </button>
             </div>
@@ -118,7 +119,7 @@ function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: {
             dragOver ? "border-primary/60 bg-primary/5" : "border-border/20"
           }`}>
             <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-              {dragOver ? "أفلت هنا للتعيين" : "اسحب الموظفين هنا"}
+              {dragOver ? arabicSource("common.drop_here_to_set") : arabicSource("shared.drag_the_staff_here")}
             </p>
           </div>
         )}
@@ -162,7 +163,7 @@ export function ShiftAssigner() {
 
   // Unassigned employees (no shift)
   const unassigned = useMemo(() => {
-    return employees.filter(e => !empShiftMap[e.id] && e.status !== "منتهي");
+    return employees.filter(e => !empShiftMap[e.id] && e.status !== arabicSource("common.finished"));
   }, [employees, empShiftMap]);
 
   const filteredUnassigned = useMemo(() => {
@@ -182,11 +183,11 @@ export function ShiftAssigner() {
     const { error } = await supabase.from("employees").update({ shift_id: shiftId }).eq("id", empId);
 
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
       const emp = employees.find(e => e.id === empId);
       const shift = shifts.find(s => s.id === shiftId);
-      setToast(`تم تعيين "${emp ? empDisplayName(emp) : ""}" في دوام "${shift?.name || ""}" بنجاح`);
+      setToast(`${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("shared.at_work")}${shift?.name || ""}${arabicSource("common.successfully")}`);
     }
     await refetchEmployees();
     await refetchAssignments();
@@ -198,9 +199,9 @@ export function ShiftAssigner() {
     setSaving(true);
     const { error } = await supabase.from("employees").update({ shift_id: null }).eq("id", empId);
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم إلغاء تعيين الدوام");
+      setToast(arabicSource("shared.the_shift_assignment_has_been_cancelled"));
     }
     await refetchEmployees();
     await refetchAssignments();
@@ -211,7 +212,7 @@ export function ShiftAssigner() {
     return (
       <div className="flex items-center justify-center h-40">
         <Loader2 className="w-6 h-6 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-2">جاري التحميل...</span>
+        <span className="text-muted-foreground ms-2">{arabicSource("common.loading")}</span>
       </div>
     );
   }
@@ -222,7 +223,7 @@ export function ShiftAssigner() {
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-start gap-3">
         <GripVertical className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-          اسحب الموظفين من القائمة اليسرى وأسقطهم على الدوام المطلوب. سيتم حفظ التعيين تلقائياً.
+          {arabicSource("shared.drag_employees_from_the_left_menu_and_drop_them_onto_the_desired")}
         </p>
       </div>
 
@@ -230,11 +231,11 @@ export function ShiftAssigner() {
         {/* Sidebar: Unassigned */}
         <div className="w-64 shrink-0 bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col" style={{ maxHeight: 480 }}>
           <div className="p-3 border-b border-border/30">
-            <h4 className="text-foreground mb-2" style={{ fontSize: 13 }}>بدون دوام ({unassigned.length})</h4>
+            <h4 className="text-foreground mb-2" style={{ fontSize: 13 }}>{arabicSource("shared.non_working")}{unassigned.length})</h4>
             <div className="relative">
               <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="بحث..."
+                placeholder={arabicSource("common.search")}
                 className="w-full bg-background border border-border/40 rounded-lg ps-8 pe-3 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
                 style={{ fontSize: 11 }} />
             </div>
@@ -244,7 +245,7 @@ export function ShiftAssigner() {
               <DragEmpCard key={emp.id} emp={emp} color="#8B5CF6" />
             )) : (
               <p className="text-center text-muted-foreground py-4" style={{ fontSize: 11 }}>
-                {search ? "لا توجد نتائج" : "جميع الموظفين معينون"}
+                {search ? arabicSource("common.no_results_found") : arabicSource("shared.all_employees_are_appointed")}
               </p>
             )}
           </div>
@@ -268,7 +269,7 @@ export function ShiftAssigner() {
       {saving && (
         <div className="flex items-center justify-center gap-2 text-primary">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span style={{ fontSize: 12 }}>جاري الحفظ...</span>
+          <span style={{ fontSize: 12 }}>{arabicSource("common.saving")}</span>
         </div>
       )}
 
@@ -277,7 +278,7 @@ export function ShiftAssigner() {
         {toast && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
             className="fixed bottom-6 inset-x-0 flex justify-center z-40 pointer-events-none">
-            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2 pointer-events-auto ${toast.startsWith("خطأ") ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
+            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2 pointer-events-auto ${toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
               <span className="text-foreground" style={{ fontSize: 12 }}>{toast}</span>
             </div>
           </motion.div>

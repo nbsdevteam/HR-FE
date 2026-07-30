@@ -1541,5 +1541,7 @@
   "common.records_other": "{{count}} تۆمار",
   "errors.not_found_title": "لاپەڕەکە نەدۆزرایەوە",
   "errors.not_found_message": "لاپەڕەی داواکراو نەدۆزرایەوە.",
-  "errors.back_to_dashboard": "گەڕانەوە بۆ داشبۆرد"
+  "errors.back_to_dashboard": "گەڕانەوە بۆ داشبۆرد",
+  "languages.self_name": "کوردی",
+  "languages.selector_label": "هەڵبژاردنی زمان"
 }

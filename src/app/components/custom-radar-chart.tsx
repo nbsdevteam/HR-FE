@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { arabicSource } from "../i18n/source";
 
 interface RadarDataItem {
   name: string;
@@ -165,7 +166,7 @@ export function CustomRadarChart({ data, maxValue = 5, color = "#D4AF37", height
               }}
             >
               <p className="text-foreground" style={{ fontSize: 12 }}>{d.name}</p>
-              <p style={{ fontSize: 12, color }}>التقييم: {d.score}/{maxValue}</p>
+              <p style={{ fontSize: 12, color }}>{arabicSource("shared.rating")} {d.score}/{maxValue}</p>
             </div>
           </div>
         );

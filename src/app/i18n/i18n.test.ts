@@ -13,6 +13,7 @@ import { LocalizationProvider } from "./LocalizationProvider";
 import { employeeStatusKeys, translateBackendCode } from "./status";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { localizedConfirm } from "./native";
+import { arabicSource } from "./source";
 
 describe("application localization", () => {
   beforeEach(async () => {
@@ -43,8 +44,11 @@ describe("application localization", () => {
   });
 
   it("translates audited Arabic UI copy in English and Sorani", () => {
-    expect(translateArabicSource("جاري التحميل...", "en")).toBe("Loading...");
-    expect(translateArabicSource("جاري التحميل...", "ku")).toBe("بارکردن...");
+    const loadingSource = arabicSource("common.loading");
+    expect(translateArabicSource(loadingSource, "en")).toBe("Loading...");
+    expect(translateArabicSource(loadingSource, "ku")).toBe(
+      i18n.getFixedT("ku")("common.loading"),
+    );
   });
 
   it("uses English fallback and preserves interpolation", async () => {
@@ -60,7 +64,11 @@ describe("application localization", () => {
       createElement(
         LocalizationProvider,
         null,
-        createElement("button", { title: "جاري التحميل..." }, "جاري التحميل..."),
+        createElement(
+          "button",
+          { title: arabicSource("common.loading") },
+          arabicSource("common.loading"),
+        ),
       ),
     );
     await changeLanguage("en");
@@ -70,17 +78,23 @@ describe("application localization", () => {
     });
     await changeLanguage("ku");
     await waitFor(() => {
-      expect(screen.getByRole("button")).toHaveTextContent("بارکردن...");
+      expect(screen.getByRole("button")).toHaveTextContent(
+        i18n.getFixedT("ku")("common.loading"),
+      );
     });
     await changeLanguage("ar");
     await waitFor(() => {
-      expect(screen.getByRole("button")).toHaveTextContent("جاري التحميل...");
+      expect(screen.getByRole("button")).toHaveTextContent(
+        arabicSource("common.loading"),
+      );
     });
   });
 
   it("maps backend status codes and keeps unknown values readable", async () => {
     await changeLanguage("en");
-    expect(translateBackendCode("نشط", employeeStatusKeys)).toBe("Active");
+    expect(
+      translateBackendCode(arabicSource("common.is_active"), employeeStatusKeys),
+    ).toBe("Active");
     expect(translateBackendCode("new_backend_status", employeeStatusKeys)).toBe(
       "new_backend_status",
     );
@@ -94,11 +108,49 @@ describe("application localization", () => {
         createElement(LanguageSwitcher),
       ),
     );
-    const selector = screen.getByRole("combobox", { name: /Language/ });
-    expect(screen.getAllByRole("option")).toHaveLength(3);
-    fireEvent.change(selector, { target: { value: "ku" } });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.getFixedT("ar")("languages.selector_label"),
+      }),
+    );
+    expect(screen.getAllByRole("menuitemradio")).toHaveLength(3);
+    fireEvent.click(
+      screen.getByRole("menuitemradio", {
+        name: i18n.getFixedT("en")("languages.self_name"),
+      }),
+    );
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.getFixedT("en")("languages.selector_label"),
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("menuitemradio", {
+        name: i18n.getFixedT("ku")("languages.self_name"),
+      }),
+    );
     await waitFor(() => {
       expect(document.documentElement.lang).toBe("ku");
+      expect(document.documentElement.dir).toBe("rtl");
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.getFixedT("ku")("languages.selector_label"),
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("menuitemradio", {
+        name: i18n.getFixedT("ar")("languages.self_name"),
+      }),
+    );
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe("ar");
       expect(document.documentElement.dir).toBe("rtl");
     });
   });
@@ -107,7 +159,9 @@ describe("application localization", () => {
     const nativeConfirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     await changeLanguage("en");
     expect(i18n.resolvedLanguage).toBe("en");
-    localizedConfirm("هل أنت متأكد من حذف هذا الإنذار؟");
+    localizedConfirm(
+      arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm"),
+    );
     expect(nativeConfirm).toHaveBeenCalledWith(
       "Are you sure you want to delete this alarm?",
     );

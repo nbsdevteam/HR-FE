@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { arabicSource } from "../i18n/source";
 
 // ——— Raw DB types ———
 export interface DbEmployee {
@@ -660,7 +661,7 @@ const _dayTemplate = (working: boolean, start = "08:00:00", end = "16:00:00") =>
 });
 const _mockShifts: DbShift[] = [
   {
-    id: "mock-shift-morning", name: "الدوام الصباحي", description: "الدوام الرسمي الصباحي", is_default: true,
+    id: "mock-shift-morning", name: arabicSource("messages.morning_shift"), description: arabicSource("messages.morning_official_working_hours"), is_default: true,
     grace_minutes: 10, late_to_absent_hours: 3, target_hours_per_day: 8,
     sunday_is_working: true, sunday_start: "08:00:00", sunday_end: "16:00:00",
     monday_is_working: true, monday_start: "08:00:00", monday_end: "16:00:00",
@@ -672,7 +673,7 @@ const _mockShifts: DbShift[] = [
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
   },
   {
-    id: "mock-shift-evening", name: "الدوام المسائي", description: "الوردية المسائية", is_default: false,
+    id: "mock-shift-evening", name: arabicSource("messages.evening_shift"), description: arabicSource("messages.evening_shift_2"), is_default: false,
     grace_minutes: 5, late_to_absent_hours: 2, target_hours_per_day: 8,
     sunday_is_working: true, sunday_start: "16:00:00", sunday_end: "00:00:00",
     monday_is_working: true, monday_start: "16:00:00", monday_end: "00:00:00",
@@ -684,7 +685,7 @@ const _mockShifts: DbShift[] = [
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
   },
   {
-    id: "mock-shift-night", name: "الدوام الليلي", description: "الوردية الليلية", is_default: false,
+    id: "mock-shift-night", name: arabicSource("messages.night_shift"), description: arabicSource("messages.night_shift_2"), is_default: false,
     grace_minutes: 5, late_to_absent_hours: 2, target_hours_per_day: 8,
     sunday_is_working: true, sunday_start: "00:00:00", sunday_end: "08:00:00",
     monday_is_working: true, monday_start: "00:00:00", monday_end: "08:00:00",
@@ -696,7 +697,7 @@ const _mockShifts: DbShift[] = [
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
   },
   {
-    id: "mock-shift-flexible", name: "الدوام المرن", description: "دوام مرن — ٦ ساعات يومياً", is_default: false,
+    id: "mock-shift-flexible", name: arabicSource("messages.flexible_working_hours"), description: arabicSource("messages.flexible_working_hours_6_hours_a_day"), is_default: false,
     grace_minutes: 30, late_to_absent_hours: 4, target_hours_per_day: 6,
     sunday_is_working: true, sunday_start: "09:00:00", sunday_end: "15:00:00",
     monday_is_working: true, monday_start: "09:00:00", monday_end: "15:00:00",
@@ -728,14 +729,14 @@ export function useShifts() {
 
 // ── Mock positions for local testing ──
 const _mockPositions: DbPosition[] = [
-  { id: "mock-pos-ceo", title_ar: "المدير العام", title_en: "CEO", department_id: null, reports_to_position_id: null, level: 0, max_headcount: 1, is_active: true, description: "رأس الهرم الإداري", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-hr-mgr", title_ar: "مدير الموارد البشرية", title_en: "HR Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-hr-spec", title_ar: "أخصائي موارد بشرية", title_en: "HR Specialist", department_id: null, reports_to_position_id: "mock-pos-hr-mgr", level: 2, max_headcount: 3, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-fin-mgr", title_ar: "مدير المالية", title_en: "Finance Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-accountant", title_ar: "محاسب", title_en: "Accountant", department_id: null, reports_to_position_id: "mock-pos-fin-mgr", level: 2, max_headcount: 2, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-it-mgr", title_ar: "مدير تقنية المعلومات", title_en: "IT Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-developer", title_ar: "مطور برمجيات", title_en: "Software Developer", department_id: null, reports_to_position_id: "mock-pos-it-mgr", level: 2, max_headcount: 4, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "mock-pos-ops-mgr", title_ar: "مدير العمليات", title_en: "Operations Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-ceo", title_ar: arabicSource("messages.general_manager"), title_en: "CEO", department_id: null, reports_to_position_id: null, level: 0, max_headcount: 1, is_active: true, description: arabicSource("messages.the_top_of_the_administrative_pyramid"), created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-hr-mgr", title_ar: arabicSource("common.human_resources_manager"), title_en: "HR Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-hr-spec", title_ar: arabicSource("messages.human_resources_specialist"), title_en: "HR Specialist", department_id: null, reports_to_position_id: "mock-pos-hr-mgr", level: 2, max_headcount: 3, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-fin-mgr", title_ar: arabicSource("messages.finance_director"), title_en: "Finance Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-accountant", title_ar: arabicSource("messages.accountant"), title_en: "Accountant", department_id: null, reports_to_position_id: "mock-pos-fin-mgr", level: 2, max_headcount: 2, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-it-mgr", title_ar: arabicSource("messages.information_technology_manager"), title_en: "IT Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-developer", title_ar: arabicSource("messages.software_developer"), title_en: "Software Developer", department_id: null, reports_to_position_id: "mock-pos-it-mgr", level: 2, max_headcount: 4, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "mock-pos-ops-mgr", title_ar: arabicSource("messages.operations_manager"), title_en: "Operations Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 export function usePositions() {
@@ -1528,7 +1529,7 @@ export async function logAudit(entry: {
     entity_type: entry.entity_type,
     entity_id: entry.entity_id || null,
     entity_label: entry.entity_label || null,
-    actor_name: entry.actor_name || "مدير الموارد البشرية",
+    actor_name: entry.actor_name || arabicSource("common.human_resources_manager"),
     actor_employee_id: entry.actor_employee_id || null,
     details: entry.details || {},
   });
@@ -1570,12 +1571,12 @@ export function empDisplayName(e: DbEmployee): string {
 }
 
 /** Map attendance status from DB to Arabic display */
-export function mapAttendanceStatus(status: string, isLate: boolean): "حاضر" | "متأخر" | "غائب" | "إجازة" {
-  if (status === "complete" && isLate) return "متأخر";
-  if (status === "complete" || status === "missing_checkout" || status === "checked_in" || status === "missing_checkin" || status === "auto_checkout") return "حاضر";
-  if (status === "absent") return "غائب";
-  if (status === "leave") return "إجازة";
-  return "حاضر";
+export function mapAttendanceStatus(status: string, isLate: boolean): string | string | string | string {
+  if (status === "complete" && isLate) return arabicSource("common.late");
+  if (status === "complete" || status === "missing_checkout" || status === "checked_in" || status === "missing_checkin" || status === "auto_checkout") return arabicSource("common.present");
+  if (status === "absent") return arabicSource("common.absent");
+  if (status === "leave") return arabicSource("common.leave");
+  return arabicSource("common.present");
 }
 
 /** Format time string (HH:MM:SS) to 12-hour format (h:MM AM/PM) */
@@ -1584,7 +1585,7 @@ export function formatTime(t: string | null): string {
   const parts = t.split(":");
   let h = parseInt(parts[0], 10);
   const m = parts[1] || "00";
-  const suffix = h < 12 ? "ص" : "م";
+  const suffix = h < 12 ? arabicSource("common.p") : arabicSource("common.m");
   if (h === 0) h = 12;
   else if (h > 12) h -= 12;
   return `${h}:${m} ${suffix}`;

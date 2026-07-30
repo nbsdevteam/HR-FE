@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { arabicSource } from "../i18n/source";
 
 export type ThemeId = "dark-enhanced" | "light-turquoise";
 
@@ -12,13 +13,13 @@ interface ThemeInfo {
 export const themes: ThemeInfo[] = [
   {
     id: "dark-enhanced",
-    label: "داكن ذهبي",
+    label: arabicSource("shared.dark_golden"),
     className: "dark-enhanced",
     preview: { bg: "#050505", accent: "#F0C419", text: "#FFF8E1" },
   },
   {
     id: "light-turquoise",
-    label: "فاتح فيروزي",
+    label: arabicSource("shared.light_turquoise"),
     className: "light-turquoise",
     preview: { bg: "#FFFFFF", accent: "#06B6D4", text: "#0F172A" },
   },

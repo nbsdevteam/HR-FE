@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { arabicSource } from "../i18n/source";
 
 interface DonutChartProps {
   data: { name: string; value: number; color: string }[];
@@ -84,7 +85,7 @@ export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 9
         {hoveredIndex === null && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-foreground" style={{ fontSize: 22 }}>{total}</span>
-            <span className="text-muted-foreground" style={{ fontSize: 11 }}>الإجمالي</span>
+            <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.total")}</span>
           </div>
         )}
       </div>

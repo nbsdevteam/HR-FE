@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { arabicSource } from "../i18n/source";
 
 interface LineChartItem {
   label: string;
@@ -12,7 +13,7 @@ interface CustomLineChartProps {
   valueLabel?: string;
 }
 
-export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLabel = "القيمة" }: CustomLineChartProps) {
+export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const maxValue = Math.max(...data.map(d => d.value));

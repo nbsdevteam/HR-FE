@@ -1,30 +1,31 @@
 import i18n from "./index";
+import { arabicSource } from "./source";
 
 export type TranslationKeyMap = Readonly<Record<string, string>>;
 
 export const employeeStatusKeys: TranslationKeyMap = {
   active: "common.is_active",
-  "نشط": "common.is_active",
+  [arabicSource("common.is_active")]: "common.is_active",
   leave: "common.leave",
-  "إجازة": "common.leave",
+  [arabicSource("common.leave")]: "common.leave",
   ended: "common.finished",
   terminated: "common.finished",
-  "منتهي": "common.finished",
+  [arabicSource("common.finished")]: "common.finished",
   pending: "common.pending",
-  "معلق": "common.pending",
+  [arabicSource("common.pending")]: "common.pending",
 };
 
 export const workflowStatusKeys: TranslationKeyMap = {
   accepted: "common.accepted",
   approved: "common.accepted",
-  "مقبول": "common.accepted",
+  [arabicSource("common.accepted")]: "common.accepted",
   rejected: "common.rejected_3",
-  "مرفوض": "common.rejected_3",
+  [arabicSource("common.rejected_3")]: "common.rejected_3",
   completed: "common.complete",
-  "مكتمل": "common.complete",
+  [arabicSource("common.complete")]: "common.complete",
   canceled: "common.canceled",
   cancelled: "common.canceled",
-  "ملغي": "common.canceled",
+  [arabicSource("common.canceled")]: "common.canceled",
 };
 
 /**

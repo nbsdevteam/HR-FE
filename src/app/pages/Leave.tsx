@@ -16,6 +16,7 @@ import {
   type DbLeaveRequest, type DbLeaveType, type DbLeaveBalance, type DbLeavePermission,
 } from "../lib/hooks";
 import { localizedAlert } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 // ══════════════════════════ Styles ══════════════════════════
 
@@ -23,21 +24,21 @@ const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl 
 const inputCls = "w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none";
 
 const statusColors: Record<string, string> = {
-  "معلق": "bg-primary/10 border-primary/20 text-primary",
-  "مقبول": "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "مرفوض": "bg-destructive/10 border-destructive/20 text-destructive",
+  [arabicSource("common.pending")]: "bg-primary/10 border-primary/20 text-primary",
+  [arabicSource("common.accepted")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  [arabicSource("common.rejected_3")]: "bg-destructive/10 border-destructive/20 text-destructive",
 };
 
 const kanbanColumns: { key: string; label: string; accent: string; dotColor: string }[] = [
-  { key: "معلق", label: "معلق", accent: "border-primary/40", dotColor: "bg-primary" },
-  { key: "مقبول", label: "مقبول", accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
-  { key: "مرفوض", label: "مرفوض", accent: "border-destructive/40", dotColor: "bg-destructive" },
+  { key: arabicSource("common.pending"), label: arabicSource("common.pending"), accent: "border-primary/40", dotColor: "bg-primary" },
+  { key: arabicSource("common.accepted"), label: arabicSource("common.accepted"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
+  { key: arabicSource("common.rejected_3"), label: arabicSource("common.rejected_3"), accent: "border-destructive/40", dotColor: "bg-destructive" },
 ];
 
 const TABS = [
-  { id: "requests", label: "طلبات الإجازة", icon: CalendarDays },
-  { id: "balances", label: "أرصدة الإجازات", icon: TrendingDown },
-  { id: "permissions", label: "الاستئذانات", icon: Timer },
+  { id: "requests", label: arabicSource("leave.leave_requests"), icon: CalendarDays },
+  { id: "balances", label: arabicSource("leave.leave_balances"), icon: TrendingDown },
+  { id: "permissions", label: arabicSource("leave.permissions"), icon: Timer },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -54,7 +55,7 @@ export function Leave() {
   const { permissions, loading: permLoading, refetch: refetchPermissions } = useLeavePermissions();
 
   const [activeTab, setActiveTab] = useState<TabId>("requests");
-  const [filter, setFilter] = useState("الكل");
+  const [filter, setFilter] = useState(arabicSource("common.all"));
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showPermForm, setShowPermForm] = useState(false);
@@ -73,7 +74,7 @@ export function Leave() {
   // Filter & search requests
   const filteredRequests = useMemo(() => {
     let list = [...requests];
-    if (filter !== "الكل") list = list.filter(r => r.status === filter);
+    if (filter !== arabicSource("common.all")) list = list.filter(r => r.status === filter);
     if (search) {
       list = list.filter(r => {
         const emp = empMap[r.employee_id];
@@ -99,14 +100,14 @@ export function Leave() {
   }, [requests, filter, search, empMap, leaveSortBy, leaveSortDir]);
 
   // Stats
-  const pendingCount = requests.filter(r => r.status === "معلق").length;
-  const approvedCount = requests.filter(r => r.status === "مقبول").length;
-  const rejectedCount = requests.filter(r => r.status === "مرفوض").length;
+  const pendingCount = requests.filter(r => r.status === arabicSource("common.pending")).length;
+  const approvedCount = requests.filter(r => r.status === arabicSource("common.accepted")).length;
+  const rejectedCount = requests.filter(r => r.status === arabicSource("common.rejected_3")).length;
 
   // Approve / Reject — also updates approval_requests if linked
   const handleApprove = async (id: string) => {
     try {
-      const { error: updateErr } = await supabase.from("leave_requests").update({ status: "مقبول" }).eq("id", id);
+      const { error: updateErr } = await supabase.from("leave_requests").update({ status: arabicSource("common.accepted") }).eq("id", id);
       if (updateErr) throw updateErr;
 
       // Deduct balance — fetch fresh from DB to avoid stale read-modify-write race
@@ -127,19 +128,19 @@ export function Leave() {
       refetchBalances();
     } catch (e: any) {
       console.error("Approve error:", e.message);
-      localizedAlert("خطأ في قبول الطلب: " + e.message);
+      localizedAlert(arabicSource("leave.error_accepting_request") + " " + e.message);
     }
   };
 
   const handleReject = async (id: string, reason?: string) => {
     try {
-      const { error } = await supabase.from("leave_requests").update({ status: "مرفوض", rejection_reason: reason || null }).eq("id", id);
+      const { error } = await supabase.from("leave_requests").update({ status: arabicSource("common.rejected_3"), rejection_reason: reason || null }).eq("id", id);
       if (error) throw error;
       await supabase.from("approval_requests").update({ status: "rejected" }).eq("entity_type", "leave_request").eq("entity_id", id);
       refetchRequests();
     } catch (e: any) {
       console.error("Reject error:", e.message);
-      localizedAlert("خطأ في رفض الطلب: " + e.message);
+      localizedAlert(arabicSource("leave.error_rejecting_the_request") + " " + e.message);
     }
   };
 
@@ -151,7 +152,7 @@ export function Leave() {
       refetchBalances();
     } catch (e: any) {
       console.error("Delete error:", e.message);
-      localizedAlert("خطأ في حذف الطلب: " + e.message);
+      localizedAlert(arabicSource("leave.error_deleting_request") + " " + e.message);
     }
   };
 
@@ -161,7 +162,7 @@ export function Leave() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل بيانات الإجازات...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("leave.loading_vacation_data")}</span>
       </div>
     );
   }
@@ -171,8 +172,8 @@ export function Leave() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-gradient-gold">إدارة الإجازات</h1>
-          <p className="text-muted-foreground mt-1">متابعة طلبات الإجازة والأرصدة والاستئذانات</p>
+          <h1 className="text-gradient-gold">{arabicSource("leave.leave_management")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("leave.follow_up_on_requests_for_leave_balances_and_authorizations")}</p>
         </div>
         <div className="flex items-center gap-3">
           {activeTab === "requests" && <ViewToggle view={viewMode} onChange={setViewMode} />}
@@ -182,7 +183,7 @@ export function Leave() {
               onClick={() => setShowForm(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> طلب إجازة
+              <Plus className="w-4 h-4" /> {arabicSource("leave.leave_request")}
             </motion.button>
           )}
           {activeTab === "permissions" && (
@@ -191,7 +192,7 @@ export function Leave() {
               onClick={() => setShowPermForm(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> طلب استئذان
+              <Plus className="w-4 h-4" /> {arabicSource("leave.asking_for_permission")}
             </motion.button>
           )}
         </div>
@@ -200,9 +201,9 @@ export function Leave() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: "طلبات معلقة", value: pendingCount, icon: Clock, color: "text-primary" },
-          { label: "طلبات مقبولة", value: approvedCount, icon: Check, color: "text-emerald-400" },
-          { label: "طلبات مرفوضة", value: rejectedCount, icon: X, color: "text-destructive" },
+          { label: arabicSource("leave.pending_requests"), value: pendingCount, icon: Clock, color: "text-primary" },
+          { label: arabicSource("leave.requests_accepted"), value: approvedCount, icon: Check, color: "text-emerald-400" },
+          { label: arabicSource("leave.requests_rejected"), value: rejectedCount, icon: X, color: "text-destructive" },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -257,7 +258,7 @@ export function Leave() {
             {/* Filters & Search */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              {["الكل", "معلق", "مقبول", "مرفوض"].map(f => (
+              {[arabicSource("common.all"), arabicSource("common.pending"), arabicSource("common.accepted"), arabicSource("common.rejected_3")].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -273,7 +274,7 @@ export function Leave() {
                 <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text" value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="بحث..."
+                  placeholder={arabicSource("common.search")}
                   className={`${inputCls} ps-10`}
                 />
               </div>
@@ -286,14 +287,14 @@ export function Leave() {
                     <thead>
                       <SortableHeaderRow
                         columns={[
-                          { label: "الموظف", key: "employee" },
-                          { label: "نوع الإجازة", key: "type" },
-                          { label: "من", key: "start" },
-                          { label: "إلى", key: "end" },
-                          { label: "المدة", key: "days" },
-                          { label: "السبب", key: null },
-                          { label: "الحالة", key: "status" },
-                          { label: "إجراءات", key: null },
+                          { label: arabicSource("common.employee"), key: "employee" },
+                          { label: arabicSource("leave.leave_type"), key: "type" },
+                          { label: arabicSource("common.from"), key: "start" },
+                          { label: arabicSource("common.to"), key: "end" },
+                          { label: arabicSource("common.duration"), key: "days" },
+                          { label: arabicSource("common.the_reason"), key: null },
+                          { label: arabicSource("common.status"), key: "status" },
+                          { label: arabicSource("common.procedures"), key: null },
                         ]}
                         sortBy={leaveSortBy}
                         sortDir={leaveSortDir}
@@ -325,13 +326,13 @@ export function Leave() {
                                 style={{ fontSize: 12, borderColor: lt?.color || "#3b82f6", color: lt?.color || "#3b82f6", backgroundColor: (lt?.color || "#3b82f6") + "15" }}
                               >
                                 {leave.leave_type}
-                                {leave.is_half_day && <span className="ms-1" style={{ fontSize: 10 }}>(نصف يوم)</span>}
+                                {leave.is_half_day && <span className="ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.half_a_day")}</span>}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{leave.start_date}</td>
                             <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{leave.end_date}</td>
                             <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>
-                              {leave.days} {leave.is_half_day ? "نصف يوم" : "يوم"}
+                              {leave.days} {leave.is_half_day ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}
                             </td>
                             <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{leave.reason || "—"}</td>
                             <td className="px-4 py-3">
@@ -340,15 +341,15 @@ export function Leave() {
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              {leave.status === "معلق" ? (
+                              {leave.status === arabicSource("common.pending") ? (
                                 <div className="flex items-center gap-1">
-                                  <button onClick={() => handleApprove(leave.id)} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer" title="قبول">
+                                  <button onClick={() => handleApprove(leave.id)} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer" title={arabicSource("common.accept")}>
                                     <Check className="w-4 h-4 text-emerald-400" />
                                   </button>
-                                  <button onClick={() => handleReject(leave.id)} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title="رفض">
+                                  <button onClick={() => handleReject(leave.id)} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title={arabicSource("common.rejected_2")}>
                                     <X className="w-4 h-4 text-destructive" />
                                   </button>
-                                  <button onClick={() => handleDelete(leave.id)} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title="حذف">
+                                  <button onClick={() => handleDelete(leave.id)} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title={arabicSource("common.delete")}>
                                     <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                                   </button>
                                 </div>
@@ -362,7 +363,7 @@ export function Leave() {
                         );
                       }) : (
                         <tr>
-                          <td colSpan={8}><EmptyState icon={CalendarDays} message="لا توجد طلبات إجازة" /></td>
+                          <td colSpan={8}><EmptyState icon={CalendarDays} message={arabicSource("leave.there_are_no_leave_requests")} /></td>
                         </tr>
                       )}
                     </tbody>
@@ -412,25 +413,25 @@ export function Leave() {
                                 {leave.reason && <p className="text-muted-foreground" style={{ fontSize: 11 }}>{leave.reason}</p>}
                                 <div className="flex items-center justify-between">
                                   <span className="text-muted-foreground" style={{ fontSize: 11 }}>
-                                    {leave.days} {leave.is_half_day ? "نصف يوم" : "يوم"}
+                                    {leave.days} {leave.is_half_day ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}
                                   </span>
                                   <span className="text-muted-foreground" style={{ fontSize: 10 }} dir="ltr">{leave.start_date}</span>
                                 </div>
                               </div>
-                              {leave.status === "معلق" && (
+                              {leave.status === arabicSource("common.pending") && (
                                 <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/20">
                                   <button onClick={() => handleApprove(leave.id)} className="flex-1 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors cursor-pointer" style={{ fontSize: 11 }}>
-                                    <Check className="w-3.5 h-3.5 inline-block" /> قبول
+                                    <Check className="w-3.5 h-3.5 inline-block" /> {arabicSource("common.accept")}
                                   </button>
                                   <button onClick={() => handleReject(leave.id)} className="flex-1 py-1 rounded-md bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors cursor-pointer" style={{ fontSize: 11 }}>
-                                    <X className="w-3.5 h-3.5 inline-block" /> رفض
+                                    <X className="w-3.5 h-3.5 inline-block" /> {arabicSource("common.rejected_2")}
                                   </button>
                                 </div>
                               )}
                             </motion.div>
                           );
                         }) : (
-                          <EmptyState icon={CalendarDays} message="لا توجد طلبات" className="py-8" />
+                          <EmptyState icon={CalendarDays} message={arabicSource("leave.no_requests")} className="py-8" />
                         )}
                       </div>
                     </motion.div>
@@ -532,7 +533,7 @@ function BalancesTab({
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
-          العودة لقائمة الموظفين
+          {arabicSource("leave.return_to_the_list_of_employees")}
         </button>
 
         <div className="flex items-center gap-3 mb-4">
@@ -567,20 +568,20 @@ function BalancesTab({
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-gradient-gold" style={{ fontSize: 28 }}>{remaining}</span>
-                  <span className="text-muted-foreground" style={{ fontSize: 12 }}>/ {totalDays + carryover} يوم</span>
+                  <span className="text-muted-foreground" style={{ fontSize: 12 }}>/ {totalDays + carryover} {arabicSource("common.days_2")}</span>
                 </div>
                 <div className="mt-3 h-1.5 rounded-full bg-muted/30">
                   <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: lt.color }} />
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>مستخدم: {usedDays}</p>
-                  {carryover > 0 && <p className="text-muted-foreground" style={{ fontSize: 11 }}>مُرحّل: {carryover}</p>}
+                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.user")} {usedDays}</p>
+                  {carryover > 0 && <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("leave.relay")} {carryover}</p>}
                 </div>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {lt.allow_half_day && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20" style={{ fontSize: 9 }}>نصف يوم</span>}
-                  {lt.is_encashable && <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" style={{ fontSize: 9 }}>قابل للصرف</span>}
-                  {lt.is_carryover_allowed && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20" style={{ fontSize: 9 }}>ترحيل</span>}
-                  {!lt.is_paid && <span className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20" style={{ fontSize: 9 }}>بدون راتب</span>}
+                  {lt.allow_half_day && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20" style={{ fontSize: 9 }}>{arabicSource("common.half_a_day")}</span>}
+                  {lt.is_encashable && <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" style={{ fontSize: 9 }}>{arabicSource("common.exchangeable")}</span>}
+                  {lt.is_carryover_allowed && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20" style={{ fontSize: 9 }}>{arabicSource("common.relay")}</span>}
+                  {!lt.is_paid && <span className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20" style={{ fontSize: 9 }}>{arabicSource("common.without_salary")}</span>}
                 </div>
               </motion.div>
             );
@@ -596,7 +597,7 @@ function BalancesTab({
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="بحث بالاسم أو القسم..."
+          placeholder={arabicSource("common.search_by_name_or_department")}
           className={`${inputCls} ps-10`}
         />
       </div>
@@ -620,7 +621,7 @@ function BalancesTab({
                 <p className="text-muted-foreground" style={{ fontSize: 12 }}>{emp.department}</p>
               </div>
               <div className="text-end">
-                <p className="text-muted-foreground" style={{ fontSize: 12 }}>مستخدم: {totalUsed} يوم</p>
+                <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.user")} {totalUsed} {arabicSource("common.days_2")}</p>
               </div>
             </motion.button>
           );
@@ -641,11 +642,11 @@ function PermissionsTab({
   refetch: () => void;
 }) {
   const handleApprove = async (id: string) => {
-    await supabase.from("leave_permissions").update({ status: "مقبول" }).eq("id", id);
+    await supabase.from("leave_permissions").update({ status: arabicSource("common.accepted") }).eq("id", id);
     refetch();
   };
   const handleReject = async (id: string) => {
-    await supabase.from("leave_permissions").update({ status: "مرفوض" }).eq("id", id);
+    await supabase.from("leave_permissions").update({ status: arabicSource("common.rejected_3") }).eq("id", id);
     refetch();
   };
 
@@ -663,7 +664,7 @@ function PermissionsTab({
         <table className="w-full">
           <thead>
             <tr className="bg-muted/20 border-b border-border/20">
-              {["الموظف", "التاريخ", "من", "إلى", "المدة", "السبب", "الحالة", "إجراءات"].map(h => (
+              {[arabicSource("common.employee"), arabicSource("common.date"), arabicSource("common.from"), arabicSource("common.to"), arabicSource("common.duration"), arabicSource("common.the_reason"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
                 <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
               ))}
             </tr>
@@ -682,7 +683,7 @@ function PermissionsTab({
                   <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.date}</td>
                   <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.start_time?.substring(0, 5)}</td>
                   <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.end_time?.substring(0, 5)}</td>
-                  <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{p.hours} ساعة</td>
+                  <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{p.hours} {arabicSource("common.hours")}</td>
                   <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{p.reason || "—"}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-md border ${statusColors[p.status] || ""}`} style={{ fontSize: 12 }}>
@@ -690,7 +691,7 @@ function PermissionsTab({
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {p.status === "معلق" && (
+                    {p.status === arabicSource("common.pending") && (
                       <div className="flex items-center gap-1">
                         <button onClick={() => handleApprove(p.id)} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer">
                           <Check className="w-4 h-4 text-emerald-400" />
@@ -705,7 +706,7 @@ function PermissionsTab({
               );
             }) : (
               <tr>
-                <td colSpan={8}><EmptyState icon={Timer} message="لا توجد طلبات استئذان" /></td>
+                <td colSpan={8}><EmptyState icon={Timer} message={arabicSource("leave.there_are_no_permission_requests")} /></td>
               </tr>
             )}
           </tbody>
@@ -776,7 +777,7 @@ function LeaveRequestModal({
 
   const handleSubmit = async () => {
     if (!employeeId || !leaveTypeId || !startDate) {
-      setError("يرجى ملء جميع الحقول المطلوبة");
+      setError(arabicSource("common.please_fill_out_all_required_fields"));
       return;
     }
     const lt = leaveTypes.find(t => t.id === leaveTypeId);
@@ -784,7 +785,7 @@ function LeaveRequestModal({
 
     // Validate balance
     if (remainingBalance !== null && days > remainingBalance) {
-      setError(`الرصيد المتبقي (${remainingBalance} يوم) غير كافٍ لعدد الأيام المطلوبة (${days} يوم)`);
+      setError(`${arabicSource("leave.remaining_balance")}${remainingBalance} ${arabicSource("leave.day_is_not_enough_for_the_required_number_of_days")}${days} ${arabicSource("common.days_3")}`);
       return;
     }
 
@@ -801,7 +802,7 @@ function LeaveRequestModal({
       is_half_day: isHalfDay,
       half_day_period: isHalfDay ? halfDayPeriod : null,
       reason: reason || null,
-      status: "معلق",
+      status: arabicSource("common.pending"),
     }).select("id").single();
 
     if (dbError) {
@@ -837,7 +838,7 @@ function LeaveRequestModal({
         className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">طلب إجازة جديد</h2>
+          <h2 className="text-foreground">{arabicSource("leave.new_leave_request")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -853,10 +854,10 @@ function LeaveRequestModal({
         <div className="space-y-4">
           {/* Employee Selection */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>الموظف *</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
             <input
               type="text" value={empSearch} onChange={e => setEmpSearch(e.target.value)}
-              placeholder="بحث عن موظف..." className={inputCls}
+              placeholder={arabicSource("common.search_for_an_employee")} className={inputCls}
             />
             {empSearch && !employeeId && (
               <div className="mt-1 max-h-32 overflow-y-auto border border-border rounded-lg bg-card">
@@ -876,7 +877,7 @@ function LeaveRequestModal({
 
           {/* Leave Type */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>نوع الإجازة *</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.leave_type_2")}</label>
             <div className="flex flex-wrap gap-2">
               {leaveTypes.map(t => (
                 <button
@@ -890,7 +891,7 @@ function LeaveRequestModal({
                   style={{ fontSize: 13, backgroundColor: leaveTypeId === t.id ? t.color + "15" : undefined }}
                 >
                   {t.name_ar}
-                  {!t.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>(بدون راتب)</span>}
+                  {!t.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.without_salary")}</span>}
                 </button>
               ))}
             </div>
@@ -904,11 +905,11 @@ function LeaveRequestModal({
                   type="checkbox" checked={isHalfDay} onChange={e => setIsHalfDay(e.target.checked)}
                   className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 />
-                <span className="text-foreground" style={{ fontSize: 13 }}>نصف يوم</span>
+                <span className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("common.half_a_day")}</span>
               </label>
               {isHalfDay && (
                 <div className="flex gap-2">
-                  {([["morning", "صباحي"], ["afternoon", "مسائي"]] as const).map(([val, label]) => (
+                  {([["morning", arabicSource("leave.morning")], ["afternoon", arabicSource("leave.evening")]] as const).map(([val, label]) => (
                     <button
                       key={val}
                       onClick={() => setHalfDayPeriod(val)}
@@ -931,13 +932,13 @@ function LeaveRequestModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
-                {isHalfDay ? "التاريخ" : "من تاريخ"} *
+                {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
               </label>
               <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputCls} dir="ltr" />
             </div>
             {!isHalfDay && (
               <div>
-                <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>إلى تاريخ *</label>
+                <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputCls} dir="ltr" min={startDate} />
               </div>
             )}
@@ -947,11 +948,11 @@ function LeaveRequestModal({
             <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20">
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-primary" />
-                <span className="text-primary" style={{ fontSize: 13 }}>المدة: {days} {isHalfDay ? "نصف يوم" : "يوم"}</span>
+                <span className="text-primary" style={{ fontSize: 13 }}>{arabicSource("common.duration_2")} {days} {isHalfDay ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}</span>
               </div>
               {remainingBalance !== null && (
                 <span className={`${days > remainingBalance ? "text-destructive" : "text-emerald-400"}`} style={{ fontSize: 12 }}>
-                  الرصيد المتبقي: {remainingBalance} يوم
+                  {arabicSource("leave.remaining_balance_2")} {remainingBalance} {arabicSource("common.days_2")}
                 </span>
               )}
             </div>
@@ -959,10 +960,10 @@ function LeaveRequestModal({
 
           {/* Reason */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>السبب</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.the_reason")}</label>
             <textarea
               value={reason} onChange={e => setReason(e.target.value)}
-              rows={2} placeholder="سبب الإجازة..."
+              rows={2} placeholder={arabicSource("leave.reason_for_leave")}
               className="w-full px-3 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />
           </div>
@@ -971,8 +972,8 @@ function LeaveRequestModal({
           {selectedType?.requires_attachment && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400" style={{ fontSize: 12 }}>
               <FileText className="w-4 h-4" />
-              هذا النوع من الإجازة يتطلب مرفق (تقرير طبي، إلخ)
-              {selectedType.attachment_after_days && ` بعد ${selectedType.attachment_after_days} أيام`}
+              {arabicSource("leave.this_type_of_leave_requires_an_attachment_medical_report_etc")}
+              {selectedType.attachment_after_days && ` ${arabicSource("leave.after")} ${selectedType.attachment_after_days} ${arabicSource("common.days")}`}
             </div>
           )}
 
@@ -984,13 +985,13 @@ function LeaveRequestModal({
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              إرسال الطلب
+              {arabicSource("leave.send_request")}
             </button>
             <button
               onClick={onClose}
               className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
             >
-              إلغاء
+              {arabicSource("common.cancel")}
             </button>
           </div>
         </div>
@@ -1030,7 +1031,7 @@ function PermissionModal({
 
   const handleSubmit = async () => {
     if (!employeeId || !date || !startTime || !endTime) {
-      setError("يرجى ملء جميع الحقول المطلوبة");
+      setError(arabicSource("common.please_fill_out_all_required_fields"));
       return;
     }
     setSaving(true);
@@ -1043,7 +1044,7 @@ function PermissionModal({
       end_time: endTime,
       hours,
       reason: reason || null,
-      status: "معلق",
+      status: arabicSource("common.pending"),
     });
 
     if (dbError) {
@@ -1068,7 +1069,7 @@ function PermissionModal({
         className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">طلب استئذان جديد</h2>
+          <h2 className="text-foreground">{arabicSource("leave.new_permission_request")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -1084,10 +1085,10 @@ function PermissionModal({
         <div className="space-y-4">
           {/* Employee */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>الموظف *</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
             <input
               type="text" value={empSearch} onChange={e => setEmpSearch(e.target.value)}
-              placeholder="بحث عن موظف..." className={inputCls}
+              placeholder={arabicSource("common.search_for_an_employee")} className={inputCls}
             />
             {empSearch && !employeeId && (
               <div className="mt-1 max-h-32 overflow-y-auto border border-border rounded-lg bg-card">
@@ -1106,17 +1107,17 @@ function PermissionModal({
           </div>
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>التاريخ *</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.date_2")}</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} dir="ltr" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>من الساعة *</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.of_the_hour")}</label>
               <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className={inputCls} dir="ltr" />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>إلى الساعة *</label>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_the_hour")}</label>
               <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className={inputCls} dir="ltr" />
             </div>
           </div>
@@ -1124,15 +1125,15 @@ function PermissionModal({
           {hours > 0 && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20">
               <Timer className="w-4 h-4 text-primary" />
-              <span className="text-primary" style={{ fontSize: 13 }}>المدة: {hours} ساعة</span>
+              <span className="text-primary" style={{ fontSize: 13 }}>{arabicSource("common.duration_2")} {hours} {arabicSource("common.hours")}</span>
             </div>
           )}
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>السبب</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.the_reason")}</label>
             <textarea
               value={reason} onChange={e => setReason(e.target.value)}
-              rows={2} placeholder="سبب الاستئذان..."
+              rows={2} placeholder={arabicSource("leave.the_reason_for_asking_permission")}
               className="w-full px-3 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />
           </div>
@@ -1144,13 +1145,13 @@ function PermissionModal({
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              إرسال
+              {arabicSource("leave.send")}
             </button>
             <button
               onClick={onClose}
               className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
             >
-              إلغاء
+              {arabicSource("common.cancel")}
             </button>
           </div>
         </div>

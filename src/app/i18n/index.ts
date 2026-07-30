@@ -11,13 +11,12 @@ export const LANGUAGE_STORAGE_KEY = "hr-app-language";
 
 export const languageOptions: ReadonlyArray<{
   code: AppLanguage;
-  label: string;
   dir: "rtl" | "ltr";
   intlLocale: string;
 }> = [
-  { code: "en", label: "English", dir: "ltr", intlLocale: "en-US" },
-  { code: "ar", label: "العربية", dir: "rtl", intlLocale: "ar-IQ" },
-  { code: "ku", label: "کوردی", dir: "rtl", intlLocale: "ckb-IQ" },
+  { code: "en", dir: "ltr", intlLocale: "en-US" },
+  { code: "ar", dir: "rtl", intlLocale: "ar-IQ" },
+  { code: "ku", dir: "rtl", intlLocale: "ckb-IQ" },
 ];
 
 export function normalizeLanguage(value: string | null | undefined): AppLanguage {

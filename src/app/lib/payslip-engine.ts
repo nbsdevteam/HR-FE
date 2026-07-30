@@ -5,6 +5,7 @@
 
 import * as XLSX from "xlsx";
 import { formatCurrency as formatIntlCurrency, formatNumber } from "../i18n/format";
+import { arabicSource } from "../i18n/source";
 
 // ──────────────────────── Types ────────────────────────
 
@@ -57,7 +58,7 @@ export interface ProcessedAttendanceRecord {
   isWorkingDay?: boolean;
   // Leave integration
   isLeaveDay?: boolean;
-  leaveType?: string; // 'سنوية','مرضية','طارئة','بدون راتب','أمومة','أبوة','دراسية'
+  leaveType?: string; // Backend leave-type label.
   isUnpaidLeave?: boolean;
 }
 
@@ -209,11 +210,11 @@ export function buildSettingsFromConfig(
 // ──────────────────────── 1. Parsing ──────────────────��─────
 
 const COL_ALIASES: Record<string, string[]> = {
-  personId: ["person id", "personid", "id", "person_id", "employee id", "emp id", "الرقم الوظيفي"],
-  name: ["name", "employee name", "الاسم", "اسم الموظف"],
-  time: ["time", "datetime", "timestamp", "date/time", "الوقت", "التاريخ والوقت"],
-  attendanceStatus: ["attendance status", "status", "الحالة", "حالة الحضور"],
-  department: ["department", "dept", "القسم"],
+  personId: ["person id", "personid", "id", "person_id", "employee id", "emp id", arabicSource("common.job_number")],
+  name: ["name", "employee name", arabicSource("common.name"), arabicSource("common.employee_name")],
+  time: ["time", "datetime", "timestamp", "date/time", arabicSource("common.time"), arabicSource("messages.date_and_time")],
+  attendanceStatus: ["attendance status", "status", arabicSource("common.status"), arabicSource("common.attendance_status")],
+  department: ["department", "dept", arabicSource("common.section")],
 };
 
 function findColumn(headers: string[], aliases: string[]): number {
@@ -318,7 +319,7 @@ export function parseAttendanceFile(file: File): Promise<{
         const json: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
         if (json.length < 2) {
-          resolve({ records: [], errors: ["الملف فارغ أو لا يحتوي على بيانات"], totalRows: 0 });
+          resolve({ records: [], errors: [arabicSource("messages.the_file_is_empty_or_contains_no_data")], totalRows: 0 });
           return;
         }
 
@@ -337,7 +338,7 @@ export function parseAttendanceFile(file: File): Promise<{
         if (missingCols.length > 0) {
           resolve({
             records: [],
-            errors: [`أعمدة مفقودة: ${missingCols.join(", ")}. الأعمدة الموجودة: ${headers.join(", ")}`],
+            errors: [`${arabicSource("messages.missing_columns")} ${missingCols.join(", ")}${arabicSource("messages.existing_columns")} ${headers.join(", ")}`],
             totalRows: json.length - 1,
           });
           return;
@@ -367,7 +368,7 @@ export function parseAttendanceFile(file: File): Promise<{
           }
 
           if (!parsedTime) {
-            errors.push(`سطر ${i + 1}: تعذر تحليل التاريخ "${rawTime}"`);
+            errors.push(`${arabicSource("messages.line")} ${i + 1}${arabicSource("messages.unable_to_parse_date")}${rawTime}"`);
             continue;
           }
 
@@ -391,10 +392,10 @@ export function parseAttendanceFile(file: File): Promise<{
 
         resolve({ records, errors, totalRows: json.length - 1 });
       } catch (err: any) {
-        resolve({ records: [], errors: [`خطأ في قراءة الملف: ${err.message}`], totalRows: 0 });
+        resolve({ records: [], errors: [`${arabicSource("messages.error_reading_file")} ${err.message}`], totalRows: 0 });
       }
     };
-    reader.onerror = () => resolve({ records: [], errors: ["فشل في قراءة الملف"], totalRows: 0 });
+    reader.onerror = () => resolve({ records: [], errors: [arabicSource("messages.failed_to_read_file")], totalRows: 0 });
     reader.readAsArrayBuffer(file);
   });
 }
@@ -414,7 +415,7 @@ function formatTimeStr(t: string): string {
   const parts = t.split(":");
   let h = parseInt(parts[0], 10);
   const m = parts[1];
-  const suffix = h < 12 ? "ص" : "م";
+  const suffix = h < 12 ? arabicSource("common.p") : arabicSource("common.m");
   if (h === 0) h = 12;
   else if (h > 12) h -= 12;
   return `${h}:${m} ${suffix}`;
@@ -423,13 +424,13 @@ function formatTimeStr(t: string): string {
 const DAYS_OF_WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 const dayNamesAr: Record<string, string> = {
-  sunday: "الأحد",
-  monday: "الاثنين",
-  tuesday: "الثلاثاء",
-  wednesday: "الأربعاء",
-  thursday: "الخميس",
-  friday: "الجمعة",
-  saturday: "السبت",
+  sunday: arabicSource("common.sunday_2"),
+  monday: arabicSource("common.monday"),
+  tuesday: arabicSource("common.tuesday"),
+  wednesday: arabicSource("common.wednesday"),
+  thursday: arabicSource("common.thursday"),
+  friday: arabicSource("common.friday"),
+  saturday: arabicSource("common.saturday"),
 };
 
 function getDayOfWeek(dateStr: string): string {
@@ -672,7 +673,7 @@ export const DEFAULT_EOS_CONFIG: EOSConfig = {
   minYears: 1,
 };
 
-/** Calculate End-of-Service benefit (مكافأة نهاية الخدمة)
+/** Calculate the end-of-service benefit.
  *  Formula is fully configurable through the EOSConfig parameter.
  *  Tier 1: first N years × tier1Rate × monthly salary
  *  Tier 2: remaining years × tier2Rate × monthly salary */
@@ -905,9 +906,9 @@ export function formatCurrency(val: number, currency: string): string {
 export function formatHoursMinutes(hours: number): string {
   const h = Math.floor(hours);
   const m = Math.round((hours - h) * 60);
-  if (h === 0) return `${m} دقيقة`;
-  if (m === 0) return `${h} ساعة`;
-  return `${h} ساعة ${m} دقيقة`;
+  if (h === 0) return `${m} ${arabicSource("common.min")}`;
+  if (m === 0) return `${h} ${arabicSource("common.hours")}`;
+  return `${h} ${arabicSource("common.hours")} ${m} ${arabicSource("common.min")}`;
 }
 
 export function getShortfallRecords(
@@ -983,10 +984,10 @@ export function buildLeaveDateMap(
 
   for (const lv of leaves) {
     if (lv.employee_id !== employeeId) continue;
-    if (lv.status !== "مقبول") continue;
+    if (lv.status !== arabicSource("common.accepted")) continue;
 
     // Determine if unpaid: first check leave_types table, fallback to hardcoded name
-    let isUnpaid = lv.leave_type === "بدون راتب";
+    let isUnpaid = lv.leave_type === arabicSource("common.without_salary");
     if (leaveTypeInfos) {
       const typeInfo = leaveTypeInfos.find(t => t.name_ar === lv.leave_type || t.code === lv.leave_type);
       if (typeInfo) isUnpaid = !typeInfo.is_paid;
@@ -1034,7 +1035,7 @@ export function applyLeaveToRecords(
 
     if (typeof entry === "string") {
       leaveType = entry;
-      isUnpaid = entry === "بدون راتب";
+      isUnpaid = entry === arabicSource("common.without_salary");
       isHalfDay = false;
     } else {
       leaveType = entry.leaveType;

@@ -34,6 +34,7 @@ import {
   DbTrainingParticipant,
   DbEmployee,
 } from "../lib/hooks";
+import { arabicSource } from "../i18n/source";
 
 // Color palettes for dynamic status/participant status assignment
 const statusColorPalette = [
@@ -83,9 +84,9 @@ export function Training() {
   const { getValue, getNumber } = useConfigurations();
 
   // Training categories, statuses, and participant statuses — all from configurations table
-  const trainingCategories = (getValue('training.categories', 'أهداف العمل,تطوير الأعمال,المهارات التقنية,القيادة والإدارة,السلامة المهنية')).split(',').map(s => s.trim());
-  const trainingStatuses = (getValue('training.statuses', 'قادم,جاري,مكتمل,ملغي')).split(',').map(s => s.trim());
-  const participantStatuses = (getValue('training.participant_statuses', 'مسجل,جاري,مكتمل,منسحب')).split(',').map(s => s.trim());
+  const trainingCategories = (getValue('training.categories', arabicSource("training.business_objectives_business_development_technical_skills_leader"))).split(',').map(s => s.trim());
+  const trainingStatuses = (getValue('training.statuses', arabicSource("training.upcoming_ongoing_completed_cancelled"))).split(',').map(s => s.trim());
+  const participantStatuses = (getValue('training.participant_statuses', arabicSource("training.registered_ongoing_completed_withdrawn"))).split(',').map(s => s.trim());
   const defaultWeight = getNumber('training.default_weight', 70);
 
   // Build dynamic color/icon maps from config-driven lists
@@ -100,7 +101,7 @@ export function Training() {
     participantStatusColors[s] = participantStatusColorPalette[Math.min(i, participantStatusColorPalette.length - 1)];
   });
 
-  const [filter, setFilter] = useState("الكل");
+  const [filter, setFilter] = useState(arabicSource("common.all"));
   const [searchTerm, setSearchTerm] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -109,11 +110,11 @@ export function Training() {
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [createForm, setCreateForm] = useState<CreateProgramForm>({
     title: "",
-    category: trainingCategories[0] || "أهداف العمل",
+    category: trainingCategories[0] || arabicSource("common.business_objectives"),
     weight: `${defaultWeight}%`,
     instructor: "",
     duration: "",
-    status: trainingStatuses[0] || "قادم",
+    status: trainingStatuses[0] || arabicSource("common.is_coming"),
     max_participants: "",
     start_date: "",
     end_date: "",
@@ -121,7 +122,7 @@ export function Training() {
   });
   const [enrollForm, setEnrollForm] = useState<EnrollParticipantForm>({
     employee_id: "",
-    completion_status: participantStatuses[0] || "مسجل",
+    completion_status: participantStatuses[0] || arabicSource("common.registered"),
     score: "",
   });
 
@@ -133,11 +134,11 @@ export function Training() {
     }, 4000);
   };
 
-  const filters = ["الكل", ...trainingCategories];
+  const filters = [arabicSource("common.all"), ...trainingCategories];
 
   const filtered = useMemo(() => {
     let result = programs;
-    if (filter !== "الكل") {
+    if (filter !== arabicSource("common.all")) {
       result = result.filter((p) => p.category === filter);
     }
     if (searchTerm) {
@@ -153,18 +154,18 @@ export function Training() {
   const stats = useMemo(() => {
     return {
       totalPrograms: programs.length,
-      ongoingPrograms: programs.filter((p) => p.status === "جاري").length,
-      completedPrograms: programs.filter((p) => p.status === "مكتمل").length,
+      ongoingPrograms: programs.filter((p) => p.status === arabicSource("common.my_neighbor")).length,
+      completedPrograms: programs.filter((p) => p.status === arabicSource("common.complete")).length,
       totalParticipants: allParticipants.length,
       completionRate: allParticipants.length > 0
-        ? Math.round((allParticipants.filter((p) => p.completion_status === "مكتمل").length / allParticipants.length) * 100)
+        ? Math.round((allParticipants.filter((p) => p.completion_status === arabicSource("common.complete")).length / allParticipants.length) * 100)
         : 0,
     };
   }, [programs, allParticipants]);
 
   const handleCreateProgram = async () => {
     if (!createForm.title || !createForm.category) {
-      showToast("error", "يرجى ملء البيانات المطلوبة");
+      showToast("error", arabicSource("training.please_fill_in_the_required_data"));
       return;
     }
 
@@ -189,14 +190,14 @@ export function Training() {
 
       if (error) throw error;
 
-      showToast("success", "تم إنشاء البرنامج التدريبي بنجاح");
+      showToast("success", arabicSource("training.the_training_program_has_been_created_successfully"));
       setCreateForm({
         title: "",
-        category: trainingCategories[0] || "أهداف العمل",
+        category: trainingCategories[0] || arabicSource("common.business_objectives"),
         weight: `${defaultWeight}%`,
         instructor: "",
         duration: "",
-        status: trainingStatuses[0] || "قادم",
+        status: trainingStatuses[0] || arabicSource("common.is_coming"),
         max_participants: "",
         start_date: "",
         end_date: "",
@@ -205,7 +206,7 @@ export function Training() {
       setShowCreateModal(false);
       refetchPrograms();
     } catch (err) {
-      showToast("error", "خطأ في إنشاء البرنامج");
+      showToast("error", arabicSource("training.error_creating_the_program"));
     }
   };
 
@@ -225,16 +226,16 @@ export function Training() {
 
       if (error) throw error;
 
-      showToast("success", "تم تحديث البرنامج بنجاح");
+      showToast("success", arabicSource("training.the_software_has_been_updated_successfully"));
       setEditingProgram(null);
       refetchPrograms();
     } catch (err) {
-      showToast("error", "خطأ في تحديث البرنامج");
+      showToast("error", arabicSource("training.software_update_error"));
     }
   };
 
   const handleDeleteProgram = async (id: string) => {
-    if (!localizedConfirm("هل تريد حذف هذا البرنامج التدريبي؟")) return;
+    if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_training_program"))) return;
 
     try {
       // Delete participants first
@@ -245,17 +246,17 @@ export function Training() {
 
       if (error) throw error;
 
-      showToast("success", "تم حذف البرنامج بنجاح");
+      showToast("success", arabicSource("training.the_program_was_deleted_successfully"));
       refetchPrograms();
       refetchParticipants();
     } catch (err) {
-      showToast("error", "خطأ في حذف البرنامج");
+      showToast("error", arabicSource("training.error_deleting_the_program"));
     }
   };
 
   const handleEnrollParticipant = async () => {
     if (!enrollForm.employee_id || !selectedProgramForParticipants) {
-      showToast("error", "يرجى اختيار الموظف");
+      showToast("error", arabicSource("training.please_select_an_employee"));
       return;
     }
 
@@ -266,21 +267,21 @@ export function Training() {
         completion_status: enrollForm.completion_status,
         score: enrollForm.score ? parseInt(enrollForm.score) : null,
         enrolled_at: new Date().toISOString(),
-        completed_at: enrollForm.completion_status === "مكتمل" ? new Date().toISOString() : null,
+        completed_at: enrollForm.completion_status === arabicSource("common.complete") ? new Date().toISOString() : null,
       });
 
       if (error) throw error;
 
-      showToast("success", "تم تسجيل الموظف في البرنامج بنجاح");
+      showToast("success", arabicSource("training.the_employee_has_been_successfully_registered_in_the_program"));
       setEnrollForm({
         employee_id: "",
-        completion_status: participantStatuses[0] || "مسجل",
+        completion_status: participantStatuses[0] || arabicSource("common.registered"),
         score: "",
       });
       setShowEnrollModal(false);
       refetchParticipants();
     } catch (err) {
-      showToast("error", "خطأ في تسجيل الموظف");
+      showToast("error", arabicSource("training.error_in_employee_registration"));
     }
   };
 
@@ -289,7 +290,7 @@ export function Training() {
       const { error } = await supabase
         .from("training_participants")
         .update({
-          completion_status: "مكتمل",
+          completion_status: arabicSource("common.complete"),
           score: score,
           completed_at: new Date().toISOString(),
         })
@@ -297,15 +298,15 @@ export function Training() {
 
       if (error) throw error;
 
-      showToast("success", "تم تحديث حالة المشارك");
+      showToast("success", arabicSource("training.participant_status_has_been_updated"));
       refetchParticipants();
     } catch (err) {
-      showToast("error", "خطأ في التحديث");
+      showToast("error", arabicSource("training.update_error"));
     }
   };
 
   const handleDeleteParticipant = async (participantId: string) => {
-    if (!localizedConfirm("هل تريد حذف هذا المشارك من البرنامج؟")) return;
+    if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_participant_from_the_program"))) return;
 
     try {
       const { error } = await supabase
@@ -315,16 +316,16 @@ export function Training() {
 
       if (error) throw error;
 
-      showToast("success", "تم حذف المشارك بنجاح");
+      showToast("success", arabicSource("training.participant_has_been_successfully_deleted"));
       refetchParticipants();
     } catch (err) {
-      showToast("error", "خطأ في حذف المشارك");
+      showToast("error", arabicSource("training.error_deleting_participant"));
     }
   };
 
   // Calculate monthly hours from programs
   const monthlyHours = useMemo(() => {
-    const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو"];
+    const months = [arabicSource("common.january"), arabicSource("common.february"), arabicSource("common.march"), arabicSource("common.april"), arabicSource("common.may"), arabicSource("common.jun")];
     return months.map((month, idx) => {
       const count = programs.filter((p) => {
         if (!p.start_date) return false;
@@ -394,15 +395,15 @@ export function Training() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">التدريب والتطوير</h1>
-          <p className="text-muted-foreground mt-1">إدارة برامج التدريب والمشاركين</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.training_and_development")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("training.managing_training_programs_and_participants")}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          برنامج جديد
+          {arabicSource("training.new_program")}
         </button>
       </div>
 
@@ -412,7 +413,7 @@ export function Training() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg"
       >
-        <h3 className="text-foreground mb-4">توزيع الأوزان التدريبية</h3>
+        <h3 className="text-foreground mb-4">{arabicSource("training.distribution_of_training_weights")}</h3>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
           <div className="lg:col-span-1 flex items-center justify-center">
             <DonutChart data={categoryDistribution} size={180} innerRadius={50} outerRadius={80} />
@@ -433,7 +434,7 @@ export function Training() {
                     {programs.filter(p => p.category === cat).length}
                   </span>
                   <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>
-                    برامج {cat}
+                    {arabicSource("training.programs")} {cat}
                   </p>
                 </div>
               );
@@ -445,11 +446,11 @@ export function Training() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {[
-          { label: "إجمالي البرامج", value: stats.totalPrograms, icon: BookOpen },
-          { label: "برامج جارية", value: stats.ongoingPrograms, icon: Play },
-          { label: "برامج مكتملة", value: stats.completedPrograms, icon: Award },
-          { label: "إجمالي المشاركين", value: stats.totalParticipants, icon: Users },
-          { label: "نسبة الإنجاز", value: `${stats.completionRate}%`, icon: CheckCircle },
+          { label: arabicSource("common.total_programs"), value: stats.totalPrograms, icon: BookOpen },
+          { label: arabicSource("training.ongoing_programs"), value: stats.ongoingPrograms, icon: Play },
+          { label: arabicSource("training.completed_programs"), value: stats.completedPrograms, icon: Award },
+          { label: arabicSource("training.total_participants"), value: stats.totalParticipants, icon: Users },
+          { label: arabicSource("common.completion_rate"), value: `${stats.completionRate}%`, icon: CheckCircle },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -487,10 +488,10 @@ export function Training() {
         transition={{ delay: 0.3 }}
         className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg"
       >
-        <h3 className="text-foreground mb-4">الساعات التدريبية الشهرية</h3>
+        <h3 className="text-foreground mb-4">{arabicSource("training.monthly_training_hours")}</h3>
         <CustomBarChart
           data={monthlyHours.map((d) => ({ label: d.month, value: d.hours }))}
-          barLabel="الساعات"
+          barLabel={arabicSource("common.hours_2")}
           height={250}
         />
       </motion.div>
@@ -501,7 +502,7 @@ export function Training() {
           <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="البحث عن برنامج..."
+            placeholder={arabicSource("training.searching_for_a_program")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full ps-4 pe-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
@@ -550,7 +551,7 @@ export function Training() {
                     <div className="flex-1">
                       <h3 className="text-foreground">{program.title}</h3>
                       <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-                        {program.instructor || "بدون مدرب"}
+                        {program.instructor || arabicSource("training.without_a_coach")}
                       </p>
                     </div>
                   </div>
@@ -593,7 +594,7 @@ export function Training() {
                     </span>
                   )}
                   <span className="text-muted-foreground flex items-center gap-1" style={{ fontSize: 12 }}>
-                    <Users className="w-3 h-3" /> {participants.length} مشارك
+                    <Users className="w-3 h-3" /> {participants.length} {arabicSource("training.participant")}
                   </span>
                 </div>
 
@@ -601,7 +602,7 @@ export function Training() {
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-muted-foreground" style={{ fontSize: 11 }}>
-                      نسبة الإنجاز
+                      {arabicSource("common.completion_rate")}
                     </span>
                     <span className="text-foreground" style={{ fontSize: 11 }}>
                       {program.completion_rate}%
@@ -632,7 +633,7 @@ export function Training() {
                 {/* Participants section */}
                 <div className="mt-4 pt-4 border-t border-border/20">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm text-foreground">المشاركون</h4>
+                    <h4 className="text-sm text-foreground">{arabicSource("training.participants")}</h4>
                     <button
                       onClick={() => {
                         setSelectedProgramForParticipants(program.id);
@@ -641,7 +642,7 @@ export function Training() {
                       className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
-                      إضافة
+                      {arabicSource("common.addition")}
                     </button>
                   </div>
 
@@ -663,11 +664,11 @@ export function Training() {
                           {p.score && (
                             <span className="text-xs text-primary font-semibold ms-2">{p.score}%</span>
                           )}
-                          {p.completion_status !== "مكتمل" && (
+                          {p.completion_status !== arabicSource("common.complete") && (
                             <button
                               onClick={() => handleMarkCompleted(p.id, 85)}
                               className="ml-2 p-1 hover:bg-emerald-500/20 rounded transition-colors"
-                              title="تحديث الحالة"
+                              title={arabicSource("training.status_update")}
                             >
                               <CheckCircle className="w-4 h-4 text-emerald-400" />
                             </button>
@@ -682,7 +683,7 @@ export function Training() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground">لا يوجد مشاركون</p>
+                    <p className="text-xs text-muted-foreground">{arabicSource("training.there_are_no_participants")}</p>
                   )}
                 </div>
               </motion.div>
@@ -707,7 +708,7 @@ export function Training() {
               className="bg-card border border-border/40 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl text-foreground">برنامج تدريبي جديد</h2>
+                <h2 className="text-xl text-foreground">{arabicSource("training.new_training_program")}</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   className="p-2 hover:bg-secondary rounded-lg transition-colors"
@@ -718,19 +719,19 @@ export function Training() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-foreground mb-2">العنوان *</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("training.address")}</label>
                   <input
                     type="text"
                     value={createForm.title}
                     onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
-                    placeholder="عنوان البرنامج"
+                    placeholder={arabicSource("training.program_title")}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-foreground mb-2">الفئة *</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("training.category")}</label>
                     <select
                       value={createForm.category}
                       onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
@@ -741,7 +742,7 @@ export function Training() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-foreground mb-2">الوزن</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("training.weight")}</label>
                     <input
                       type="text"
                       value={createForm.weight}
@@ -754,31 +755,31 @@ export function Training() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-foreground mb-2">المدرب</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("common.coach")}</label>
                     <input
                       type="text"
                       value={createForm.instructor}
                       onChange={(e) => setCreateForm({ ...createForm, instructor: e.target.value })}
                       className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
-                      placeholder="اسم المدرب"
+                      placeholder={arabicSource("training.name_of_coach")}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm text-foreground mb-2">المدة (ساعات)</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("common.duration_hours")}</label>
                     <input
                       type="text"
                       value={createForm.duration}
                       onChange={(e) => setCreateForm({ ...createForm, duration: e.target.value })}
                       className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
-                      placeholder="20 ساعة"
+                      placeholder={arabicSource("training.20_hours")}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-foreground mb-2">تاريخ البداية</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("common.start_date")}</label>
                     <input
                       type="date"
                       value={createForm.start_date}
@@ -788,7 +789,7 @@ export function Training() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-foreground mb-2">تاريخ النهاية</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("training.end_date")}</label>
                     <input
                       type="date"
                       value={createForm.end_date}
@@ -799,7 +800,7 @@ export function Training() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-foreground mb-2">الحالة</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("common.status")}</label>
                   <select
                     value={createForm.status}
                     onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
@@ -810,7 +811,7 @@ export function Training() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-foreground mb-2">الحد الأقصى للمشاركين</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("training.maximum_participants")}</label>
                   <input
                     type="number"
                     value={createForm.max_participants}
@@ -821,13 +822,13 @@ export function Training() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-foreground mb-2">الأهداف (كل هدف في سطر)</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("training.targets_each_target_in_a_line")}</label>
                   <textarea
                     value={createForm.objectives}
                     onChange={(e) => setCreateForm({ ...createForm, objectives: e.target.value })}
                     rows={4}
                     className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60 resize-none"
-                    placeholder="الهدف الأول&#10;الهدف الثاني&#10;الهدف الثالث"
+                    placeholder={arabicSource("training.the_first_goal_the_second_goal_the_third_goal")}
                   />
                 </div>
 
@@ -837,13 +838,13 @@ export function Training() {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     <Save className="w-4 h-4" />
-                    حفظ البرنامج
+                    {arabicSource("training.save_the_program")}
                   </button>
                   <button
                     onClick={() => setShowCreateModal(false)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -868,7 +869,7 @@ export function Training() {
               className="bg-card border border-border/40 rounded-xl p-6 max-w-2xl w-full"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl text-foreground">تعديل البرنامج</h2>
+                <h2 className="text-xl text-foreground">{arabicSource("training.modify_the_program")}</h2>
                 <button
                   onClick={() => setEditingProgram(null)}
                   className="p-2 hover:bg-secondary rounded-lg transition-colors"
@@ -879,7 +880,7 @@ export function Training() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-foreground mb-2">المدرب</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("common.coach")}</label>
                   <input
                     type="text"
                     value={editingProgram.instructor || ""}
@@ -894,7 +895,7 @@ export function Training() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-foreground mb-2">المدة (ساعات)</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("common.duration_hours")}</label>
                   <input
                     type="text"
                     value={editingProgram.duration || ""}
@@ -910,7 +911,7 @@ export function Training() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-foreground mb-2">الحالة</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("common.status")}</label>
                     <select
                       value={editingProgram.status}
                       onChange={(e) =>
@@ -926,7 +927,7 @@ export function Training() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-foreground mb-2">نسبة الإنجاز (%)</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("training.completion_rate")}</label>
                     <input
                       type="number"
                       value={editingProgram.completion_rate}
@@ -949,13 +950,13 @@ export function Training() {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     <Save className="w-4 h-4" />
-                    حفظ التغييرات
+                    {arabicSource("common.save_changes")}
                   </button>
                   <button
                     onClick={() => setEditingProgram(null)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -980,7 +981,7 @@ export function Training() {
               className="bg-card border border-border/40 rounded-xl p-6 max-w-md w-full"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl text-foreground">تسجيل موظف جديد</h2>
+                <h2 className="text-xl text-foreground">{arabicSource("training.register_a_new_employee")}</h2>
                 <button
                   onClick={() => setShowEnrollModal(false)}
                   className="p-2 hover:bg-secondary rounded-lg transition-colors"
@@ -991,7 +992,7 @@ export function Training() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-foreground mb-2">الموظف *</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("common.employee_3")}</label>
                   <select
                     value={enrollForm.employee_id}
                     onChange={(e) =>
@@ -999,7 +1000,7 @@ export function Training() {
                     }
                     className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
                   >
-                    <option value="">اختر موظف</option>
+                    <option value="">{arabicSource("training.select_employee")}</option>
                     {employees
                       .filter(
                         (e) =>
@@ -1016,7 +1017,7 @@ export function Training() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-foreground mb-2">حالة الانضمام</label>
+                  <label className="block text-sm text-foreground mb-2">{arabicSource("training.join_status")}</label>
                   <select
                     value={enrollForm.completion_status}
                     onChange={(e) =>
@@ -1031,9 +1032,9 @@ export function Training() {
                   </select>
                 </div>
 
-                {enrollForm.completion_status === "مكتمل" && (
+                {enrollForm.completion_status === arabicSource("common.complete") && (
                   <div>
-                    <label className="block text-sm text-foreground mb-2">الدرجة (%)</label>
+                    <label className="block text-sm text-foreground mb-2">{arabicSource("training.grade")}</label>
                     <input
                       type="number"
                       value={enrollForm.score}
@@ -1054,13 +1055,13 @@ export function Training() {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     <Save className="w-4 h-4" />
-                    تسجيل
+                    {arabicSource("training.register")}
                   </button>
                   <button
                     onClick={() => setShowEnrollModal(false)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -1071,7 +1072,7 @@ export function Training() {
 
       {programsLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">جاري التحميل...</div>
+          <div className="text-muted-foreground">{arabicSource("common.loading")}</div>
         </div>
       )}
     </div>

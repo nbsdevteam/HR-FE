@@ -14,28 +14,29 @@ import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant } fr
 import { DEPARTMENTS } from "../lib/constants";
 import { formatNumber } from "../i18n/format";
 import { localizedAlert, localizedConfirm } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 /* ──────── Constants ──────── */
-const STAGES = ["تقديم", "فرز أولي", "مقابلة", "اختبار", "عرض", "مقبول"] as const;
-const ALL_STAGES = [...STAGES, "مرفوض"] as const;
+const STAGES = [arabicSource("common.introduction"), arabicSource("common.initial_sort"), arabicSource("common.interview"), arabicSource("common.test"), arabicSource("common.width"), arabicSource("common.accepted")] as const;
+const ALL_STAGES = [...STAGES, arabicSource("common.rejected_3")] as const;
 
 const stageColors: Record<string, string> = {
-  "تقديم": "bg-blue-500/10 border-blue-500/30 text-blue-400",
-  "فرز أولي": "bg-purple-500/10 border-purple-500/30 text-purple-400",
-  "مقابلة": "bg-primary/10 border-primary/30 text-primary",
-  "اختبار": "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
-  "عرض": "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
-  "مقبول": "bg-green-500/10 border-green-500/30 text-green-400",
-  "مرفوض": "bg-destructive/10 border-destructive/30 text-destructive",
+  [arabicSource("common.introduction")]: "bg-blue-500/10 border-blue-500/30 text-blue-400",
+  [arabicSource("common.initial_sort")]: "bg-purple-500/10 border-purple-500/30 text-purple-400",
+  [arabicSource("common.interview")]: "bg-primary/10 border-primary/30 text-primary",
+  [arabicSource("common.test")]: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
+  [arabicSource("common.width")]: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+  [arabicSource("common.accepted")]: "bg-green-500/10 border-green-500/30 text-green-400",
+  [arabicSource("common.rejected_3")]: "bg-destructive/10 border-destructive/30 text-destructive",
 };
 
 const statusColors: Record<string, string> = {
-  "مفتوح": "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
-  "مغلق": "bg-muted/30 border-border text-muted-foreground",
-  "قيد المراجعة": "bg-primary/10 border-primary/30 text-primary",
+  [arabicSource("common.is_open")]: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+  [arabicSource("common.closed")]: "bg-muted/30 border-border text-muted-foreground",
+  [arabicSource("common.is_under_review")]: "bg-primary/10 border-primary/30 text-primary",
 };
 
-const sourceOptions = ["مباشر", "لينكدإن", "إحالة موظف", "موقع توظيف", "أخرى"];
+const sourceOptions = [arabicSource("common.live"), arabicSource("recruitment.linkedin"), arabicSource("recruitment.referral_of_an_employee"), arabicSource("recruitment.recruitment_site"), arabicSource("common.other")];
 
 /* ──────── Ranking Algorithm ──────── */
 function calcRankScore(a: DbApplicant): number {
@@ -53,11 +54,11 @@ function calcRankScore(a: DbApplicant): number {
 }
 
 function rankLabel(score: number): { text: string; color: string } {
-  if (score >= 80) return { text: "ممتاز", color: "text-green-400 bg-green-500/10 border-green-500/30" };
-  if (score >= 60) return { text: "جيد جداً", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" };
-  if (score >= 40) return { text: "جيد", color: "text-primary bg-primary/10 border-primary/30" };
-  if (score >= 20) return { text: "مقبول", color: "text-amber-400 bg-amber-500/10 border-amber-500/30" };
-  return { text: "ضعيف", color: "text-red-400 bg-red-500/10 border-red-500/30" };
+  if (score >= 80) return { text: arabicSource("recruitment.excellent"), color: "text-green-400 bg-green-500/10 border-green-500/30" };
+  if (score >= 60) return { text: arabicSource("recruitment.very_good"), color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" };
+  if (score >= 40) return { text: arabicSource("recruitment.good"), color: "text-primary bg-primary/10 border-primary/30" };
+  if (score >= 20) return { text: arabicSource("common.accepted"), color: "text-amber-400 bg-amber-500/10 border-amber-500/30" };
+  return { text: arabicSource("recruitment.weak"), color: "text-red-400 bg-red-500/10 border-red-500/30" };
 }
 
 /* ──────── Star Rating Component ──────── */
@@ -99,8 +100,8 @@ export function Recruitment() {
   const [selectedApplicant, setSelectedApplicant] = useState<DbApplicant | null>(null);
   const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStage, setFilterStage] = useState<string>("الكل");
-  const [filterJob, setFilterJob] = useState<string>("الكل");
+  const [filterStage, setFilterStage] = useState<string>(arabicSource("common.all"));
+  const [filterJob, setFilterJob] = useState<string>(arabicSource("common.all"));
   const [sortBy, setSortBy] = useState<"rank" | "rating" | "date" | "name" | "job" | "stage">("rank");
   const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
   const [saving, setSaving] = useState(false);
@@ -120,8 +121,8 @@ export function Recruitment() {
         (a.job_title || "").toLowerCase().includes(q)
       );
     }
-    if (filterStage !== "الكل") list = list.filter(a => a.stage === filterStage);
-    if (filterJob !== "الكل") list = list.filter(a => a.job_opening_id === filterJob);
+    if (filterStage !== arabicSource("common.all")) list = list.filter(a => a.stage === filterStage);
+    if (filterJob !== arabicSource("common.all")) list = list.filter(a => a.job_opening_id === filterJob);
 
     const dir = recSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
@@ -137,10 +138,10 @@ export function Recruitment() {
 
   // Stats
   const stats = useMemo(() => ({
-    openJobs: jobs.filter(j => j.status === "مفتوح").length,
+    openJobs: jobs.filter(j => j.status === arabicSource("common.is_open")).length,
     totalApplicants: applicants.length,
-    interviewing: applicants.filter(a => a.stage === "مقابلة").length,
-    hired: applicants.filter(a => a.stage === "مقبول").length,
+    interviewing: applicants.filter(a => a.stage === arabicSource("common.interview")).length,
+    hired: applicants.filter(a => a.stage === arabicSource("common.accepted")).length,
     bookmarked: applicants.filter(a => a.is_bookmarked).length,
   }), [jobs, applicants]);
 
@@ -164,7 +165,7 @@ export function Recruitment() {
   }, [refetchApps]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
-    if (!localizedConfirm("هل أنت متأكد من حذف هذا المتقدم؟")) return;
+    if (!localizedConfirm(arabicSource("recruitment.are_you_sure_you_want_to_delete_this_applicant"))) return;
     const { error } = await supabase.from("applicants").delete().eq("id", id);
     if (!error) {
       setSelectedApplicant(null);
@@ -173,7 +174,7 @@ export function Recruitment() {
   }, [refetchApps]);
 
   const handleConvertToEmployee = useCallback(async (app: DbApplicant) => {
-    if (!localizedConfirm(`هل تريد تحويل "${app.name}" إلى موظف في النظام؟`)) return;
+    if (!localizedConfirm(`${arabicSource("recruitment.do_you_want_to_convert")}${app.name}${arabicSource("recruitment.to_an_employee_in_the_system")}`)) return;
 
     // Retry loop handles TOCTOU race on person_id (two concurrent inserts could pick same ID)
     const MAX_RETRIES = 3;
@@ -190,12 +191,12 @@ export function Recruitment() {
           english_name: app.name,
           email: app.email || null,
           personal_phone: app.phone || null,
-          department: app.job_department || "غير محدد",
+          department: app.job_department || arabicSource("common.not_specified"),
           position: app.job_title || null,
           monthly_salary: app.expected_salary || 0,
           currency: app.salary_currency || "IQD",
           join_date: new Date().toISOString().substring(0, 10),
-          status: "نشط",
+          status: arabicSource("common.is_active"),
           overtime_rate: 1.5,
           overtime_enabled: false,
           allowed_late_minutes: 15,
@@ -210,15 +211,15 @@ export function Recruitment() {
         }
 
         // Mark applicant as converted
-        await supabase.from("applicants").update({ stage: "مقبول", notes: (app.notes || "") + "\n[تم التحويل لموظف]" }).eq("id", app.id);
+        await supabase.from("applicants").update({ stage: arabicSource("common.accepted"), notes: (app.notes || "") + "\n" + arabicSource("recruitment.referred_to_employee") }).eq("id", app.id);
 
         setSelectedApplicant(null);
         refetchApps();
-        localizedAlert(`تم إضافة "${app.name}" كموظف برقم ${nextPid} بنجاح!`);
+        localizedAlert(`${arabicSource("common.added")}${app.name}${arabicSource("recruitment.as_employee_no")} ${nextPid} ${arabicSource("recruitment.successfully")}`);
         return; // Success — exit retry loop
       } catch (e: any) {
         if (attempt === MAX_RETRIES - 1) {
-          localizedAlert("خطأ في تحويل المتقدم: " + e.message);
+          localizedAlert(arabicSource("recruitment.error_converting_advanced") + " " + e.message);
         }
       }
     }
@@ -229,7 +230,7 @@ export function Recruitment() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل بيانات التوظيف...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("recruitment.loading_employment_data")}</span>
       </div>
     );
   }
@@ -239,8 +240,8 @@ export function Recruitment() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-gradient-gold">التوظيف</h1>
-          <p className="text-muted-foreground mt-1">إدارة الوظائف الشاغرة وبنك المرشحين ونظام الترتيب</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.recruitment")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("recruitment.manage_job_vacancies_candidate_bank_and_ranking_system")}</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ViewToggle view={viewMode} onChange={setViewMode} />
@@ -248,13 +249,13 @@ export function Recruitment() {
             onClick={() => setShowApplicantForm(true)}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-lg cursor-pointer"
             style={{ fontSize: 13 }}>
-            <UserPlus className="w-4 h-4" /> إضافة متقدم
+            <UserPlus className="w-4 h-4" /> {arabicSource("recruitment.add_advanced_2")}
           </motion.button>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={() => setShowJobForm(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
             style={{ fontSize: 13 }}>
-            <Plus className="w-4 h-4" /> وظيفة شاغرة جديدة
+            <Plus className="w-4 h-4" /> {arabicSource("common.new_vacancy")}
           </motion.button>
         </div>
       </div>
@@ -262,11 +263,11 @@ export function Recruitment() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: "وظائف شاغرة", value: stats.openJobs, icon: Briefcase },
-          { label: "إجمالي المتقدمين", value: stats.totalApplicants, icon: Users },
-          { label: "قيد المقابلة", value: stats.interviewing, icon: UserPlus },
-          { label: "تم التوظيف", value: stats.hired, icon: FileCheck },
-          { label: "مرشحين مفضلين", value: stats.bookmarked, icon: BookmarkCheck },
+          { label: arabicSource("recruitment.vacancies_2"), value: stats.openJobs, icon: Briefcase },
+          { label: arabicSource("common.total_applicants"), value: stats.totalApplicants, icon: Users },
+          { label: arabicSource("recruitment.under_interview"), value: stats.interviewing, icon: UserPlus },
+          { label: arabicSource("recruitment.hired"), value: stats.hired, icon: FileCheck },
+          { label: arabicSource("recruitment.preferred_candidates"), value: stats.bookmarked, icon: BookmarkCheck },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -290,10 +291,10 @@ export function Recruitment() {
       {/* Tabs */}
       <div className="flex items-center gap-2 flex-wrap">
         {[
-          { id: "jobs" as const, label: "الوظائف الشاغرة" },
-          { id: "applicants" as const, label: "المتقدمين" },
-          { id: "pipeline" as const, label: "مسار التوظيف" },
-          { id: "bank" as const, label: "بنك المرشحين" },
+          { id: "jobs" as const, label: arabicSource("recruitment.vacancies") },
+          { id: "applicants" as const, label: arabicSource("recruitment.applicants") },
+          { id: "pipeline" as const, label: arabicSource("recruitment.recruitment_path") },
+          { id: "bank" as const, label: arabicSource("recruitment.candidates_bank") },
         ].map(tab => (
           <button key={tab.id} onClick={() => setView(tab.id)}
             className={`px-4 py-2 rounded-lg transition-colors cursor-pointer ${view === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
@@ -308,7 +309,7 @@ export function Recruitment() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {jobs.length === 0 ? (
             <div className="col-span-full">
-              <EmptyState icon={Briefcase} message="لا توجد وظائف شاغرة بعد" hint="اضغط &quot;وظيفة شاغرة جديدة&quot; لإضافة أول وظيفة" className="py-16" />
+              <EmptyState icon={Briefcase} message={arabicSource("recruitment.there_are_no_vacancies_yet")} hint={arabicSource("recruitment.click_new_vacancy_to_add_the_first_job")} className="py-16" />
             </div>
           ) : jobs.map((job, i) => (
             <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -331,7 +332,7 @@ export function Recruitment() {
                   <Briefcase className="w-3.5 h-3.5" />{job.type}
                 </span>
                 <span className="flex items-center gap-1 text-muted-foreground" style={{ fontSize: 12 }}>
-                  <Users className="w-3.5 h-3.5" />{job.applicant_count || 0} متقدم
+                  <Users className="w-3.5 h-3.5" />{job.applicant_count || 0} {arabicSource("recruitment.advanced_2")}
                 </span>
                 {job.deadline && (
                   <span className="flex items-center gap-1 text-muted-foreground" style={{ fontSize: 12 }}>
@@ -363,19 +364,19 @@ export function Recruitment() {
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <input type="text" placeholder="بحث بالاسم، البريد، الهاتف، المهارات..."
+              <input type="text" placeholder={arabicSource("recruitment.search_by_name_email_phone_skills")}
                 value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                 className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                 style={{ fontSize: 13 }} />
             </div>
             <select value={filterStage} onChange={e => setFilterStage(e.target.value)}
               className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-              <option value="الكل">كل المراحل</option>
+              <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_stages")}</option>
               {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={filterJob} onChange={e => setFilterJob(e.target.value)}
               className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-              <option value="الكل">كل الوظائف</option>
+              <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_jobs")}</option>
               {jobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
             </select>
           </div>
@@ -420,7 +421,7 @@ export function Recruitment() {
                       </div>
                     </motion.div>
                   )) : (
-                    <p className="text-muted-foreground text-center py-4" style={{ fontSize: 12 }}>لا يوجد</p>
+                    <p className="text-muted-foreground text-center py-4" style={{ fontSize: 12 }}>{arabicSource("recruitment.none")}</p>
                   )}
                 </div>
               </motion.div>
@@ -492,8 +493,8 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
     return (
       <div className="text-center py-16 text-muted-foreground">
         <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-        <p>لا يوجد متقدمين</p>
-        <p style={{ fontSize: 12 }}>اضغط "إضافة متقدم" لإدخال أول مرشح</p>
+        <p>{arabicSource("recruitment.there_are_no_applicants")}</p>
+        <p style={{ fontSize: 12 }}>{arabicSource("recruitment.click_add_advanced_to_enter_the_first_filter")}</p>
       </div>
     );
   }
@@ -507,12 +508,12 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
             <SortableHeaderRow
               columns={[
                 { label: "", key: null },
-                { label: "المتقدم", key: "name" },
-                { label: "الوظيفة", key: "job" },
-                { label: "تاريخ التقديم", key: "date" },
-                { label: "المرحلة", key: "stage" },
-                { label: "التقييم", key: "rating" },
-                { label: "الترتيب", key: "rank" },
+                { label: arabicSource("recruitment.advanced"), key: "name" },
+                { label: arabicSource("recruitment.function"), key: "job" },
+                { label: arabicSource("common.submission_date"), key: "date" },
+                { label: arabicSource("common.stage"), key: "stage" },
+                { label: arabicSource("common.evaluation"), key: "rating" },
+                { label: arabicSource("recruitment.ranking"), key: "rank" },
                 { label: "", key: null },
               ]}
               sortBy={sortBy}
@@ -568,11 +569,11 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
                     <div className="flex items-center gap-1">
                       {app.resume_url && (
                         <a href={app.resume_url} target="_blank" rel="noopener noreferrer"
-                          className="p-1 rounded hover:bg-primary/10 text-primary" title="تحميل CV">
+                          className="p-1 rounded hover:bg-primary/10 text-primary" title={arabicSource("recruitment.download_cv_2")}>
                           <Download className="w-3.5 h-3.5" />
                         </a>
                       )}
-                      <button onClick={() => onSelect(app)} className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer" title="عرض التفاصيل">
+                      <button onClick={() => onSelect(app)} className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer" title={arabicSource("common.show_details")}>
                         <Eye className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -638,35 +639,35 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
-            <h3 className="text-foreground">بنك المرشحين — نظام الترتيب الذكي</h3>
+            <h3 className="text-foreground">{arabicSource("recruitment.candidate_bank_smart_ranking_system")}</h3>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setOnlyBookmarked(!onlyBookmarked)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${onlyBookmarked ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-muted/20"}`}
               style={{ fontSize: 12 }}>
-              <BookmarkCheck className="w-3.5 h-3.5" /> المفضلين فقط
+              <BookmarkCheck className="w-3.5 h-3.5" /> {arabicSource("recruitment.favorites_only")}
             </button>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input type="text" placeholder="بحث بالاسم، المهارات، الشركة، التعليم..."
+            <input type="text" placeholder={arabicSource("recruitment.search_by_name_skills_company_education")}
               value={bankSearch} onChange={e => setBankSearch(e.target.value)}
               className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
               style={{ fontSize: 13 }} />
           </div>
           <select value={skillFilter} onChange={e => setSkillFilter(e.target.value)}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-            <option value="">كل المهارات</option>
+            <option value="">{arabicSource("recruitment.all_skills")}</option>
             {allSkills.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-            <option value="rank">ترتيب حسب الكفاءة</option>
-            <option value="rating">ترتيب حسب التقييم</option>
-            <option value="date">ترتيب حسب التاريخ</option>
-            <option value="name">ترتيب أبجدي</option>
+            <option value="rank">{arabicSource("recruitment.sort_by_efficiency")}</option>
+            <option value="rating">{arabicSource("recruitment.sort_by_rating")}</option>
+            <option value="date">{arabicSource("recruitment.sort_by_date")}</option>
+            <option value="name">{arabicSource("recruitment.alphabetical_order")}</option>
           </select>
         </div>
       </div>
@@ -675,8 +676,8 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
       <div className="bg-gradient-to-l from-primary/5 to-transparent border border-primary/20 rounded-xl p-4">
         <p className="text-muted-foreground" style={{ fontSize: 12 }}>
           <TrendingUp className="w-4 h-4 text-primary inline-block me-1" />
-          <strong className="text-foreground">خوارزمية الترتيب:</strong>{" "}
-          التقييم اليدوي (40%) + تقدّم المراحل (20%) + سنوات الخبرة (25%) + عدد المهارات (15%)
+          <strong className="text-foreground">{arabicSource("recruitment.ranking_algorithm")}</strong>{" "}
+          {arabicSource("recruitment.manual_evaluation_40_stage_progression_20_years_of_experience_25")}
         </p>
       </div>
 
@@ -685,7 +686,7 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
         {filtered.length === 0 ? (
           <div className="col-span-full text-center py-16 text-muted-foreground">
             <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>لا يوجد مرشحين مطابقين</p>
+            <p>{arabicSource("recruitment.there_are_no_matching_candidates")}</p>
           </div>
         ) : filtered.map((app, i) => {
           const score = calcRankScore(app);
@@ -726,7 +727,7 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
                 {app.experience_years > 0 && (
                   <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: 12 }}>
                     <Briefcase className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{app.experience_years} سنة خبرة</span>
+                    <span>{app.experience_years} {arabicSource("recruitment.years_of_experience")}</span>
                     {app.current_company && <span>— {app.current_company}</span>}
                   </div>
                 )}
@@ -820,10 +821,10 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => onEdit(applicant)} className="p-2 rounded-lg hover:bg-secondary cursor-pointer" title="تعديل">
+              <button onClick={() => onEdit(applicant)} className="p-2 rounded-lg hover:bg-secondary cursor-pointer" title={arabicSource("common.edit")}>
                 <Edit3 className="w-4 h-4 text-muted-foreground" />
               </button>
-              <button onClick={() => onDelete(applicant.id)} className="p-2 rounded-lg hover:bg-destructive/10 cursor-pointer" title="حذف">
+              <button onClick={() => onDelete(applicant.id)} className="p-2 rounded-lg hover:bg-destructive/10 cursor-pointer" title={arabicSource("common.delete")}>
                 <Trash2 className="w-4 h-4 text-destructive" />
               </button>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
@@ -837,7 +838,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
         <div className="p-6 space-y-5">
           {/* Stage */}
           <div>
-            <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>المرحلة الحالية</label>
+            <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>{arabicSource("recruitment.current_phase")}</label>
             <div className="flex items-center gap-2 flex-wrap">
               {ALL_STAGES.map(s => (
                 <button key={s} onClick={() => onUpdateStage(applicant.id, s)}
@@ -851,20 +852,20 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
 
           {/* Contact Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoRow icon={<Mail className="w-4 h-4" />} label="البريد" value={applicant.email} dir="ltr" />
-            <InfoRow icon={<Phone className="w-4 h-4" />} label="الهاتف" value={applicant.phone} dir="ltr" />
-            <InfoRow icon={<MapPin className="w-4 h-4" />} label="المدينة" value={applicant.city} />
-            <InfoRow icon={<Building2 className="w-4 h-4" />} label="الشركة الحالية" value={applicant.current_company} />
-            <InfoRow icon={<GraduationCap className="w-4 h-4" />} label="التعليم" value={applicant.education} />
-            <InfoRow icon={<Briefcase className="w-4 h-4" />} label="سنوات الخبرة" value={applicant.experience_years > 0 ? `${applicant.experience_years} سنة` : null} />
-            <InfoRow icon={<Clock className="w-4 h-4" />} label="تاريخ التقديم" value={applicant.applied_date} dir="ltr" />
-            <InfoRow icon={<Users className="w-4 h-4" />} label="المصدر" value={applicant.source} />
+            <InfoRow icon={<Mail className="w-4 h-4" />} label={arabicSource("common.post")} value={applicant.email} dir="ltr" />
+            <InfoRow icon={<Phone className="w-4 h-4" />} label={arabicSource("recruitment.phone")} value={applicant.phone} dir="ltr" />
+            <InfoRow icon={<MapPin className="w-4 h-4" />} label={arabicSource("common.city")} value={applicant.city} />
+            <InfoRow icon={<Building2 className="w-4 h-4" />} label={arabicSource("common.current_company")} value={applicant.current_company} />
+            <InfoRow icon={<GraduationCap className="w-4 h-4" />} label={arabicSource("recruitment.education")} value={applicant.education} />
+            <InfoRow icon={<Briefcase className="w-4 h-4" />} label={arabicSource("common.years_of_experience")} value={applicant.experience_years > 0 ? `${applicant.experience_years} ${arabicSource("common.years")}` : null} />
+            <InfoRow icon={<Clock className="w-4 h-4" />} label={arabicSource("common.submission_date")} value={applicant.applied_date} dir="ltr" />
+            <InfoRow icon={<Users className="w-4 h-4" />} label={arabicSource("common.source")} value={applicant.source} />
           </div>
 
           {/* Expected Salary */}
           {applicant.expected_salary && (
             <div className="p-3 rounded-lg bg-muted/20 border border-border/20">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>الراتب المتوقع: </span>
+              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("recruitment.expected_salary_2")} </span>
               <span className="text-foreground" style={{ fontSize: 13 }}>
                 {formatNumber(Number(applicant.expected_salary))} {applicant.salary_currency || "IQD"}
               </span>
@@ -874,7 +875,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
           {/* Skills */}
           {applicant.skills && applicant.skills.length > 0 && (
             <div>
-              <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>المهارات</label>
+              <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>{arabicSource("common.skills")}</label>
               <div className="flex flex-wrap gap-2">
                 {applicant.skills.map(s => (
                   <span key={s} className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary" style={{ fontSize: 12 }}>{s}</span>
@@ -889,7 +890,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
               <a href={applicant.resume_url} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-2 text-emerald-400 hover:underline">
                 <FileText className="w-4 h-4" />
-                <span style={{ fontSize: 13 }}>تحميل السيرة الذاتية</span>
+                <span style={{ fontSize: 13 }}>{arabicSource("recruitment.download_cv")}</span>
                 <Download className="w-4 h-4" />
               </a>
             </div>
@@ -898,7 +899,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
           {/* Notes */}
           {applicant.notes && (
             <div>
-              <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>ملاحظات</label>
+              <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.notes")}</label>
               <p className="text-foreground p-3 rounded-lg bg-muted/20 border border-border/20" style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>
                 {applicant.notes}
               </p>
@@ -907,31 +908,31 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
 
           {/* Interview Notes */}
           <div>
-            <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>ملاحظات المقابلة</label>
+            <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("recruitment.interview_notes")}</label>
             <textarea value={interviewNotes} onChange={e => setInterviewNotes(e.target.value)}
-              rows={4} placeholder="أضف ملاحظات المقابلة هنا..."
+              rows={4} placeholder={arabicSource("recruitment.add_interview_notes_here")}
               className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
               style={{ fontSize: 13 }} />
             <button onClick={saveNotes} disabled={savingNotes}
               className="mt-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
               style={{ fontSize: 12 }}>
-              {savingNotes ? "جاري الحفظ..." : "حفظ الملاحظات"}
+              {savingNotes ? arabicSource("common.saving") : arabicSource("recruitment.save_notes")}
             </button>
           </div>
 
           {/* Ranking Breakdown */}
           <div>
-            <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>تفاصيل الترتيب</label>
+            <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>{arabicSource("recruitment.arrangement_details")}</label>
             <div className="grid grid-cols-2 gap-3">
-              <RankBar label="التقييم" value={(applicant.rating / 5) * 100} weight="40%" />
-              <RankBar label="تقدّم المراحل" value={STAGES.indexOf(applicant.stage as any) >= 0 ? (STAGES.indexOf(applicant.stage as any) / (STAGES.length - 1)) * 100 : 0} weight="20%" />
-              <RankBar label="الخبرة" value={Math.min(applicant.experience_years / 15, 1) * 100} weight="25%" />
-              <RankBar label="المهارات" value={Math.min((applicant.skills?.length || 0) / 8, 1) * 100} weight="15%" />
+              <RankBar label={arabicSource("common.evaluation")} value={(applicant.rating / 5) * 100} weight="40%" />
+              <RankBar label={arabicSource("recruitment.progress_of_stages")} value={STAGES.indexOf(applicant.stage as any) >= 0 ? (STAGES.indexOf(applicant.stage as any) / (STAGES.length - 1)) * 100 : 0} weight="20%" />
+              <RankBar label={arabicSource("recruitment.experience")} value={Math.min(applicant.experience_years / 15, 1) * 100} weight="25%" />
+              <RankBar label={arabicSource("common.skills")} value={Math.min((applicant.skills?.length || 0) / 8, 1) * 100} weight="15%" />
             </div>
           </div>
 
           {/* Convert to Employee — only for accepted applicants */}
-          {applicant.stage === "مقبول" && (
+          {applicant.stage === arabicSource("common.accepted") && (
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
@@ -940,7 +941,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
               style={{ fontSize: 14 }}
             >
               <UserPlus className="w-5 h-5" />
-              تحويل إلى موظف (إلحاق بالنظام)
+              {arabicSource("recruitment.transfer_to_employee_attach_to_the_system")}
             </motion.button>
           )}
         </div>
@@ -985,8 +986,8 @@ function JobFormModal({ jobs, onClose, onSaved }: {
   onSaved: () => void;
 }) {
   const [form, setForm] = useState({
-    title: "", department: "تقنية المعلومات", location: "بغداد",
-    type: "دوام كامل", deadline: "", description: "", salary_range: "",
+    title: "", department: arabicSource("common.information_technology"), location: arabicSource("common.baghdad"),
+    type: arabicSource("common.full_time"), deadline: "", description: "", salary_range: "",
     requirements: "",
   });
   const [saving, setSaving] = useState(false);
@@ -1016,18 +1017,18 @@ function JobFormModal({ jobs, onClose, onSaved }: {
         onClick={e => e.stopPropagation()}
         className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">وظيفة شاغرة جديدة</h2>
+          <h2 className="text-foreground">{arabicSource("common.new_vacancy")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer"><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
         <div className="space-y-4">
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>المسمى الوظيفي *</label>
+            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.job_title")}</label>
             <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
-              placeholder="عنوان الوظيفة" className={inputCls} />
+              placeholder={arabicSource("recruitment.job_title_2")} className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>القسم</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.section")}</label>
               <select value={form.department} onChange={e => setForm({ ...form, department: e.target.value })} className={selectCls}>
                 {DEPARTMENTS.map(d => (
                   <option key={d}>{d}</option>
@@ -1035,43 +1036,43 @@ function JobFormModal({ jobs, onClose, onSaved }: {
               </select>
             </div>
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>الموقع</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.location")}</label>
               <input type="text" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className={inputCls} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>نوع الدوام</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.permanent_type")}</label>
               <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectCls}>
-                <option>دوام كامل</option><option>دوام جزئي</option><option>عقد مؤقت</option>
+                <option>{arabicSource("common.full_time")}</option><option>{arabicSource("recruitment.part_time")}</option><option>{arabicSource("recruitment.temporary_contract")}</option>
               </select>
             </div>
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>الموعد النهائي</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.deadline")}</label>
               <input type="date" value={form.deadline} onChange={e => setForm({ ...form, deadline: e.target.value })} className={inputCls} dir="ltr" />
             </div>
           </div>
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>نطاق الراتب</label>
+            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.salary_range")}</label>
             <input type="text" value={form.salary_range} onChange={e => setForm({ ...form, salary_range: e.target.value })}
-              placeholder="مثال: 1,500,000 - 2,500,000 IQD" className={inputCls} />
+              placeholder={arabicSource("recruitment.example_1_500_000_2_500_000_iqd")} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>المتطلبات (سطر لكل متطلب)</label>
+            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.requirements_line_for_each_requirement")}</label>
             <textarea value={form.requirements} onChange={e => setForm({ ...form, requirements: e.target.value })}
-              rows={3} placeholder="خبرة 5 سنوات..." className={`${inputCls} h-auto py-3 resize-none`} />
+              rows={3} placeholder={arabicSource("recruitment.5_years_experience")} className={`${inputCls} h-auto py-3 resize-none`} />
           </div>
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>الوصف</label>
+            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.description")}</label>
             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-              rows={3} placeholder="وصف الوظيفة..." className={`${inputCls} h-auto py-3 resize-none`} />
+              rows={3} placeholder={arabicSource("recruitment.job_description")} className={`${inputCls} h-auto py-3 resize-none`} />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving || !form.title.trim()}
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50">
-              {saving ? "جاري الحفظ..." : "نشر الوظيفة"}
+              {saving ? arabicSource("common.saving") : arabicSource("recruitment.job_posting")}
             </button>
-            <button onClick={onClose} className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer">إلغاء</button>
+            <button onClick={onClose} className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer">{arabicSource("common.cancel")}</button>
           </div>
         </div>
       </motion.div>
@@ -1097,15 +1098,15 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     email: editingApplicant?.email || "",
     phone: editingApplicant?.phone || "",
     job_opening_id: editingApplicant?.job_opening_id || (jobs[0]?.id || ""),
-    stage: editingApplicant?.stage || "تقديم",
+    stage: editingApplicant?.stage || arabicSource("common.introduction"),
     rating: editingApplicant?.rating || 0,
     skills: (editingApplicant?.skills || []).join(", "),
     experience_years: editingApplicant?.experience_years || 0,
     education: editingApplicant?.education || "",
     current_company: editingApplicant?.current_company || "",
-    city: editingApplicant?.city || "بغداد",
+    city: editingApplicant?.city || arabicSource("common.baghdad"),
     gender: editingApplicant?.gender || "",
-    source: editingApplicant?.source || "مباشر",
+    source: editingApplicant?.source || arabicSource("common.live"),
     expected_salary: editingApplicant?.expected_salary || "",
     salary_currency: editingApplicant?.salary_currency || "IQD",
     notes: editingApplicant?.notes || "",
@@ -1124,7 +1125,7 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     });
 
     if (error) {
-      setUploadError("فشل رفع الملف: " + error.message);
+      setUploadError(arabicSource("recruitment.file_upload_failed") + " " + error.message);
       setUploading(false);
       return;
     }
@@ -1152,7 +1153,7 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
       current_company: form.current_company || null,
       city: form.city || null,
       gender: form.gender || null,
-      source: form.source || "مباشر",
+      source: form.source || arabicSource("common.live"),
       expected_salary: form.expected_salary ? Number(form.expected_salary) : null,
       salary_currency: form.salary_currency || "IQD",
       notes: form.notes || null,
@@ -1168,7 +1169,7 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     onSaved();
   };
 
-  const openJobs = jobs.filter(j => j.status === "مفتوح" || j.status === "قيد المراجعة");
+  const openJobs = jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === arabicSource("common.is_under_review"));
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -1186,8 +1187,8 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
               <UserPlus className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-foreground">{isEdit ? "تعديل بيانات المتقدم" : "إضافة متقدم جديد"}</h2>
-              <p className="text-muted-foreground" style={{ fontSize: 12 }}>أدخل جميع البيانات المطلوبة للمرشح</p>
+              <h2 className="text-foreground">{isEdit ? arabicSource("recruitment.modify_applicant_data") : arabicSource("recruitment.add_a_new_applicant")}</h2>
+              <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("recruitment.enter_all_the_data_required_for_the_candidate")}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer">
@@ -1198,98 +1199,98 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
         {/* ── Scrollable Body ── */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-          {/* Section 1: المعلومات الأساسية */}
+          {/* Section 1: Basic information */}
           <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
             <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Users className="w-4 h-4" /> المعلومات الأساسية
+              <Users className="w-4 h-4" /> {arabicSource("recruitment.basic_information")}
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>الاسم الكامل *</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.full_name")}</label>
                 <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="اسم المتقدم" className={inputCls} />
+                  placeholder={arabicSource("recruitment.applicant_s_name")} className={inputCls} />
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>الوظيفة المتقدم لها *</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.the_job_applied_for")}</label>
                 <select value={form.job_opening_id} onChange={e => setForm({ ...form, job_opening_id: e.target.value })} className={selectCls}>
                   {openJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
-                  {openJobs.length === 0 && <option value="">لا توجد وظائف مفتوحة</option>}
+                  {openJobs.length === 0 && <option value="">{arabicSource("recruitment.there_are_no_open_positions")}</option>}
                 </select>
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>الجنس</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.sex")}</label>
                 <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className={selectCls}>
-                  <option value="">— اختر —</option>
-                  <option>ذكر</option>
-                  <option>أنثى</option>
+                  <option value="">{arabicSource("common.select")}</option>
+                  <option>{arabicSource("common.male")}</option>
+                  <option>{arabicSource("common.female")}</option>
                 </select>
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>المدينة</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.city")}</label>
                 <input type="text" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
-                  placeholder="بغداد" className={inputCls} />
+                  placeholder={arabicSource("common.baghdad")} className={inputCls} />
               </div>
             </div>
           </fieldset>
 
-          {/* Section 2: معلومات التواصل */}
+          {/* Section 2: Contact information */}
           <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
             <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Phone className="w-4 h-4" /> معلومات التواصل
+              <Phone className="w-4 h-4" /> {arabicSource("recruitment.contact_information")}
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>البريد الإلكتروني</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.email")}</label>
                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="email@example.com" className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>رقم الهاتف</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.phone_number")}</label>
                 <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
                   placeholder="07xxxxxxxxx" className={inputCls} dir="ltr" />
               </div>
             </div>
           </fieldset>
 
-          {/* Section 3: المؤهلات والخبرة */}
+          {/* Section 3: Qualifications and experience */}
           <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
             <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <GraduationCap className="w-4 h-4" /> المؤهلات والخبرة
+              <GraduationCap className="w-4 h-4" /> {arabicSource("recruitment.qualifications_and_experience")}
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>المؤهل العلمي</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.academic_qualification")}</label>
                 <select value={form.education} onChange={e => setForm({ ...form, education: e.target.value })} className={selectCls}>
-                  <option value="">— اختر —</option>
-                  <option>إعدادية</option>
-                  <option>دبلوم</option>
-                  <option>بكالوريوس</option>
-                  <option>ماجستير</option>
-                  <option>دكتوراه</option>
+                  <option value="">{arabicSource("common.select")}</option>
+                  <option>{arabicSource("recruitment.preparatory_school")}</option>
+                  <option>{arabicSource("recruitment.diploma")}</option>
+                  <option>{arabicSource("recruitment.bachelor_s_degree")}</option>
+                  <option>{arabicSource("recruitment.master")}</option>
+                  <option>{arabicSource("recruitment.ph_d")}</option>
                 </select>
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>سنوات الخبرة</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.years_of_experience")}</label>
                 <input type="number" min={0} max={50} value={form.experience_years}
                   onChange={e => setForm({ ...form, experience_years: Number(e.target.value) })}
                   className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>الشركة الحالية</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.current_company")}</label>
                 <input type="text" value={form.current_company} onChange={e => setForm({ ...form, current_company: e.target.value })}
-                  placeholder="اسم الشركة" className={inputCls} />
+                  placeholder={arabicSource("recruitment.company_name")} className={inputCls} />
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>مصدر التقديم</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.submission_source")}</label>
                 <select value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} className={selectCls}>
                   {sourceOptions.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
             </div>
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>المهارات (مفصولة بفاصلة)</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.skills_comma_separated")}</label>
               <input type="text" value={form.skills} onChange={e => setForm({ ...form, skills: e.target.value })}
-                placeholder="React, Node.js, SQL, إدارة مشاريع" className={inputCls} />
+                placeholder={arabicSource("recruitment.react_node_js_sql_project_management")} className={inputCls} />
               {form.skills && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {form.skills.split(",").map(s => s.trim()).filter(Boolean).map((s, i) => (
@@ -1300,19 +1301,19 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
             </div>
           </fieldset>
 
-          {/* Section 4: الراتب والتقييم */}
+          {/* Section 4: Salary and rating */}
           <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
             <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Trophy className="w-4 h-4" /> الراتب والتقييم
+              <Trophy className="w-4 h-4" /> {arabicSource("recruitment.salary_and_evaluation")}
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label className={labelCls} style={{ fontSize: 13 }}>الراتب المتوقع</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.expected_salary")}</label>
                 <input type="number" value={form.expected_salary} onChange={e => setForm({ ...form, expected_salary: e.target.value })}
                   placeholder="0" className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>العملة</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.currency")}</label>
                 <select value={form.salary_currency} onChange={e => setForm({ ...form, salary_currency: e.target.value })} className={selectCls}>
                   <option>IQD</option>
                   <option>USD</option>
@@ -1321,13 +1322,13 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>التقييم الأولي</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.initial_assessment")}</label>
                 <div className="pt-1.5">
                   <StarRating value={form.rating} onChange={r => setForm({ ...form, rating: r })} size={22} />
                 </div>
               </div>
               <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>المرحلة</label>
+                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.stage")}</label>
                 <select value={form.stage} onChange={e => setForm({ ...form, stage: e.target.value })} className={selectCls}>
                   {ALL_STAGES.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -1335,13 +1336,13 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
             </div>
           </fieldset>
 
-          {/* Section 5: السيرة الذاتية والملاحظات */}
+          {/* Section 5: Resume and notes */}
           <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
             <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <FileText className="w-4 h-4" /> السيرة الذاتية والملاحظات
+              <FileText className="w-4 h-4" /> {arabicSource("recruitment.biography_and_notes")}
             </legend>
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>السيرة الذاتية (CV)</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.curriculum_vitae_cv")}</label>
               <div
                 onClick={() => fileRef.current?.click()}
                 className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${form.resume_url ? "border-emerald-500/40 bg-emerald-500/5" : "border-border hover:border-primary/50 hover:bg-primary/5"}`}
@@ -1349,16 +1350,16 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
                 {form.resume_url ? (
                   <>
                     <FileCheck className="w-8 h-8 text-emerald-400" />
-                    <span className="text-emerald-400" style={{ fontSize: 13 }}>تم رفع الملف بنجاح</span>
-                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>اضغط لتغيير الملف</span>
+                    <span className="text-emerald-400" style={{ fontSize: 13 }}>{arabicSource("recruitment.the_file_was_uploaded_successfully")}</span>
+                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("recruitment.click_to_change_the_file")}</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-8 h-8 text-primary/60" />
                     <span className="text-foreground" style={{ fontSize: 13 }}>
-                      {uploading ? "جاري الرفع..." : "اضغط لرفع ملف CV"}
+                      {uploading ? arabicSource("recruitment.uploading") : arabicSource("recruitment.click_to_upload_your_cv_file")}
                     </span>
-                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>PDF, DOC, DOCX — حد أقصى 5MB</span>
+                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("recruitment.pdf_doc_docx_max_5mb")}</span>
                   </>
                 )}
               </div>
@@ -1371,9 +1372,9 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
               )}
             </div>
             <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>ملاحظات</label>
+              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.notes")}</label>
               <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
-                rows={4} placeholder="ملاحظات إضافية عن المرشح..." className={`${inputCls} h-auto py-3 resize-none`} />
+                rows={4} placeholder={arabicSource("recruitment.additional_notes_about_the_candidate")} className={`${inputCls} h-auto py-3 resize-none`} />
             </div>
           </fieldset>
         </div>
@@ -1385,14 +1386,14 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
               className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ fontSize: 14 }}>
               {saving ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> {arabicSource("common.saving")}</>
               ) : (
-                <><FileCheck className="w-4 h-4" /> {isEdit ? "تحديث البيانات" : "إضافة المتقدم"}</>
+                <><FileCheck className="w-4 h-4" /> {isEdit ? arabicSource("recruitment.update_data") : arabicSource("recruitment.add_advanced")}</>
               )}
             </button>
             <button onClick={onClose}
               className="px-6 h-12 rounded-xl border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
-              style={{ fontSize: 14 }}>إلغاء</button>
+              style={{ fontSize: 14 }}>{arabicSource("common.cancel")}</button>
           </div>
         </div>
       </motion.div>

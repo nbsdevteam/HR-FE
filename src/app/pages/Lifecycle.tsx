@@ -17,14 +17,15 @@ import {
 } from "../lib/hooks";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "../lib/payslip-engine";
 import { formatDate, formatNumber } from "../i18n/format";
+import { arabicSource } from "../i18n/source";
 
 const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg";
 const inputCls = "w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none";
 
 const TABS = [
-  { id: "contracts", label: "العقود", icon: Briefcase },
-  { id: "documents", label: "الوثائق", icon: FileText },
-  { id: "exit", label: "انتهاء الخدمة", icon: LogOut },
+  { id: "contracts", label: arabicSource("lifecycle.contracts"), icon: Briefcase },
+  { id: "documents", label: arabicSource("lifecycle.documentation"), icon: FileText },
+  { id: "exit", label: arabicSource("lifecycle.end_of_service"), icon: LogOut },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -49,19 +50,19 @@ const DEFAULT_STATUS_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_STATUS_LABELS: Record<string, string> = {
-  active: "نشط", expired: "منتهي", terminated: "مُنهى", renewed: "مُجدد", pending: "معلق",
-  valid: "ساري", expiring_soon: "قريب الانتهاء", missing: "مفقود", pending_review: "قيد المراجعة",
-  initiated: "بدأ", in_progress: "جاري", clearance: "إخلاء طرف", settlement: "تسوية",
-  completed: "مكتمل", cancelled: "ملغي",
-  passed: "ناجح", failed: "فاشل", waived: "مُعفى",
+  active: arabicSource("common.is_active"), expired: arabicSource("common.finished"), terminated: arabicSource("lifecycle.terminated"), renewed: arabicSource("lifecycle.refurbished"), pending: arabicSource("common.pending"),
+  valid: arabicSource("common.surrey"), expiring_soon: arabicSource("common.soon_to_be_completed"), missing: arabicSource("common.is_missing"), pending_review: arabicSource("common.is_under_review"),
+  initiated: arabicSource("lifecycle.started"), in_progress: arabicSource("common.my_neighbor"), clearance: arabicSource("lifecycle.disclaimer"), settlement: arabicSource("lifecycle.settlement"),
+  completed: arabicSource("common.complete"), cancelled: arabicSource("common.canceled"),
+  passed: arabicSource("common.successful"), failed: arabicSource("common.failed"), waived: arabicSource("lifecycle.exempt"),
 };
 
 const DEFAULT_EXIT_TYPE_LABELS: Record<string, string> = {
-  resignation: "استقالة", termination: "إنهاء خدمة", contract_end: "انتهاء عقد",
-  retirement: "تقاعد", mutual: "اتفاق متبادل", death: "وفاة",
+  resignation: arabicSource("lifecycle.resignation"), termination: arabicSource("common.termination_of_service"), contract_end: arabicSource("lifecycle.contract_expiration"),
+  retirement: arabicSource("lifecycle.retired"), mutual: arabicSource("lifecycle.mutual_agreement"), death: arabicSource("lifecycle.death"),
 };
 
-/** Build a key→label map from a config string like "resignation:استقالة,termination:إنهاء خدمة" */
+/** Build a key-to-label map from the configured comma-separated key:value pairs. */
 function parseKeyLabelMap(configStr: string, defaults: Record<string, string>): Record<string, string> {
   if (!configStr) return defaults;
   const map: Record<string, string> = {};
@@ -99,7 +100,7 @@ export function Lifecycle() {
 
   const checklistCategoryLabels = useMemo(() => parseKeyLabelMap(
     getValue('lifecycle.exit_checklist_categories', ''),
-    { general: "عام", it: "تقنية المعلومات", finance: "المالية", hr: "الموارد البشرية", admin: "الإدارة", custodies: "العهد" },
+    { general: arabicSource("common.general"), it: arabicSource("common.information_technology"), finance: arabicSource("common.finance"), hr: arabicSource("common.human_resources"), admin: arabicSource("common.management"), custodies: arabicSource("lifecycle.covenant") },
   ), [getValue]);
 
   const probationAlertDays = getNumber('lifecycle.probation_alert_days', 30);
@@ -131,7 +132,7 @@ export function Lifecycle() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري التحميل...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("common.loading")}</span>
       </div>
     );
   }
@@ -140,17 +141,17 @@ export function Lifecycle() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-gradient-gold">دورة حياة الموظف</h1>
-        <p className="text-muted-foreground mt-1">إدارة العقود والوثائق وانتهاء الخدمة</p>
+        <h1 className="text-gradient-gold">{arabicSource("common.employee_life_cycle")}</h1>
+        <p className="text-muted-foreground mt-1">{arabicSource("lifecycle.contracts_documents_and_termination_management")}</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: "عقود نشطة", value: activeContracts, icon: Briefcase, color: "text-emerald-400" },
-          { label: "وثائق قاربت الانتهاء", value: expiringDocs, icon: AlertTriangle, color: "text-amber-400" },
-          { label: "فترات تجربة قريبة", value: probationAlerts.length, icon: Timer, color: "text-blue-400" },
-          { label: "إجراءات إنهاء جارية", value: activeExits, icon: LogOut, color: "text-destructive" },
+          { label: arabicSource("common.active_contracts"), value: activeContracts, icon: Briefcase, color: "text-emerald-400" },
+          { label: arabicSource("lifecycle.documents_are_almost_complete"), value: expiringDocs, icon: AlertTriangle, color: "text-amber-400" },
+          { label: arabicSource("lifecycle.close_experience_periods"), value: probationAlerts.length, icon: Timer, color: "text-blue-400" },
+          { label: arabicSource("lifecycle.termination_proceedings_in_progress"), value: activeExits, icon: LogOut, color: "text-destructive" },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -180,7 +181,7 @@ export function Lifecycle() {
         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span className="text-amber-400" style={{ fontSize: 14 }}>تنبيهات فترة التجربة</span>
+            <span className="text-amber-400" style={{ fontSize: 14 }}>{arabicSource("lifecycle.trial_period_alerts")}</span>
           </div>
           <div className="space-y-1">
             {probationAlerts.map(c => {
@@ -188,7 +189,7 @@ export function Lifecycle() {
               const daysLeft = Math.ceil((new Date(c.probation_end_date!).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
               return (
                 <p key={c.id} className="text-foreground" style={{ fontSize: 13 }}>
-                  {emp ? empDisplayName(emp) : "—"} — تنتهي فترة التجربة بعد <span className="text-amber-400">{daysLeft} يوم</span>
+                  {emp ? empDisplayName(emp) : "—"} {arabicSource("lifecycle.the_trial_period_ends_yet")} <span className="text-amber-400">{daysLeft} {arabicSource("common.days_2")}</span>
                 </p>
               );
             })}
@@ -313,10 +314,10 @@ function ContractsTab({
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => onSearchChange(e.target.value)} placeholder="بحث بالاسم..." className={`${inputCls} ps-10`} />
+          <input type="text" value={search} onChange={e => onSearchChange(e.target.value)} placeholder={arabicSource("lifecycle.search_by_name")} className={`${inputCls} ps-10`} />
         </div>
         <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer" style={{ fontSize: 13 }}>
-          <Plus className="w-4 h-4" /> عقد جديد
+          <Plus className="w-4 h-4" /> {arabicSource("common.new_contract")}
         </button>
       </div>
 
@@ -324,12 +325,12 @@ function ContractsTab({
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`${cardCls} p-5`}>
-            <h3 className="text-foreground mb-4">عقد جديد</h3>
+            <h3 className="text-foreground mb-4">{arabicSource("common.new_contract")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Employee */}
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>الموظف *</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder="بحث..." className={inputCls} />
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
+                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
                 {empSearch && !formData.employee_id && (
                   <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
                     {employees.filter(e => empDisplayName(e).includes(empSearch)).slice(0, 5).map(e => (
@@ -341,26 +342,26 @@ function ContractsTab({
               </div>
               {/* Contract Type */}
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>نوع العقد *</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.contract_type_2")}</label>
                 <select value={formData.contract_type_id} onChange={e => setFormData(p => ({ ...p, contract_type_id: e.target.value }))} className={inputCls}>
-                  <option value="">اختر...</option>
+                  <option value="">{arabicSource("common.choose")}</option>
                   {contractTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>رقم العقد</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.contract_number")}</label>
                 <input value={formData.contract_number} onChange={e => setFormData(p => ({ ...p, contract_number: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ البداية *</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.start_date")}</label>
                 <input type="date" value={formData.start_date} onChange={e => setFormData(p => ({ ...p, start_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ الانتهاء</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.end_date")}</label>
                 <input type="date" value={formData.end_date} onChange={e => setFormData(p => ({ ...p, end_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>الراتب</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.salary")}</label>
                 <div className="flex gap-2">
                   <input type="number" value={formData.salary_amount || ""} onChange={e => setFormData(p => ({ ...p, salary_amount: Number(e.target.value) }))} className={`${inputCls} flex-1`} dir="ltr" />
                   <select value={formData.salary_currency} onChange={e => setFormData(p => ({ ...p, salary_currency: e.target.value }))} className="w-20 h-10 px-2 rounded-lg border border-border bg-input-background text-foreground text-xs outline-none">
@@ -372,9 +373,9 @@ function ContractsTab({
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={handleCreate} disabled={saving} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs hover:bg-primary/90 cursor-pointer disabled:opacity-50">
-                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} حفظ
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} {arabicSource("common.save")}
               </button>
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs hover:bg-muted/20 cursor-pointer">إلغاء</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs hover:bg-muted/20 cursor-pointer">{arabicSource("common.cancel")}</button>
             </div>
           </motion.div>
         )}
@@ -386,7 +387,7 @@ function ContractsTab({
           <table className="w-full">
             <thead>
               <tr className="bg-muted/20 border-b border-border/20">
-                {["الموظف", "نوع العقد", "رقم العقد", "تاريخ البداية", "تاريخ الانتهاء", "فترة التجربة", "الحالة", "إجراءات"].map(h => (
+                {[arabicSource("common.employee"), arabicSource("lifecycle.contract_type"), arabicSource("common.contract_number"), arabicSource("common.start_date"), arabicSource("common.end_date"), arabicSource("common.probation_period"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
                 ))}
               </tr>
@@ -403,11 +404,11 @@ function ContractsTab({
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{ct?.name_ar || "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.contract_number || "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.start_date}</td>
-                    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.end_date || "غير محدد"}</td>
+                    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.end_date || arabicSource("common.not_specified")}</td>
                     <td className="px-4 py-3">
                       {c.probation_status === "pending" && probDaysLeft !== null ? (
                         <span className={`text-xs ${probDaysLeft <= 14 ? "text-amber-400" : "text-muted-foreground"}`}>
-                          {probDaysLeft > 0 ? `${probDaysLeft} يوم متبقي` : "انتهت"}
+                          {probDaysLeft > 0 ? `${probDaysLeft} ${arabicSource("common.days_left")}` : arabicSource("lifecycle.finished")}
                         </span>
                       ) : (
                         <span className={`px-2 py-0.5 rounded-md border ${statusColors[c.probation_status] || ""}`} style={{ fontSize: 11 }}>
@@ -424,10 +425,10 @@ function ContractsTab({
                       <div className="flex items-center gap-1">
                         {c.probation_status === "pending" && (
                           <>
-                            <button onClick={() => handleProbation(c.id, "passed")} className="p-1 rounded hover:bg-emerald-500/20 cursor-pointer" title="اجتاز التجربة">
+                            <button onClick={() => handleProbation(c.id, "passed")} className="p-1 rounded hover:bg-emerald-500/20 cursor-pointer" title={arabicSource("lifecycle.passed_the_test")}>
                               <Check className="w-3.5 h-3.5 text-emerald-400" />
                             </button>
-                            <button onClick={() => handleProbation(c.id, "failed")} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title="لم يجتز">
+                            <button onClick={() => handleProbation(c.id, "failed")} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("lifecycle.did_not_pass")}>
                               <X className="w-3.5 h-3.5 text-destructive" />
                             </button>
                           </>
@@ -436,7 +437,7 @@ function ContractsTab({
                           <button onClick={async () => {
                             await supabase.from("employee_contracts").update({ status: "terminated" }).eq("id", c.id);
                             refetch();
-                          }} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title="إنهاء">
+                          }} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("common.end")}>
                             <UserX className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
                         )}
@@ -445,7 +446,7 @@ function ContractsTab({
                   </motion.tr>
                 );
               }) : (
-                <tr><td colSpan={8}><EmptyState icon={Briefcase} message="لا توجد عقود" /></td></tr>
+                <tr><td colSpan={8}><EmptyState icon={Briefcase} message={arabicSource("lifecycle.no_contracts")} /></td></tr>
               )}
             </tbody>
           </table>
@@ -515,18 +516,18 @@ function DocumentsTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         {[
-          { key: "all", label: "الكل" },
-          { key: "valid", label: "ساري" },
-          { key: "expiring_soon", label: "قريب الانتهاء" },
-          { key: "expired", label: "منتهي" },
-          { key: "missing", label: "مفقود" },
+          { key: "all", label: arabicSource("common.all") },
+          { key: "valid", label: arabicSource("common.surrey") },
+          { key: "expiring_soon", label: arabicSource("common.soon_to_be_completed") },
+          { key: "expired", label: arabicSource("common.finished") },
+          { key: "missing", label: arabicSource("common.is_missing") },
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)}
             className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${filter === f.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
             style={{ fontSize: 13 }}>{f.label}</button>
         ))}
         <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark cursor-pointer ms-auto" style={{ fontSize: 13 }}>
-          <Plus className="w-4 h-4" /> إضافة وثيقة
+          <Plus className="w-4 h-4" /> {arabicSource("common.add_document")}
         </button>
       </div>
 
@@ -534,11 +535,11 @@ function DocumentsTab({
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`${cardCls} p-5`}>
-            <h3 className="text-foreground mb-4">إضافة وثيقة</h3>
+            <h3 className="text-foreground mb-4">{arabicSource("common.add_document")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>الموظف *</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder="بحث..." className={inputCls} />
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
+                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
                 {empSearch && !formData.employee_id && (
                   <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
                     {employees.filter(e => empDisplayName(e).includes(empSearch)).slice(0, 5).map(e => (
@@ -549,30 +550,30 @@ function DocumentsTab({
                 )}
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>نوع الوثيقة *</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.document_type_2")}</label>
                 <select value={formData.document_type_id} onChange={e => setFormData(p => ({ ...p, document_type_id: e.target.value }))} className={inputCls}>
-                  <option value="">اختر...</option>
+                  <option value="">{arabicSource("common.choose")}</option>
                   {docTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>رقم الوثيقة</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.document_number")}</label>
                 <input value={formData.document_number} onChange={e => setFormData(p => ({ ...p, document_number: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ الإصدار</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.release_date")}</label>
                 <input type="date" value={formData.issue_date} onChange={e => setFormData(p => ({ ...p, issue_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ الانتهاء</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.end_date")}</label>
                 <input type="date" value={formData.expiry_date} onChange={e => setFormData(p => ({ ...p, expiry_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={handleCreate} disabled={saving} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs cursor-pointer disabled:opacity-50">
-                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} حفظ
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} {arabicSource("common.save")}
               </button>
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs cursor-pointer">إلغاء</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs cursor-pointer">{arabicSource("common.cancel")}</button>
             </div>
           </motion.div>
         )}
@@ -584,7 +585,7 @@ function DocumentsTab({
           <table className="w-full">
             <thead>
               <tr className="bg-muted/20 border-b border-border/20">
-                {["الموظف", "نوع الوثيقة", "رقم الوثيقة", "تاريخ الإصدار", "تاريخ الانتهاء", "الحالة", "إجراءات"].map(h => (
+                {[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
                 ))}
               </tr>
@@ -613,7 +614,7 @@ function DocumentsTab({
                   </motion.tr>
                 );
               }) : (
-                <tr><td colSpan={7}><EmptyState icon={FileText} message="لا توجد وثائق" /></td></tr>
+                <tr><td colSpan={7}><EmptyState icon={FileText} message={arabicSource("lifecycle.no_documents")} /></td></tr>
               )}
             </tbody>
           </table>
@@ -710,7 +711,7 @@ function ExitTab({
     if (status === "completed") {
       const proc = processes.find(p => p.id === processId);
       if (proc) {
-        await supabase.from("employees").update({ status: "منتهي", end_date: proc.exit_date }).eq("id", proc.employee_id);
+        await supabase.from("employees").update({ status: arabicSource("common.finished"), end_date: proc.exit_date }).eq("id", proc.employee_id);
       }
     }
     refetch();
@@ -731,7 +732,7 @@ function ExitTab({
     return (
       <div className="space-y-4">
         <button onClick={() => setSelectedProcess(null)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer">
-          <ChevronRight className="w-4 h-4" /> العودة
+          <ChevronRight className="w-4 h-4" /> {arabicSource("lifecycle.return")}
         </button>
 
         <div className="flex items-center gap-4">
@@ -754,17 +755,17 @@ function ExitTab({
         {/* Process Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className={`${cardCls} p-4`}>
-            <p className="text-muted-foreground" style={{ fontSize: 12 }}>مستحقات نهاية الخدمة</p>
+            <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("lifecycle.end_of_service_benefits")}</p>
             <p className="text-gradient-gold mt-1" style={{ fontSize: 22 }} dir="ltr">
               {proc.eos_amount ? `${formatNumber(Number(proc.eos_amount))} ${proc.eos_currency}` : "—"}
             </p>
           </div>
           <div className={`${cardCls} p-4`}>
-            <p className="text-muted-foreground" style={{ fontSize: 12 }}>آخر يوم عمل</p>
+            <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.last_working_day")}</p>
             <p className="text-foreground mt-1" style={{ fontSize: 16 }} dir="ltr">{proc.last_working_day || proc.exit_date}</p>
           </div>
           <div className={`${cardCls} p-4`}>
-            <p className="text-muted-foreground" style={{ fontSize: 12 }}>إخلاء الطرف</p>
+            <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.disclaimer")}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-foreground" style={{ fontSize: 16 }}>{completedCount}/{totalCount}</span>
               <div className="flex-1 h-2 rounded-full bg-muted/30">
@@ -779,18 +780,18 @@ function ExitTab({
         {proc.status !== "completed" && proc.status !== "cancelled" && (
           <div className="flex gap-2">
             {proc.status === "initiated" && (
-              <button onClick={() => handleStatusUpdate(proc.id, "in_progress")} className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs cursor-pointer hover:bg-amber-500/30">بدء الإجراءات</button>
+              <button onClick={() => handleStatusUpdate(proc.id, "in_progress")} className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs cursor-pointer hover:bg-amber-500/30">{arabicSource("common.initiate_procedures")}</button>
             )}
             {proc.status === "in_progress" && (
-              <button onClick={() => handleStatusUpdate(proc.id, "clearance")} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-xs cursor-pointer hover:bg-blue-500/30">إخلاء الطرف</button>
+              <button onClick={() => handleStatusUpdate(proc.id, "clearance")} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-xs cursor-pointer hover:bg-blue-500/30">{arabicSource("common.disclaimer")}</button>
             )}
             {proc.status === "clearance" && (
-              <button onClick={() => handleStatusUpdate(proc.id, "settlement")} className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs cursor-pointer hover:bg-purple-500/30">التسوية المالية</button>
+              <button onClick={() => handleStatusUpdate(proc.id, "settlement")} className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs cursor-pointer hover:bg-purple-500/30">{arabicSource("lifecycle.financial_settlement")}</button>
             )}
             {proc.status === "settlement" && (
-              <button onClick={() => handleStatusUpdate(proc.id, "completed")} className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs cursor-pointer hover:bg-emerald-500/30">اكتمال</button>
+              <button onClick={() => handleStatusUpdate(proc.id, "completed")} className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs cursor-pointer hover:bg-emerald-500/30">{arabicSource("lifecycle.complete")}</button>
             )}
-            <button onClick={() => handleStatusUpdate(proc.id, "cancelled")} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-xs cursor-pointer hover:bg-destructive/20">إلغاء</button>
+            <button onClick={() => handleStatusUpdate(proc.id, "cancelled")} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-xs cursor-pointer hover:bg-destructive/20">{arabicSource("common.cancel")}</button>
           </div>
         )}
 
@@ -798,7 +799,7 @@ function ExitTab({
         <div className={`${cardCls} p-5`}>
           <h3 className="text-foreground mb-4 flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-primary" />
-            قائمة إخلاء الطرف
+            {arabicSource("lifecycle.disclaimer_list")}
           </h3>
           {Object.entries(categoryLabels).map(([cat, catLabel]) => {
             const catItems = checklist.filter(c => {
@@ -846,7 +847,7 @@ function ExitTab({
     <div className="space-y-4">
       <div className="flex items-center justify-end">
         <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark cursor-pointer" style={{ fontSize: 13 }}>
-          <Plus className="w-4 h-4" /> إنهاء خدمة
+          <Plus className="w-4 h-4" /> {arabicSource("common.termination_of_service")}
         </button>
       </div>
 
@@ -854,14 +855,14 @@ function ExitTab({
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`${cardCls} p-5`}>
-            <h3 className="text-foreground mb-4">إنهاء خدمة موظف</h3>
+            <h3 className="text-foreground mb-4">{arabicSource("lifecycle.termination_of_an_employee")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>الموظف *</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder="بحث..." className={inputCls} />
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
+                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
                 {empSearch && !formData.employee_id && (
                   <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
-                    {employees.filter(e => empDisplayName(e).includes(empSearch) && e.status !== "منتهي").slice(0, 5).map(e => (
+                    {employees.filter(e => empDisplayName(e).includes(empSearch) && e.status !== arabicSource("common.finished")).slice(0, 5).map(e => (
                       <button key={e.id} onClick={() => { setFormData(p => ({ ...p, employee_id: e.id })); setEmpSearch(empDisplayName(e)); }}
                         className="w-full px-3 py-1.5 text-start text-foreground hover:bg-primary/10 cursor-pointer" style={{ fontSize: 12 }}>{empDisplayName(e)}</button>
                     ))}
@@ -869,33 +870,33 @@ function ExitTab({
                 )}
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>نوع الإنهاء *</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.termination_type_2")}</label>
                 <select value={formData.exit_type} onChange={e => setFormData(p => ({ ...p, exit_type: e.target.value }))} className={inputCls}>
                   {Object.entries(exitTypeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ الإنهاء *</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.termination_date_2")}</label>
                 <input type="date" value={formData.exit_date} onChange={e => setFormData(p => ({ ...p, exit_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>آخر يوم عمل</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.last_working_day")}</label>
                 <input type="date" value={formData.last_working_day} onChange={e => setFormData(p => ({ ...p, last_working_day: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>تاريخ الإشعار</label>
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.notice_date")}</label>
                 <input type="date" value={formData.notice_date} onChange={e => setFormData(p => ({ ...p, notice_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>السبب</label>
-                <input value={formData.reason} onChange={e => setFormData(p => ({ ...p, reason: e.target.value }))} className={inputCls} placeholder="سبب الإنهاء..." />
+                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.the_reason")}</label>
+                <input value={formData.reason} onChange={e => setFormData(p => ({ ...p, reason: e.target.value }))} className={inputCls} placeholder={arabicSource("lifecycle.reason_for_termination")} />
               </div>
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={handleCreate} disabled={saving} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs cursor-pointer disabled:opacity-50">
-                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} بدء الإجراءات
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} {arabicSource("common.initiate_procedures")}
               </button>
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs cursor-pointer">إلغاء</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs cursor-pointer">{arabicSource("common.cancel")}</button>
             </div>
           </motion.div>
         )}
@@ -907,7 +908,7 @@ function ExitTab({
           <table className="w-full">
             <thead>
               <tr className="bg-muted/20 border-b border-border/20">
-                {["الموظف", "نوع الإنهاء", "تاريخ الإنهاء", "مستحقات ن.خ", "الحالة", "عرض"].map(h => (
+                {[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
                 ))}
               </tr>
@@ -937,7 +938,7 @@ function ExitTab({
                   </motion.tr>
                 );
               }) : (
-                <tr><td colSpan={6}><EmptyState icon={UserX} message="لا توجد إجراءات إنهاء خدمة" /></td></tr>
+                <tr><td colSpan={6}><EmptyState icon={UserX} message={arabicSource("lifecycle.no_termination_procedures")} /></td></tr>
               )}
             </tbody>
           </table>

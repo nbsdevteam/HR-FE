@@ -4,19 +4,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { useDeviceStatus } from "../lib/hooks";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { arabicSource } from "../i18n/source";
 
 const quotes = [
-  "النجاح هو نتيجة الإعداد والعمل الجاد والتعلم من الفشل",
-  "الاستثمار في الموظفين هو أفضل استثمار للمؤسسة",
-  "القيادة هي فن جعل الآخرين يحققون أهدافهم بإرادتهم",
-  "بناء فريق قوي يبدأ من ثقافة مؤسسية صحية",
-  "التطوير المستمر هو مفتاح التميز المؤسسي",
+  arabicSource("shared.success_is_the_result_of_preparation_hard_work_and_learning_from"),
+  arabicSource("shared.investing_in_employees_is_the_best_investment_for_an_organizatio"),
+  arabicSource("shared.leadership_is_the_art_of_making_others_achieve_their_goals_by_th"),
+  arabicSource("shared.building_a_strong_team_starts_from_a_healthy_corporate_culture"),
+  arabicSource("shared.continuous_development_is_the_key_to_institutional_excellence"),
 ];
 
 const notifications = [
-  { id: 1, text: "تم قبول طلب إجازة أحمد محمد", time: "منذ ٣٠ دقيقة", icon: CalendarDays, color: "text-emerald-400", read: false },
-  { id: 2, text: "تم إصدار إنذار لـ سارة خالد", time: "منذ ساعة", icon: AlertTriangle, color: "text-destructive", read: false },
-  { id: 3, text: "تم إكمال تقييم أداء فريق التسويق", time: "منذ ساعتين", icon: CheckCircle, color: "text-primary", read: false },
+  { id: 1, text: arabicSource("shared.ahmed_mohamed_s_leave_request_has_been_accepted"), time: arabicSource("shared.30_minutes_ago"), icon: CalendarDays, color: "text-emerald-400", read: false },
+  { id: 2, text: arabicSource("shared.a_warning_was_issued_to_sarah_khaled"), time: arabicSource("shared.an_hour_ago"), icon: AlertTriangle, color: "text-destructive", read: false },
+  { id: 3, text: arabicSource("shared.marketing_team_performance_evaluation_completed"), time: arabicSource("shared.2_hours_ago"), icon: CheckCircle, color: "text-primary", read: false },
 ];
 
 export function TopBar() {
@@ -40,20 +41,20 @@ export function TopBar() {
 
   // Device status colors
   const statusConfig = {
-    online: { color: "text-emerald-400", bg: "bg-emerald-500", label: "متصل", ringColor: "ring-emerald-500/30" },
-    stale: { color: "text-amber-400", bg: "bg-amber-500", label: "متأخر", ringColor: "ring-amber-500/30" },
-    offline: { color: "text-destructive", bg: "bg-destructive", label: "غير متصل", ringColor: "ring-destructive/30" },
-    no_device: { color: "text-muted-foreground", bg: "bg-muted-foreground", label: "لا يوجد جهاز", ringColor: "ring-muted-foreground/20" },
+    online: { color: "text-emerald-400", bg: "bg-emerald-500", label: arabicSource("common.is_online"), ringColor: "ring-emerald-500/30" },
+    stale: { color: "text-amber-400", bg: "bg-amber-500", label: arabicSource("common.late"), ringColor: "ring-amber-500/30" },
+    offline: { color: "text-destructive", bg: "bg-destructive", label: arabicSource("common.is_offline"), ringColor: "ring-destructive/30" },
+    no_device: { color: "text-muted-foreground", bg: "bg-muted-foreground", label: arabicSource("shared.no_device"), ringColor: "ring-muted-foreground/20" },
   };
   const ds = statusConfig[deviceStatus.status];
 
   // Format sync age
   function formatSyncAge(minutes: number): string {
-    if (minutes < 1) return "الآن";
-    if (minutes < 60) return `منذ ${minutes} دقيقة`;
+    if (minutes < 1) return arabicSource("shared.now");
+    if (minutes < 60) return `${arabicSource("common.ago")} ${minutes} ${arabicSource("common.min")}`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `منذ ${hours} ساعة`;
-    return `منذ ${Math.floor(hours / 24)} يوم`;
+    if (hours < 24) return `${arabicSource("common.ago")} ${hours} ${arabicSource("common.hours")}`;
+    return `${arabicSource("common.ago")} ${Math.floor(hours / 24)} ${arabicSource("common.days_2")}`;
   }
 
   // Manual sync trigger
@@ -83,7 +84,7 @@ export function TopBar() {
       {/* Welcome */}
       <div className="flex items-center gap-4">
         <div>
-          <h3 className="text-foreground">مرحباً، مدير الموارد البشرية</h3>
+          <h3 className="text-foreground">{arabicSource("shared.hello_human_resources_manager")}</h3>
           <p className="text-muted-foreground" style={{ fontSize: 13 }}>{quote}</p>
         </div>
       </div>
@@ -95,7 +96,7 @@ export function TopBar() {
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="بحث..."
+            placeholder={arabicSource("common.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-9 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none"
@@ -110,7 +111,7 @@ export function TopBar() {
               whileHover={{ scale: 1.1 }}
               onClick={() => setDeviceOpen(!deviceOpen)}
               className={`relative p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer ring-2 ${ds.ringColor}`}
-              title={`جهاز البصمة: ${ds.label}`}
+              title={`${arabicSource("common.fingerprint_device_2")} ${ds.label}`}
             >
               <Fingerprint className={`w-5 h-5 ${ds.color}`} />
               {/* Status dot */}
@@ -134,7 +135,7 @@ export function TopBar() {
                   <div className="flex items-center justify-between p-3 border-b border-border/40">
                     <div className="flex items-center gap-2">
                       <Fingerprint className={`w-4 h-4 ${ds.color}`} />
-                      <p className="text-foreground" style={{ fontSize: 14 }}>جهاز البصمة</p>
+                      <p className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("common.fingerprint_device")}</p>
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
                       deviceStatus.status === "online" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
@@ -163,15 +164,15 @@ export function TopBar() {
                     {/* Sync Stats */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-muted/10 rounded-lg p-2 text-center border border-border/20">
-                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>آخر مزامنة</p>
+                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("shared.last_sync")}</p>
                         <p className={`font-medium mt-0.5 ${ds.color}`} style={{ fontSize: 12 }}>
-                          {deviceStatus.lastSyncAt ? formatSyncAge(deviceStatus.syncAgeMinutes) : "لم تتم"}
+                          {deviceStatus.lastSyncAt ? formatSyncAge(deviceStatus.syncAgeMinutes) : arabicSource("shared.not_completed")}
                         </p>
                       </div>
                       <div className="bg-muted/10 rounded-lg p-2 text-center border border-border/20">
-                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>سجلات اليوم</p>
+                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("shared.today_s_records")}</p>
                         <p className="text-foreground font-medium mt-0.5" style={{ fontSize: 12 }}>
-                          {deviceStatus.todayDeviceEvents} سجل
+                          {deviceStatus.todayDeviceEvents} {arabicSource("common.record")}
                         </p>
                       </div>
                     </div>
@@ -188,12 +189,12 @@ export function TopBar() {
                       {syncing ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          جاري المزامنة...
+                          {arabicSource("shared.synchronizing")}
                         </>
                       ) : (
                         <>
                           <RefreshCw className="w-4 h-4" />
-                          مزامنة الآن
+                          {arabicSource("shared.sync_now")}
                         </>
                       )}
                     </button>
@@ -227,7 +228,7 @@ export function TopBar() {
                 className="absolute top-full mt-2 end-0 w-80 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-[100]"
               >
                 <div className="flex items-center justify-between p-3 border-b border-border/40">
-                  <p className="text-foreground" style={{ fontSize: 14 }}>الإشعارات</p>
+                  <p className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("common.notices")}</p>
                   <button onClick={() => setBellOpen(false)} className="p-1 rounded hover:bg-muted/30 transition-colors cursor-pointer">
                     <X className="w-3.5 h-3.5 text-muted-foreground" />
                   </button>
@@ -256,7 +257,7 @@ export function TopBar() {
                 </div>
                 <div className="p-2 border-t border-border/40">
                   <button className="w-full py-2 text-center text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" style={{ fontSize: 13 }}>
-                    عرض جميع الإشعارات
+                    {arabicSource("shared.show_all_notifications")}
                   </button>
                 </div>
               </motion.div>

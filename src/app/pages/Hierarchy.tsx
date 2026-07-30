@@ -12,6 +12,7 @@ import i18n, { getLanguageDirection, normalizeLanguage } from "../i18n";
 import { formatDate } from "../i18n/format";
 import { translateArabicSource } from "../i18n/legacy";
 import { localizedConfirm } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 interface OrgNode {
   id: number;
@@ -44,15 +45,15 @@ const OWNER_COLOR = "#FFD700";
 const CLEVEL_COLOR = "#7C3AED";
 
 const defaultDeptColorMap: Record<string, string> = {
-  "الإدارة العليا": CLEVEL_COLOR,
-  "تقنية المعلومات": "#06B6D4",
+  [arabicSource("common.senior_management")]: CLEVEL_COLOR,
+  [arabicSource("common.information_technology")]: "#06B6D4",
   "IT": "#06B6D4",
-  "المالية": "#3B82F6",
-  "التسويق": "#EC4899",
-  "الموارد البشرية": "#F43F5E",
-  "العمليات": "#EF4444",
-  "المبيعات": "#F59E0B",
-  "المالك": OWNER_COLOR,
+  [arabicSource("common.finance")]: "#3B82F6",
+  [arabicSource("common.marketing")]: "#EC4899",
+  [arabicSource("common.human_resources")]: "#F43F5E",
+  [arabicSource("common.operations")]: "#EF4444",
+  [arabicSource("common.sales")]: "#F59E0B",
+  [arabicSource("common.owner")]: OWNER_COLOR,
 };
 
 /** Pick a colour from the palette that is NOT already used */
@@ -93,7 +94,7 @@ function buildOrgTree(employees: DbEmployee[], departments: DbDepartment[]): { t
       name,
       initials: name.charAt(0),
       position: e.position || e.department || "—",
-      department: e.department || "غير محدد",
+      department: e.department || arabicSource("common.not_specified"),
       color: dColors[e.department] || avatarColors[0],
       photo: e.profile_picture || null,
       email: e.email || null,
@@ -126,8 +127,8 @@ function buildOrgTree(employees: DbEmployee[], departments: DbDepartment[]): { t
     tree = roots[0];
   } else {
     tree = {
-      id: 0, dbId: "__root__", name: "المؤسسة", initials: "م",
-      position: "الإدارة العليا", department: "الإدارة العليا",
+      id: 0, dbId: "__root__", name: arabicSource("common.foundation"), initials: arabicSource("common.m"),
+      position: arabicSource("common.senior_management"), department: arabicSource("common.senior_management"),
       color: "#8B5CF6", photo: null, email: null,
       children: roots,
     };
@@ -173,7 +174,7 @@ function buildOrgTreeFromPositions(
 
   positions.filter(p => p.is_active).forEach(pos => {
     const dept = pos.department_id ? deptById[pos.department_id] : null;
-    const deptName = dept?.name || "الإدارة العليا";
+    const deptName = dept?.name || arabicSource("common.senior_management");
     const assignedEmps = empsByPos[pos.id] || [];
     const primaryEmp = assignedEmps[0];
     const isVacant = assignedEmps.length === 0;
@@ -182,7 +183,7 @@ function buildOrgTreeFromPositions(
     const isTopLevel = pos.level === 0;
     const color = isTopLevel ? OWNER_COLOR : (dColors[deptName] || avatarColors[0]);
 
-    const name = isVacant ? "شاغر" : empDisplayName(primaryEmp);
+    const name = isVacant ? arabicSource("common.vacant") : empDisplayName(primaryEmp);
 
     posNodeMap.set(pos.id, {
       id: nodeCounter++,
@@ -223,14 +224,14 @@ function buildOrgTreeFromPositions(
     tree = roots[0];
   } else if (roots.length === 0) {
     tree = {
-      id: 0, dbId: "__root__", name: "المؤسسة", initials: "م",
-      position: "الإدارة العليا", department: "الإدارة العليا",
+      id: 0, dbId: "__root__", name: arabicSource("common.foundation"), initials: arabicSource("common.m"),
+      position: arabicSource("common.senior_management"), department: arabicSource("common.senior_management"),
       color: OWNER_COLOR, photo: null, email: null, children: [],
     };
   } else {
     tree = {
-      id: 0, dbId: "__root__", name: "المؤسسة", initials: "م",
-      position: "الإدارة العليا", department: "الإدارة العليا",
+      id: 0, dbId: "__root__", name: arabicSource("common.foundation"), initials: arabicSource("common.m"),
+      position: arabicSource("common.senior_management"), department: arabicSource("common.senior_management"),
       color: OWNER_COLOR, photo: null, email: null, children: roots,
     };
   }
@@ -364,8 +365,8 @@ function OrgCard({
   const isHighlighted = highlightedIds.has(node.id);
   const totalChildren = countDescendants(node);
   const isDimmed = searchMatchIds.size > 0 && !isSearchMatch && !isHighlighted;
-  const isOwner = node.department === "المالك";
-  const isCLevel = node.department === "الإدارة العليا";
+  const isOwner = node.department === arabicSource("common.owner");
+  const isCLevel = node.department === arabicSource("common.senior_management");
   const isVacant = node.isVacant === true;
   const hc = node.headcount;
   const extraEmps = node.assignedEmployees && node.assignedEmployees.length > 1 ? node.assignedEmployees.slice(1) : [];
@@ -421,7 +422,7 @@ function OrgCard({
               )}
               <div className="min-w-0 flex-1">
                 <p className={`truncate ${isVacant ? "text-muted-foreground/50 italic" : isOwner ? "text-yellow-500" : "text-foreground"}`} style={{ fontSize: 13 }}>
-                  {isVacant ? "شاغر" : node.name}
+                  {isVacant ? arabicSource("common.vacant") : node.name}
                 </p>
                 <p className={`truncate ${isCLevel ? "text-purple-400" : "text-muted-foreground"}`} style={{ fontSize: 11 }}>{node.position}</p>
               </div>
@@ -544,8 +545,8 @@ function AddEmployeeModal({
               <UserPlus className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>إضافة موظف جديد</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>سيتم إضافته للهيكل التنظيمي وقاعدة البيانات</p>
+              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("common.add_a_new_employee")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.will_be_added_to_the_organizational_structure_and_database")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -556,29 +557,29 @@ function AddEmployeeModal({
         <div className="p-6 space-y-4">
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-primary" /> اسم الموظف</span>
+              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.employee_name")}</span>
             </label>
             <input type="text" value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: false })); }}
-              placeholder="مثال: أحمد علي"
+              placeholder={arabicSource("hierarchy.example_ahmed_ali")}
               className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.name ? "border-red-500" : "border-border/60"}`}
               style={{ fontSize: 13 }} />
-            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>يرجى إدخال اسم الموظف</p>}
+            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_employee_name")}</p>}
           </div>
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-primary" /> المسمى الوظيفي</span>
+              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.job_title")}</span>
             </label>
             <input type="text" value={position} onChange={e => { setPosition(e.target.value); setErrors(p => ({ ...p, position: false })); }}
-              placeholder="مثال: مطور برمجيات"
+              placeholder={arabicSource("hierarchy.example_software_developer")}
               className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.position ? "border-red-500" : "border-border/60"}`}
               style={{ fontSize: 13 }} />
-            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>يرجى إدخال المسمى الوظيفي</p>}
+            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_your_job_title")}</p>}
           </div>
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-primary" /> القسم</span>
+              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.section")}</span>
             </label>
             {!showNewDept ? (
               <div className="space-y-2">
@@ -589,14 +590,14 @@ function AddEmployeeModal({
                 </select>
                 <button type="button" onClick={() => setShowNewDept(true)}
                   className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors" style={{ fontSize: 12 }}>
-                  <Plus className="w-3.5 h-3.5" /> إضافة قسم جديد
+                  <Plus className="w-3.5 h-3.5" /> {arabicSource("hierarchy.add_a_new_section")}
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <input type="text" value={newDeptName} onChange={e => { setNewDeptName(e.target.value); setErrors(p => ({ ...p, newDept: false })); }}
-                    placeholder="اسم القسم الجديد" autoFocus
+                    placeholder={arabicSource("hierarchy.name_of_the_new_section")} autoFocus
                     className={`flex-1 bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.newDept ? "border-red-500" : "border-border/60"}`}
                     style={{ fontSize: 13 }} />
                   <div className="flex items-center gap-1 flex-wrap" style={{ maxWidth: 140 }}>
@@ -607,10 +608,10 @@ function AddEmployeeModal({
                     ))}
                   </div>
                 </div>
-                {errors.newDept && <p className="text-red-400" style={{ fontSize: 11 }}>يرجى إدخال اسم القسم</p>}
+                {errors.newDept && <p className="text-red-400" style={{ fontSize: 11 }}>{arabicSource("hierarchy.please_enter_the_department_name")}</p>}
                 <button type="button" onClick={() => { setShowNewDept(false); setNewDeptName(""); }}
                   className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>
-                  <ChevronLeft className="w-3 h-3" /> العودة للأقسام الحالية
+                  <ChevronLeft className="w-3 h-3" /> {arabicSource("hierarchy.return_to_current_sections")}
                 </button>
               </div>
             )}
@@ -618,7 +619,7 @@ function AddEmployeeModal({
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> المسؤول المباشر (المدير)</span>
+              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {arabicSource("hierarchy.direct_supervisor_manager")}</span>
             </label>
             <select value={managerId} onChange={e => setManagerId(Number(e.target.value))}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
@@ -635,7 +636,7 @@ function AddEmployeeModal({
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>سيكون تابعاً لـ: {selectedManager.name}</p>
+                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>{arabicSource("hierarchy.will_be_affiliated_with")} {selectedManager.name}</p>
                   <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{selectedManager.department}</p>
                 </div>
               </div>
@@ -644,9 +645,9 @@ function AddEmployeeModal({
         </div>
 
         <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
           <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-            <UserPlus className="w-4 h-4" /> إضافة للهيكل
+            <UserPlus className="w-4 h-4" /> {arabicSource("hierarchy.addition_to_the_structure")}
           </button>
         </div>
       </motion.div>
@@ -685,38 +686,38 @@ function DeleteConfirmModal({ node, orgTree, onDelete, onClose }: {
           </div>
 
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
-            <p className="text-red-400" style={{ fontSize: 12 }}>هل أنت متأكد من حذف هذا الموظف من الهيكل التنظيمي؟</p>
-            <p className="text-red-400/70 mt-1" style={{ fontSize: 11 }}>سيتم إزالة الربط بالمدير فقط — لن يُحذف الموظف من النظام.</p>
+            <p className="text-red-400" style={{ fontSize: 12 }}>{arabicSource("hierarchy.are_you_sure_to_delete_this_employee_from_the_organizational_cha")}</p>
+            <p className="text-red-400/70 mt-1" style={{ fontSize: 11 }}>{arabicSource("hierarchy.only_the_link_to_the_manager_will_be_removed_the_employee_will_n")}</p>
           </div>
 
           {hasChildren ? (
             <div className="space-y-3">
-              <p className="text-muted-foreground" style={{ fontSize: 12 }}>هذا الموظف لديه {node.children.length} مرؤوسين مباشرين. اختر ما يجب فعله:</p>
+              <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.this_employee_has")} {node.children.length} {arabicSource("hierarchy.direct_reports_choose_what_to_do")}</p>
               <button onClick={() => onDelete(node, true)}
                 className="w-full text-start p-3 rounded-xl border border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="w-4 h-4 text-primary" />
-                  <span className="text-foreground" style={{ fontSize: 13 }}>نقل المرؤوسين للأعلى</span>
+                  <span className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("hierarchy.moving_subordinates_to_the_top")}</span>
                 </div>
                 <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                  {parentNode ? `سيتم نقل المرؤوسين إلى "${parentNode.name}"` : "سيتم نقل المرؤوسين لمستوى أعلى"}
+                  {parentNode ? `${arabicSource("hierarchy.subordinates_will_be_transferred_to")}${parentNode.name}"` : arabicSource("hierarchy.subordinates_will_be_moved_to_a_higher_level")}
                 </p>
               </button>
               <button onClick={() => onDelete(node, false)}
                 className="w-full text-start p-3 rounded-xl border border-red-500/30 hover:border-red-500/60 hover:bg-red-500/5 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Trash2 className="w-4 h-4 text-red-400" />
-                  <span className="text-red-400" style={{ fontSize: 13 }}>فصل كل المرؤوسين</span>
+                  <span className="text-red-400" style={{ fontSize: 13 }}>{arabicSource("hierarchy.dismissal_of_all_subordinates")}</span>
                 </div>
-                <p className="text-muted-foreground" style={{ fontSize: 11 }}>سيفقد {countDescendants(node)} موظف الربط بمديرهم</p>
+                <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.will_lose")} {countDescendants(node)} {arabicSource("hierarchy.the_liaison_employee_with_their_manager")}</p>
               </button>
-              <button onClick={onClose} className="w-full mt-1 py-2 rounded-lg bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-center" style={{ fontSize: 12 }}>إلغاء</button>
+              <button onClick={onClose} className="w-full mt-1 py-2 rounded-lg bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-center" style={{ fontSize: 12 }}>{arabicSource("common.cancel")}</button>
             </div>
           ) : (
             <div className="flex items-center justify-end gap-3 mt-2">
-              <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+              <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
               <button onClick={() => onDelete(node, false)} className="px-5 py-2 rounded-lg bg-red-500/90 hover:bg-red-500 text-white transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-                <Trash2 className="w-4 h-4" /> فصل من الهيكل
+                <Trash2 className="w-4 h-4" /> {arabicSource("common.separation_from_the_structure")}
               </button>
             </div>
           )}
@@ -804,8 +805,8 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
               <Edit2 className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>تعديل بيانات الموظف</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>قم بتحديث معلومات الموظف</p>
+              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.modifying_employee_data")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.update_employee_information")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -816,29 +817,29 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
         <div className="p-6 space-y-4">
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-blue-400" /> اسم الموظف</span>
+              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.employee_name")}</span>
             </label>
             <input type="text" value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: false })); }}
-              placeholder="اسم الموظف"
+              placeholder={arabicSource("common.employee_name")}
               className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500/50 transition-colors ${errors.name ? "border-red-500" : "border-border/60"}`}
               style={{ fontSize: 13 }} />
-            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>يرجى إدخال اسم الموظف</p>}
+            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_employee_name")}</p>}
           </div>
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-blue-400" /> المسمى الوظيفي</span>
+              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.job_title")}</span>
             </label>
             <input type="text" value={position} onChange={e => { setPosition(e.target.value); setErrors(p => ({ ...p, position: false })); }}
-              placeholder="المسمى الوظيفي"
+              placeholder={arabicSource("common.job_title")}
               className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500/50 transition-colors ${errors.position ? "border-red-500" : "border-border/60"}`}
               style={{ fontSize: 13 }} />
-            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>يرجى إدخال المسمى الوظيفي</p>}
+            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_your_job_title")}</p>}
           </div>
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-blue-400" /> القسم</span>
+              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.section")}</span>
             </label>
             <select value={department} onChange={e => setDepartment(e.target.value)}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
@@ -849,12 +850,12 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-blue-400" /> المسؤول المباشر (اختياري)</span>
+              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("hierarchy.direct_supervisor_optional")}</span>
             </label>
             <select value={managerId ?? ""} onChange={e => setManagerId(e.target.value ? Number(e.target.value) : null)}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
               style={{ fontSize: 13 }}>
-              <option value="">بدون مدير (أعلى الهرم)</option>
+              <option value="">{arabicSource("common.without_a_manager_top_of_the_pyramid")}</option>
               {validManagers.map(n => <option key={n.dbId} value={n.id}>{n.name} — {n.position} ({n.department})</option>)}
             </select>
             {managerId !== null && (
@@ -867,7 +868,7 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>المدير: {allNodes.find(n => n.id === managerId)?.name}</p>
+                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>{arabicSource("hierarchy.director")} {allNodes.find(n => n.id === managerId)?.name}</p>
                   <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{allNodes.find(n => n.id === managerId)?.department}</p>
                 </div>
               </div>
@@ -876,9 +877,9 @@ function EditEmployeeModal({ node, allNodes, departments, departmentColors, onSa
         </div>
 
         <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
           <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-500/90 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-            <Edit2 className="w-4 h-4" /> حفظ التغييرات
+            <Edit2 className="w-4 h-4" /> {arabicSource("common.save_changes")}
           </button>
         </div>
       </motion.div>
@@ -906,17 +907,17 @@ function DetailPanel({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-1.5">
             {!isVirtualRoot && (
-              <button onClick={() => onAddChild(node.id)} className="w-7 h-7 rounded-full flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary transition-colors" title="إضافة مرؤوس">
+              <button onClick={() => onAddChild(node.id)} className="w-7 h-7 rounded-full flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary transition-colors" title={arabicSource("hierarchy.add_a_subordinate")}>
                 <UserPlus className="w-3.5 h-3.5" />
               </button>
             )}
             {!isRoot && !isVirtualRoot && (
-              <button onClick={() => onEdit(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors" title="تعديل البيانات">
+              <button onClick={() => onEdit(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors" title={arabicSource("hierarchy.modify_data")}>
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             )}
             {!isRoot && !isVirtualRoot && (
-              <button onClick={() => onDelete(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title="فصل من الهيكل">
+              <button onClick={() => onDelete(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title={arabicSource("common.separation_from_the_structure")}>
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
@@ -942,12 +943,12 @@ function DetailPanel({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         {!isVirtualRoot && (
           <div className="mt-5 space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>رقم الموظف</span>
+              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.employee_number")}</span>
               <span className="text-foreground" style={{ fontSize: 12 }}>EMP-{String(node.id).padStart(4, "0")}</span>
             </div>
             {parentNode && parentNode.dbId !== "__root__" && (
               <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>المدير المباشر</span>
+                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_manager")}</span>
                 <div className="flex items-center gap-1.5">
                   {parentNode.photo ? (
                     <img src={parentNode.photo} alt={parentNode.name} className="w-5 h-5 rounded-full object-cover" />
@@ -962,21 +963,21 @@ function DetailPanel({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
             )}
             {!parentNode && (
               <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>المدير المباشر</span>
-                <span className="text-primary" style={{ fontSize: 12 }}>بدون مدير (أعلى الهرم)</span>
+                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_manager")}</span>
+                <span className="text-primary" style={{ fontSize: 12 }}>{arabicSource("common.without_a_manager_top_of_the_pyramid")}</span>
               </div>
             )}
             <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>المرؤوسين المباشرين</span>
+              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_reports")}</span>
               <span className="text-foreground" style={{ fontSize: 12 }}>{node.children.length}</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>إجمالي الفريق</span>
+              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.total_team")}</span>
               <span className="text-foreground" style={{ fontSize: 12 }}>{countDescendants(node)}</span>
             </div>
             {node.email && (
               <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>البريد</span>
+                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.post")}</span>
                 <span className="text-foreground" style={{ fontSize: 12, direction: "ltr" }}>{node.email}</span>
               </div>
             )}
@@ -985,7 +986,7 @@ function DetailPanel({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
 
         {node.children.length > 0 && (
           <div className="mt-4">
-            <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>المرؤوسين المباشرين</p>
+            <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>{arabicSource("common.direct_reports")}</p>
             <div className="space-y-2 max-h-[200px] overflow-y-auto">
               {node.children.map(child => (
                 <div key={child.dbId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
@@ -1009,7 +1010,7 @@ function DetailPanel({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         {!isVirtualRoot && (
           <button onClick={() => onAddChild(node.id)}
             className="w-full mt-4 py-2.5 rounded-xl border border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 text-primary flex items-center justify-center gap-2 transition-all" style={{ fontSize: 12 }}>
-            <UserPlus className="w-4 h-4" /> إضافة مرؤوس جديد
+            <UserPlus className="w-4 h-4" /> {arabicSource("hierarchy.add_a_new_subordinate")}
           </button>
         )}
       </div>
@@ -1068,8 +1069,8 @@ function UnlinkedPanel({ employees, allNodes, onLink, onClose }: {
               <AlertTriangle className="w-5 h-5 text-amber-500" />
             </div>
             <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>موظفون بدون ربط</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>هؤلاء الموظفون ليس لديهم مدير محدد — حدد المدير المباشر لكل منهم</p>
+              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.employees_without_attachment")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -1101,7 +1102,7 @@ function UnlinkedPanel({ employees, allNodes, onLink, onClose }: {
                     className="flex-1 bg-background border border-border/60 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 12 }}
                   >
-                    <option value="">اختر المدير المباشر...</option>
+                    <option value="">{arabicSource("hierarchy.choose_the_direct_manager")}</option>
                     {allNodes.filter(n => n.dbId !== "__root__" && n.dbId !== emp.id).map(n => (
                       <option key={n.dbId} value={n.dbId}>{n.name} — {n.position}</option>
                     ))}
@@ -1114,7 +1115,7 @@ function UnlinkedPanel({ employees, allNodes, onLink, onClose }: {
                     className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors flex items-center gap-1"
                     style={{ fontSize: 12 }}
                   >
-                    <Link2 className="w-3.5 h-3.5" /> ربط
+                    <Link2 className="w-3.5 h-3.5" /> {arabicSource("hierarchy.connect")}
                   </button>
                 </div>
               </div>
@@ -1208,18 +1209,18 @@ function PositionCard({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-foreground truncate" style={{ fontSize: 13 }}>{node.title_ar}</p>
-                <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{dept?.name || "بدون قسم"}</p>
+                <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{dept?.name || arabicSource("common.no_section")}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => onEditPosition(node)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors" title="تعديل">
+              <button onClick={() => onEditPosition(node)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors" title={arabicSource("common.edit")}>
                 <Edit2 className="w-3 h-3 text-blue-400" />
               </button>
-              <button onClick={() => onAddPosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors" title="إضافة منصب فرعي">
+              <button onClick={() => onAddPosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors" title={arabicSource("hierarchy.add_a_sub_position")}>
                 <Plus className="w-3 h-3 text-primary" />
               </button>
               {node.assignedEmployees.length === 0 && node.children.length === 0 && (
-                <button onClick={() => onDeletePosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors" title="حذف">
+                <button onClick={() => onDeletePosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors" title={arabicSource("common.delete")}>
                   <Trash2 className="w-3 h-3 text-red-400" />
                 </button>
               )}
@@ -1250,7 +1251,7 @@ function PositionCard({
               dragOver ? "border-primary/60 bg-primary/5" : "border-border/30"
             }`}>
               <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                {dragOver ? "أفلت هنا للتعيين" : `${vacancies} شاغر`}
+                {dragOver ? arabicSource("common.drop_here_to_set") : `${vacancies} ${arabicSource("common.vacant")}`}
               </p>
             </div>
           )}
@@ -1364,7 +1365,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
     // Check headcount
     const currentCount = dbEmployees.filter(e => e.position_id === positionId).length;
     if (currentCount >= pos.max_headcount) {
-      setToast("خطأ: المنصب ممتلئ — لا يمكن تعيين المزيد");
+      setToast(arabicSource("hierarchy.error_position_is_full_cannot_assign_more"));
       setSaving(false);
       return;
     }
@@ -1386,10 +1387,10 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
 
     const { error } = await supabase.from("employees").update(updates).eq("id", employeeId);
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
       const emp = dbEmployees.find(e => e.id === employeeId);
-      setToast(`تم تعيين "${emp ? empDisplayName(emp) : ""}" في منصب "${pos.title_ar}" بنجاح`);
+      setToast(`${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("hierarchy.in_position")}${pos.title_ar}${arabicSource("common.successfully")}`);
       await Promise.all([refetch(), refetchPositions()]);
     }
     setSaving(false);
@@ -1418,9 +1419,9 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
     });
 
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم إنشاء المنصب بنجاح");
+      setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
       setShowAddPositionModal(false);
       setPosForm({ title_ar: "", title_en: "", department_id: "", max_headcount: "1", description: "" });
       await refetchPositions();
@@ -1441,9 +1442,9 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
     }).eq("id", editingPosition.id);
 
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم تحديث المنصب بنجاح");
+      setToast(arabicSource("hierarchy.position_updated_successfully"));
       setEditingPosition(null);
       setPosForm({ title_ar: "", title_en: "", department_id: "", max_headcount: "1", description: "" });
       await refetchPositions();
@@ -1453,13 +1454,13 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
 
   // Delete position
   const handleDeletePosition = useCallback(async (posId: string) => {
-    if (!localizedConfirm("هل تريد حذف هذا المنصب؟")) return;
+    if (!localizedConfirm(arabicSource("hierarchy.do_you_want_to_delete_this_post"))) return;
     setSaving(true);
     const { error } = await supabase.from("positions").delete().eq("id", posId);
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم حذف المنصب");
+      setToast(arabicSource("hierarchy.position_deleted"));
       await refetchPositions();
     }
     setSaving(false);
@@ -1486,7 +1487,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
     return (
       <div className="flex items-center justify-center h-40">
         <Loader2 className="w-6 h-6 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-2">جاري التحميل...</span>
+        <span className="text-muted-foreground ms-2">{arabicSource("common.loading")}</span>
       </div>
     );
   }
@@ -1497,8 +1498,8 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
         <GripVertical className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div>
-          <p className="text-foreground" style={{ fontSize: 13 }}>اسحب بطاقة الموظف من القائمة اليسرى وأسقطها على المنصب المطلوب.</p>
-          <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>سيتم تعيين القسم والمدير تلقائياً بناءً على هيكل المناصب.</p>
+          <p className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("hierarchy.drag_the_employee_card_from_the_left_menu_and_drop_it_on_the_des")}</p>
+          <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>{arabicSource("hierarchy.the_department_and_manager_will_be_assigned_automatically_based")}</p>
         </div>
       </div>
 
@@ -1506,11 +1507,11 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
         {/* Sidebar: Unassigned employees */}
         <div className="w-72 shrink-0 bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col">
           <div className="p-3 border-b border-border/30">
-            <h3 className="text-foreground mb-2" style={{ fontSize: 14 }}>موظفون بدون منصب ({unassignedEmployees.length})</h3>
+            <h3 className="text-foreground mb-2" style={{ fontSize: 14 }}>{arabicSource("hierarchy.employees_without_position")}{unassignedEmployees.length})</h3>
             <div className="relative">
               <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <input type="text" value={empSearch} onChange={e => setEmpSearch(e.target.value)}
-                placeholder="بحث..."
+                placeholder={arabicSource("common.search")}
                 className="w-full bg-background border border-border/40 rounded-lg ps-8 pe-3 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
                 style={{ fontSize: 12 }} />
             </div>
@@ -1520,7 +1521,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
               <DraggableEmployeeCard key={emp.id} emp={emp} deptColors={deptColors} />
             )) : (
               <p className="text-center text-muted-foreground py-6" style={{ fontSize: 12 }}>
-                {empSearch ? "لا توجد نتائج" : "جميع الموظفين معينون في مناصب"}
+                {empSearch ? arabicSource("common.no_results_found") : arabicSource("hierarchy.all_employees_are_appointed_to_positions")}
               </p>
             )}
           </div>
@@ -1529,16 +1530,16 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
         {/* Main: Position tree */}
         <div className="flex-1 bg-card/20 border border-border/30 rounded-xl overflow-auto p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-foreground" style={{ fontSize: 15 }}>هيكل المناصب</h3>
+            <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("common.position_structure")}</h3>
             <div className="flex items-center gap-2">
               {saving && (
                 <div className="flex items-center gap-1.5 text-primary" style={{ fontSize: 12 }}>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> جاري الحفظ...
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> {arabicSource("common.saving")}
                 </div>
               )}
               <button onClick={() => openAddModal(null)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" style={{ fontSize: 12 }}>
-                <Plus className="w-3.5 h-3.5" /> منصب جديد
+                <Plus className="w-3.5 h-3.5" /> {arabicSource("hierarchy.new_position")}
               </button>
             </div>
           </div>
@@ -1555,11 +1556,11 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <Network className="w-12 h-12 mb-4 opacity-30" />
-              <p style={{ fontSize: 16 }}>لا توجد مناصب بعد</p>
-              <p className="mt-2" style={{ fontSize: 13 }}>أنشئ المناصب أولاً ثم اسحب الموظفين لتعيينهم</p>
+              <p style={{ fontSize: 16 }}>{arabicSource("hierarchy.there_are_no_positions_yet")}</p>
+              <p className="mt-2" style={{ fontSize: 13 }}>{arabicSource("hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign")}</p>
               <button onClick={() => openAddModal(null)}
                 className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" style={{ fontSize: 13 }}>
-                <Plus className="w-4 h-4" /> إنشاء أول منصب
+                <Plus className="w-4 h-4" /> {arabicSource("hierarchy.create_the_first_position")}
               </button>
             </div>
           )}
@@ -1581,7 +1582,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
                     <Briefcase className="w-5 h-5 text-primary" />
                   </div>
                   <h3 className="text-foreground" style={{ fontSize: 15 }}>
-                    {editingPosition ? "تعديل المنصب" : "إضافة منصب جديد"}
+                    {editingPosition ? arabicSource("hierarchy.edit_position") : arabicSource("hierarchy.add_a_new_position")}
                   </h3>
                 </div>
                 <button onClick={() => { setShowAddPositionModal(false); setEditingPosition(null); }}
@@ -1592,39 +1593,39 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>المسمى الوظيفي (عربي) *</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("hierarchy.job_title_arabic")}</label>
                   <input type="text" value={posForm.title_ar} onChange={e => setPosForm(p => ({ ...p, title_ar: e.target.value }))}
-                    placeholder="مثال: مدير الموارد البشرية"
+                    placeholder={arabicSource("hierarchy.example_human_resources_manager")}
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }} />
                 </div>
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>المسمى الوظيفي (إنجليزي)</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("hierarchy.job_title_english")}</label>
                   <input type="text" value={posForm.title_en} onChange={e => setPosForm(p => ({ ...p, title_en: e.target.value }))}
                     placeholder="HR Manager" dir="ltr"
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }} />
                 </div>
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>القسم</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
                   <select value={posForm.department_id} onChange={e => setPosForm(p => ({ ...p, department_id: e.target.value }))}
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }}>
-                    <option value="">بدون قسم</option>
+                    <option value="">{arabicSource("common.no_section")}</option>
                     {dbDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الحد الأقصى للعدد</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("hierarchy.maximum_number")}</label>
                   <input type="number" value={posForm.max_headcount} onChange={e => setPosForm(p => ({ ...p, max_headcount: e.target.value }))}
                     min="1" max="100"
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }} dir="ltr" />
                 </div>
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>الوصف</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.description")}</label>
                   <textarea value={posForm.description} onChange={e => setPosForm(p => ({ ...p, description: e.target.value }))}
-                    rows={2} placeholder="وصف المنصب ومسؤولياته"
+                    rows={2} placeholder={arabicSource("hierarchy.position_description_and_responsibilities")}
                     className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground resize-none focus:outline-none focus:border-primary/50"
                     style={{ fontSize: 13 }} />
                 </div>
@@ -1632,11 +1633,11 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
 
               <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
                 <button onClick={() => { setShowAddPositionModal(false); setEditingPosition(null); }}
-                  className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+                  className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
                 <button onClick={editingPosition ? handleEditPosition : handleAddPosition} disabled={saving || !posForm.title_ar.trim()}
                   className="px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50" style={{ fontSize: 13 }}>
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {editingPosition ? "حفظ التغييرات" : "إنشاء المنصب"}
+                  {editingPosition ? arabicSource("common.save_changes") : arabicSource("hierarchy.create_position")}
                 </button>
               </div>
             </motion.div>
@@ -1649,7 +1650,7 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
         {toast && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
             className="fixed bottom-6 inset-x-0 flex justify-center z-40 pointer-events-none">
-            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2 pointer-events-auto ${toast.startsWith("خطأ") ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
+            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2 pointer-events-auto ${toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
               <span className="text-foreground" style={{ fontSize: 12 }}>{toast}</span>
             </div>
           </motion.div>
@@ -1675,7 +1676,7 @@ export function Hierarchy() {
     }
     // Fallback to legacy manager_id tree for backward compatibility
     if (dbEmployees.length === 0) return {
-      tree: { id: 0, dbId: "__root__", name: "المؤسسة", initials: "م", position: "الإدارة العليا", department: "الإدارة العليا", color: "#8B5CF6", photo: null, email: null, children: [] } as OrgNode,
+      tree: { id: 0, dbId: "__root__", name: arabicSource("common.foundation"), initials: arabicSource("common.m"), position: arabicSource("common.senior_management"), department: arabicSource("common.senior_management"), color: "#8B5CF6", photo: null, email: null, children: [] } as OrgNode,
       deptColors: defaultDeptColorMap,
     };
     return buildOrgTree(dbEmployees, dbDepartments);
@@ -1796,15 +1797,15 @@ export function Hierarchy() {
       department,
       position,
       manager_id: managerId,
-      status: "نشط",
+      status: arabicSource("common.is_active"),
       monthly_salary: 0,
       currency: "IQD",
     });
     if (error) {
       console.error("Add employee error:", error);
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast(`تم إضافة "${name}" بنجاح للهيكل التنظيمي`);
+      setToast(`${arabicSource("common.added")}${name}${arabicSource("hierarchy.successfully_completed_the_organizational_structure")}`);
       await refetch();
     }
     setSaving(false);
@@ -1833,7 +1834,7 @@ export function Hierarchy() {
 
     setDeleteTarget(null);
     setSelectedNode(null);
-    setToast("تم فصل الموظف من الهيكل التنظيمي");
+    setToast(arabicSource("hierarchy.the_employee_was_dismissed_from_the_organizational_structure"));
     await refetch();
     setSaving(false);
   }, [orgTree, refetch]);
@@ -1851,9 +1852,9 @@ export function Hierarchy() {
     if (updates.manager_id !== undefined) supaUpdates.manager_id = updates.manager_id;
     const { error } = await supabase.from("employees").update(supaUpdates).eq("id", dbId);
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم تحديث بيانات الموظف بنجاح");
+      setToast(arabicSource("hierarchy.employee_data_has_been_updated_successfully"));
       setEditTarget(null);
       setSelectedNode(null);
       await refetch();
@@ -1865,9 +1866,9 @@ export function Hierarchy() {
     setSaving(true);
     const { error } = await supabase.from("employees").update({ manager_id: managerDbId }).eq("id", empDbId);
     if (error) {
-      setToast(`خطأ: ${error.message}`);
+      setToast(`${arabicSource("common.error_2")} ${error.message}`);
     } else {
-      setToast("تم ربط الموظف بمديره بنجاح");
+      setToast(arabicSource("hierarchy.the_employee_has_been_successfully_linked_to_his_manager"));
       await refetch();
     }
     setSaving(false);
@@ -1882,9 +1883,9 @@ export function Hierarchy() {
     setSaving(true);
     try {
       // Check if Owner already exists
-      const ownerExists = dbEmployees.some(e => e.department === "المالك" || e.position === "المالك");
+      const ownerExists = dbEmployees.some(e => e.department === arabicSource("common.owner") || e.position === arabicSource("common.owner"));
       if (ownerExists) {
-        setToast("الهيكل التنظيمي مُعد مسبقاً. استخدم أزرار التعديل لتغيير البيانات.");
+        setToast(arabicSource("hierarchy.the_organizational_structure_is_already_prepared_use_the_edit_bu"));
         setSaving(false);
         return;
       }
@@ -1899,27 +1900,27 @@ export function Hierarchy() {
 
       // 1. Insert Owner
       const { error: e1 } = await supabase.from("employees").insert({
-        id: ownerId, person_id: maxPid + 1, name: "المالك", arabic_name: "المالك",
-        department: "المالك", position: "المالك",
-        manager_id: null, status: "نشط", monthly_salary: 0, currency: "IQD",
+        id: ownerId, person_id: maxPid + 1, name: arabicSource("common.owner"), arabic_name: arabicSource("common.owner"),
+        department: arabicSource("common.owner"), position: arabicSource("common.owner"),
+        manager_id: null, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
       });
-      if (e1) { console.error("Owner insert error:", e1); setToast(`خطأ إنشاء المالك: ${e1.message}`); setSaving(false); return; }
+      if (e1) { console.error("Owner insert error:", e1); setToast(`${arabicSource("hierarchy.owner_creation_error")} ${e1.message}`); setSaving(false); return; }
 
       // 2. Insert CEO under Owner
       const { error: e2 } = await supabase.from("employees").insert({
-        id: ceoId, person_id: maxPid + 2, name: "المدير التنفيذي", arabic_name: "المدير التنفيذي",
-        department: "الإدارة العليا", position: "CEO",
-        manager_id: ownerId, status: "نشط", monthly_salary: 0, currency: "IQD",
+        id: ceoId, person_id: maxPid + 2, name: arabicSource("common.executive_director"), arabic_name: arabicSource("common.executive_director"),
+        department: arabicSource("common.senior_management"), position: "CEO",
+        manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
       });
-      if (e2) { console.error("CEO insert error:", e2); setToast(`خطأ إنشاء CEO: ${e2.message}`); setSaving(false); return; }
+      if (e2) { console.error("CEO insert error:", e2); setToast(`${arabicSource("hierarchy.ceo_creation_error")} ${e2.message}`); setSaving(false); return; }
 
       // 3. Insert COO under Owner
       const { error: e3 } = await supabase.from("employees").insert({
-        id: cooId, person_id: maxPid + 3, name: "المدير التشغيلي", arabic_name: "المدير التشغيلي",
-        department: "الإدارة العليا", position: "COO",
-        manager_id: ownerId, status: "نشط", monthly_salary: 0, currency: "IQD",
+        id: cooId, person_id: maxPid + 3, name: arabicSource("common.chief_operating_officer"), arabic_name: arabicSource("common.chief_operating_officer"),
+        department: arabicSource("common.senior_management"), position: "COO",
+        manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
       });
-      if (e3) { console.error("COO insert error:", e3); setToast(`خطأ إنشاء COO: ${e3.message}`); setSaving(false); return; }
+      if (e3) { console.error("COO insert error:", e3); setToast(`${arabicSource("hierarchy.coo_creation_error")} ${e3.message}`); setSaving(false); return; }
 
       // 4. Move all existing root employees (no manager) under CEO, EXCLUDING the newly created ones
       const newIds = new Set<string>([ownerId, ceoId, cooId]);
@@ -1936,20 +1937,20 @@ export function Hierarchy() {
 
       // 5. Add Owner + C-Level departments
       await supabase.from("departments").upsert(
-        { name: "المالك", color: OWNER_COLOR },
+        { name: arabicSource("common.owner"), color: OWNER_COLOR },
         { onConflict: "name" }
       );
       await supabase.from("departments").upsert(
-        { name: "الإدارة العليا", color: CLEVEL_COLOR },
+        { name: arabicSource("common.senior_management"), color: CLEVEL_COLOR },
         { onConflict: "name" }
       );
 
-      setToast("تم تهيئة الهيكل: المالك ← المدير التنفيذي + المدير التشغيلي — عدّل البيانات من زر التعديل");
+      setToast(arabicSource("hierarchy.structure_configured_owner_ceo_coo_edit_data_from_the_edit_butto"));
       setShowSetupModal(false);
       await refetch();
     } catch (err: any) {
       console.error("Setup hierarchy error:", err);
-      setToast(`خطأ: ${err?.message || "فشل تهيئة الهيكل التنظيمي"}`);
+      setToast(`${arabicSource("common.error_2")} ${err?.message || arabicSource("hierarchy.failed_to_initialize_the_organizational_structure")}`);
     }
     setSaving(false);
   }, [dbEmployees, refetch]);
@@ -1959,14 +1960,14 @@ export function Hierarchy() {
     setSaving(true);
     try {
       // Find all Owner entries
-      const owners = dbEmployees.filter(e => e.department === "المالك" || e.position === "المالك");
+      const owners = dbEmployees.filter(e => e.department === arabicSource("common.owner") || e.position === arabicSource("common.owner"));
       // Find all CEO entries
-      const ceos = dbEmployees.filter(e => e.position === "CEO" && e.department === "الإدارة العليا");
+      const ceos = dbEmployees.filter(e => e.position === "CEO" && e.department === arabicSource("common.senior_management"));
       // Find all COO entries
-      const coos = dbEmployees.filter(e => e.position === "COO" && e.department === "الإدارة العليا");
+      const coos = dbEmployees.filter(e => e.position === "COO" && e.department === arabicSource("common.senior_management"));
 
       if (owners.length <= 1 && ceos.length <= 1 && coos.length <= 1) {
-        setToast("لا توجد تكرارات في الهيكل التنظيمي");
+        setToast(arabicSource("hierarchy.there_are_no_duplicates_in_the_organizational_structure"));
         setSaving(false);
         setShowCleanupModal(false);
         return;
@@ -2042,12 +2043,12 @@ export function Hierarchy() {
       }
 
       const removedCount = allDuplicateIds.size;
-      setToast(`تم تنظيف الهيكل — حُذف ${removedCount} إدخال مكرر وأُعيد ربط الموظفين بنجاح`);
+      setToast(`${arabicSource("hierarchy.the_structure_was_cleaned_deleted")} ${removedCount} ${arabicSource("hierarchy.duplicate_entry_and_employees_were_successfully_reconnected")}`);
       setShowCleanupModal(false);
       await refetch();
     } catch (err: any) {
       console.error("Cleanup error:", err);
-      setToast(`خطأ: ${err?.message || "فشل تنظيف الهيكل"}`);
+      setToast(`${arabicSource("common.error_2")} ${err?.message || arabicSource("hierarchy.chassis_cleaning_failed")}`);
     }
     setSaving(false);
   }, [dbEmployees, refetch]);
@@ -2080,10 +2081,10 @@ export function Hierarchy() {
     const w = window.open("", "_blank"); if (!w) return;
     const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
     const direction = getLanguageDirection(language);
-    const title = translateArabicSource("الهيكل التنظيمي", language);
-    const subtitle = translateArabicSource("بنية المؤسسة وخريطة الأقسام", language);
-    const footer = translateArabicSource("تم إنشاء هذا التقرير بتاريخ", language);
-    const product = translateArabicSource("نظام الموارد البشرية", language);
+    const title = translateArabicSource(arabicSource("common.organizational_structure"), language);
+    const subtitle = translateArabicSource(arabicSource("exports.organization_subtitle"), language);
+    const footer = translateArabicSource(arabicSource("exports.created_on"), language);
+    const product = translateArabicSource(arabicSource("shared.human_resources_system"), language);
     w.document.write(`<!DOCTYPE html><html dir="${direction}" lang="${language}"><head><meta charset="UTF-8"><title>${title}</title>
       <style>@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
       *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}body{background:#fff;padding:40px 20px;direction:${direction}}
@@ -2100,14 +2101,16 @@ export function Hierarchy() {
   const handleExportPNG = useCallback(async () => {
     if (!chartContentRef.current) return;
     try {
+      const exportLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+      const exportDirection = getLanguageDirection(exportLanguage);
       const canvas = document.createElement("canvas"); const ctx = canvas.getContext("2d"); if (!ctx) return;
       const el = chartContentRef.current; const scale = 2;
       canvas.width = el.scrollWidth * scale; canvas.height = el.scrollHeight * scale;
       const data = `<svg xmlns="http://www.w3.org/2000/svg" width="${el.scrollWidth}" height="${el.scrollHeight}">
-        <foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="background:#0F0F0F;color:#FFF8E1;font-family:Tajawal,sans-serif;direction:rtl">${el.innerHTML}</div></foreignObject></svg>`;
+        <foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="background:#0F0F0F;color:#FFF8E1;font-family:Tajawal,sans-serif;direction:${exportDirection}">${el.innerHTML}</div></foreignObject></svg>`;
       const img = new Image(); const blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" }); const url = URL.createObjectURL(blob);
       img.onload = () => { ctx.scale(scale, scale); ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url);
-        canvas.toBlob(b => { if (!b) return; const a = document.createElement("a"); a.download = `${translateArabicSource("الهيكل التنظيمي").replace(/\s+/g, "-")}-${formatDate(new Date()).replace(/[\\/:]/g, "-")}.png`; a.href = URL.createObjectURL(b); a.click(); URL.revokeObjectURL(a.href); }); };
+        canvas.toBlob(b => { if (!b) return; const a = document.createElement("a"); a.download = `${translateArabicSource(arabicSource("common.organizational_structure")).replace(/\s+/g, "-")}-${formatDate(new Date()).replace(/[\\/:]/g, "-")}.png`; a.href = URL.createObjectURL(b); a.click(); URL.revokeObjectURL(a.href); }); };
       img.onerror = () => { URL.revokeObjectURL(url); handlePrint(); }; img.src = url;
     } catch { handlePrint(); }
   }, [handlePrint]);
@@ -2123,7 +2126,7 @@ export function Hierarchy() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل الهيكل التنظيمي...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("hierarchy.loading_the_organizational_chart")}</span>
       </div>
     );
   }
@@ -2133,36 +2136,36 @@ export function Hierarchy() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-gradient-gold">الهيكل التنظيمي</h1>
-          <p className="text-muted-foreground mt-1">بنية المؤسسة وخريطة الأقسام — بيانات مباشرة من قاعدة البيانات</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.organizational_structure")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("hierarchy.organization_structure_and_department_map_data_directly_from_the")}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {unlinkedEmps.length > 0 && (
             <button onClick={() => setShowUnlinked(true)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 transition-all shadow-sm" style={{ fontSize: 13 }}>
               <AlertTriangle className="w-4 h-4" />
-              {unlinkedEmps.length} بدون ربط
+              {unlinkedEmps.length} {arabicSource("hierarchy.without_binding")}
             </button>
           )}
 
           <button onClick={() => setShowSetupModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-black hover:opacity-90 transition-all shadow-md" style={{ fontSize: 13, background: "linear-gradient(135deg, #FFD700, #FFA500)" }}>
-            <Crown className="w-4 h-4" /> تهيئة الهيكل
+            <Crown className="w-4 h-4" /> {arabicSource("common.chassis_initialization")}
           </button>
 
           <button onClick={() => setShowCleanupModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all shadow-sm" style={{ fontSize: 13 }}>
-            <Trash2 className="w-4 h-4" /> تنظيف التكرارات
+            <Trash2 className="w-4 h-4" /> {arabicSource("common.clean_up_duplicates")}
           </button>
 
           <button onClick={() => openAddModal()}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md" style={{ fontSize: 13 }}>
-            <UserPlus className="w-4 h-4" /> إضافة موظف
+            <UserPlus className="w-4 h-4" /> {arabicSource("common.add_an_employee")}
           </button>
 
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input ref={searchInputRef} type="text" placeholder="بحث عن موظف..." value={searchQuery}
+            <input ref={searchInputRef} type="text" placeholder={arabicSource("common.search_for_an_employee")} value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setShowSearchResults(true); setFocusedNodeId(null); }}
               onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
               className="bg-card border border-border/60 rounded-lg ps-9 pe-8 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
@@ -2179,17 +2182,17 @@ export function Hierarchy() {
               {showSearchResults && searchQuery.trim() && searchResults.length === 0 && (
                 <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
                   className="absolute top-full mt-1 start-0 end-0 bg-card border border-border/60 rounded-lg shadow-xl z-50 px-3 py-3 text-center">
-                  <p className="text-muted-foreground" style={{ fontSize: 12 }}>لا توجد نتائج لـ "{searchQuery}"</p>
+                  <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.there_are_no_results_for")}{searchQuery}"</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all" style={{ fontSize: 13 }} title="طباعة">
-            <Printer className="w-4 h-4" /><span className="hidden sm:inline">طباعة</span>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all" style={{ fontSize: 13 }} title={arabicSource("common.print")}>
+            <Printer className="w-4 h-4" /><span className="hidden sm:inline">{arabicSource("common.print")}</span>
           </button>
-          <button onClick={handleExportPNG} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all" style={{ fontSize: 13 }} title="تصدير PNG">
-            <Download className="w-4 h-4" /><span className="hidden sm:inline">تصدير</span>
+          <button onClick={handleExportPNG} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all" style={{ fontSize: 13 }} title={arabicSource("hierarchy.export_png")}>
+            <Download className="w-4 h-4" /><span className="hidden sm:inline">{arabicSource("common.export")}</span>
           </button>
         </div>
       </div>
@@ -2200,13 +2203,13 @@ export function Hierarchy() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all cursor-pointer ${
             viewMode === "tree" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
           }`} style={{ fontSize: 13 }}>
-          <GitBranch className="w-4 h-4" /> الهيكل الحالي
+          <GitBranch className="w-4 h-4" /> {arabicSource("hierarchy.current_structure")}
         </button>
         <button onClick={() => setViewMode("positions")}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all cursor-pointer ${
             viewMode === "positions" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
           }`} style={{ fontSize: 13 }}>
-          <Network className="w-4 h-4" /> المناصب والتعيين
+          <Network className="w-4 h-4" /> {arabicSource("hierarchy.positions_and_appointments")}
         </button>
       </div>
 
@@ -2222,14 +2225,14 @@ export function Hierarchy() {
         <div>
           <p className="text-foreground" style={{ fontSize: 13 }}>
             {dbPositions.length > 0
-              ? <>الهيكل التنظيمي يُبنى تلقائياً من <span className="text-primary">هيكل المناصب</span> — عيّن الموظفين من تبويب "المناصب والتعيين".</>
-              : <>الهيكل التنظيمي يُبنى تلقائياً من حقل <span className="text-primary">المدير المباشر (manager_id)</span> في بيانات كل موظف.</>
+              ? <>{arabicSource("hierarchy.the_organizational_structure_is_automatically_built_from")} <span className="text-primary">{arabicSource("common.position_structure")}</span> {arabicSource("hierarchy.appoint_employees_from_the_positions_and_designations_tab")}</>
+              : <>{arabicSource("hierarchy.the_organizational_structure_is_automatically_built_from_a_field")} <span className="text-primary">{arabicSource("hierarchy.direct_manager_manager_id")}</span> {arabicSource("hierarchy.in_each_employee_s_data")}</>
             }
           </p>
           <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>
             {dbPositions.length > 0
-              ? "المناصب الشاغرة تظهر بإطار متقطع. ألوان البطاقات تتبع لون القسم — يمكن تغييرها من الإعدادات."
-              : "لتعيين مدير لموظف: عدّل بيانات الموظف من صفحة \"الموظفون\" أو استخدم زر \"إضافة موظف\" هنا مع تحديد المدير."
+              ? arabicSource("hierarchy.vacant_positions_are_shown_with_a_dashed_frame_card_colors_follo")
+              : arabicSource("hierarchy.to_assign_a_manager_to_an_employee_edit_the_employee_data_from_t")
             }
           </p>
         </div>
@@ -2238,9 +2241,9 @@ export function Hierarchy() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-primary/30 rounded-xl p-3 text-center shadow-md">
-          <p className="text-muted-foreground" style={{ fontSize: 11 }}>إجمالي الموظفين</p>
+          <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.total_employees")}</p>
           <span className="text-gradient-gold block mt-1" style={{ fontSize: 22 }}>{dbEmployees.length}</span>
-          <p className="text-muted-foreground" style={{ fontSize: 10 }}>في {departmentStats.length} أقسام</p>
+          <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("hierarchy.in")} {departmentStats.length} {arabicSource("common.sections")}</p>
         </motion.div>
         {departmentStats.map((dept, i) => (
           <motion.div key={dept.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.05 }}
@@ -2258,26 +2261,26 @@ export function Hierarchy() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         className="bg-card/40 backdrop-blur-md border border-border/40 rounded-2xl shadow-lg overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 flex-wrap gap-2">
-          <h3 className="text-foreground" style={{ fontSize: 15 }}>خريطة المؤسسة التفاعلية</h3>
+          <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.interactive_organization_map")}</h3>
           <div className="flex items-center gap-2 flex-wrap">
             {saving && (
               <div className="flex items-center gap-1.5 text-primary" style={{ fontSize: 12 }}>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> جاري الحفظ...
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> {arabicSource("common.saving")}
               </div>
             )}
             <button onClick={() => setPanEnabled(!panEnabled)}
               className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${panEnabled ? "bg-primary/20 text-primary border border-primary/40" : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"}`}
-              title={panEnabled ? "إيقاف السحب" : "تفعيل السحب للتنقل"}>
+              title={panEnabled ? arabicSource("hierarchy.stop_dragging") : arabicSource("hierarchy.activate_drag_to_move")}>
               <Move className="w-4 h-4" />
             </button>
             <div className="w-px h-5 bg-border/40" />
-            <button onClick={() => setZoom(z => Math.max(0.3, +(z - 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="تصغير"><Minus className="w-4 h-4" /></button>
+            <button onClick={() => setZoom(z => Math.max(0.3, +(z - 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.zoom_out")}><Minus className="w-4 h-4" /></button>
             <span className="text-muted-foreground min-w-[40px] text-center" style={{ fontSize: 12 }}>{Math.round(zoom * 100)}%</span>
-            <button onClick={() => setZoom(z => Math.min(1.5, +(z + 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="تكبير"><Plus className="w-4 h-4" /></button>
-            <button onClick={() => setZoom(1)} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="إعادة ضبط"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={() => setZoom(z => Math.min(1.5, +(z + 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.enlarge")}><Plus className="w-4 h-4" /></button>
+            <button onClick={() => setZoom(1)} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.reset")}><Maximize2 className="w-4 h-4" /></button>
             <div className="w-px h-5 bg-border/40" />
-            <button onClick={expandAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>توسيع الكل</button>
-            <button onClick={collapseAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>طي الكل</button>
+            <button onClick={expandAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>{arabicSource("hierarchy.expand_all")}</button>
+            <button onClick={collapseAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>{arabicSource("hierarchy.collapse_all")}</button>
           </div>
         </div>
 
@@ -2286,7 +2289,7 @@ export function Hierarchy() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
               className="bg-primary/5 border-b border-primary/10 px-5 py-2 flex items-center gap-2">
               <Move className="w-3.5 h-3.5 text-primary" />
-              <p className="text-primary" style={{ fontSize: 12 }}>وضع السحب مفعّل — اسحب بالفأرة للتنقل في الخريطة</p>
+              <p className="text-primary" style={{ fontSize: 12 }}>{arabicSource("hierarchy.drag_mode_is_on_drag_with_the_mouse_to_move_around_the_map")}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2296,8 +2299,8 @@ export function Hierarchy() {
           {dbEmployees.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <Users className="w-12 h-12 mb-4 opacity-30" />
-              <p style={{ fontSize: 16 }}>لا يوجد موظفون في النظام بعد</p>
-              <p className="mt-2" style={{ fontSize: 13 }}>أضف موظفين من صفحة "الموظفون" ثم حدد المدير المباشر لكل منهم</p>
+              <p style={{ fontSize: 16 }}>{arabicSource("hierarchy.there_are_no_employees_in_the_system_yet")}</p>
+              <p className="mt-2" style={{ fontSize: 13 }}>{arabicSource("hierarchy.add_employees_from_the_employees_page_and_then_select_their_dire")}</p>
             </div>
           ) : (
             <div style={{ width: "fit-content", minWidth: "100%", paddingBottom: 40 }}>
@@ -2320,7 +2323,7 @@ export function Hierarchy() {
             <div className="bg-card border border-primary/40 rounded-full px-4 py-2 shadow-xl flex items-center gap-3 pointer-events-auto">
               <div className="flex items-center gap-1.5">
                 <Search className="w-3.5 h-3.5 text-primary" />
-                <span className="text-foreground" style={{ fontSize: 12 }}>{searchMatchIds.size} نتيجة لـ "{searchQuery}"</span>
+                <span className="text-foreground" style={{ fontSize: 12 }}>{searchMatchIds.size} {arabicSource("hierarchy.result_for")}{searchQuery}"</span>
               </div>
               <button onClick={clearSearch} className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"><X className="w-3 h-3" /></button>
             </div>
@@ -2333,9 +2336,9 @@ export function Hierarchy() {
         {toast && (
           <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
             className="fixed bottom-6 inset-x-0 flex justify-center z-40 pointer-events-none">
-            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2.5 pointer-events-auto ${toast.startsWith("خطأ") ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center ${toast.startsWith("خطأ") ? "bg-red-500/20" : "bg-green-500/20"}`}>
-                {toast.startsWith("خطأ") ? <AlertTriangle className="w-3 h-3 text-red-400" /> : <UserCheck className="w-3 h-3 text-green-400" />}
+            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2.5 pointer-events-auto ${toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center ${toast.startsWith(arabicSource("common.error")) ? "bg-red-500/20" : "bg-green-500/20"}`}>
+                {toast.startsWith(arabicSource("common.error")) ? <AlertTriangle className="w-3 h-3 text-red-400" /> : <UserCheck className="w-3 h-3 text-green-400" />}
               </div>
               <span className="text-foreground" style={{ fontSize: 12 }}>{toast}</span>
             </div>
@@ -2410,8 +2413,8 @@ export function Hierarchy() {
                     <Crown className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-foreground" style={{ fontSize: 15 }}>تهيئة الهيكل التنظيمي</h3>
-                    <p className="text-muted-foreground" style={{ fontSize: 11 }}>إنشاء هيكل: المالك ← CEO + COO</p>
+                    <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.preparing_the_organizational_structure")}</h3>
+                    <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.create_a_structure_owner_ceo_coo")}</p>
                   </div>
                 </div>
                 <button onClick={() => setShowSetupModal(false)} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -2426,7 +2429,7 @@ export function Hierarchy() {
                     {/* Owner */}
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-yellow-400/60" style={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}>
                       <Crown className="w-4 h-4 text-yellow-400" />
-                      <span className="text-yellow-400" style={{ fontSize: 13 }}>المالك</span>
+                      <span className="text-yellow-400" style={{ fontSize: 13 }}>{arabicSource("common.owner")}</span>
                     </div>
                     <div className="w-px h-4 bg-border/60" />
                     <div className="flex items-center gap-6">
@@ -2434,57 +2437,57 @@ export function Hierarchy() {
                       <div className="flex flex-col items-center gap-1">
                         <div className="w-8 h-px bg-border/60" />
                         <div className="px-3 py-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10">
-                          <span className="text-foreground" style={{ fontSize: 12 }}>المدير التنفيذي (CEO)</span>
+                          <span className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("common.chief_executive_officer_ceo")}</span>
                         </div>
                         <p className="text-muted-foreground" style={{ fontSize: 10 }}>
                           {dbEmployees.filter(e => !e.manager_id).length > 0
-                            ? `← ${dbEmployees.filter(e => !e.manager_id).length} موظف حالي`
-                            : "بدون مرؤوسين"}
+                            ? `← ${dbEmployees.filter(e => !e.manager_id).length} ${arabicSource("hierarchy.current_employee")}`
+                            : arabicSource("common.no_subordinates")}
                         </p>
                       </div>
                       {/* COO */}
                       <div className="flex flex-col items-center gap-1">
                         <div className="w-8 h-px bg-border/60" />
                         <div className="px-3 py-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10">
-                          <span className="text-foreground" style={{ fontSize: 12 }}>المدير التشغيلي (COO)</span>
+                          <span className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("common.chief_operating_officer_coo")}</span>
                         </div>
-                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>بدون مرؤوسين</p>
+                        <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("common.no_subordinates")}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-                  <p className="text-foreground" style={{ fontSize: 12 }}>سيتم إنشاء 3 موظفين جدد:</p>
+                  <p className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.3_new_employees_will_be_created")}</p>
                   <ul className="mt-2 space-y-1 text-muted-foreground" style={{ fontSize: 11 }}>
                     <li className="flex items-center gap-1.5">
-                      <Crown className="w-3 h-3 text-yellow-400" /> <strong className="text-yellow-400">المالك</strong> — أعلى الهرم (ذهبي)
+                      <Crown className="w-3 h-3 text-yellow-400" /> <strong className="text-yellow-400">{arabicSource("common.owner")}</strong> {arabicSource("hierarchy.top_of_the_pyramid_gold")}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">المدير التنفيذي (CEO)</strong> — تحت المالك
+                      <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">{arabicSource("common.chief_executive_officer_ceo")}</strong> {arabicSource("common.under_the_owner")}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">المدير التشغيلي (COO)</strong> — تحت المالك
+                      <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">{arabicSource("common.chief_operating_officer_coo")}</strong> {arabicSource("common.under_the_owner")}
                     </li>
                   </ul>
                   {dbEmployees.filter(e => !e.manager_id).length > 0 && (
                     <p className="mt-2 text-amber-500" style={{ fontSize: 11 }}>
-                      ⚠ سيتم نقل {dbEmployees.filter(e => !e.manager_id).length} موظف (بدون مدير حالياً) تحت المدير التنفيذي — يمكنك نقلهم لاحقاً
+                      {arabicSource("hierarchy.will_be_transferred")} {dbEmployees.filter(e => !e.manager_id).length} {arabicSource("hierarchy.employee_currently_no_manager_under_ceo_you_can_move_them_later")}
                     </p>
                   )}
                 </div>
 
                 <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                  يمكنك تعديل الأسماء والبيانات لاحقاً من خلال النقر على الكارد ثم زر التعديل في صفحة الموظفين.
+                  {arabicSource("hierarchy.you_can_modify_the_names_and_data_later_by_clicking_on_the_card")}
                 </p>
               </div>
 
               <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-                <button onClick={() => setShowSetupModal(false)} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+                <button onClick={() => setShowSetupModal(false)} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
                 <button onClick={handleSetupHierarchy} disabled={saving}
                   className="px-5 py-2 rounded-lg text-black disabled:opacity-50 transition-colors flex items-center gap-2" style={{ fontSize: 13, background: "linear-gradient(135deg, #FFD700, #FFA500)" }}>
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
-                  {saving ? "جاري التهيئة..." : "تهيئة الهيكل"}
+                  {saving ? arabicSource("hierarchy.initializing") : arabicSource("common.chassis_initialization")}
                 </button>
               </div>
             </motion.div>
@@ -2507,8 +2510,8 @@ export function Hierarchy() {
                     <Trash2 className="w-5 h-5 text-red-400" />
                   </div>
                   <div>
-                    <h3 className="text-foreground" style={{ fontSize: 15 }}>تنظيف التكرارات</h3>
-                    <p className="text-muted-foreground" style={{ fontSize: 11 }}>حذف الإدخالات المكررة (المالك، CEO، COO)</p>
+                    <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("common.clean_up_duplicates")}</h3>
+                    <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.delete_duplicate_entries_owner_ceo_coo")}</p>
                   </div>
                 </div>
                 <button onClick={() => setShowCleanupModal(false)} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -2518,46 +2521,46 @@ export function Hierarchy() {
 
               <div className="p-6 space-y-4">
                 <div className="bg-muted/20 border border-border/40 rounded-xl p-4 space-y-2">
-                  <p className="text-foreground" style={{ fontSize: 13 }}>سيقوم النظام بـ:</p>
+                  <p className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("hierarchy.the_system_will")}</p>
                   <div className="space-y-1.5">
                     <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
                       <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                      حذف الإدخالات المكررة لـ "المالك" و"المدير التنفيذي" و"المدير التشغيلي"
+                      {arabicSource("hierarchy.delete_duplicate_entries_for_owner_ceo_and_coo")}
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
-                      الإبقاء على النسخة الأقدم من كل منصب
+                      {arabicSource("hierarchy.keep_the_older_version_of_each_position")}
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
-                      إعادة ربط جميع الموظفين المتأثرين تلقائياً
+                      {arabicSource("hierarchy.automatically_reconnect_all_affected_employees")}
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
                       <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
-                      ضمان هيكل واحد صحيح: المالك ← CEO + COO
+                      {arabicSource("hierarchy.ensure_one_correct_structure_owner_ceo_coo")}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-muted/10 border border-border/30 rounded-xl p-3">
                   <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-                    التكرارات الحالية: <span className="text-red-400">{dbEmployees.filter(e => e.department === "المالك" || e.position === "المالك").length}</span> مالك، {" "}
-                    <span className="text-red-400">{dbEmployees.filter(e => e.position === "CEO" && e.department === "الإدارة العليا").length}</span> CEO، {" "}
-                    <span className="text-red-400">{dbEmployees.filter(e => e.position === "COO" && e.department === "الإدارة العليا").length}</span> COO
+                    {arabicSource("hierarchy.current_iterations")} <span className="text-red-400">{dbEmployees.filter(e => e.department === arabicSource("common.owner") || e.position === arabicSource("common.owner")).length}</span> {arabicSource("hierarchy.malik")} {" "}
+                    <span className="text-red-400">{dbEmployees.filter(e => e.position === "CEO" && e.department === arabicSource("common.senior_management")).length}</span> CEO، {" "}
+                    <span className="text-red-400">{dbEmployees.filter(e => e.position === "COO" && e.department === arabicSource("common.senior_management")).length}</span> COO
                   </p>
                 </div>
 
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                  <p className="text-red-400" style={{ fontSize: 12 }}>تحذير: هذا الإجراء لا يمكن التراجع عنه. سيتم حذف الإدخالات المكررة نهائياً.</p>
+                  <p className="text-red-400" style={{ fontSize: 12 }}>{arabicSource("hierarchy.warning_this_action_cannot_be_undone_duplicate_entries_will_be_p")}</p>
                 </div>
               </div>
 
               <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-                <button onClick={() => setShowCleanupModal(false)} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>إلغاء</button>
+                <button onClick={() => setShowCleanupModal(false)} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
                 <button onClick={handleCleanupDuplicates} disabled={saving}
                   className="px-5 py-2 rounded-lg bg-red-500/90 hover:bg-red-500 text-white disabled:opacity-50 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                  {saving ? "جاري التنظيف..." : "تنظيف التكرارات"}
+                  {saving ? arabicSource("hierarchy.cleaning_in_progress") : arabicSource("common.clean_up_duplicates")}
                 </button>
               </div>
             </motion.div>

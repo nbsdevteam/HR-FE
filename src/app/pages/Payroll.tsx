@@ -37,17 +37,18 @@ import {
 } from "../lib/payslip-engine";
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
+import { arabicSource } from "../i18n/source";
 
 // ══════════════════════════ Constants ══════════════════════════
 
 const dayNamesAr: Record<string, string> = {
-  sunday: "الأحد", monday: "الاثنين", tuesday: "الثلاثاء",
-  wednesday: "الأربعاء", thursday: "الخميس", friday: "الجمعة", saturday: "السبت",
+  sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
+  wednesday: arabicSource("common.wednesday"), thursday: arabicSource("common.thursday"), friday: arabicSource("common.friday"), saturday: arabicSource("common.saturday"),
 };
 
 const TABS = [
-  { id: "overview", label: "الرواتب", icon: Wallet },
-  { id: "upload", label: "رفع الحضور", icon: Upload },
+  { id: "overview", label: arabicSource("common.salaries"), icon: Wallet },
+  { id: "upload", label: arabicSource("payroll.raising_attendance"), icon: Upload },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -95,7 +96,7 @@ export function Payroll() {
         supabase.from("monthly_records").select("*"),
         supabase.from("monthly_ledgers").select("*"),
         supabase.from("attendance_records").select("*").order("date", { ascending: false }).limit(5000),
-        supabase.from("leave_requests").select("*").eq("status", "مقبول"),
+        supabase.from("leave_requests").select("*").eq("status", arabicSource("common.accepted")),
       ]);
       const records = mrRes.data || [];
       setMonthlyRecords(records);
@@ -175,7 +176,7 @@ export function Payroll() {
         .filter(a => a.employee_id === empId)
         .map(a => {
           const aType = allowanceTypes.find(t => t.id === a.allowance_type_id);
-          return { name: aType?.name_ar || "بدل", amount: a.amount, currency: a.currency };
+          return { name: aType?.name_ar || arabicSource("common.allowance"), amount: a.amount, currency: a.currency };
         });
 
       // Build deductions for this employee
@@ -184,7 +185,7 @@ export function Payroll() {
         .map(d => {
           const dType = deductionTypes.find(t => t.id === d.deduction_type_id);
           return {
-            name: dType?.name_ar || "استقطاع",
+            name: dType?.name_ar || arabicSource("common.deduction"),
             amount: d.amount,
             percentage: d.percentage,
             calcMethod: d.calc_method || dType?.calc_method || "fixed",
@@ -357,7 +358,7 @@ export function Payroll() {
       setTimeout(() => setPayslipsSaved(false), 3000);
     } catch (e: any) {
       console.error("Failed to save payslips:", e.message);
-      localizedAlert("خطأ في حفظ الكشوفات: " + e.message);
+      localizedAlert(arabicSource("payroll.error_saving_statements") + " " + e.message);
     }
     setSavingPayslips(false);
   };
@@ -366,7 +367,7 @@ export function Payroll() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل بيانات الرواتب...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("payroll.loading_salary_data")}</span>
       </div>
     );
   }
@@ -376,8 +377,8 @@ export function Payroll() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-gradient-gold">إدارة الرواتب والكشوفات</h1>
-          <p className="text-muted-foreground mt-1">نظام كشوفات الرواتب الشامل — {displayMonth(selectedMonth)}</p>
+          <h1 className="text-gradient-gold">{arabicSource("payroll.payroll_and_payroll_management")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("payroll.comprehensive_payroll_system")} {displayMonth(selectedMonth)}</p>
         </div>
         <div className="flex items-center gap-3">
           <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={selectCls} style={{ width: 180 }}>
@@ -392,7 +393,7 @@ export function Payroll() {
             style={{ fontSize: 13 }}
           >
             {savingPayslips ? <Loader2 className="w-4 h-4 animate-spin" /> : payslipsSaved ? <CheckCircle className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-            {savingPayslips ? "جاري الحفظ..." : payslipsSaved ? "تم الحفظ" : "حفظ الكشوفات"}
+            {savingPayslips ? arabicSource("common.saving") : payslipsSaved ? arabicSource("payroll.saved") : arabicSource("payroll.save_statements")}
           </button>
         </div>
       </div>
@@ -510,10 +511,10 @@ function OverviewTab({
   }, [payrollData, search, paySortBy, paySortDir]);
 
   const stats = [
-    { label: "إجمالي الرواتب الأساسية", value: formatIQD(totalBasic), icon: Wallet, color: "text-primary", accent: "from-primary/10" },
-    { label: "صافي الرواتب", value: formatIQD(totalNet), icon: TrendingUp, color: "text-emerald-500", accent: "from-emerald-500/10" },
-    { label: "إجمالي الاستقطاعات", value: formatIQD(Math.abs(totalDeductions)), icon: Calculator, color: "text-destructive", accent: "from-destructive/10" },
-    { label: "عدد الموظفين", value: String(totalEmployees), icon: Users, color: "text-blue-500", accent: "from-blue-500/10" },
+    { label: arabicSource("common.total_basic_salaries"), value: formatIQD(totalBasic), icon: Wallet, color: "text-primary", accent: "from-primary/10" },
+    { label: arabicSource("payroll.net_salaries"), value: formatIQD(totalNet), icon: TrendingUp, color: "text-emerald-500", accent: "from-emerald-500/10" },
+    { label: arabicSource("common.total_deductions"), value: formatIQD(Math.abs(totalDeductions)), icon: Calculator, color: "text-destructive", accent: "from-destructive/10" },
+    { label: arabicSource("common.number_of_employees"), value: String(totalEmployees), icon: Users, color: "text-blue-500", accent: "from-blue-500/10" },
   ];
 
   const departmentPayroll = useMemo(() => {
@@ -558,8 +559,8 @@ function OverviewTab({
       {/* Chart */}
       {departmentPayroll.length > 0 && (
         <div className={`${cardCls} p-6`}>
-          <h3 className="text-foreground mb-3" style={{ fontSize: 15 }}>صافي الرواتب حسب الأقسام (ألف د.ع)</h3>
-          <CustomBarChart data={departmentPayroll} barLabel="المبلغ" height={180} />
+          <h3 className="text-foreground mb-3" style={{ fontSize: 15 }}>{arabicSource("payroll.net_salaries_by_department_thousand_iqd")}</h3>
+          <CustomBarChart data={departmentPayroll} barLabel={arabicSource("common.amount")} height={180} />
         </div>
       )}
 
@@ -569,7 +570,7 @@ function OverviewTab({
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث بالاسم أو القسم..."
+            placeholder={arabicSource("common.search_by_name_or_department")}
             className={`${inputCls} ps-10`}
           />
         </div>
@@ -582,15 +583,15 @@ function OverviewTab({
             <thead>
               <SortableHeaderRow
                 columns={[
-                  { label: "الموظف", key: "name" },
-                  { label: "القسم", key: "department" },
-                  { label: "الراتب الأساسي", key: "basicSalary" },
-                  { label: "أيام العمل", key: "daysWorked" },
-                  { label: "ساعات العمل", key: "totalHours" },
-                  { label: "العمل الإضافي", key: "overtime" },
-                  { label: "النقص", key: "shortfall" },
-                  { label: "الغياب", key: "absences" },
-                  { label: "صافي الراتب", key: "netSalary" },
+                  { label: arabicSource("common.employee"), key: "name" },
+                  { label: arabicSource("common.section"), key: "department" },
+                  { label: arabicSource("common.basic_salary"), key: "basicSalary" },
+                  { label: arabicSource("common.working_days"), key: "daysWorked" },
+                  { label: arabicSource("common.working_hours"), key: "totalHours" },
+                  { label: arabicSource("common.overtime"), key: "overtime" },
+                  { label: arabicSource("common.shortage"), key: "shortfall" },
+                  { label: arabicSource("common.absence"), key: "absences" },
+                  { label: arabicSource("common.net_salary"), key: "netSalary" },
                 ]}
                 sortBy={paySortBy}
                 sortDir={paySortDir}
@@ -637,7 +638,7 @@ function OverviewTab({
                   </td>
                   <td className="px-4 py-3" style={{ fontSize: 13 }}>
                     {r.absences > 0 ? (
-                      <span className="text-destructive">{r.absences} يوم</span>
+                      <span className="text-destructive">{r.absences} {arabicSource("common.days_2")}</span>
                     ) : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-center" style={{ fontSize: 13 }} dir="ltr">
@@ -647,7 +648,7 @@ function OverviewTab({
               )) : (
                 <tr>
                   <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
-                    لا توجد سجلات رواتب لهذا الشهر
+                    {arabicSource("payroll.there_are_no_payroll_records_for_this_month")}
                   </td>
                 </tr>
               )}
@@ -853,9 +854,9 @@ function UploadTab({
           <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center mx-auto mb-4">
             <FileSpreadsheet className="w-8 h-8 text-primary" />
           </div>
-          <h3 className="text-foreground mb-2">رفع ملف الحضور والانصراف</h3>
+          <h3 className="text-foreground mb-2">{arabicSource("payroll.uploading_the_attendance_and_departure_file")}</h3>
           <p className="text-muted-foreground mb-6" style={{ fontSize: 13 }}>
-            ارفع ملف Excel أو CSV يحتوي على أعمدة: Person ID, Name, Time, Attendance Status
+            {arabicSource("payroll.upload_an_excel_or_csv_file_containing_the_columns_person_id_nam")}
           </p>
 
           <div
@@ -869,18 +870,18 @@ function UploadTab({
             {uploading ? (
               <div className="flex items-center justify-center gap-3">
                 <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                <span className="text-foreground">جاري تحليل الملف...</span>
+                <span className="text-foreground">{arabicSource("payroll.analyzing_the_file")}</span>
               </div>
             ) : parseResult ? (
               <div className="flex items-center justify-center gap-3">
                 <CheckCircle className="w-6 h-6 text-emerald-400" />
-                <span className="text-emerald-400">تم تحليل الملف بنجاح — اضغط لرفع ملف آخر</span>
+                <span className="text-emerald-400">{arabicSource("payroll.the_file_was_successfully_parsed_click_to_upload_another_file")}</span>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <Upload className="w-8 h-8 text-primary/60" />
-                <span className="text-foreground" style={{ fontSize: 14 }}>اضغط لاختيار ملف أو اسحبه هنا</span>
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>Excel (.xlsx, .xls) أو CSV — حد أقصى 10MB</span>
+                <span className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("payroll.click_to_select_a_file_or_drag_it_here")}</span>
+                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.excel_xlsx_xls_or_csv_max_10mb")}</span>
               </div>
             )}
           </div>
@@ -897,14 +898,14 @@ function UploadTab({
         <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="w-5 h-5 text-destructive" />
-            <span className="text-destructive" style={{ fontSize: 14 }}>تحذيرات ({parseResult.errors.length})</span>
+            <span className="text-destructive" style={{ fontSize: 14 }}>{arabicSource("payroll.warnings")}{parseResult.errors.length})</span>
           </div>
           <ul className="space-y-1 max-h-32 overflow-y-auto">
             {parseResult.errors.slice(0, 20).map((err, i) => (
               <li key={i} className="text-destructive/80 ps-4" style={{ fontSize: 12 }}>• {err}</li>
             ))}
             {parseResult.errors.length > 20 && (
-              <li className="text-destructive/60 ps-4" style={{ fontSize: 12 }}>... و {parseResult.errors.length - 20} تحذير آخر</li>
+              <li className="text-destructive/60 ps-4" style={{ fontSize: 12 }}>{arabicSource("payroll.and")} {parseResult.errors.length - 20} {arabicSource("payroll.another_warning")}</li>
             )}
           </ul>
         </div>
@@ -915,10 +916,10 @@ function UploadTab({
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "إجمالي السجلات", value: summary.totalRecords, icon: FileText },
-              { label: "عدد الموظفين", value: summary.uniqueEmployees, icon: Users },
-              { label: "عدد الأيام", value: summary.uniqueDates, icon: CalendarDays },
-              { label: "متطابقين بالنظام", value: summary.matched.length, icon: UserCheck },
+              { label: arabicSource("common.total_records"), value: summary.totalRecords, icon: FileText },
+              { label: arabicSource("common.number_of_employees"), value: summary.uniqueEmployees, icon: Users },
+              { label: arabicSource("payroll.number_of_days"), value: summary.uniqueDates, icon: CalendarDays },
+              { label: arabicSource("payroll.are_identical_to_the_system"), value: summary.matched.length, icon: UserCheck },
             ].map((s) => {
               const Icon = s.icon;
               return (
@@ -948,12 +949,12 @@ function UploadTab({
               </span>
               {summary.nones > 0 && (
                 <span className="px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 12 }}>
-                  None/غياب: {summary.nones}
+                  {arabicSource("payroll.none_absence")} {summary.nones}
                 </span>
               )}
               {summary.dateRange.length > 0 && (
                 <span className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary" style={{ fontSize: 12 }}>
-                  من {summary.dateRange[0]} إلى {summary.dateRange[summary.dateRange.length - 1]}
+                  {arabicSource("common.from")} {summary.dateRange[0]} {arabicSource("common.to")} {summary.dateRange[summary.dateRange.length - 1]}
                 </span>
               )}
             </div>
@@ -962,7 +963,7 @@ function UploadTab({
               <div className="mt-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
                 <p className="text-amber-400 mb-1" style={{ fontSize: 13 }}>
                   <TriangleAlert className="w-4 h-4 inline-block me-1" />
-                  {summary.unmatched.length} موظف غير متطابق بالنظام:
+                  {summary.unmatched.length} {arabicSource("payroll.an_employee_that_does_not_match_the_system")}
                 </p>
                 <p className="text-amber-400/70" style={{ fontSize: 12 }}>
                   IDs: {summary.unmatched.join(", ")}
@@ -980,11 +981,11 @@ function UploadTab({
               style={{ fontSize: 14 }}
             >
               {saving ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> جاري الحفظ في قاعدة البيانات...</>
+                <><Loader2 className="w-5 h-5 animate-spin" /> {arabicSource("payroll.saving_to_database")}</>
               ) : saved ? (
-                <><CheckCircle className="w-5 h-5" /> تم الحفظ بنجاح</>
+                <><CheckCircle className="w-5 h-5" /> {arabicSource("payroll.saved_successfully")}</>
               ) : (
-                <><Download className="w-5 h-5" /> حفظ {summary.matched.length} موظف في قاعدة البيانات</>
+                <><Download className="w-5 h-5" /> {arabicSource("common.save")} {summary.matched.length} {arabicSource("payroll.database_employee")}</>
               )}
             </button>
           </div>
@@ -1085,14 +1086,14 @@ function PayrollDetailPanel({
       .filter(a => a.employee_id === empForCalc.id)
       .map(a => {
         const aType = allowanceTypes.find(t => t.id === a.allowance_type_id);
-        return { name: aType?.name_ar || "بدل", amount: a.amount, currency: a.currency };
+        return { name: aType?.name_ar || arabicSource("common.allowance"), amount: a.amount, currency: a.currency };
       });
     const liveEmpDeductions = allEmployeeDeductions
       .filter(d => d.employee_id === empForCalc.id)
       .map(d => {
         const dType = deductionTypes.find(t => t.id === d.deduction_type_id);
         return {
-          name: dType?.name_ar || "استقطاع",
+          name: dType?.name_ar || arabicSource("common.deduction"),
           amount: d.amount,
           percentage: d.percentage,
           calcMethod: d.calc_method || dType?.calc_method || "fixed",
@@ -1166,7 +1167,7 @@ function PayrollDetailPanel({
       setEditingLedger(false);
     } catch (e: any) {
       console.error("Failed to save ledger:", e.message);
-      localizedAlert("خطأ في حفظ التعديلات: " + (e.message || "حدث خطأ غير متوقع"));
+      localizedAlert(arabicSource("payroll.error_saving_modifications") + " " + (e.message || arabicSource("payroll.an_unexpected_error_occurred")));
     } finally {
       setLedgerSaving(false);
     }
@@ -1205,7 +1206,7 @@ function PayrollDetailPanel({
             className="fixed top-0 end-0 z-50 h-full w-full max-w-2xl bg-background border-s border-border shadow-2xl overflow-y-auto"
             role="dialog"
             aria-modal="true"
-            aria-label="تفاصيل الموظف"
+            aria-label={arabicSource("common.employee_details")}
           >
             <div className="p-6 space-y-6 pb-24">
               {/* Close Button & Employee Header */}
@@ -1213,7 +1214,7 @@ function PayrollDetailPanel({
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                  aria-label="إغلاق"
+                  aria-label={arabicSource("common.close")}
                 >
                   <X className="w-5 h-5 text-foreground" />
                 </button>
@@ -1234,52 +1235,52 @@ function PayrollDetailPanel({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   {
-                    label: "أيام العمل",
+                    label: arabicSource("common.working_days"),
                     value: `${calc.daysWorked} / ${calc.scheduledWorkingDays}`,
                     icon: CalendarDays,
                     color: "text-foreground",
                   },
                   {
-                    label: "ساعات العمل",
+                    label: arabicSource("common.working_hours"),
                     value: `${calc.totalHours.toFixed(1)}h`,
                     icon: Clock,
                     color: "text-foreground",
                   },
                   {
-                    label: "متوسط / يوم",
+                    label: arabicSource("payroll.average_day"),
                     value: `${avgHoursPerDay.toFixed(1)}h`,
                     icon: BarChart3,
                     color: avgHoursPerDay >= DEFAULT_SETTINGS.targetWorkingHoursPerDay ? "text-emerald-400" : "text-amber-400",
                   },
                   {
-                    label: "العمل الإضافي",
+                    label: arabicSource("common.overtime"),
                     value: calc.overtimeHours > 0 ? formatHoursMinutes(calc.overtimeHours) : "—",
                     icon: ArrowUpRight,
                     color: "text-emerald-400",
                   },
                   {
-                    label: "النقص",
+                    label: arabicSource("common.shortage"),
                     value: calc.shortfallHours > 0 ? formatHoursMinutes(calc.shortfallHours) : "—",
                     icon: ArrowDownRight,
                     color: "text-amber-400",
                     onClick: shortfallRecs.length > 0 ? () => setShowShortfall(true) : undefined,
                   },
                   {
-                    label: "الغياب",
-                    value: calc.absenceDays.length > 0 ? `${calc.absenceDays.length} يوم` : "—",
+                    label: arabicSource("common.absence"),
+                    value: calc.absenceDays.length > 0 ? `${calc.absenceDays.length} ${arabicSource("common.days_2")}` : "—",
                     icon: XCircle,
                     color: "text-destructive",
                     onClick: absenceRecs.length > 0 ? () => setShowAbsence(true) : undefined,
                   },
                   {
-                    label: "الإجازات",
-                    value: leaveRecs.length > 0 ? `${paidLeaveCount}${unpaidLeaveCount > 0 ? ` + ${unpaidLeaveCount} ب/ر` : ""} يوم` : "—",
+                    label: arabicSource("common.vacations"),
+                    value: leaveRecs.length > 0 ? `${paidLeaveCount}${unpaidLeaveCount > 0 ? ` + ${unpaidLeaveCount} ${arabicSource("payroll.b_r")}` : ""} ${arabicSource("common.days_2")}` : "—",
                     icon: TreePalm,
                     color: "text-blue-400",
                   },
                   {
-                    label: "التقويم",
-                    value: showCalendar ? "مفتوح" : "عرض",
+                    label: arabicSource("common.calendar"),
+                    value: showCalendar ? arabicSource("common.is_open") : arabicSource("common.width"),
                     icon: CalendarDays,
                     color: showCalendar ? "text-primary" : "text-muted-foreground",
                     onClick: () => setShowCalendar(!showCalendar),
@@ -1291,7 +1292,7 @@ function PayrollDetailPanel({
                       key={chip.label}
                       onClick={chip.onClick}
                       disabled={!chip.onClick}
-                      className={`${cardCls} p-4 text-start ${chip.onClick ? "hover:border-primary/40 cursor-pointer" : ""} ${chip.label === "التقويم" && showCalendar ? "border-primary/40 bg-primary/5" : ""}`}
+                      className={`${cardCls} p-4 text-start ${chip.onClick ? "hover:border-primary/40 cursor-pointer" : ""} ${chip.label === arabicSource("common.calendar") && showCalendar ? "border-primary/40 bg-primary/5" : ""}`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Icon className={`w-4 h-4 ${chip.color}`} />
@@ -1313,8 +1314,8 @@ function PayrollDetailPanel({
                       <Pencil className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-foreground">التعديلات الشهرية</h3>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>سلف ومكافآت وجزاءات</p>
+                      <h3 className="text-foreground">{arabicSource("payroll.monthly_adjustments")}</h3>
+                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.advances_rewards_and_penalties")}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1340,7 +1341,7 @@ function PayrollDetailPanel({
                       className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer flex items-center gap-2"
                       style={{ fontSize: 12 }}
                     >
-                      <Pencil className="w-3.5 h-3.5" /> تعديل
+                      <Pencil className="w-3.5 h-3.5" /> {arabicSource("common.edit")}
                     </button>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -1349,7 +1350,7 @@ function PayrollDetailPanel({
                         className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-muted/20 transition-colors cursor-pointer"
                         style={{ fontSize: 12 }}
                       >
-                        إلغاء
+                        {arabicSource("common.cancel")}
                       </button>
                       <button
                         onClick={handleSaveLedger}
@@ -1358,7 +1359,7 @@ function PayrollDetailPanel({
                         style={{ fontSize: 12 }}
                       >
                         {ledgerSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                        حفظ
+                        {arabicSource("common.save")}
                       </button>
                     </div>
                   )}
@@ -1373,9 +1374,9 @@ function PayrollDetailPanel({
                   return (
                     <div className="space-y-3">
                       {[
-                        { label: "سلفة", value: ledgerLoan, setter: setLedgerLoan, icon: Minus, color: "text-destructive", otherVal: otherLoan },
-                        { label: "مكافأة / بقشيش", value: ledgerTip, setter: setLedgerTip, icon: Plus, color: "text-emerald-400", otherVal: otherTip },
-                        { label: "جزاء", value: ledgerPenalty, setter: setLedgerPenalty, icon: Minus, color: "text-destructive", otherVal: otherPenalty },
+                        { label: arabicSource("common.advance"), value: ledgerLoan, setter: setLedgerLoan, icon: Minus, color: "text-destructive", otherVal: otherLoan },
+                        { label: arabicSource("common.gratuity_tip"), value: ledgerTip, setter: setLedgerTip, icon: Plus, color: "text-emerald-400", otherVal: otherTip },
+                        { label: arabicSource("payroll.penalty"), value: ledgerPenalty, setter: setLedgerPenalty, icon: Minus, color: "text-destructive", otherVal: otherPenalty },
                       ].map((item) => {
                         const Icon = item.icon;
                         return (
@@ -1426,14 +1427,14 @@ function PayrollDetailPanel({
                       <Banknote className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-foreground">تفاصيل الراتب — {sc.currency === "IQD" ? "دينار عراقي" : sc.currency === "USD" ? "دولار أمريكي" : sc.currency}</h3>
+                      <h3 className="text-foreground">{arabicSource("payroll.salary_details")} {sc.currency === "IQD" ? arabicSource("payroll.iraqi_dinar") : sc.currency === "USD" ? arabicSource("payroll.us_dollars") : sc.currency}</h3>
                       <p className="text-muted-foreground" style={{ fontSize: 12 }}>{displayMonth(selectedMonth)}</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between py-2.5 border-b border-border/20">
-                      <span className="text-foreground" style={{ fontSize: 14 }}>الراتب الأساسي</span>
+                      <span className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("common.basic_salary")}</span>
                       <span className="text-foreground" style={{ fontSize: 14 }} dir="ltr">{formatCurrency(sc.baseSalary, sc.currency)}</span>
                     </div>
 
@@ -1441,7 +1442,7 @@ function PayrollDetailPanel({
                       <div className="flex items-center justify-between py-2.5 border-b border-border/20">
                         <span className="text-emerald-400 flex items-center gap-2" style={{ fontSize: 14 }}>
                           <ArrowUpRight className="w-4 h-4" />
-                          العمل الإضافي ({formatHoursMinutes(calc.overtimeHours)})
+                          {arabicSource("payroll.overtime")}{formatHoursMinutes(calc.overtimeHours)})
                         </span>
                         <span className="text-emerald-400" style={{ fontSize: 14 }} dir="ltr">+{formatCurrency(sc.overtimePayment, sc.currency)}</span>
                       </div>
@@ -1450,7 +1451,7 @@ function PayrollDetailPanel({
                     {sc.allowanceBreakdown.length > 0 && (
                       <>
                         <div className="pt-2">
-                          <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>البدلات:</p>
+                          <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>{arabicSource("payroll.allowances")}</p>
                         </div>
                         {sc.allowanceBreakdown.map((a, idx) => (
                           <div key={idx} className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
@@ -1462,20 +1463,20 @@ function PayrollDetailPanel({
                           </div>
                         ))}
                         <div className="flex items-center justify-between py-2 ps-4">
-                          <span className="text-emerald-400" style={{ fontSize: 13, fontWeight: 500 }}>إجمالي البدلات</span>
+                          <span className="text-emerald-400" style={{ fontSize: 13, fontWeight: 500 }}>{arabicSource("common.total_allowances")}</span>
                           <span className="text-emerald-400" style={{ fontSize: 13, fontWeight: 500 }} dir="ltr">+{formatCurrency(sc.totalAllowances, sc.currency)}</span>
                         </div>
                       </>
                     )}
 
                     <div className="flex items-center justify-between py-2.5 bg-primary/5 rounded-lg px-3 -mx-3">
-                      <span className="text-primary" style={{ fontSize: 14 }}>الراتب الإجمالي</span>
+                      <span className="text-primary" style={{ fontSize: 14 }}>{arabicSource("payroll.gross_salary")}</span>
                       <span className="text-primary" style={{ fontSize: 16 }} dir="ltr">{formatCurrency(sc.grossSalary, sc.currency)}</span>
                     </div>
 
                     {(sc.lateDeduction > 0 || sc.shortfallDeduction > 0 || sc.absenceDeduction > 0 || sc.loan > 0 || sc.penalty > 0 || sc.tip > 0 || sc.totalStatutoryDeductions > 0 || sc.loanInstallment > 0) && (
                       <div className="pt-2">
-                        <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>الاستقطاعات والتعديلات:</p>
+                        <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>{arabicSource("payroll.deductions_and_adjustments")}</p>
                       </div>
                     )}
 
@@ -1483,7 +1484,7 @@ function PayrollDetailPanel({
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
                         <span className="text-orange-400 flex items-center gap-2" style={{ fontSize: 13 }}>
                           <Clock className="w-3.5 h-3.5" />
-                          تأخير ({calc.lateDays} يوم)
+                          {arabicSource("payroll.delay")}{calc.lateDays} {arabicSource("common.days_3")}
                         </span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.lateDeduction, sc.currency)}</span>
                       </div>
@@ -1493,7 +1494,7 @@ function PayrollDetailPanel({
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
                         <span className="text-amber-400 flex items-center gap-2" style={{ fontSize: 13 }}>
                           <ArrowDownRight className="w-3.5 h-3.5" />
-                          نقص الساعات ({formatHoursMinutes(calc.shortfallHours)})
+                          {arabicSource("payroll.shortage_of_hours")}{formatHoursMinutes(calc.shortfallHours)})
                         </span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.shortfallDeduction, sc.currency)}</span>
                       </div>
@@ -1503,7 +1504,7 @@ function PayrollDetailPanel({
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
                         <span className="text-destructive flex items-center gap-2" style={{ fontSize: 13 }}>
                           <XCircle className="w-3.5 h-3.5" />
-                          غياب ({calc.absenceDays.length} يوم)
+                          {arabicSource("payroll.absence")}{calc.absenceDays.length} {arabicSource("common.days_3")}
                         </span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.absenceDeduction, sc.currency)}</span>
                       </div>
@@ -1511,14 +1512,14 @@ function PayrollDetailPanel({
 
                     {sc.loan > 0 && (
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-                        <span className="text-muted-foreground" style={{ fontSize: 13 }}>سلفة</span>
+                        <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("common.advance")}</span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.loan, sc.currency)}</span>
                       </div>
                     )}
 
                     {sc.penalty > 0 && (
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-                        <span className="text-muted-foreground" style={{ fontSize: 13 }}>جزاءات</span>
+                        <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("payroll.penalties")}</span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.penalty, sc.currency)}</span>
                       </div>
                     )}
@@ -1541,7 +1542,7 @@ function PayrollDetailPanel({
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
                         <span className="text-orange-400 flex items-center gap-2" style={{ fontSize: 13 }}>
                           <CreditCard className="w-3.5 h-3.5" />
-                          قسط القرض
+                          {arabicSource("payroll.loan_installment")}
                         </span>
                         <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.loanInstallment, sc.currency)}</span>
                       </div>
@@ -1549,7 +1550,7 @@ function PayrollDetailPanel({
 
                     {sc.tip > 0 && (
                       <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-                        <span className="text-emerald-400" style={{ fontSize: 13 }}>مكافأة / بقشيش</span>
+                        <span className="text-emerald-400" style={{ fontSize: 13 }}>{arabicSource("common.gratuity_tip")}</span>
                         <span className="text-emerald-400" style={{ fontSize: 13 }} dir="ltr">+{formatCurrency(sc.tip, sc.currency)}</span>
                       </div>
                     )}
@@ -1557,7 +1558,7 @@ function PayrollDetailPanel({
                     <div className="flex items-center justify-between py-3 mt-2 bg-gradient-to-l from-primary/10 to-transparent rounded-lg px-3 -mx-3 border border-primary/20">
                       <span className="text-primary flex items-center gap-2" style={{ fontSize: 16 }}>
                         <CreditCard className="w-5 h-5" />
-                        صافي الراتب
+                        {arabicSource("common.net_salary")}
                       </span>
                       <span className="text-gradient-gold" style={{ fontSize: 22 }} dir="ltr">{formatCurrency(sc.netSalary, sc.currency)}</span>
                     </div>
@@ -1574,11 +1575,11 @@ function PayrollDetailPanel({
                       <TreePalm className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="text-foreground">أيام الإجازات المعتمدة</h3>
+                      <h3 className="text-foreground">{arabicSource("payroll.approved_vacation_days")}</h3>
                       <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-                        {paidLeaveCount > 0 && `${paidLeaveCount} يوم براتب`}
+                        {paidLeaveCount > 0 && `${paidLeaveCount} ${arabicSource("payroll.day_with_salary")}`}
                         {paidLeaveCount > 0 && unpaidLeaveCount > 0 && " — "}
-                        {unpaidLeaveCount > 0 && <span className="text-destructive">{unpaidLeaveCount} يوم بدون راتب (مخصوم)</span>}
+                        {unpaidLeaveCount > 0 && <span className="text-destructive">{unpaidLeaveCount} {arabicSource("payroll.day_without_pay_deducted")}</span>}
                       </p>
                     </div>
                   </div>
@@ -1608,7 +1609,7 @@ function PayrollDetailPanel({
                             {rec.leaveType}
                           </span>
                           {rec.isUnpaidLeave && (
-                            <span className="text-destructive" style={{ fontSize: 10 }}>مخصوم</span>
+                            <span className="text-destructive" style={{ fontSize: 10 }}>{arabicSource("common.discounted")}</span>
                           )}
                         </div>
                       </div>
@@ -1721,13 +1722,13 @@ function CalendarView({
   }
 
   const dayHeaders = [
-    { label: "الأحد", dow: 0 },
-    { label: "الاثنين", dow: 1 },
-    { label: "الثلاثاء", dow: 2 },
-    { label: "الأربعاء", dow: 3 },
-    { label: "الخميس", dow: 4 },
-    { label: "الجمعة", dow: 5 },
-    { label: "السبت", dow: 6 },
+    { label: arabicSource("common.sunday_2"), dow: 0 },
+    { label: arabicSource("common.monday"), dow: 1 },
+    { label: arabicSource("common.tuesday"), dow: 2 },
+    { label: arabicSource("common.wednesday"), dow: 3 },
+    { label: arabicSource("common.thursday"), dow: 4 },
+    { label: arabicSource("common.friday"), dow: 5 },
+    { label: arabicSource("common.saturday"), dow: 6 },
   ];
 
   // Derive rest days from processed records (each record knows isScheduledWorkingDay)
@@ -1757,7 +1758,7 @@ function CalendarView({
     <div className="bg-card border border-border/30 rounded-xl overflow-hidden shadow-lg">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/30">
         <CalendarDays className="w-5 h-5 text-primary" />
-        <h3 className="text-foreground text-lg">التقويم — {displayMonth(monthYear)}</h3>
+        <h3 className="text-foreground text-lg">{arabicSource("payroll.calendar")} {displayMonth(monthYear)}</h3>
       </div>
 
       {/* Day headers — bold band */}
@@ -1837,7 +1838,7 @@ function CalendarView({
               {isLeave && (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <div style={{ fontSize: 10 }} className={rec.isUnpaidLeave ? "text-orange-400" : "text-blue-400"}>{rec.leaveType}</div>
-                  {rec.isUnpaidLeave && <div style={{ fontSize: 9 }} className="text-destructive mt-0.5">مخصوم</div>}
+                  {rec.isUnpaidLeave && <div style={{ fontSize: 9 }} className="text-destructive mt-0.5">{arabicSource("common.discounted")}</div>}
                 </div>
               )}
 
@@ -1869,15 +1870,15 @@ function CalendarView({
               {/* Absent */}
               {isAbsent && (
                 <div className="flex-1 flex flex-col items-center justify-center gap-0.5">
-                  <span className="text-destructive font-medium" style={{ fontSize: 11 }}>غياب</span>
-                  {rec?.excusedAbsence && <span className="text-emerald-400" style={{ fontSize: 9 }}>معذور</span>}
+                  <span className="text-destructive font-medium" style={{ fontSize: 11 }}>{arabicSource("common.absence_2")}</span>
+                  {rec?.excusedAbsence && <span className="text-emerald-400" style={{ fontSize: 9 }}>{arabicSource("payroll.sorry")}</span>}
                 </div>
               )}
 
               {/* Rest day */}
               {!rec && isRest && (
                 <div className="flex-1 flex flex-col items-center justify-center">
-                  <span className="text-muted-foreground/25" style={{ fontSize: 10 }}>إجازة</span>
+                  <span className="text-muted-foreground/25" style={{ fontSize: 10 }}>{arabicSource("common.leave")}</span>
                 </div>
               )}
 
@@ -1899,7 +1900,7 @@ function CalendarView({
                   }`}
                   style={{ fontSize: 9 }}
                 >
-                  {rec?.excusedAbsence ? "معذور ✓" : "إعذار"}
+                  {rec?.excusedAbsence ? arabicSource("common.sorry") : arabicSource("common.excuse")}
                 </button>
               )}
               {hasShortfall && onExcuseShortfall && (
@@ -1912,7 +1913,7 @@ function CalendarView({
                   }`}
                   style={{ fontSize: 9 }}
                 >
-                  {rec?.excusedShortfall ? "معذور ✓" : "إعذار"}
+                  {rec?.excusedShortfall ? arabicSource("common.sorry") : arabicSource("common.excuse")}
                 </button>
               )}
             </div>
@@ -1923,14 +1924,14 @@ function CalendarView({
       {/* Legend — prominent bar */}
       <div className="flex flex-wrap items-center justify-center gap-5 px-5 py-3.5 border-t border-border/30 bg-muted/10">
         {[
-          { label: "حاضر", dot: "bg-emerald-500" },
-          { label: "نقص ساعات", dot: "bg-amber-400" },
-          { label: "غياب", dot: "bg-destructive" },
-          { label: "عمل إضافي", dot: "bg-emerald-400" },
-          { label: "عذر", dot: "bg-emerald-400" },
-          { label: "إجازة", dot: "bg-blue-400" },
-          { label: "بدون راتب", dot: "bg-orange-400" },
-          { label: "يوم راحة", dot: "bg-muted-foreground/30" },
+          { label: arabicSource("common.present"), dot: "bg-emerald-500" },
+          { label: arabicSource("payroll.shortage_of_hours_2"), dot: "bg-amber-400" },
+          { label: arabicSource("common.absence_2"), dot: "bg-destructive" },
+          { label: arabicSource("payroll.overtime_2"), dot: "bg-emerald-400" },
+          { label: arabicSource("payroll.excuse_me"), dot: "bg-emerald-400" },
+          { label: arabicSource("common.leave"), dot: "bg-blue-400" },
+          { label: arabicSource("common.without_salary"), dot: "bg-orange-400" },
+          { label: arabicSource("common.a_day_of_rest"), dot: "bg-muted-foreground/30" },
         ].map((l) => (
           <div key={l.label} className="flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full ${l.dot}`} />
@@ -1972,8 +1973,8 @@ function ShortfallPopover({
               <ArrowDownRight className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <h3 className="text-foreground">تفاصيل نقص الساعات</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 12 }}>الأيام اللي ساعات الدوام فيها أقل من {targetHours} ساعات</p>
+              <h3 className="text-foreground">{arabicSource("payroll.details_of_the_watch_shortage")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.days_when_working_hours_are_less_than")} {targetHours} {arabicSource("payroll.hours")}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
@@ -1985,7 +1986,7 @@ function ShortfallPopover({
           <table className="w-full">
             <thead>
               <tr className="bg-muted/10 border-b border-border/20">
-                {["التاريخ", "اليوم", "الحضور", "الانصراف", "ساعات العمل", "النقص", "الحالة"].map((h) => (
+                {[arabicSource("common.date"), arabicSource("common.today"), arabicSource("common.attendance"), arabicSource("common.dismissal"), arabicSource("common.working_hours"), arabicSource("common.shortage"), arabicSource("common.status")].map((h) => (
                   <th key={h} className="text-start px-4 py-2.5 text-muted-foreground whitespace-nowrap" style={{ fontSize: 11 }}>{h}</th>
                 ))}
               </tr>
@@ -2011,7 +2012,7 @@ function ShortfallPopover({
                         }`}
                         style={{ fontSize: 11 }}
                       >
-                        {rec.excusedShortfall ? "معذور ✓" : "إعذار"}
+                        {rec.excusedShortfall ? arabicSource("common.sorry") : arabicSource("common.excuse")}
                       </button>
                     </td>
                   </tr>
@@ -2023,10 +2024,10 @@ function ShortfallPopover({
 
         <div className="px-6 py-3 border-t border-border/30 flex items-center justify-between">
           <span className="text-muted-foreground" style={{ fontSize: 12 }}>
-            إجمالي النقص: <span className="text-amber-400">{formatHoursMinutes(records.reduce((s, r) => s + Math.max(0, targetHours - r.workingHours), 0))}</span>
+            {arabicSource("payroll.total_deficiency")} <span className="text-amber-400">{formatHoursMinutes(records.reduce((s, r) => s + Math.max(0, targetHours - r.workingHours), 0))}</span>
           </span>
           <span className="text-muted-foreground" style={{ fontSize: 12 }}>
-            معذور: {records.filter((r) => r.excusedShortfall).length} / {records.length}
+            {arabicSource("common.excused")} {records.filter((r) => r.excusedShortfall).length} / {records.length}
           </span>
         </div>
       </motion.div>
@@ -2046,9 +2047,9 @@ function AbsencePopover({
   onExcuse: (id: string) => void;
 }) {
   const reasonLabels: Record<string, string> = {
-    no_punches: "بدون بصمة",
-    late_threshold: "تأخر مفرط",
-    checkout_without_checkin: "انصراف بدون حضور",
+    no_punches: arabicSource("payroll.no_fingerprint"),
+    late_threshold: arabicSource("payroll.excessive_delay"),
+    checkout_without_checkin: arabicSource("payroll.leaving_without_attending"),
   };
 
   return (
@@ -2068,8 +2069,8 @@ function AbsencePopover({
               <XCircle className="w-5 h-5 text-destructive" />
             </div>
             <div>
-              <h3 className="text-foreground">تفاصيل الغياب</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 12 }}>أيام الغياب خلال الشهر</p>
+              <h3 className="text-foreground">{arabicSource("payroll.absence_details")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.days_of_absence_during_the_month")}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
@@ -2091,7 +2092,7 @@ function AbsencePopover({
                 <div>
                   <p className="text-foreground" style={{ fontSize: 13 }}>{rec.date}</p>
                   <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                    {dayNamesAr[rec.dayOfWeek] || rec.dayOfWeek} — {reasonLabels[rec.absenceReason || ""] || "غياب"}
+                    {dayNamesAr[rec.dayOfWeek] || rec.dayOfWeek} — {reasonLabels[rec.absenceReason || ""] || arabicSource("common.absence_2")}
                   </p>
                 </div>
               </div>
@@ -2104,7 +2105,7 @@ function AbsencePopover({
                 }`}
                 style={{ fontSize: 11 }}
               >
-                {rec.excusedAbsence ? "معذور ✓" : "إعذار"}
+                {rec.excusedAbsence ? arabicSource("common.sorry") : arabicSource("common.excuse")}
               </button>
             </div>
           ))}
@@ -2112,10 +2113,10 @@ function AbsencePopover({
 
         <div className="px-6 py-3 border-t border-border/30 flex items-center justify-between">
           <span className="text-destructive" style={{ fontSize: 12 }}>
-            إجمالي: {records.length} يوم
+            {arabicSource("payroll.total")} {records.length} {arabicSource("common.days_2")}
           </span>
           <span className="text-emerald-400" style={{ fontSize: 12 }}>
-            معذور: {records.filter((r) => r.excusedAbsence).length}
+            {arabicSource("common.excused")} {records.filter((r) => r.excusedAbsence).length}
           </span>
         </div>
       </motion.div>

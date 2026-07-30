@@ -6,6 +6,7 @@ import { useWarnings, useEmployees, useConfigurations, empDisplayName, DbWarning
 import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";
 import { localizedConfirm } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 // Color gradients for warning types — auto-assigned by severity index (lightest → most severe)
 const typeColorPalette = [
@@ -42,8 +43,8 @@ export function Warnings() {
   const { getValue } = useConfigurations();
 
   // Warning types and statuses from configurations table (NOT hard-coded)
-  const warningTypes = (getValue('warnings.types', 'شفهي,كتابي أول,كتابي ثاني,كتابي نهائي,فصل')).split(',').map(s => s.trim());
-  const warningStatuses = (getValue('warnings.statuses', 'نشط,منتهي,ملغي')).split(',').map(s => s.trim());
+  const warningTypes = (getValue('warnings.types', arabicSource("warnings.oral_first_written_second_written_final_written_chapter"))).split(',').map(s => s.trim());
+  const warningStatuses = (getValue('warnings.statuses', arabicSource("warnings.active_expired_canceled"))).split(',').map(s => s.trim());
 
   // Auto-build color and severity maps from the ordered type list
   const typeColors: Record<string, string> = {};
@@ -104,26 +105,26 @@ export function Warnings() {
   });
 
   const kanbanStatusCols: { key: string; label: string; accent: string; dotColor: string }[] = [
-    { key: "نشط", label: "نشط", accent: "border-destructive/40", dotColor: "bg-destructive" },
-    { key: "منتهي", label: "منتهي", accent: "border-muted-foreground/40", dotColor: "bg-muted-foreground" },
-    { key: "ملغي", label: "ملغي", accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
+    { key: arabicSource("common.is_active"), label: arabicSource("common.is_active"), accent: "border-destructive/40", dotColor: "bg-destructive" },
+    { key: arabicSource("common.finished"), label: arabicSource("common.finished"), accent: "border-muted-foreground/40", dotColor: "bg-muted-foreground" },
+    { key: arabicSource("common.canceled"), label: arabicSource("common.canceled"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
   ];
 
   // Stats calculations
   const stats = {
     total: filteredWarnings.length,
-    active: filteredWarnings.filter(w => w.status === "نشط").length,
-    expired: filteredWarnings.filter(w => w.status === "منتهي").length,
-    cancelled: filteredWarnings.filter(w => w.status === "ملغي").length,
+    active: filteredWarnings.filter(w => w.status === arabicSource("common.is_active")).length,
+    expired: filteredWarnings.filter(w => w.status === arabicSource("common.finished")).length,
+    cancelled: filteredWarnings.filter(w => w.status === arabicSource("common.canceled")).length,
     byType: warningTypes.map(t => ({
       type: t,
-      count: filteredWarnings.filter(w => w.type === t && w.status === "نشط").length,
+      count: filteredWarnings.filter(w => w.type === t && w.status === arabicSource("common.is_active")).length,
     })),
   };
 
   // Escalation indicator: count active warnings per employee
   const warningsByEmployee = enrichedWarnings
-    .filter(w => w.status === "نشط")
+    .filter(w => w.status === arabicSource("common.is_active"))
     .reduce((acc: Record<string, number>, w) => {
       acc[w.employee_id] = (acc[w.employee_id] || 0) + 1;
       return acc;
@@ -132,7 +133,7 @@ export function Warnings() {
   const handleCreateWarning = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.employeeId || !formData.type || !formData.reason) {
-      setToast("الرجاء ملء جميع الحقول المطلوبة");
+      setToast(arabicSource("warnings.please_fill_out_all_required_fields"));
       return;
     }
 
@@ -156,7 +157,7 @@ export function Warnings() {
           .eq("id", editingId);
 
         if (error) throw error;
-        setToast("تم تحديث الإنذار بنجاح");
+        setToast(arabicSource("warnings.alarm_updated_successfully"));
       } else {
         // Create new warning
         const { error } = await supabase
@@ -168,19 +169,19 @@ export function Warnings() {
             details: formData.details || null,
             date: new Date().toISOString().split("T")[0],
             issued_by: issuedById,
-            status: "نشط",
+            status: arabicSource("common.is_active"),
             expiry_date: formData.expiryDate || null,
           });
 
         if (error) throw error;
-        setToast("تم إصدار الإنذار بنجاح");
+        setToast(arabicSource("warnings.alarm_issued_successfully"));
       }
 
       resetForm();
       setShowForm(false);
       refetch();
     } catch (err) {
-      setToast(`خطأ: ${err instanceof Error ? err.message : "فشل العملية"}`);
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : arabicSource("warnings.the_operation_failed")}`);
     } finally {
       setSaving(false);
     }
@@ -194,15 +195,15 @@ export function Warnings() {
         .eq("id", warningId);
 
       if (error) throw error;
-      setToast(`تم تغيير الحالة إلى "${newStatus}"`);
+      setToast(`${arabicSource("warnings.status_changed_to")}${newStatus}"`);
       refetch();
     } catch (err) {
-      setToast(`خطأ: ${err instanceof Error ? err.message : "فشل التحديث"}`);
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : arabicSource("warnings.update_failed")}`);
     }
   };
 
   const handleDelete = async (warningId: string) => {
-    if (!localizedConfirm("هل أنت متأكد من حذف هذا الإنذار؟")) return;
+    if (!localizedConfirm(arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm"))) return;
 
     try {
       const { error } = await supabase
@@ -211,10 +212,10 @@ export function Warnings() {
         .eq("id", warningId);
 
       if (error) throw error;
-      setToast("تم حذف الإنذار بنجاح");
+      setToast(arabicSource("warnings.the_alarm_has_been_successfully_deleted"));
       refetch();
     } catch (err) {
-      setToast(`خطأ: ${err instanceof Error ? err.message : "فشل الحذف"}`);
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : arabicSource("warnings.delete_failed")}`);
     }
   };
 
@@ -246,8 +247,8 @@ export function Warnings() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">الإنذارات</h1>
-          <p className="text-muted-foreground mt-1">إدارة ومتابعة الإنذارات الإدارية</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.alarms")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("warnings.managing_and_following_up_on_administrative_warnings")}</p>
         </div>
         <div className="flex items-center gap-3">
           <ViewToggle view={viewMode} onChange={setViewMode} />
@@ -258,7 +259,7 @@ export function Warnings() {
             className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
           >
             <Plus className="w-5 h-5" />
-            إصدار إنذار
+            {arabicSource("warnings.issue_an_alarm")}
           </motion.button>
         </div>
       </div>
@@ -279,7 +280,7 @@ export function Warnings() {
               <FileWarning className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-muted-foreground relative z-10" style={{ fontSize: 12 }}>الإجمالي</p>
+          <p className="text-muted-foreground relative z-10" style={{ fontSize: 12 }}>{arabicSource("common.total")}</p>
           <span className="text-gradient-gold block mt-1 relative z-10" style={{ fontSize: 24 }}>{stats.total}</span>
         </motion.div>
 
@@ -318,7 +319,7 @@ export function Warnings() {
             <Search className="absolute end-3 top-3 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
-              placeholder="ابحث عن موظف أو سبب..."
+              placeholder={arabicSource("warnings.find_an_employee_or_cause")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-11 px-4 pe-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -331,7 +332,7 @@ export function Warnings() {
             onChange={(e) => setFilterType(e.target.value)}
             className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
           >
-            <option value="">جميع الأنواع</option>
+            <option value="">{arabicSource("common.all_types")}</option>
             {warningTypes.map(t => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -343,7 +344,7 @@ export function Warnings() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
           >
-            <option value="">جميع الحالات</option>
+            <option value="">{arabicSource("warnings.all_cases")}</option>
             {warningStatuses.map(s => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -358,7 +359,7 @@ export function Warnings() {
         transition={{ delay: 0.6 }}
         className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg"
       >
-        <h3 className="text-foreground mb-4">مسار تصعيد الإنذارات</h3>
+        <h3 className="text-foreground mb-4">{arabicSource("warnings.alarm_escalation_path")}</h3>
         <div className="flex items-center justify-between">
           {warningTypes.map((type, i) => (
             <div key={type} className="flex items-center gap-2">
@@ -391,7 +392,7 @@ export function Warnings() {
             <div className="animate-spin mb-4">
               <Clock className="w-8 h-8 mx-auto" />
             </div>
-            جاري تحميل الإنذارات...
+            {arabicSource("warnings.loading_alarms")}
           </div>
         </motion.div>
       )}
@@ -412,7 +413,7 @@ export function Warnings() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-muted/20 border-b border-border/20">
-                      {["الموظف", "القسم", "نوع الإنذار", "السبب", "التاريخ", "صادر من", "الحالة", "إجراءات"].map(h => (
+                      {[arabicSource("common.employee"), arabicSource("common.section"), arabicSource("common.alarm_type"), arabicSource("common.the_reason"), arabicSource("common.date"), arabicSource("warnings.issued_by"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
                         <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
                       ))}
                     </tr>
@@ -434,7 +435,7 @@ export function Warnings() {
                                 <span className="text-foreground">{warning.employeeName}</span>
                                 {warningsByEmployee[warning.employee_id] > 1 && (
                                   <span className="ml-2 px-2 py-0.5 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded">
-                                    {warningsByEmployee[warning.employee_id]} إنذارات
+                                    {warningsByEmployee[warning.employee_id]} {arabicSource("common.alarms_2")}
                                   </span>
                                 )}
                               </div>
@@ -459,7 +460,7 @@ export function Warnings() {
                               <button
                                 onClick={() => setSelectedWarning(warning)}
                                 className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
-                                title="عرض التفاصيل"
+                                title={arabicSource("common.show_details")}
                               >
                                 <Eye className="w-4 h-4 text-muted-foreground" />
                               </button>
@@ -469,7 +470,7 @@ export function Warnings() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={8}><EmptyState icon={ShieldAlert} message="لا توجد إنذارات" /></td>
+                        <td colSpan={8}><EmptyState icon={ShieldAlert} message={arabicSource("common.no_alarms")} /></td>
                       </tr>
                     )}
                   </tbody>
@@ -539,12 +540,12 @@ export function Warnings() {
                               onClick={() => setSelectedWarning(w)}
                               className="flex-1 py-1 text-xs rounded hover:bg-primary/20 transition-colors cursor-pointer text-primary"
                             >
-                              التفاصيل
+                              {arabicSource("common.details")}
                             </motion.button>
                           </div>
                         </motion.div>
                       )) : (
-                        <EmptyState icon={ShieldAlert} message="لا توجد إنذارات" className="py-8" />
+                        <EmptyState icon={ShieldAlert} message={arabicSource("common.no_alarms")} className="py-8" />
                       )}
                     </div>
                   </motion.div>
@@ -573,52 +574,52 @@ export function Warnings() {
               className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-foreground">تفاصيل الإنذار</h2>
+                <h2 className="text-foreground">{arabicSource("warnings.alarm_details")}</h2>
                 <button onClick={() => setSelectedWarning(null)} className="p-1 rounded hover:bg-secondary cursor-pointer">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>الموظف: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.employee")} </span>
                   <span className="text-foreground">{selectedWarning.employeeName}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>القسم: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.section")} </span>
                   <span className="text-foreground">{selectedWarning.employeeDepartment}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>نوع الإنذار: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.alarm_type")} </span>
                   <span className={`px-2 py-0.5 rounded-md border ${typeColors[selectedWarning.type]}`} style={{ fontSize: 12 }}>
                     {selectedWarning.type}
                   </span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>السبب: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.reason")} </span>
                   <span className="text-foreground">{selectedWarning.reason}</span>
                 </div>
                 {selectedWarning.details && (
                   <div className="p-3 rounded-lg bg-muted/20">
-                    <span className="text-muted-foreground" style={{ fontSize: 13 }}>التفاصيل: </span>
+                    <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.details")} </span>
                     <p className="text-foreground mt-1">{selectedWarning.details}</p>
                   </div>
                 )}
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>التاريخ: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.date")} </span>
                   <span className="text-foreground" dir="ltr">{selectedWarning.date}</span>
                 </div>
                 {selectedWarning.expiry_date && (
                   <div className="p-3 rounded-lg bg-muted/20">
-                    <span className="text-muted-foreground" style={{ fontSize: 13 }}>تاريخ الانتهاء: </span>
+                    <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.completion_date")} </span>
                     <span className="text-foreground" dir="ltr">{selectedWarning.expiry_date}</span>
                   </div>
                 )}
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>صادر من: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.issued_by_2")} </span>
                   <span className="text-foreground">{selectedWarning.issued_by || "—"}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
-                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>الحالة: </span>
+                  <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.condition")} </span>
                   <span className={`px-2 py-0.5 rounded-md border ${statusColors[selectedWarning.status]}`} style={{ fontSize: 12 }}>
                     {selectedWarning.status}
                   </span>
@@ -633,28 +634,28 @@ export function Warnings() {
                   onClick={() => { handleEditWarning(selectedWarning); setSelectedWarning(null); }}
                   className="flex-1 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
                 >
-                  تعديل
+                  {arabicSource("common.edit")}
                 </motion.button>
-                {selectedWarning.status !== "نشط" && (
+                {selectedWarning.status !== arabicSource("common.is_active") && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { handleStatusChange(selectedWarning.id, "نشط"); setSelectedWarning(null); }}
+                    onClick={() => { handleStatusChange(selectedWarning.id, arabicSource("common.is_active")); setSelectedWarning(null); }}
                     className="flex-1 py-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    تفعيل
+                    {arabicSource("common.activate")}
                   </motion.button>
                 )}
-                {selectedWarning.status !== "منتهي" && (
+                {selectedWarning.status !== arabicSource("common.finished") && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { handleStatusChange(selectedWarning.id, "منتهي"); setSelectedWarning(null); }}
+                    onClick={() => { handleStatusChange(selectedWarning.id, arabicSource("common.finished")); setSelectedWarning(null); }}
                     className="flex-1 py-2 rounded-lg bg-muted/30 text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-center gap-2"
                   >
                     <XCircle className="w-4 h-4" />
-                    إنهاء
+                    {arabicSource("common.end")}
                   </motion.button>
                 )}
                 <motion.button
@@ -664,7 +665,7 @@ export function Warnings() {
                   className="flex-1 py-2 rounded-lg bg-red-900/20 text-red-400 hover:bg-red-900/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
-                  حذف
+                  {arabicSource("common.delete")}
                 </motion.button>
               </div>
             </motion.div>
@@ -690,7 +691,7 @@ export function Warnings() {
               className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-foreground">{editingId ? "تعديل الإنذار" : "إصدار إنذار جديد"}</h2>
+                <h2 className="text-foreground">{editingId ? arabicSource("warnings.alarm_adjustment") : arabicSource("warnings.new_alarm_issued")}</h2>
                 <button onClick={() => { setShowForm(false); resetForm(); }} className="p-1 rounded hover:bg-secondary cursor-pointer">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -698,11 +699,11 @@ export function Warnings() {
 
               <form onSubmit={handleCreateWarning} className="space-y-4">
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>الموظف</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
                   <div className="space-y-2">
                     <input
                       type="text"
-                      placeholder="ابحث عن الموظف..."
+                      placeholder={arabicSource("warnings.find_the_employee")}
                       value={employeeSearch}
                       onChange={(e) => setEmployeeSearch(e.target.value)}
                       className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -729,29 +730,29 @@ export function Warnings() {
                     )}
                     {formData.employeeId && (
                       <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm">
-                        ✓ {employees.find(e => e.id === formData.employeeId)?.arabic_name || "موظف مختار"}
+                        ✓ {employees.find(e => e.id === formData.employeeId)?.arabic_name || arabicSource("warnings.selected_employee")}
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>نوع الإنذار</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.alarm_type")}</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
                     className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
                   >
-                    <option value="">اختر نوع الإنذار</option>
+                    <option value="">{arabicSource("warnings.choose_the_alarm_type")}</option>
                     {warningTypes.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>السبب</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.the_reason")}</label>
                   <input
                     type="text"
-                    placeholder="سبب الإنذار"
+                    placeholder={arabicSource("warnings.cause_of_alarm")}
                     value={formData.reason}
                     onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                     className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -759,10 +760,10 @@ export function Warnings() {
                 </div>
 
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>التفاصيل</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.details")}</label>
                   <textarea
                     rows={3}
-                    placeholder="تفاصيل الإنذار..."
+                    placeholder={arabicSource("warnings.alarm_details_2")}
                     value={formData.details}
                     onChange={(e) => setFormData(prev => ({ ...prev, details: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
@@ -770,7 +771,7 @@ export function Warnings() {
                 </div>
 
                 <div>
-                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>تاريخ الانتهاء (اختياري)</label>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("warnings.end_date_optional")}</label>
                   <input
                     type="date"
                     value={formData.expiryDate}
@@ -787,7 +788,7 @@ export function Warnings() {
                     whileTap={{ scale: !saving ? 0.95 : 1 }}
                     className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {saving ? "جاري الحفظ..." : (editingId ? "تحديث الإنذار" : "إصدار الإنذار")}
+                    {saving ? arabicSource("common.saving") : (editingId ? arabicSource("warnings.alarm_update") : arabicSource("warnings.alarm_issued"))}
                   </motion.button>
                   <motion.button
                     type="button"
@@ -796,7 +797,7 @@ export function Warnings() {
                     whileTap={{ scale: 0.95 }}
                     className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </motion.button>
                 </div>
               </form>

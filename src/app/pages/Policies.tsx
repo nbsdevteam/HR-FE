@@ -8,25 +8,26 @@ import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";
 import { usePolicies, type DbPolicy } from "../lib/hooks";
 import { localizedConfirm } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 const CATEGORY_ICONS: Record<string, any> = {
-  "إجازات": Calendar,
-  "حضور": Clock,
-  "رواتب": Wallet,
-  "سلوك": Shield,
-  "تدريب": Users,
-  "عام": FileText,
+  [arabicSource("common.vacations_2")]: Calendar,
+  [arabicSource("common.attendance_2")]: Clock,
+  [arabicSource("common.salaries_2")]: Wallet,
+  [arabicSource("common.behavior")]: Shield,
+  [arabicSource("common.training")]: Users,
+  [arabicSource("common.general")]: FileText,
 };
 
-const categories = ["الكل", "إجازات", "حضور", "رواتب", "سلوك", "تدريب", "عام"];
+const categories = [arabicSource("common.all"), arabicSource("common.vacations_2"), arabicSource("common.attendance_2"), arabicSource("common.salaries_2"), arabicSource("common.behavior"), arabicSource("common.training"), arabicSource("common.general")];
 
 const statusColors: Record<string, string> = {
-  "نشط": "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "قيد المراجعة": "bg-primary/10 border-primary/20 text-primary",
-  "مؤرشف": "bg-muted/30 border-border text-muted-foreground",
+  [arabicSource("common.is_active")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  [arabicSource("common.is_under_review")]: "bg-primary/10 border-primary/20 text-primary",
+  [arabicSource("common.archived")]: "bg-muted/30 border-border text-muted-foreground",
 };
 
-const STATUS_OPTIONS = ["نشط", "قيد المراجعة", "مؤرشف"];
+const STATUS_OPTIONS = [arabicSource("common.is_active"), arabicSource("common.is_under_review"), arabicSource("common.archived")];
 
 interface CreatePolicyForm {
   title: string;
@@ -44,7 +45,7 @@ interface EditPolicyForm extends CreatePolicyForm {
 export function Policies() {
   const { policies, loading, refetch } = usePolicies();
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("الكل");
+  const [selectedCategory, setSelectedCategory] = useState(arabicSource("common.all"));
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [expandedPolicy, setExpandedPolicy] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,7 +57,7 @@ export function Policies() {
 
   const [createForm, setCreateForm] = useState<CreatePolicyForm>({
     title: "",
-    category: "عام",
+    category: arabicSource("common.general"),
     description: "",
     content: "",
   });
@@ -70,23 +71,23 @@ export function Policies() {
   // Filter policies
   const filtered = policies.filter(p => {
     const matchSearch = (p.title?.includes(search) || p.description?.includes(search)) ?? false;
-    const matchCat = selectedCategory === "الكل" || p.category === selectedCategory;
+    const matchCat = selectedCategory === arabicSource("common.all") || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
 
   // Calculate stats
   const stats = {
     total: policies.length,
-    active: policies.filter(p => p.status === "نشط").length,
-    underReview: policies.filter(p => p.status === "قيد المراجعة").length,
-    archived: policies.filter(p => p.status === "مؤرشف").length,
+    active: policies.filter(p => p.status === arabicSource("common.is_active")).length,
+    underReview: policies.filter(p => p.status === arabicSource("common.is_under_review")).length,
+    archived: policies.filter(p => p.status === arabicSource("common.archived")).length,
   };
 
   // Create policy
   const handleCreatePolicy = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!createForm.title.trim() || !createForm.content.trim()) {
-      showToast("يرجى ملء جميع الحقول المطلوبة");
+      showToast(arabicSource("common.please_fill_out_all_required_fields"));
       return;
     }
 
@@ -98,7 +99,7 @@ export function Policies() {
           category: createForm.category,
           description: createForm.description,
           content: createForm.content,
-          status: "نشط",
+          status: arabicSource("common.is_active"),
           version: 1,
           last_updated: new Date().toISOString().split('T')[0],
           created_at: new Date().toISOString(),
@@ -107,12 +108,12 @@ export function Policies() {
 
       if (error) throw error;
 
-      showToast("تم إنشاء السياسة بنجاح");
-      setCreateForm({ title: "", category: "عام", description: "", content: "" });
+      showToast(arabicSource("policies.the_policy_was_created_successfully"));
+      setCreateForm({ title: "", category: arabicSource("common.general"), description: "", content: "" });
       setShowCreateModal(false);
       await refetch();
     } catch (err: any) {
-      showToast("خطأ: " + (err.message || "فشل إنشاء السياسة"));
+      showToast(arabicSource("common.error_2") + " " + (err.message || arabicSource("policies.policy_creation_failed")));
     } finally {
       setIsSubmitting(false);
     }
@@ -140,12 +141,12 @@ export function Policies() {
 
       if (error) throw error;
 
-      showToast("تم تحديث السياسة بنجاح");
+      showToast(arabicSource("policies.the_policy_was_updated_successfully"));
       setEditingPolicy(null);
       setShowEditModal(false);
       await refetch();
     } catch (err: any) {
-      showToast("خطأ: " + (err.message || "فشل تحديث السياسة"));
+      showToast(arabicSource("common.error_2") + " " + (err.message || arabicSource("policies.policy_update_failed")));
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +154,7 @@ export function Policies() {
 
   // Delete policy
   const handleDeletePolicy = async (id: string) => {
-    if (!localizedConfirm("هل أنت متأكد من حذف هذه السياسة؟")) return;
+    if (!localizedConfirm(arabicSource("policies.are_you_sure_you_want_to_delete_this_policy"))) return;
 
     setIsSubmitting(true);
     try {
@@ -164,10 +165,10 @@ export function Policies() {
 
       if (error) throw error;
 
-      showToast("تم حذف السياسة بنجاح");
+      showToast(arabicSource("policies.the_policy_was_deleted_successfully"));
       await refetch();
     } catch (err: any) {
-      showToast("خطأ: " + (err.message || "فشل حذف السياسة"));
+      showToast(arabicSource("common.error_2") + " " + (err.message || arabicSource("policies.policy_deletion_failed")));
     } finally {
       setIsSubmitting(false);
     }
@@ -176,11 +177,11 @@ export function Policies() {
   // Toggle status
   const handleToggleStatus = async (policy: DbPolicy) => {
     const statusMap: Record<string, string> = {
-      "نشط": "قيد المراجعة",
-      "قيد المراجعة": "مؤرشف",
-      "مؤرشف": "نشط",
+      [arabicSource("common.is_active")]: arabicSource("common.is_under_review"),
+      [arabicSource("common.is_under_review")]: arabicSource("common.archived"),
+      [arabicSource("common.archived")]: arabicSource("common.is_active"),
     };
-    const newStatus = statusMap[policy.status] || "نشط";
+    const newStatus = statusMap[policy.status] || arabicSource("common.is_active");
 
     setIsSubmitting(true);
     try {
@@ -194,10 +195,10 @@ export function Policies() {
 
       if (error) throw error;
 
-      showToast(`تم تغيير الحالة إلى: ${newStatus}`);
+      showToast(`${arabicSource("policies.status_changed_to")} ${newStatus}`);
       await refetch();
     } catch (err: any) {
-      showToast("خطأ: " + (err.message || "فشل تغيير الحالة"));
+      showToast(arabicSource("common.error_2") + " " + (err.message || arabicSource("policies.status_change_failed")));
     } finally {
       setIsSubmitting(false);
     }
@@ -228,11 +229,11 @@ export function Policies() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gradient-gold">السياسات والإجراءات</h1>
-            <p className="text-muted-foreground mt-1">دليل السياسات والأنظمة الداخلية</p>
+            <h1 className="text-gradient-gold">{arabicSource("common.policies_and_procedures")}</h1>
+            <p className="text-muted-foreground mt-1">{arabicSource("common.internal_policies_and_systems_manual")}</p>
           </div>
         </div>
-        <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
+        <div className="text-center py-8 text-muted-foreground">{arabicSource("common.loading")}</div>
       </div>
     );
   }
@@ -242,8 +243,8 @@ export function Policies() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">السياسات والإجراءات</h1>
-          <p className="text-muted-foreground mt-1">دليل السياسات والأنظمة الداخلية</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.policies_and_procedures")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("common.internal_policies_and_systems_manual")}</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -251,17 +252,17 @@ export function Policies() {
           className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
         >
           <Plus className="w-5 h-5" />
-          إضافة سياسة
+          {arabicSource("policies.add_policy")}
         </motion.button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "إجمالي السياسات", value: stats.total, icon: FileText, iconBg: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
-          { label: "نشطة", value: stats.active, icon: CheckCircle, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
-          { label: "قيد المراجعة", value: stats.underReview, icon: AlertTriangle, iconBg: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
-          { label: "مؤرشفة", value: stats.archived, icon: Archive, iconBg: "bg-muted/10 border-border", iconColor: "text-muted-foreground" },
+          { label: arabicSource("policies.total_policies"), value: stats.total, icon: FileText, iconBg: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
+          { label: arabicSource("policies.is_active"), value: stats.active, icon: CheckCircle, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+          { label: arabicSource("common.is_under_review"), value: stats.underReview, icon: AlertTriangle, iconBg: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
+          { label: arabicSource("policies.archived"), value: stats.archived, icon: Archive, iconBg: "bg-muted/10 border-border", iconColor: "text-muted-foreground" },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -294,7 +295,7 @@ export function Policies() {
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="بحث في السياسات..."
+            placeholder={arabicSource("policies.policy_research")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -319,7 +320,7 @@ export function Policies() {
       {/* Policies List */}
       <div className="space-y-4">
         {filtered.length === 0 ? (
-          <EmptyState icon={FileText} message="لا توجد سياسات مطابقة للبحث" />
+          <EmptyState icon={FileText} message={arabicSource("policies.there_are_no_matching_policies_for_your_search")} />
         ) : (
           filtered.map((policy, i) => {
             const Icon = CATEGORY_ICONS[policy.category] || FileText;
@@ -344,7 +345,7 @@ export function Policies() {
                     <div className="text-start">
                       <h3 className="text-foreground font-medium">{policy.title}</h3>
                       <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-                        {policy.description || "لا يوجد وصف"}
+                        {policy.description || arabicSource("policies.no_description")}
                       </p>
                     </div>
                   </div>
@@ -377,7 +378,7 @@ export function Policies() {
                         {/* Content Preview */}
                         <div className="p-4 rounded-lg bg-muted/20">
                           <p className="text-foreground whitespace-pre-line" style={{ fontSize: 13, lineHeight: 1.8 }}>
-                            {policy.content?.substring(0, 200) || "لا يوجد محتوى"}
+                            {policy.content?.substring(0, 200) || arabicSource("policies.no_content")}
                             {policy.content && policy.content.length > 200 && "..."}
                           </p>
                         </div>
@@ -385,17 +386,17 @@ export function Policies() {
                         {/* Metadata */}
                         <div className="grid grid-cols-3 gap-3 text-xs">
                           <div>
-                            <p className="text-muted-foreground">الفئة</p>
+                            <p className="text-muted-foreground">{arabicSource("common.category")}</p>
                             <p className="text-foreground font-medium">{policy.category}</p>
                           </div>
                           <div>
-                            <p className="text-muted-foreground">آخر تحديث</p>
+                            <p className="text-muted-foreground">{arabicSource("policies.latest_update")}</p>
                             <p className="text-foreground font-medium" dir="ltr">
                               {policy.last_updated}
                             </p>
                           </div>
                           <div>
-                            <p className="text-muted-foreground">الإصدار</p>
+                            <p className="text-muted-foreground">{arabicSource("common.version")}</p>
                             <p className="text-foreground font-medium">v{policy.version}</p>
                           </div>
                         </div>
@@ -407,7 +408,7 @@ export function Policies() {
                             className="flex items-center gap-1 px-3 py-1.5 bg-primary/20 text-primary rounded text-xs hover:bg-primary/30 transition-colors cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
-                            عرض كامل
+                            {arabicSource("policies.full_view")}
                           </button>
                           <button
                             onClick={() => openEditModal(policy)}
@@ -415,7 +416,7 @@ export function Policies() {
                             disabled={isSubmitting}
                           >
                             <Edit2 className="w-4 h-4" />
-                            تعديل
+                            {arabicSource("common.edit")}
                           </button>
                           <button
                             onClick={() => handleToggleStatus(policy)}
@@ -423,7 +424,7 @@ export function Policies() {
                             disabled={isSubmitting}
                           >
                             <RotateCcw className="w-4 h-4" />
-                            تغيير الحالة
+                            {arabicSource("policies.change_status")}
                           </button>
                           <button
                             onClick={() => handleDeletePolicy(policy.id)}
@@ -431,7 +432,7 @@ export function Policies() {
                             disabled={isSubmitting}
                           >
                             <Trash2 className="w-4 h-4" />
-                            حذف
+                            {arabicSource("common.delete")}
                           </button>
                         </div>
                       </div>
@@ -462,7 +463,7 @@ export function Policies() {
               className="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-foreground">إضافة سياسة جديدة</h2>
+                <h2 className="text-xl font-bold text-foreground">{arabicSource("policies.add_a_new_policy")}</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer"
@@ -474,25 +475,25 @@ export function Policies() {
               <form onSubmit={handleCreatePolicy} className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">العنوان</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.address")}</label>
                   <input
                     type="text"
                     value={createForm.title}
                     onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-                    placeholder="أدخل عنوان السياسة"
+                    placeholder={arabicSource("policies.enter_the_policy_title")}
                     className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                   />
                 </div>
 
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">الفئة</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.category")}</label>
                   <select
                     value={createForm.category}
                     onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
                   >
-                    {["إجازات", "حضور", "رواتب", "سلوك", "تدريب", "عام"].map(cat => (
+                    {[arabicSource("common.vacations_2"), arabicSource("common.attendance_2"), arabicSource("common.salaries_2"), arabicSource("common.behavior"), arabicSource("common.training"), arabicSource("common.general")].map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
@@ -500,23 +501,23 @@ export function Policies() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">الوصف</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.description")}</label>
                   <input
                     type="text"
                     value={createForm.description}
                     onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                    placeholder="وصف مختصر للسياسة"
+                    placeholder={arabicSource("policies.brief_description_of_the_policy")}
                     className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                   />
                 </div>
 
                 {/* Content */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">المحتوى</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.content")}</label>
                   <textarea
                     value={createForm.content}
                     onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
-                    placeholder="أدخل محتوى السياسة الكامل"
+                    placeholder={arabicSource("policies.enter_the_full_policy_content")}
                     rows={8}
                     className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
                   />
@@ -530,14 +531,14 @@ export function Policies() {
                     className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
-                    إنشاء السياسة
+                    {arabicSource("policies.create_the_policy")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
                     className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </form>
@@ -564,7 +565,7 @@ export function Policies() {
               className="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-foreground">تعديل السياسة</h2>
+                <h2 className="text-xl font-bold text-foreground">{arabicSource("policies.modify_the_policy")}</h2>
                 <button
                   onClick={() => setShowEditModal(false)}
                   className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer"
@@ -576,7 +577,7 @@ export function Policies() {
               <form onSubmit={handleUpdatePolicy} className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">العنوان</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.address")}</label>
                   <input
                     type="text"
                     value={editingPolicy.title}
@@ -587,13 +588,13 @@ export function Policies() {
 
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">الفئة</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.category")}</label>
                   <select
                     value={editingPolicy.category}
                     onChange={(e) => setEditingPolicy({ ...editingPolicy, category: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
                   >
-                    {["إجازات", "حضور", "رواتب", "سلوك", "تدريب", "عام"].map(cat => (
+                    {[arabicSource("common.vacations_2"), arabicSource("common.attendance_2"), arabicSource("common.salaries_2"), arabicSource("common.behavior"), arabicSource("common.training"), arabicSource("common.general")].map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
@@ -601,7 +602,7 @@ export function Policies() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">الوصف</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.description")}</label>
                   <input
                     type="text"
                     value={editingPolicy.description}
@@ -612,7 +613,7 @@ export function Policies() {
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">الحالة</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.status")}</label>
                   <select
                     value={editingPolicy.status}
                     onChange={(e) => setEditingPolicy({ ...editingPolicy, status: e.target.value })}
@@ -626,7 +627,7 @@ export function Policies() {
 
                 {/* Content */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">المحتوى</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.content")}</label>
                   <textarea
                     value={editingPolicy.content}
                     onChange={(e) => setEditingPolicy({ ...editingPolicy, content: e.target.value })}
@@ -638,10 +639,10 @@ export function Policies() {
                 {/* Version Info */}
                 <div className="p-3 bg-muted/20 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    الإصدار الحالي: <span className="text-foreground font-medium">v{editingPolicy.version}</span>
+                    {arabicSource("policies.current_version")} <span className="text-foreground font-medium">v{editingPolicy.version}</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    سيتم ترقية الإصدار تلقائياً عند الحفظ
+                    {arabicSource("policies.the_version_will_be_automatically_upgraded_upon_saving")}
                   </p>
                 </div>
 
@@ -653,14 +654,14 @@ export function Policies() {
                     className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
-                    حفظ التعديلات
+                    {arabicSource("policies.save_the_modifications")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
                     className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </form>
@@ -703,17 +704,17 @@ export function Policies() {
                 {/* Header Info */}
                 <div className="grid grid-cols-3 gap-4 pb-4 border-b border-border/20">
                   <div>
-                    <p className="text-muted-foreground text-sm">الفئة</p>
+                    <p className="text-muted-foreground text-sm">{arabicSource("common.category")}</p>
                     <p className="text-foreground font-medium">{viewingPolicy.category}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-sm">الحالة</p>
+                    <p className="text-muted-foreground text-sm">{arabicSource("common.status")}</p>
                     <p className={`text-sm font-medium px-2 py-1 rounded-md border w-fit ${statusColors[viewingPolicy.status]}`}>
                       {viewingPolicy.status}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-sm">الإصدار</p>
+                    <p className="text-muted-foreground text-sm">{arabicSource("common.version")}</p>
                     <p className="text-foreground font-medium">v{viewingPolicy.version}</p>
                   </div>
                 </div>
@@ -727,8 +728,8 @@ export function Policies() {
 
                 {/* Footer Info */}
                 <div className="pt-4 border-t border-border/20 text-xs text-muted-foreground">
-                  <p>آخر تحديث: {viewingPolicy.last_updated}</p>
-                  <p>تم الإنشاء: {viewingPolicy.created_at}</p>
+                  <p>{arabicSource("policies.latest_update_2")} {viewingPolicy.last_updated}</p>
+                  <p>{arabicSource("policies.created")} {viewingPolicy.created_at}</p>
                 </div>
 
                 {/* Close Button */}
@@ -736,7 +737,7 @@ export function Policies() {
                   onClick={() => setShowViewModal(false)}
                   className="w-full px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
                 >
-                  إغلاق
+                  {arabicSource("common.close")}
                 </button>
               </div>
             </motion.div>

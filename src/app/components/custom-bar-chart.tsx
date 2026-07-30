@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { arabicSource } from "../i18n/source";
 
 interface BarChartItem {
   label: string;
@@ -12,7 +13,7 @@ interface CustomBarChartProps {
   barLabel?: string;
 }
 
-export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel = "القيمة" }: CustomBarChartProps) {
+export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const maxValue = Math.max(...data.map(d => d.value));

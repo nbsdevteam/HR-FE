@@ -33,39 +33,40 @@ import { useShifts, useHierarchyData, useSystemModules, useConfigurations, usePu
 import { ShiftAssigner } from "../components/ShiftAssigner";
 import { formatDate } from "../i18n/format";
 import { localizedConfirm } from "../i18n/native";
+import { arabicSource } from "../i18n/source";
 
 // ── Curated department color palette — 15 distinct, accessible hues ──
 const DEPT_COLOR_PALETTE = [
-  "#FFD700", // ذهبي — reserved for الإدارة العليا
-  "#8B5CF6", // بنفسجي
-  "#3B82F6", // أزرق
-  "#06B6D4", // سماوي
-  "#22C55E", // أخضر
-  "#EC4899", // وردي
-  "#EF4444", // أحمر
-  "#F59E0B", // برتقالي
-  "#14B8A6", // فيروزي
-  "#6366F1", // نيلي
-  "#A855F7", // أرجواني
-  "#0EA5E9", // أزرق فاتح
-  "#D946EF", // فوشيا
-  "#84CC16", // ليموني
-  "#F43F5E", // قرمزي
+  "#FFD700", // Gold — reserved for senior management.
+  "#8B5CF6", // Violet
+  "#3B82F6", // Blue
+  "#06B6D4", // Cyan
+  "#22C55E", // Green
+  "#EC4899", // Pink
+  "#EF4444", // Red
+  "#F59E0B", // Orange
+  "#14B8A6", // Teal
+  "#6366F1", // Indigo
+  "#A855F7", // Purple
+  "#0EA5E9", // Light blue
+  "#D946EF", // Fuchsia
+  "#84CC16", // Lime
+  "#F43F5E", // Crimson
 ];
 
 const MONTH_FORMATS: { value: MonthFormat; label: string; example: string }[] = [
-  { value: "name", label: "اسم الشهر", example: formatMonthYear("2026-02", "name") },
-  { value: "numeric", label: "رقمي", example: formatMonthYear("2026-02", "numeric") },
+  { value: "name", label: arabicSource("settings.name_of_the_month"), example: formatMonthYear("2026-02", "name") },
+  { value: "numeric", label: arabicSource("settings.digital"), example: formatMonthYear("2026-02", "numeric") },
 ];
 
 const DAYS_OF_WEEK = [
-  { key: "sunday", label: "الأحد" },
-  { key: "monday", label: "الإثنين" },
-  { key: "tuesday", label: "الثلاثاء" },
-  { key: "wednesday", label: "الأربعاء" },
-  { key: "thursday", label: "الخميس" },
-  { key: "friday", label: "الجمعة" },
-  { key: "saturday", label: "السبت" },
+  { key: "sunday", label: arabicSource("common.sunday_2") },
+  { key: "monday", label: arabicSource("settings.monday") },
+  { key: "tuesday", label: arabicSource("common.tuesday") },
+  { key: "wednesday", label: arabicSource("common.wednesday") },
+  { key: "thursday", label: arabicSource("common.thursday") },
+  { key: "friday", label: arabicSource("common.friday") },
+  { key: "saturday", label: arabicSource("common.saturday") },
 ];
 
 interface ShiftEditState {
@@ -189,7 +190,7 @@ export function SettingsPage() {
     }
     setSavingDeptColors(false);
     setDeptColorEdits({});
-    showToast("تم حفظ ألوان الأقسام بنجاح");
+    showToast(arabicSource("settings.section_colors_were_saved_successfully"));
   };
 
   const toggleNotif = (key: keyof typeof notifToggles) =>
@@ -254,7 +255,7 @@ export function SettingsPage() {
 
   const saveShift = async (state: ShiftEditState) => {
     if (!state.name.trim()) {
-      showToast("يجب إدخال اسم الوردية");
+      showToast(arabicSource("common.you_must_enter_the_name_of_the_shift"));
       return;
     }
 
@@ -276,17 +277,17 @@ export function SettingsPage() {
     try {
       const { error } = await supabase.from("shifts").update(updateData).eq("id", state.id);
       if (error) throw error;
-      showToast("تم حفظ الوردية بنجاح");
+      showToast(arabicSource("settings.the_shift_has_been_saved_successfully"));
       setEditingShift(null);
       refetchShifts();
     } catch (err) {
-      showToast("خطأ في حفظ الوردية");
+      showToast(arabicSource("settings.error_saving_the_shift"));
     }
   };
 
   const createShift = async (state: ShiftEditState) => {
     if (!state.name.trim()) {
-      showToast("يجب إدخال اسم الوردية");
+      showToast(arabicSource("common.you_must_enter_the_name_of_the_shift"));
       return;
     }
 
@@ -309,7 +310,7 @@ export function SettingsPage() {
     try {
       const { error } = await supabase.from("shifts").insert([insertData]);
       if (error) throw error;
-      showToast("تم إنشاء الوردية بنجاح");
+      showToast(arabicSource("settings.the_shift_was_created_successfully"));
       setShowNewShiftForm(false);
       setNewShiftForm({
         id: "",
@@ -324,19 +325,19 @@ export function SettingsPage() {
       });
       refetchShifts();
     } catch (err) {
-      showToast("خطأ في إنشاء الوردية");
+      showToast(arabicSource("settings.error_creating_shift"));
     }
   };
 
   const deleteShift = async (shiftId: string) => {
-    if (!localizedConfirm("هل تريد حقاً حذف هذه الوردية؟")) return;
+    if (!localizedConfirm(arabicSource("settings.do_you_really_want_to_delete_this_shift"))) return;
     try {
       const { error } = await supabase.from("shifts").delete().eq("id", shiftId);
       if (error) throw error;
-      showToast("تم حذف الوردية بنجاح");
+      showToast(arabicSource("settings.the_shift_has_been_successfully_deleted"));
       refetchShifts();
     } catch (err) {
-      showToast("خطأ في حذف الوردية");
+      showToast(arabicSource("settings.error_deleting_shift"));
     }
   };
 
@@ -347,10 +348,10 @@ export function SettingsPage() {
       // Set new default
       const { error } = await supabase.from("shifts").update({ is_default: true }).eq("id", shiftId);
       if (error) throw error;
-      showToast("تم تعيين الوردية الافتراضية بنجاح");
+      showToast(arabicSource("settings.the_default_shift_has_been_assigned_successfully"));
       refetchShifts();
     } catch (err) {
-      showToast("خطأ في تعيين الوردية الافتراضية");
+      showToast(arabicSource("settings.error_setting_default_shift"));
     }
   };
 
@@ -361,9 +362,9 @@ export function SettingsPage() {
         const updateData = shiftId ? { default_shift_id: shiftId } : { default_shift_id: null };
         await supabase.from("departments").update(updateData).eq("id", deptId);
       }
-      showToast("تم حفظ تعيينات الأقسام بنجاح");
+      showToast(arabicSource("settings.section_assignments_were_saved_successfully"));
     } catch (err) {
-      showToast("خطأ في حفظ تعيينات الأقسام");
+      showToast(arabicSource("settings.error_saving_partition_assignments"));
     }
     setSavingDepts(false);
   };
@@ -385,9 +386,9 @@ export function SettingsPage() {
     try {
       await supabase.from("system_modules").update({ is_enabled: !module.is_enabled }).eq("id", module.id);
       refetchModules();
-      showToast(`تم ${!module.is_enabled ? "تفعيل" : "تعطيل"} الميزة بنجاح`);
+      showToast(`${arabicSource("common.done")} ${!module.is_enabled ? arabicSource("common.activate") : arabicSource("settings.disabled")} ${arabicSource("settings.feature_successfully")}`);
     } catch (err) {
-      showToast("خطأ في تحديث الميزة");
+      showToast(arabicSource("settings.feature_update_error"));
     }
   };
 
@@ -396,21 +397,21 @@ export function SettingsPage() {
     try {
       await supabase.from("configurations").update({ config_value: value }).eq("id", configId);
       refetchConfigs();
-      showToast("تم حفظ الإعداد بنجاح");
+      showToast(arabicSource("settings.the_setting_was_saved_successfully"));
       setConfigEdits((prev) => {
         const newEdits = { ...prev };
         delete newEdits[configId];
         return newEdits;
       });
     } catch (err) {
-      showToast("خطأ في حفظ الإعداد");
+      showToast(arabicSource("settings.error_saving_setting"));
     }
   };
 
   // ——— Public Holidays CRUD ———
   const addHoliday = async () => {
     if (!newHoliday.name_ar || !newHoliday.date) {
-      showToast("الرجاء ملء الحقول المطلوبة");
+      showToast(arabicSource("settings.please_fill_out_the_required_fields"));
       return;
     }
     try {
@@ -426,9 +427,9 @@ export function SettingsPage() {
       refetchHolidays();
       setNewHoliday({ name_ar: "", name_en: "", date: "", is_recurring: false });
       setShowNewHolidayForm(false);
-      showToast("تم إضافة العطلة بنجاح");
+      showToast(arabicSource("settings.holiday_added_successfully"));
     } catch (err) {
-      showToast("خطأ في إضافة العطلة");
+      showToast(arabicSource("settings.error_adding_holiday"));
     }
   };
 
@@ -436,9 +437,9 @@ export function SettingsPage() {
     try {
       await supabase.from("public_holidays").delete().eq("id", holidayId);
       refetchHolidays();
-      showToast("تم حذف العطلة بنجاح");
+      showToast(arabicSource("settings.vacation_has_been_successfully_deleted"));
     } catch (err) {
-      showToast("خطأ في حذف العطلة");
+      showToast(arabicSource("settings.error_deleting_holiday"));
     }
   };
 
@@ -463,11 +464,11 @@ export function SettingsPage() {
   });
 
   const categoryLabels: Record<string, string> = {
-    payroll: "الرواتب والتعويضات",
-    leave: "الإجازات",
-    attendance: "الحضور والانصراف",
-    employee: "شؤون الموظفين",
-    system: "النظام",
+    payroll: arabicSource("settings.salaries_and_compensation"),
+    leave: arabicSource("common.vacations"),
+    attendance: arabicSource("common.attendance_and_departure"),
+    employee: arabicSource("settings.personnel_affairs"),
+    system: arabicSource("common.system"),
   };
 
   return (
@@ -475,8 +476,8 @@ export function SettingsPage() {
       {toastMessage && <Toast message={toastMessage} />}
 
       <div>
-        <h1 className="text-gradient-gold">الإعدادات</h1>
-        <p className="text-muted-foreground mt-1">إعدادات النظام والتفضيلات</p>
+        <h1 className="text-gradient-gold">{arabicSource("common.settings")}</h1>
+        <p className="text-muted-foreground mt-1">{arabicSource("settings.system_settings_and_preferences")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -492,15 +493,15 @@ export function SettingsPage() {
               <Palette className="w-4 h-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-foreground" style={{ fontSize: 14 }}>ألوان الأقسام</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>يظهر في الهيكل التنظيمي وبطاقات الموظفين</p>
+              <h3 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("settings.section_colors")}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("settings.appears_on_the_organizational_chart_and_employee_cards")}</p>
             </div>
           </div>
 
           {deptLoading ? (
-            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 12 }}>جاري التحميل...</div>
+            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 12 }}>{arabicSource("common.loading")}</div>
           ) : departments.length === 0 ? (
-            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 12 }}>لا توجد أقسام</div>
+            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 12 }}>{arabicSource("common.there_are_no_sections")}</div>
           ) : (
             <div className="space-y-2.5">
               {/* Department chips */}
@@ -537,7 +538,7 @@ export function SettingsPage() {
                   <div className="bg-muted/10 border border-border/30 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                        اختر لوناً لـ <span className="text-foreground">{activeDeptName}</span>:
+                        {arabicSource("settings.choose_a_color_for")} <span className="text-foreground">{activeDeptName}</span>:
                       </p>
                       <button type="button" onClick={() => setOpenColorPicker(null)}
                         className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-muted/30 transition-colors">
@@ -564,14 +565,14 @@ export function SettingsPage() {
                               "border-border/40 hover:scale-110 hover:border-foreground/40"
                             }`}
                             style={{ background: color }}
-                            title={isUsed ? "مستخدم بالفعل" : isSelected ? "اللون الحالي" : ""}
+                            title={isUsed ? arabicSource("settings.is_already_in_use") : isSelected ? arabicSource("settings.current_color") : ""}
                           />
                         );
                       })}
                     </div>
                     {/* Custom color picker */}
                     <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-border/20">
-                      <label className="text-muted-foreground shrink-0" style={{ fontSize: 10 }}>لون مخصص:</label>
+                      <label className="text-muted-foreground shrink-0" style={{ fontSize: 10 }}>{arabicSource("settings.customized_color")}</label>
                       <input
                         type="color"
                         value={activeColor}
@@ -596,7 +597,7 @@ export function SettingsPage() {
                   className="w-full px-3 py-1.5 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
                   style={{ fontSize: 12 }}
                 >
-                  {savingDeptColors ? "جاري الحفظ..." : "حفظ ألوان الأقسام"}
+                  {savingDeptColors ? arabicSource("common.saving") : arabicSource("settings.save_section_colors")}
                 </button>
               )}
             </div>
@@ -617,8 +618,8 @@ export function SettingsPage() {
                 <Clock className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">جداول الدوام والورديات</h3>
-                <p className="text-muted-foreground text-sm mt-1">إدارة أوقات العمل والورديات — أولوية التطبيق: الموظف ← القسم ← النظام</p>
+                <h3 className="text-foreground">{arabicSource("settings.time_and_shift_schedules")}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.managing_work_times_and_shifts_application_priority_employee_dep")}</p>
               </div>
             </div>
             {!showNewShiftForm && (
@@ -627,7 +628,7 @@ export function SettingsPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span>إضافة وردية جديدة</span>
+                <span>{arabicSource("settings.new_shift_added")}</span>
               </button>
             )}
           </div>
@@ -635,33 +636,33 @@ export function SettingsPage() {
           {/* New Shift Form */}
           {showNewShiftForm && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-muted/20 rounded-lg border border-border/20">
-              <h4 className="text-foreground mb-4">وردية جديدة</h4>
+              <h4 className="text-foreground mb-4">{arabicSource("settings.new_shift")}</h4>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-foreground text-sm mb-2">الاسم</label>
+                  <label className="block text-foreground text-sm mb-2">{arabicSource("common.name")}</label>
                   <input
                     type="text"
                     value={newShiftForm.name}
                     onChange={(e) => setNewShiftForm({ ...newShiftForm, name: e.target.value })}
                     className="w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary"
-                    placeholder="اسم الوردية"
+                    placeholder={arabicSource("settings.the_name_of_the_shift")}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-foreground text-sm mb-2">الوصف</label>
+                  <label className="block text-foreground text-sm mb-2">{arabicSource("common.description")}</label>
                   <input
                     type="text"
                     value={newShiftForm.description}
                     onChange={(e) => setNewShiftForm({ ...newShiftForm, description: e.target.value })}
                     className="w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary"
-                    placeholder="وصف الوردية"
+                    placeholder={arabicSource("settings.description_of_the_shift")}
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-foreground text-sm mb-2">دقائق التساهل</label>
+                    <label className="block text-foreground text-sm mb-2">{arabicSource("common.leniency_minutes")}</label>
                     <input
                       type="number"
                       value={newShiftForm.grace_minutes}
@@ -670,7 +671,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-foreground text-sm mb-2">ساعات التأخير للغياب</label>
+                    <label className="block text-foreground text-sm mb-2">{arabicSource("common.late_hours_for_absence")}</label>
                     <input
                       type="number"
                       value={newShiftForm.late_to_absent_hours}
@@ -679,7 +680,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-foreground text-sm mb-2">ساعات العمل اليومية</label>
+                    <label className="block text-foreground text-sm mb-2">{arabicSource("common.daily_working_hours")}</label>
                     <input
                       type="number"
                       value={newShiftForm.target_hours_per_day}
@@ -692,7 +693,7 @@ export function SettingsPage() {
 
                 {/* Days of week configuration */}
                 <div>
-                  <label className="block text-foreground text-sm mb-3">أيام العمل</label>
+                  <label className="block text-foreground text-sm mb-3">{arabicSource("common.working_days")}</label>
                   <div className="space-y-3">
                     {DAYS_OF_WEEK.map((d) => (
                       <div key={d.key} className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
@@ -755,14 +756,14 @@ export function SettingsPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-600/30 rounded-lg transition-colors"
                   >
                     <Save className="w-4 h-4" />
-                    حفظ
+                    {arabicSource("common.save")}
                   </button>
                   <button
                     onClick={() => setShowNewShiftForm(false)}
                     className="flex items-center gap-2 px-4 py-2 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -772,9 +773,9 @@ export function SettingsPage() {
           {/* Shifts List */}
           <div className="space-y-2 mb-4">
             {shiftsLoading ? (
-              <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>جاري التحميل...</div>
+              <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>{arabicSource("common.loading")}</div>
             ) : shifts.length === 0 ? (
-              <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>لا توجد ورديات</div>
+              <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>{arabicSource("settings.no_shifts")}</div>
             ) : (
               shifts.map((shift) => (
                 <motion.div key={shift.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-muted/10 border border-border/20 rounded-lg overflow-hidden">
@@ -786,7 +787,7 @@ export function SettingsPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <h4 className="text-foreground shrink-0" style={{ fontSize: 13 }}>{shift.name}</h4>
-                        {shift.is_default && <span className="px-1.5 py-0.5 bg-primary/20 border border-primary/40 text-primary rounded-full shrink-0" style={{ fontSize: 10 }}>الافتراضي</span>}
+                        {shift.is_default && <span className="px-1.5 py-0.5 bg-primary/20 border border-primary/40 text-primary rounded-full shrink-0" style={{ fontSize: 10 }}>{arabicSource("settings.default")}</span>}
                         <span className="text-muted-foreground truncate" style={{ fontSize: 11 }}>{shift.description}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -798,7 +799,7 @@ export function SettingsPage() {
                           ))}
                         </div>
                         <span className="text-muted-foreground" style={{ fontSize: 10 }}>
-                          {shift.grace_minutes}د | {shift.target_hours_per_day}س
+                          {shift.grace_minutes}{arabicSource("settings.d")} {shift.target_hours_per_day}{arabicSource("settings.s")}
                         </span>
                         <ChevronDown
                           className={`w-4 h-4 text-muted-foreground transition-transform ${expandedShift === shift.id ? "rotate-180" : ""}`}
@@ -815,9 +816,9 @@ export function SettingsPage() {
                         <table className="w-full" style={{ fontSize: 12 }}>
                           <thead>
                             <tr className="border-b border-border/20">
-                              <th className="text-start text-muted-foreground py-2">اليوم</th>
-                              <th className="text-start text-muted-foreground py-2">الحالة</th>
-                              <th className="text-start text-muted-foreground py-2">الوقت</th>
+                              <th className="text-start text-muted-foreground py-2">{arabicSource("common.today")}</th>
+                              <th className="text-start text-muted-foreground py-2">{arabicSource("common.status")}</th>
+                              <th className="text-start text-muted-foreground py-2">{arabicSource("common.time")}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -830,7 +831,7 @@ export function SettingsPage() {
                                   <td className="py-2 text-foreground">{d.label}</td>
                                   <td className="py-2">
                                     <span className={`text-xs px-2 py-1 rounded ${isWorking ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                                      {isWorking ? "يوم عمل" : "يوم إجازة"}
+                                      {isWorking ? arabicSource("settings.business_day") : arabicSource("settings.day_off")}
                                     </span>
                                   </td>
                                   <td className="py-2 text-muted-foreground">{isWorking ? `${start} - ${end}` : "—"}</td>
@@ -844,16 +845,16 @@ export function SettingsPage() {
                       <div className="flex gap-2">
                         <button onClick={() => initEditShift(shift)}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-600/20 border border-blue-500/50 text-blue-400 hover:bg-blue-600/30 rounded-lg transition-colors" style={{ fontSize: 12 }}>
-                          <Edit2 className="w-3.5 h-3.5" /> تعديل
+                          <Edit2 className="w-3.5 h-3.5" /> {arabicSource("common.edit")}
                         </button>
                         <button onClick={() => deleteShift(shift.id)}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded-lg transition-colors" style={{ fontSize: 12 }}>
-                          <Trash2 className="w-3.5 h-3.5" /> حذف
+                          <Trash2 className="w-3.5 h-3.5" /> {arabicSource("common.delete")}
                         </button>
                         {!shift.is_default && (
                           <button onClick={() => setAsDefault(shift.id)}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/30 rounded-lg transition-colors" style={{ fontSize: 12 }}>
-                            <Check className="w-3.5 h-3.5" /> تعيين كافتراضي
+                            <Check className="w-3.5 h-3.5" /> {arabicSource("settings.set_as_default")}
                           </button>
                         )}
                       </div>
@@ -864,7 +865,7 @@ export function SettingsPage() {
                   {editingShift?.id === shift.id && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-t border-border/20 p-4 bg-muted/5 space-y-4">
                       <div>
-                        <label className="block text-foreground text-sm mb-2">الاسم</label>
+                        <label className="block text-foreground text-sm mb-2">{arabicSource("common.name")}</label>
                         <input
                           type="text"
                           value={editingShift.name}
@@ -874,7 +875,7 @@ export function SettingsPage() {
                       </div>
 
                       <div>
-                        <label className="block text-foreground text-sm mb-2">الوصف</label>
+                        <label className="block text-foreground text-sm mb-2">{arabicSource("common.description")}</label>
                         <input
                           type="text"
                           value={editingShift.description}
@@ -885,7 +886,7 @@ export function SettingsPage() {
 
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-foreground text-sm mb-2">دقائق التساهل</label>
+                          <label className="block text-foreground text-sm mb-2">{arabicSource("common.leniency_minutes")}</label>
                           <input
                             type="number"
                             value={editingShift.grace_minutes}
@@ -894,7 +895,7 @@ export function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-foreground text-sm mb-2">ساعات التأخير للغياب</label>
+                          <label className="block text-foreground text-sm mb-2">{arabicSource("common.late_hours_for_absence")}</label>
                           <input
                             type="number"
                             value={editingShift.late_to_absent_hours}
@@ -903,7 +904,7 @@ export function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-foreground text-sm mb-2">ساعات العمل اليومية</label>
+                          <label className="block text-foreground text-sm mb-2">{arabicSource("common.daily_working_hours")}</label>
                           <input
                             type="number"
                             value={editingShift.target_hours_per_day}
@@ -916,7 +917,7 @@ export function SettingsPage() {
 
                       {/* Days configuration for editing */}
                       <div>
-                        <label className="block text-foreground text-sm mb-3">أيام العمل</label>
+                        <label className="block text-foreground text-sm mb-3">{arabicSource("common.working_days")}</label>
                         <div className="space-y-3">
                           {DAYS_OF_WEEK.map((d) => (
                             <div key={d.key} className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
@@ -979,14 +980,14 @@ export function SettingsPage() {
                           className="flex items-center gap-2 px-4 py-2 bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-600/30 rounded-lg transition-colors"
                         >
                           <Save className="w-4 h-4" />
-                          حفظ
+                          {arabicSource("common.save")}
                         </button>
                         <button
                           onClick={() => setEditingShift(null)}
                           className="flex items-center gap-2 px-4 py-2 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded-lg transition-colors"
                         >
                           <X className="w-4 h-4" />
-                          إلغاء
+                          {arabicSource("common.cancel")}
                         </button>
                       </div>
                     </motion.div>
@@ -1000,13 +1001,13 @@ export function SettingsPage() {
           <div className="border-t border-border/20 pt-4">
             <h4 className="text-foreground flex items-center gap-2 mb-4">
               <Building2 className="w-4 h-4 text-primary" />
-              تعيين الورديات للأقسام
+              {arabicSource("settings.assigning_shifts_to_departments")}
             </h4>
             <div className="space-y-3">
               {deptLoading ? (
-                <div className="text-muted-foreground text-center py-6">جاري التحميل...</div>
+                <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
               ) : departments.length === 0 ? (
-                <div className="text-muted-foreground text-center py-6">لا توجد أقسام</div>
+                <div className="text-muted-foreground text-center py-6">{arabicSource("common.there_are_no_sections")}</div>
               ) : (
                 departments.map((dept) => (
                   <div key={dept.id} className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
@@ -1017,7 +1018,7 @@ export function SettingsPage() {
                       onChange={(e) => setDeptShiftAssignments({ ...deptShiftAssignments, [dept.id]: e.target.value })}
                       className="px-3 py-1 bg-muted/30 border border-border/40 rounded text-foreground text-sm focus:outline-none focus:border-primary"
                     >
-                      <option value="">الوردية الافتراضية</option>
+                      <option value="">{arabicSource("settings.virtual_shift")}</option>
                       {shifts.map((shift) => (
                         <option key={shift.id} value={shift.id}>
                           {shift.name}
@@ -1033,7 +1034,7 @@ export function SettingsPage() {
               disabled={savingDepts}
               className="mt-4 w-full px-4 py-2 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
             >
-              {savingDepts ? "جاري الحفظ..." : "حفظ تعيينات الأقسام"}
+              {savingDepts ? arabicSource("common.saving") : arabicSource("settings.save_partition_assignments")}
             </button>
           </div>
 
@@ -1045,8 +1046,8 @@ export function SettingsPage() {
             >
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-primary" />
-                <h4 className="text-foreground" style={{ fontSize: 14 }}>تعيين الموظفين للورديات</h4>
-                <span className="text-muted-foreground text-xs">— اسحب وأسقط</span>
+                <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("settings.assigning_employees_to_shifts")}</h4>
+                <span className="text-muted-foreground text-xs">{arabicSource("settings.drag_and_drop")}</span>
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${shiftAssignerOpen ? "rotate-180" : ""}`} />
             </button>
@@ -1071,16 +1072,16 @@ export function SettingsPage() {
                 <Zap className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">الوحدات والميزات</h3>
-                <p className="text-muted-foreground text-sm mt-1">تفعيل أو تعطيل أي ميزة في النظام — الميزات المعطّلة تختفي من القوائم والحسابات</p>
+                <h3 className="text-foreground">{arabicSource("settings.units_and_features")}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.activate_or_disable_any_feature_in_the_system_disabled_features")}</p>
               </div>
             </div>
           </div>
 
           {modulesLoading ? (
-            <div className="text-muted-foreground text-center py-6">جاري التحميل...</div>
+            <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
           ) : !sysModules || Object.keys(groupedModules).length === 0 ? (
-            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>لا توجد وحدات — شغّل الترحيل أولاً</div>
+            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>{arabicSource("settings.no_units_turn_on_the_relay_first")}</div>
           ) : (
             <div className="space-y-6">
               {Object.entries(groupedModules).map(([category, modules]) => (
@@ -1123,16 +1124,16 @@ export function SettingsPage() {
                 <Settings2 className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">القواعد والإعدادات</h3>
-                <p className="text-muted-foreground text-sm mt-1">جميع القيم القابلة للتعديل — تُطبق مباشرة على الحسابات</p>
+                <h3 className="text-foreground">{arabicSource("settings.rules_and_settings")}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.all_editable_values_applied_directly_to_calculations")}</p>
               </div>
             </div>
           </div>
 
           {configsLoading ? (
-            <div className="text-muted-foreground text-center py-6">جاري التحميل...</div>
+            <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
           ) : !configs || Object.keys(groupedConfigs).length === 0 ? (
-            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>لا توجد إعدادات — شغّل الترحيل أولاً</div>
+            <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>{arabicSource("settings.no_settings_run_the_relay_first")}</div>
           ) : (
             <div className="space-y-6">
               {Object.entries(groupedConfigs).map(([category, categoryConfigs]) => (
@@ -1173,16 +1174,16 @@ export function SettingsPage() {
                                   onBlur={() => saveConfigValue(config.id, currentValue)}
                                   className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
                                 >
-                                  <option value="30_days">30 يوم ثابت</option>
-                                  <option value="calendar_workdays">أيام العمل الفعلية</option>
-                                  <option value="fixed_days_per_month">أيام ثابتة مخصصة</option>
+                                  <option value="30_days">{arabicSource("settings.30_days_fixed")}</option>
+                                  <option value="calendar_workdays">{arabicSource("settings.actual_working_days")}</option>
+                                  <option value="fixed_days_per_month">{arabicSource("settings.custom_fixed_days")}</option>
                                 </select>
                                 {hasChanged && (
                                   <button
                                     onClick={() => saveConfigValue(config.id, currentValue)}
                                     className="px-2 py-1 bg-green-600/20 border border-green-500/50 text-green-400 rounded text-xs hover:bg-green-600/30"
                                   >
-                                    حفظ
+                                    {arabicSource("common.save")}
                                   </button>
                                 )}
                               </div>
@@ -1203,7 +1204,7 @@ export function SettingsPage() {
                                     onClick={() => saveConfigValue(config.id, currentValue)}
                                     className="px-2 py-1 bg-green-600/20 border border-green-500/50 text-green-400 rounded text-xs hover:bg-green-600/30"
                                   >
-                                    حفظ
+                                    {arabicSource("common.save")}
                                   </button>
                                 )}
                               </div>
@@ -1223,7 +1224,7 @@ export function SettingsPage() {
                                     onClick={() => saveConfigValue(config.id, currentValue)}
                                     className="px-2 py-1 bg-green-600/20 border border-green-500/50 text-green-400 rounded text-xs hover:bg-green-600/30"
                                   >
-                                    حفظ
+                                    {arabicSource("common.save")}
                                   </button>
                                 )}
                               </div>
@@ -1252,20 +1253,20 @@ export function SettingsPage() {
                 <PartyPopper className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">العطل الرسمية</h3>
-                <p className="text-muted-foreground text-sm mt-1">أيام العطل تُستثنى من حسابات الغياب والتأخير تلقائياً</p>
+                <h3 className="text-foreground">{arabicSource("settings.public_holidays")}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.holidays_are_automatically_excluded_from_absence_and_tardiness_c")}</p>
               </div>
             </div>
           </div>
 
           {holidaysLoading ? (
-            <div className="text-muted-foreground text-center py-6">جاري التحميل...</div>
+            <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
           ) : (
             <div className="space-y-6">
               {/* Year Filter and Add Button */}
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <label className="text-foreground text-sm">السنة:</label>
+                  <label className="text-foreground text-sm">{arabicSource("settings.year")}</label>
                   <select
                     value={holidayYear}
                     onChange={(e) => setHolidayYear(parseInt(e.target.value))}
@@ -1282,7 +1283,7 @@ export function SettingsPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors text-sm"
                   >
                     <Plus className="w-4 h-4" />
-                    إضافة عطلة
+                    {arabicSource("settings.add_holiday")}
                   </button>
                 )}
               </div>
@@ -1290,20 +1291,20 @@ export function SettingsPage() {
               {/* New Holiday Form */}
               {showNewHolidayForm && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-muted/20 rounded-lg border border-border/20 space-y-4">
-                  <h4 className="text-foreground">عطلة جديدة</h4>
+                  <h4 className="text-foreground">{arabicSource("settings.new_holiday")}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-foreground text-sm mb-2">الاسم (عربي) *</label>
+                      <label className="block text-foreground text-sm mb-2">{arabicSource("settings.name_arabic")}</label>
                       <input
                         type="text"
                         value={newHoliday.name_ar}
                         onChange={(e) => setNewHoliday({ ...newHoliday, name_ar: e.target.value })}
                         className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary"
-                        placeholder="عيد الفطر"
+                        placeholder={arabicSource("settings.eid_al_fitr")}
                       />
                     </div>
                     <div>
-                      <label className="block text-foreground text-sm mb-2">الاسم (إنجليزي)</label>
+                      <label className="block text-foreground text-sm mb-2">{arabicSource("settings.name_english")}</label>
                       <input
                         type="text"
                         value={newHoliday.name_en}
@@ -1313,7 +1314,7 @@ export function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-foreground text-sm mb-2">التاريخ *</label>
+                      <label className="block text-foreground text-sm mb-2">{arabicSource("common.date_2")}</label>
                       <input
                         type="date"
                         value={newHoliday.date}
@@ -1322,7 +1323,7 @@ export function SettingsPage() {
                       />
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
-                      <label className="text-foreground text-sm">تكرار سنوي؟</label>
+                      <label className="text-foreground text-sm">{arabicSource("settings.annual_frequency_2")}</label>
                       <Toggle
                         on={newHoliday.is_recurring}
                         onClick={() => setNewHoliday({ ...newHoliday, is_recurring: !newHoliday.is_recurring })}
@@ -1335,7 +1336,7 @@ export function SettingsPage() {
                       className="flex items-center gap-2 px-4 py-2 bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-600/30 rounded-lg transition-colors text-sm"
                     >
                       <Save className="w-4 h-4" />
-                      حفظ
+                      {arabicSource("common.save")}
                     </button>
                     <button
                       onClick={() => {
@@ -1345,7 +1346,7 @@ export function SettingsPage() {
                       className="flex items-center gap-2 px-4 py-2 bg-muted/30 border border-border/40 text-foreground hover:bg-muted/40 rounded-lg transition-colors text-sm"
                     >
                       <X className="w-4 h-4" />
-                      إلغاء
+                      {arabicSource("common.cancel")}
                     </button>
                   </div>
                 </motion.div>
@@ -1353,7 +1354,7 @@ export function SettingsPage() {
 
               {/* Holidays List */}
               {filteredHolidays.length === 0 ? (
-                <div className="text-muted-foreground text-center py-6">لا توجد عطل في هذه السنة</div>
+                <div className="text-muted-foreground text-center py-6">{arabicSource("settings.there_are_no_holidays_this_year")}</div>
               ) : (
                 <div className="space-y-2">
                   {filteredHolidays.map((holiday: DbPublicHoliday) => (
@@ -1362,7 +1363,7 @@ export function SettingsPage() {
                         <p className="text-foreground text-sm">{holiday.name_ar}</p>
                         <p className="text-muted-foreground text-xs mt-1">
                           {formatDate(holiday.date)}
-                          {holiday.is_recurring && " (تكرار سنوي)"}
+                          {holiday.is_recurring && " " + arabicSource("settings.annual_frequency")}
                         </p>
                       </div>
                       <button
@@ -1370,7 +1371,7 @@ export function SettingsPage() {
                         className="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded text-xs transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
-                        حذف
+                        {arabicSource("common.delete")}
                       </button>
                     </div>
                   ))}
@@ -1393,8 +1394,8 @@ export function SettingsPage() {
                 <Calendar className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">أنواع الإجازات</h3>
-                <p className="text-muted-foreground text-xs mt-0.5">إدارة أنواع الإجازات وسياساتها</p>
+                <h3 className="text-foreground">{arabicSource("settings.types_of_leave")}</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.managing_leave_types_and_policies")}</p>
               </div>
             </div>
             <button
@@ -1402,7 +1403,7 @@ export function SettingsPage() {
               className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              إضافة نوع
+              {arabicSource("settings.add_type")}
             </button>
           </div>
 
@@ -1410,31 +1411,31 @@ export function SettingsPage() {
           {showNewLeaveTypeForm && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-4 p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <input value={newLeaveType.name_ar} onChange={e => setNewLeaveType(p => ({ ...p, name_ar: e.target.value }))} placeholder="الاسم بالعربي *" className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
+                <input value={newLeaveType.name_ar} onChange={e => setNewLeaveType(p => ({ ...p, name_ar: e.target.value }))} placeholder={arabicSource("settings.name_in_arabic")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
                 <input value={newLeaveType.name_en} onChange={e => setNewLeaveType(p => ({ ...p, name_en: e.target.value }))} placeholder="English Name" className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
-                <input value={newLeaveType.code} onChange={e => setNewLeaveType(p => ({ ...p, code: e.target.value }))} placeholder="الرمز (annual) *" className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
-                <input type="number" value={newLeaveType.default_days_per_year || ""} onChange={e => setNewLeaveType(p => ({ ...p, default_days_per_year: Number(e.target.value) }))} placeholder="أيام/سنة" className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
+                <input value={newLeaveType.code} onChange={e => setNewLeaveType(p => ({ ...p, code: e.target.value }))} placeholder={arabicSource("settings.code_annual")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" dir="ltr" />
+                <input type="number" value={newLeaveType.default_days_per_year || ""} onChange={e => setNewLeaveType(p => ({ ...p, default_days_per_year: Number(e.target.value) }))} placeholder={arabicSource("settings.days_year")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-                  <input type="checkbox" checked={newLeaveType.is_paid} onChange={e => setNewLeaveType(p => ({ ...p, is_paid: e.target.checked }))} className="rounded" /> مدفوعة
+                  <input type="checkbox" checked={newLeaveType.is_paid} onChange={e => setNewLeaveType(p => ({ ...p, is_paid: e.target.checked }))} className="rounded" /> {arabicSource("settings.driven")}
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-                  <input type="checkbox" checked={newLeaveType.allow_half_day} onChange={e => setNewLeaveType(p => ({ ...p, allow_half_day: e.target.checked }))} className="rounded" /> نصف يوم
+                  <input type="checkbox" checked={newLeaveType.allow_half_day} onChange={e => setNewLeaveType(p => ({ ...p, allow_half_day: e.target.checked }))} className="rounded" /> {arabicSource("common.half_a_day")}
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-                  <input type="checkbox" checked={newLeaveType.requires_attachment} onChange={e => setNewLeaveType(p => ({ ...p, requires_attachment: e.target.checked }))} className="rounded" /> مرفق مطلوب
+                  <input type="checkbox" checked={newLeaveType.requires_attachment} onChange={e => setNewLeaveType(p => ({ ...p, requires_attachment: e.target.checked }))} className="rounded" /> {arabicSource("settings.attachment_required")}
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-                  <input type="checkbox" checked={newLeaveType.is_carryover_allowed} onChange={e => setNewLeaveType(p => ({ ...p, is_carryover_allowed: e.target.checked }))} className="rounded" /> ترحيل
+                  <input type="checkbox" checked={newLeaveType.is_carryover_allowed} onChange={e => setNewLeaveType(p => ({ ...p, is_carryover_allowed: e.target.checked }))} className="rounded" /> {arabicSource("common.relay")}
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-                  <input type="checkbox" checked={newLeaveType.is_encashable} onChange={e => setNewLeaveType(p => ({ ...p, is_encashable: e.target.checked }))} className="rounded" /> قابل للصرف
+                  <input type="checkbox" checked={newLeaveType.is_encashable} onChange={e => setNewLeaveType(p => ({ ...p, is_encashable: e.target.checked }))} className="rounded" /> {arabicSource("common.exchangeable")}
                 </label>
                 <select value={newLeaveType.accrual_method} onChange={e => setNewLeaveType(p => ({ ...p, accrual_method: e.target.value }))} className="h-8 px-2 rounded border border-border bg-input-background text-foreground text-xs outline-none">
-                  <option value="annual">سنوي</option>
-                  <option value="monthly">شهري</option>
-                  <option value="none">بدون استحقاق</option>
+                  <option value="annual">{arabicSource("common.annual")}</option>
+                  <option value="monthly">{arabicSource("common.monthly")}</option>
+                  <option value="none">{arabicSource("settings.without_merit")}</option>
                 </select>
                 <input type="color" value={newLeaveType.color} onChange={e => setNewLeaveType(p => ({ ...p, color: e.target.value }))} className="w-8 h-8 rounded cursor-pointer border-0" />
               </div>
@@ -1449,23 +1450,23 @@ export function SettingsPage() {
                     refetchLeaveTypes();
                     setShowNewLeaveTypeForm(false);
                     setNewLeaveType({ name_ar: "", name_en: "", code: "", is_paid: true, default_days_per_year: 0, allow_half_day: false, requires_attachment: false, attachment_after_days: 0, accrual_method: "annual", is_carryover_allowed: false, max_carryover_days: 0, carryover_expiry_months: 3, is_encashable: false, encashment_percentage: 100, color: "#3b82f6", sort_order: 0 });
-                    setToastMessage("تم إضافة نوع الإجازة");
+                    setToastMessage(arabicSource("settings.leave_type_added"));
                     setTimeout(() => setToastMessage(null), 2000);
                   }}
                   className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 cursor-pointer"
                 >
-                  <Save className="w-3 h-3" /> حفظ
+                  <Save className="w-3 h-3" /> {arabicSource("common.save")}
                 </button>
-                <button onClick={() => setShowNewLeaveTypeForm(false)} className="px-3 py-1.5 border border-border text-muted-foreground rounded text-xs hover:bg-muted/20 cursor-pointer">إلغاء</button>
+                <button onClick={() => setShowNewLeaveTypeForm(false)} className="px-3 py-1.5 border border-border text-muted-foreground rounded text-xs hover:bg-muted/20 cursor-pointer">{arabicSource("common.cancel")}</button>
               </div>
             </motion.div>
           )}
 
           {/* Leave Types List */}
           {leaveTypesLoading ? (
-            <div className="text-muted-foreground text-center py-6 text-sm">جاري التحميل...</div>
+            <div className="text-muted-foreground text-center py-6 text-sm">{arabicSource("common.loading")}</div>
           ) : leaveTypes.length === 0 ? (
-            <div className="text-muted-foreground text-center py-6 text-sm">لا توجد أنواع إجازات</div>
+            <div className="text-muted-foreground text-center py-6 text-sm">{arabicSource("settings.there_are_no_leave_types")}</div>
           ) : (
             <div className="space-y-2">
               {leaveTypes.map((lt: DbLeaveType) => (
@@ -1479,13 +1480,13 @@ export function SettingsPage() {
                         <span className="text-muted-foreground text-xs px-1.5 py-0.5 bg-muted/20 rounded">{lt.code}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-muted-foreground text-xs">{lt.default_days_per_year} يوم/سنة</span>
-                        {!lt.is_paid && <span className="text-destructive text-xs">بدون راتب</span>}
-                        {lt.allow_half_day && <span className="text-blue-400 text-xs">نصف يوم</span>}
-                        {lt.is_carryover_allowed && <span className="text-purple-400 text-xs">ترحيل {lt.max_carryover_days}d</span>}
-                        {lt.is_encashable && <span className="text-emerald-400 text-xs">صرف {lt.encashment_percentage}%</span>}
+                        <span className="text-muted-foreground text-xs">{lt.default_days_per_year} {arabicSource("settings.day_year")}</span>
+                        {!lt.is_paid && <span className="text-destructive text-xs">{arabicSource("common.without_salary")}</span>}
+                        {lt.allow_half_day && <span className="text-blue-400 text-xs">{arabicSource("common.half_a_day")}</span>}
+                        {lt.is_carryover_allowed && <span className="text-purple-400 text-xs">{arabicSource("common.relay")} {lt.max_carryover_days}d</span>}
+                        {lt.is_encashable && <span className="text-emerald-400 text-xs">{arabicSource("settings.exchange")} {lt.encashment_percentage}%</span>}
                         <span className="text-muted-foreground/60 text-xs">
-                          {lt.accrual_method === "monthly" ? "شهري" : lt.accrual_method === "annual" ? "سنوي" : "—"}
+                          {lt.accrual_method === "monthly" ? arabicSource("common.monthly") : lt.accrual_method === "annual" ? arabicSource("common.annual") : "—"}
                         </span>
                       </div>
                     </div>
@@ -1500,7 +1501,7 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (localizedConfirm("هل تريد حذف هذا النوع؟")) {
+                        if (localizedConfirm(arabicSource("settings.do_you_want_to_delete_this_type"))) {
                           await supabase.from("leave_types").delete().eq("id", lt.id);
                           refetchLeaveTypes();
                         }
@@ -1529,8 +1530,8 @@ export function SettingsPage() {
                 <Briefcase className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">أنواع العقود</h3>
-                <p className="text-muted-foreground text-xs mt-0.5">إدارة أنواع عقود العمل وإعداداتها</p>
+                <h3 className="text-foreground">{arabicSource("settings.types_of_contracts")}</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.managing_employment_contract_types_and_settings")}</p>
               </div>
             </div>
             <button
@@ -1545,7 +1546,7 @@ export function SettingsPage() {
             <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  placeholder="اسم النوع (عربي) *"
+                  placeholder={arabicSource("settings.species_name_arabic")}
                   value={newContractType.name_ar}
                   onChange={e => setNewContractType(p => ({ ...p, name_ar: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1559,21 +1560,21 @@ export function SettingsPage() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <input
-                  placeholder="الرمز *"
+                  placeholder={arabicSource("common.code")}
                   value={newContractType.code}
                   onChange={e => setNewContractType(p => ({ ...p, code: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
                   type="number"
-                  placeholder="المدة (أشهر)"
+                  placeholder={arabicSource("settings.duration_months")}
                   value={newContractType.default_duration_months}
                   onChange={e => setNewContractType(p => ({ ...p, default_duration_months: +e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
                   type="number"
-                  placeholder="فترة التجربة (أيام)"
+                  placeholder={arabicSource("settings.trial_period_days")}
                   value={newContractType.probation_days}
                   onChange={e => setNewContractType(p => ({ ...p, probation_days: +e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1582,13 +1583,13 @@ export function SettingsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="number"
-                  placeholder="فترة الإشعار (أيام)"
+                  placeholder={arabicSource("settings.notice_period_days")}
                   value={newContractType.notice_period_days}
                   onChange={e => setNewContractType(p => ({ ...p, notice_period_days: +e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
-                  placeholder="الوصف"
+                  placeholder={arabicSource("common.description")}
                   value={newContractType.description}
                   onChange={e => setNewContractType(p => ({ ...p, description: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1602,7 +1603,7 @@ export function SettingsPage() {
                     onChange={e => setNewContractType(p => ({ ...p, is_renewable: e.target.checked }))}
                     className="accent-primary"
                   />
-                  قابل للتجديد
+                  {arabicSource("settings.renewable_2")}
                 </label>
               </div>
               <button
@@ -1619,20 +1620,20 @@ export function SettingsPage() {
                     notice_period_days: newContractType.notice_period_days,
                     sort_order: newContractType.sort_order,
                   });
-                  showToast("تم إضافة نوع العقد");
+                  showToast(arabicSource("settings.contract_type_added"));
                   setShowNewContractTypeForm(false);
                   setNewContractType({ name_ar: "", name_en: "", code: "", description: "", default_duration_months: 12, is_renewable: true, probation_days: 90, notice_period_days: 30, sort_order: 0 });
                   refetchContractTypes();
                 }}
                 className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
               >
-                إضافة نوع عقد
+                {arabicSource("settings.add_a_contract_type")}
               </button>
             </div>
           )}
 
           {contractTypesLoading ? (
-            <p className="text-muted-foreground text-sm text-center py-4">جاري التحميل...</p>
+            <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("common.loading")}</p>
           ) : (
             <div className="space-y-2">
               {contractTypes.map(ct => (
@@ -1642,8 +1643,8 @@ export function SettingsPage() {
                     <div>
                       <p className="text-sm text-foreground">{ct.name_ar}</p>
                       <p className="text-xs text-muted-foreground">
-                        {ct.default_duration_months ? `${ct.default_duration_months} شهر` : "غير محدد"} · تجربة {ct.probation_days} يوم · إشعار {ct.notice_period_days} يوم
-                        {ct.is_renewable && " · قابل للتجديد"}
+                        {ct.default_duration_months ? `${ct.default_duration_months} ${arabicSource("settings.month")}` : arabicSource("common.not_specified")} {arabicSource("settings.experiment")} {ct.probation_days} {arabicSource("settings.day_notice")} {ct.notice_period_days} {arabicSource("common.days_2")}
+                        {ct.is_renewable && " " + arabicSource("settings.renewable")}
                       </p>
                     </div>
                   </div>
@@ -1657,9 +1658,9 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (!localizedConfirm("حذف نوع العقد؟")) return;
+                        if (!localizedConfirm(arabicSource("settings.delete_contract_type"))) return;
                         await supabase.from("contract_types").delete().eq("id", ct.id);
-                        showToast("تم حذف نوع العقد");
+                        showToast(arabicSource("settings.contract_type_deleted"));
                         refetchContractTypes();
                       }}
                       className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -1686,8 +1687,8 @@ export function SettingsPage() {
                 <FileCheck className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-foreground">أنواع الوثائق</h3>
-                <p className="text-muted-foreground text-xs mt-0.5">إدارة أنواع الوثائق والمستندات المطلوبة</p>
+                <h3 className="text-foreground">{arabicSource("settings.types_of_documents")}</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.manage_the_types_of_documents_and_documents_required")}</p>
               </div>
             </div>
             <button
@@ -1702,7 +1703,7 @@ export function SettingsPage() {
             <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  placeholder="اسم الوثيقة (عربي) *"
+                  placeholder={arabicSource("settings.document_name_arabic")}
                   value={newDocType.name_ar}
                   onChange={e => setNewDocType(p => ({ ...p, name_ar: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1716,14 +1717,14 @@ export function SettingsPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  placeholder="الرمز *"
+                  placeholder={arabicSource("common.code")}
                   value={newDocType.code}
                   onChange={e => setNewDocType(p => ({ ...p, code: e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
                 />
                 <input
                   type="number"
-                  placeholder="أيام التنبيه قبل الانتهاء"
+                  placeholder={arabicSource("settings.alert_days_before_expiry")}
                   value={newDocType.expiry_warning_days}
                   onChange={e => setNewDocType(p => ({ ...p, expiry_warning_days: +e.target.value }))}
                   className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
@@ -1737,7 +1738,7 @@ export function SettingsPage() {
                     onChange={e => setNewDocType(p => ({ ...p, has_expiry: e.target.checked }))}
                     className="accent-primary"
                   />
-                  لها تاريخ انتهاء
+                  {arabicSource("settings.has_an_expiration_date")}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
                   <input
@@ -1746,7 +1747,7 @@ export function SettingsPage() {
                     onChange={e => setNewDocType(p => ({ ...p, is_required: e.target.checked }))}
                     className="accent-primary"
                   />
-                  مطلوبة إلزامياً
+                  {arabicSource("settings.mandatory_required")}
                 </label>
               </div>
               <button
@@ -1761,20 +1762,20 @@ export function SettingsPage() {
                     is_required: newDocType.is_required,
                     sort_order: newDocType.sort_order,
                   });
-                  showToast("تم إضافة نوع الوثيقة");
+                  showToast(arabicSource("settings.document_type_added"));
                   setShowNewDocTypeForm(false);
                   setNewDocType({ name_ar: "", name_en: "", code: "", has_expiry: true, expiry_warning_days: 30, is_required: false, sort_order: 0 });
                   refetchDocumentTypes();
                 }}
                 className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
               >
-                إضافة نوع وثيقة
+                {arabicSource("settings.add_document_type")}
               </button>
             </div>
           )}
 
           {documentTypesLoading ? (
-            <p className="text-muted-foreground text-sm text-center py-4">جاري التحميل...</p>
+            <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("common.loading")}</p>
           ) : (
             <div className="space-y-2">
               {documentTypes.map(dt => (
@@ -1784,8 +1785,8 @@ export function SettingsPage() {
                     <div>
                       <p className="text-sm text-foreground">{dt.name_ar}</p>
                       <p className="text-xs text-muted-foreground">
-                        {dt.has_expiry ? `تنبيه قبل ${dt.expiry_warning_days} يوم` : "بدون انتهاء"}
-                        {dt.is_required && " · إلزامية"}
+                        {dt.has_expiry ? `${arabicSource("settings.warning_before")} ${dt.expiry_warning_days} ${arabicSource("common.days_2")}` : arabicSource("settings.without_ending")}
+                        {dt.is_required && " " + arabicSource("settings.mandatory")}
                       </p>
                     </div>
                   </div>
@@ -1799,9 +1800,9 @@ export function SettingsPage() {
                     />
                     <button
                       onClick={async () => {
-                        if (!localizedConfirm("حذف نوع الوثيقة؟")) return;
+                        if (!localizedConfirm(arabicSource("settings.delete_document_type"))) return;
                         await supabase.from("document_types").delete().eq("id", dt.id);
-                        showToast("تم حذف نوع الوثيقة");
+                        showToast(arabicSource("settings.document_type_deleted"));
                         refetchDocumentTypes();
                       }}
                       className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -1826,13 +1827,13 @@ export function SettingsPage() {
             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
               <User className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-foreground">الحساب الشخصي</h3>
+            <h3 className="text-foreground">{arabicSource("settings.personal_account")}</h3>
           </div>
           <div className="space-y-4">
             {[
-              { label: "الاسم الكامل", value: "مدير الموارد البشرية" },
-              { label: "البريد الإلكتروني", value: "hr@company.iq" },
-              { label: "رقم الهاتف", value: "07701234567" },
+              { label: arabicSource("settings.full_name"), value: arabicSource("common.human_resources_manager") },
+              { label: arabicSource("common.email"), value: "hr@company.iq" },
+              { label: arabicSource("common.phone_number"), value: "07701234567" },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
                 <span className="text-foreground" style={{ fontSize: 13 }}>
@@ -1857,15 +1858,15 @@ export function SettingsPage() {
             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
               <Bell className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-foreground">الإشعارات</h3>
+            <h3 className="text-foreground">{arabicSource("common.notices")}</h3>
           </div>
           <div className="space-y-4">
             {[
-              { label: "إشعارات طلبات الإجازة", key: "leave" as const },
-              { label: "إشعارات الحضور المتأخر", key: "lateAttendance" as const },
-              { label: "إشعارات الإنذارات الجديدة", key: "warnings" as const },
-              { label: "إشعارات التقييمات", key: "evaluations" as const },
-              { label: "إشعارات التوظيف", key: "recruitment" as const },
+              { label: arabicSource("settings.leave_request_notices"), key: "leave" as const },
+              { label: arabicSource("settings.late_attendance_notices"), key: "lateAttendance" as const },
+              { label: arabicSource("settings.notifications_of_new_alarms"), key: "warnings" as const },
+              { label: arabicSource("settings.assessments_notices"), key: "evaluations" as const },
+              { label: arabicSource("settings.recruitment_notices"), key: "recruitment" as const },
             ].map((item) => (
               <div key={item.key} className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
                 <span className="text-foreground" style={{ fontSize: 13 }}>
@@ -1888,35 +1889,35 @@ export function SettingsPage() {
             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
               <Shield className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-foreground">الأمان</h3>
+            <h3 className="text-foreground">{arabicSource("settings.security")}</h3>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                تغيير كلمة المرور
+                {arabicSource("settings.change_password")}
               </span>
               <button
                 className="px-3 py-1 rounded-md border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                 style={{ fontSize: 12 }}
               >
-                تعديل
+                {arabicSource("common.edit")}
               </button>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                المصادقة الثنائية
+                {arabicSource("settings.two_factor_authentication")}
               </span>
               <Toggle on={twoFactor} onClick={() => setTwoFactor(!twoFactor)} />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                سجل الدخول
+                {arabicSource("settings.log_in")}
               </span>
               <button
                 className="px-3 py-1 rounded-md border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                 style={{ fontSize: 12 }}
               >
-                عرض
+                {arabicSource("common.width")}
               </button>
             </div>
           </div>
@@ -1933,25 +1934,25 @@ export function SettingsPage() {
             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
               <SettingsIcon className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-foreground">النظام</h3>
+            <h3 className="text-foreground">{arabicSource("common.system")}</h3>
           </div>
           <div className="space-y-4">
             {/* Language */}
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                اللغة
+                {arabicSource("settings.language")}
               </span>
               <span className="text-muted-foreground" style={{ fontSize: 13 }}>
-                العربية
+                {arabicSource("settings.arabic")}
               </span>
             </div>
             {/* Timezone */}
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
               <span className="text-foreground" style={{ fontSize: 13 }}>
-                المنطقة الزمنية
+                {arabicSource("settings.time_zone")}
               </span>
               <span className="text-muted-foreground" style={{ fontSize: 13 }}>
-                بغداد (GMT+3)
+                {arabicSource("settings.baghdad_gmt_3")}
               </span>
             </div>
 
@@ -1960,7 +1961,7 @@ export function SettingsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-foreground flex items-center gap-2" style={{ fontSize: 13 }}>
                   <Calendar className="w-4 h-4 text-primary" />
-                  تنسيق عرض الشهر
+                  {arabicSource("settings.month_display_format")}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">

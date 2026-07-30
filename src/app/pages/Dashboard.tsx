@@ -24,6 +24,7 @@ import {
 } from "../lib/hooks";
 import { useAppSettings, formatMonthOnly } from "../components/SettingsContext";
 import { formatCurrency, formatDateTime } from "../i18n/format";
+import { arabicSource } from "../i18n/source";
 
 const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
 const formatK = (val: number) => val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val);
@@ -58,10 +59,10 @@ function MiniBar({ value, max, color = "bg-primary" }: { value: number; max: num
 // ═══════ Risk Level Badge ═══════
 function RiskBadge({ level }: { level: "low" | "medium" | "high" | "critical" }) {
   const cfg = {
-    low: { label: "منخفض", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-    medium: { label: "متوسط", cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
-    high: { label: "مرتفع", cls: "bg-orange-500/10 text-orange-400 border-orange-500/30" },
-    critical: { label: "حرج", cls: "bg-red-500/10 text-red-400 border-red-500/30" },
+    low: { label: arabicSource("dashboard.is_low"), cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+    medium: { label: arabicSource("common.average"), cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
+    high: { label: arabicSource("dashboard.high"), cls: "bg-orange-500/10 text-orange-400 border-orange-500/30" },
+    critical: { label: arabicSource("dashboard.critical"), cls: "bg-red-500/10 text-red-400 border-red-500/30" },
   }[level];
   return <span className={`text-xs px-2 py-0.5 rounded-full border ${cfg.cls}`}>{cfg.label}</span>;
 }
@@ -134,10 +135,10 @@ export function Dashboard() {
     docExpiryWindowDays: cfgNum('kpi.document_expiry_window_days', 30),
     contractExpiryWindowDays: cfgNum('kpi.contract_expiry_window_days', 30),
     // Warning config
-    warningActiveStatus: cfgVal('warnings.active_status', 'نشط'),
+    warningActiveStatus: cfgVal('warnings.active_status', arabicSource("common.is_active")),
     warningEscalationCount: cfgNum('warnings.escalation_count', 2),
     // Employee active status
-    employeeActiveStatus: cfgVal('employee.active_status', 'نشط'),
+    employeeActiveStatus: cfgVal('employee.active_status', arabicSource("common.is_active")),
     employeeActiveStatusEn: cfgVal('employee.active_status_en', 'active'),
   }), [cfgNum, cfgVal]);
 
@@ -176,7 +177,7 @@ export function Dashboard() {
   // Department distribution
   const departmentData = useMemo(() => {
     const map: Record<string, number> = {};
-    employees.forEach(e => { map[e.department || "غير محدد"] = (map[e.department || "غير محدد"] || 0) + 1; });
+    employees.forEach(e => { map[e.department || arabicSource("common.not_specified")] = (map[e.department || arabicSource("common.not_specified")] || 0) + 1; });
     return Object.entries(map).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
   }, [employees]);
 
@@ -249,13 +250,13 @@ export function Dashboard() {
   const deptAttendance = useMemo(() => {
     const dates = [...new Set(attendance.map(a => a.date))].sort().reverse().slice(0, 7);
     const empDeptMap: Record<string, string> = {};
-    employees.forEach(e => { empDeptMap[e.id] = e.department || "غير محدد"; });
+    employees.forEach(e => { empDeptMap[e.id] = e.department || arabicSource("common.not_specified"); });
 
     const deptStats: Record<string, { present: number; total: number }> = {};
     dates.forEach(d => {
       const recs = attendance.filter(a => a.date === d);
       recs.forEach(r => {
-        const dept = empDeptMap[r.employee_id] || "غير محدد";
+        const dept = empDeptMap[r.employee_id] || arabicSource("common.not_specified");
         if (!deptStats[dept]) deptStats[dept] = { present: 0, total: 0 };
         deptStats[dept].total++;
         if (r.status === "complete" || r.status === "missing_checkout") deptStats[dept].present++;
@@ -271,8 +272,8 @@ export function Dashboard() {
   const dayOfWeekAttendance = useMemo(() => {
     const dayKeys = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
     const dayLabels: Record<string, string> = {
-      sunday: "الأحد", monday: "الاثنين", tuesday: "الثلاثاء",
-      wednesday: "الأربعاء", thursday: "الخميس",
+      sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
+      wednesday: arabicSource("common.wednesday"), thursday: arabicSource("common.thursday"),
     };
     const dayMap: Record<string, { present: number; total: number }> = {};
     dayKeys.forEach(d => { dayMap[d] = { present: 0, total: 0 }; });
@@ -292,10 +293,10 @@ export function Dashboard() {
   }, [attendance]);
 
   const attendanceChartData = [
-    { name: "حاضر", value: attendanceStats.present, color: "#22C55E" },
-    { name: "متأخر", value: attendanceStats.late, color: "#D4AF37" },
-    { name: "غائب", value: attendanceStats.absent, color: "#DC2626" },
-    { name: "إجازة", value: attendanceStats.leave, color: "#3B82F6" },
+    { name: arabicSource("common.present"), value: attendanceStats.present, color: "#22C55E" },
+    { name: arabicSource("common.late"), value: attendanceStats.late, color: "#D4AF37" },
+    { name: arabicSource("common.absent"), value: attendanceStats.absent, color: "#DC2626" },
+    { name: arabicSource("common.leave"), value: attendanceStats.leave, color: "#3B82F6" },
   ];
 
   // Monthly payroll trend
@@ -316,8 +317,8 @@ export function Dashboard() {
   // ═══════ WORKFORCE KPIs ═══════
   // ══════════════════════════════════════════════════
 
-  const pendingLeaves = leaveRequests.filter(r => r.status === "معلق").length;
-  const approvedLeaves = leaveRequests.filter(r => r.status === "مقبول").length;
+  const pendingLeaves = leaveRequests.filter(r => r.status === arabicSource("common.pending")).length;
+  const approvedLeaves = leaveRequests.filter(r => r.status === arabicSource("common.accepted")).length;
   const activeContracts = contracts.filter(c => c.status === "active").length;
   const probationCount = contracts.filter(c => c.probation_status === "in_progress").length;
 
@@ -442,7 +443,7 @@ export function Dashboard() {
   const salaryByDept = useMemo(() => {
     const map: Record<string, { total: number; count: number }> = {};
     employees.forEach(e => {
-      const dept = e.department || "غير محدد";
+      const dept = e.department || arabicSource("common.not_specified");
       if (!map[dept]) map[dept] = { total: 0, count: 0 };
       map[dept].total += e.monthly_salary || 0;
       map[dept].count++;
@@ -465,9 +466,9 @@ export function Dashboard() {
   // ══════════════════════════════════════════════════
 
   const evalStats = useMemo(() => {
-    const completed = evaluations.filter(e => e.status === "مكتمل");
+    const completed = evaluations.filter(e => e.status === arabicSource("common.complete"));
     const avgRating = completed.length > 0 ? completed.reduce((s, e) => s + e.overall_rating, 0) / completed.length : 0;
-    const pending = evaluations.filter(e => e.status === "لم يبدأ" || e.status === "قيد التقييم").length;
+    const pending = evaluations.filter(e => e.status === arabicSource("common.did_not_start") || e.status === arabicSource("common.under_evaluation")).length;
     const high = completed.filter(e => e.overall_rating >= 4).length;
     const low = completed.filter(e => e.overall_rating <= 2).length;
     const coverageRate = totalEmployees > 0 ? pct(completed.length, totalEmployees) : 0;
@@ -486,10 +487,10 @@ export function Dashboard() {
   }, [warnings, cfg.warningActiveStatus, cfg.warningEscalationCount]);
 
   const trainingStats = useMemo(() => {
-    const ongoing = trainingPrograms.filter(p => p.status === "جاري").length;
-    const completed = trainingPrograms.filter(p => p.status === "مكتمل").length;
+    const ongoing = trainingPrograms.filter(p => p.status === arabicSource("common.my_neighbor")).length;
+    const completed = trainingPrograms.filter(p => p.status === arabicSource("common.complete")).length;
     const totalParticipants = trainingParticipants.length;
-    const completedParticipants = trainingParticipants.filter(p => p.completion_status === "مكتمل").length;
+    const completedParticipants = trainingParticipants.filter(p => p.completion_status === arabicSource("common.complete")).length;
     const completionRate = totalParticipants > 0 ? pct(completedParticipants, totalParticipants) : 0;
     // Training coverage: how many unique employees have participated
     const uniqueTrainees = new Set(trainingParticipants.map(p => p.employee_id)).size;
@@ -505,8 +506,8 @@ export function Dashboard() {
   // ══════════════════════════════════════════════════
 
   const recruitmentStats = useMemo(() => {
-    const openPositions = jobs.filter(j => j.status === "مفتوح" || j.status === "open" || j.status === "نشط").length;
-    const closedPositions = jobs.filter(j => j.status === "مغلق" || j.status === "closed" || j.status === "مكتمل").length;
+    const openPositions = jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === "open" || j.status === arabicSource("common.is_active")).length;
+    const closedPositions = jobs.filter(j => j.status === arabicSource("common.closed") || j.status === "closed" || j.status === arabicSource("common.complete")).length;
     const totalApplicants = applicants.length;
     const avgApplicantsPerJob = jobs.length > 0 ? Math.round(totalApplicants / jobs.length) : 0;
 
@@ -515,7 +516,7 @@ export function Dashboard() {
     applicants.forEach(a => { stages[a.stage] = (stages[a.stage] || 0) + 1; });
 
     // Time to fill (avg days from job posting to hire)
-    const hiredApplicants = applicants.filter(a => a.stage === "تم التعيين" || a.stage === "hired");
+    const hiredApplicants = applicants.filter(a => a.stage === arabicSource("common.assigned") || a.stage === "hired");
     const avgTimeToFill = (() => {
       if (hiredApplicants.length === 0) return 0;
       const diffs = hiredApplicants.map(a => {
@@ -527,7 +528,7 @@ export function Dashboard() {
     })();
 
     // Offer acceptance rate
-    const offered = applicants.filter(a => a.stage === "عرض وظيفي" || a.stage === "تم التعيين" || a.stage === "offered" || a.stage === "hired").length;
+    const offered = applicants.filter(a => a.stage === arabicSource("common.job_offer") || a.stage === arabicSource("common.assigned") || a.stage === "offered" || a.stage === "hired").length;
     const hired = hiredApplicants.length;
     const offerAcceptRate = offered > 0 ? pct(hired, offered) : 0;
 
@@ -543,12 +544,12 @@ export function Dashboard() {
   // Recruitment pipeline for funnel chart
   const recruitmentPipeline = useMemo(() => {
     const stageOrder = [
-      { key: "تقديم", label: "تقديم", color: "#3B82F6" },
-      { key: "فرز", label: "فرز", color: "#8B5CF6" },
-      { key: "مقابلة", label: "مقابلة", color: "#D4AF37" },
-      { key: "اختبار", label: "اختبار", color: "#F97316" },
-      { key: "عرض وظيفي", label: "عرض وظيفي", color: "#22C55E" },
-      { key: "تم التعيين", label: "تم التعيين", color: "#10B981" },
+      { key: arabicSource("common.introduction"), label: arabicSource("common.introduction"), color: "#3B82F6" },
+      { key: arabicSource("common.sort"), label: arabicSource("common.sort"), color: "#8B5CF6" },
+      { key: arabicSource("common.interview"), label: arabicSource("common.interview"), color: "#D4AF37" },
+      { key: arabicSource("common.test"), label: arabicSource("common.test"), color: "#F97316" },
+      { key: arabicSource("common.job_offer"), label: arabicSource("common.job_offer"), color: "#22C55E" },
+      { key: arabicSource("common.assigned"), label: arabicSource("common.assigned"), color: "#10B981" },
     ];
     return stageOrder.map(s => ({
       name: s.label,
@@ -567,34 +568,34 @@ export function Dashboard() {
     const items: { label: string; points: number; level: "low" | "medium" | "high" | "critical" }[] = [];
 
     // Expired documents
-    if (expiryStats.expiredDocs > cfg.riskExpiredDocsCriticalThreshold) { score += cfg.riskExpiredDocsCriticalPoints; items.push({ label: `${expiryStats.expiredDocs} وثيقة منتهية`, points: cfg.riskExpiredDocsCriticalPoints, level: "critical" }); }
-    else if (expiryStats.expiredDocs > 0) { score += cfg.riskExpiredDocsHighPoints; items.push({ label: `${expiryStats.expiredDocs} وثيقة منتهية`, points: cfg.riskExpiredDocsHighPoints, level: "high" }); }
+    if (expiryStats.expiredDocs > cfg.riskExpiredDocsCriticalThreshold) { score += cfg.riskExpiredDocsCriticalPoints; items.push({ label: `${expiryStats.expiredDocs} ${arabicSource("common.finished_document")}`, points: cfg.riskExpiredDocsCriticalPoints, level: "critical" }); }
+    else if (expiryStats.expiredDocs > 0) { score += cfg.riskExpiredDocsHighPoints; items.push({ label: `${expiryStats.expiredDocs} ${arabicSource("common.finished_document")}`, points: cfg.riskExpiredDocsHighPoints, level: "high" }); }
 
     // Expiring documents
-    if (expiryStats.expiringDocs > cfg.riskExpiringDocsThreshold) { score += cfg.riskExpiringDocsMediumPoints; items.push({ label: `${expiryStats.expiringDocs} وثيقة قريبة الانتهاء`, points: cfg.riskExpiringDocsMediumPoints, level: "medium" }); }
-    else if (expiryStats.expiringDocs > 0) { score += cfg.riskExpiringDocsLowPoints; items.push({ label: `${expiryStats.expiringDocs} وثيقة قريبة الانتهاء`, points: cfg.riskExpiringDocsLowPoints, level: "low" }); }
+    if (expiryStats.expiringDocs > cfg.riskExpiringDocsThreshold) { score += cfg.riskExpiringDocsMediumPoints; items.push({ label: `${expiryStats.expiringDocs} ${arabicSource("common.document_nearing_completion")}`, points: cfg.riskExpiringDocsMediumPoints, level: "medium" }); }
+    else if (expiryStats.expiringDocs > 0) { score += cfg.riskExpiringDocsLowPoints; items.push({ label: `${expiryStats.expiringDocs} ${arabicSource("common.document_nearing_completion")}`, points: cfg.riskExpiringDocsLowPoints, level: "low" }); }
 
     // Expiring contracts
-    if (expiryStats.expiringContracts > 0) { score += cfg.riskExpiringContractsPoints; items.push({ label: `${expiryStats.expiringContracts} عقد قريب الانتهاء`, points: cfg.riskExpiringContractsPoints, level: "high" }); }
+    if (expiryStats.expiringContracts > 0) { score += cfg.riskExpiringContractsPoints; items.push({ label: `${expiryStats.expiringContracts} ${arabicSource("common.contract_soon_to_expire")}`, points: cfg.riskExpiringContractsPoints, level: "high" }); }
 
     // Active warnings
-    if (warningStats.active > cfg.riskWarningsCriticalThreshold) { score += cfg.riskWarningsCriticalPoints; items.push({ label: `${warningStats.active} إنذار نشط`, points: cfg.riskWarningsCriticalPoints, level: "critical" }); }
-    else if (warningStats.active > cfg.riskWarningsMediumThreshold) { score += cfg.riskWarningsMediumPoints; items.push({ label: `${warningStats.active} إنذار نشط`, points: cfg.riskWarningsMediumPoints, level: "medium" }); }
-    else if (warningStats.active > 0) { score += cfg.riskWarningsLowPoints; items.push({ label: `${warningStats.active} إنذار نشط`, points: cfg.riskWarningsLowPoints, level: "low" }); }
+    if (warningStats.active > cfg.riskWarningsCriticalThreshold) { score += cfg.riskWarningsCriticalPoints; items.push({ label: `${warningStats.active} ${arabicSource("common.alarm_active")}`, points: cfg.riskWarningsCriticalPoints, level: "critical" }); }
+    else if (warningStats.active > cfg.riskWarningsMediumThreshold) { score += cfg.riskWarningsMediumPoints; items.push({ label: `${warningStats.active} ${arabicSource("common.alarm_active")}`, points: cfg.riskWarningsMediumPoints, level: "medium" }); }
+    else if (warningStats.active > 0) { score += cfg.riskWarningsLowPoints; items.push({ label: `${warningStats.active} ${arabicSource("common.alarm_active")}`, points: cfg.riskWarningsLowPoints, level: "low" }); }
 
     // Escalation risk
-    if (warningStats.escalationRisk > 0) { score += cfg.riskEscalationPoints; items.push({ label: `${warningStats.escalationRisk} موظف بإنذارات متعددة`, points: cfg.riskEscalationPoints, level: "high" }); }
+    if (warningStats.escalationRisk > 0) { score += cfg.riskEscalationPoints; items.push({ label: `${warningStats.escalationRisk} ${arabicSource("dashboard.employee_with_multiple_warnings")}`, points: cfg.riskEscalationPoints, level: "high" }); }
 
     // High absenteeism
-    if (attendanceStats.absenteeismRate > cfg.riskAbsenteeismHighThreshold) { score += cfg.riskAbsenteeismHighPoints; items.push({ label: `غياب ${attendanceStats.absenteeismRate}%`, points: cfg.riskAbsenteeismHighPoints, level: "high" }); }
-    else if (attendanceStats.absenteeismRate > cfg.riskAbsenteeismMediumThreshold) { score += cfg.riskAbsenteeismMediumPoints; items.push({ label: `غياب ${attendanceStats.absenteeismRate}%`, points: cfg.riskAbsenteeismMediumPoints, level: "medium" }); }
+    if (attendanceStats.absenteeismRate > cfg.riskAbsenteeismHighThreshold) { score += cfg.riskAbsenteeismHighPoints; items.push({ label: `${arabicSource("common.absence_2")} ${attendanceStats.absenteeismRate}%`, points: cfg.riskAbsenteeismHighPoints, level: "high" }); }
+    else if (attendanceStats.absenteeismRate > cfg.riskAbsenteeismMediumThreshold) { score += cfg.riskAbsenteeismMediumPoints; items.push({ label: `${arabicSource("common.absence_2")} ${attendanceStats.absenteeismRate}%`, points: cfg.riskAbsenteeismMediumPoints, level: "medium" }); }
 
     // High turnover
-    if (turnoverRate > cfg.riskTurnoverCriticalThreshold) { score += cfg.riskTurnoverCriticalPoints; items.push({ label: `دوران ${turnoverRate}%`, points: cfg.riskTurnoverCriticalPoints, level: "critical" }); }
-    else if (turnoverRate > cfg.riskTurnoverMediumThreshold) { score += cfg.riskTurnoverMediumPoints; items.push({ label: `دوران ${turnoverRate}%`, points: cfg.riskTurnoverMediumPoints, level: "medium" }); }
+    if (turnoverRate > cfg.riskTurnoverCriticalThreshold) { score += cfg.riskTurnoverCriticalPoints; items.push({ label: `${arabicSource("common.rotation")} ${turnoverRate}%`, points: cfg.riskTurnoverCriticalPoints, level: "critical" }); }
+    else if (turnoverRate > cfg.riskTurnoverMediumThreshold) { score += cfg.riskTurnoverMediumPoints; items.push({ label: `${arabicSource("common.rotation")} ${turnoverRate}%`, points: cfg.riskTurnoverMediumPoints, level: "medium" }); }
 
     // Pending leaves
-    if (pendingLeaves > cfg.riskPendingLeavesThreshold) { score += cfg.riskPendingLeavesPoints; items.push({ label: `${pendingLeaves} إجازة معلقة`, points: cfg.riskPendingLeavesPoints, level: "medium" }); }
+    if (pendingLeaves > cfg.riskPendingLeavesThreshold) { score += cfg.riskPendingLeavesPoints; items.push({ label: `${pendingLeaves} ${arabicSource("dashboard.vacation_pending")}`, points: cfg.riskPendingLeavesPoints, level: "medium" }); }
 
     // Risk level boundaries — from config
     const level: "low" | "medium" | "high" | "critical" =
@@ -609,16 +610,16 @@ export function Dashboard() {
   // ══════════════════════════════════════════════════
 
   const leaveDistribution = useMemo(() => [
-    { name: "معلقة", value: pendingLeaves, color: "#F59E0B" },
-    { name: "موافق عليها", value: approvedLeaves, color: "#22C55E" },
-    { name: "مرفوضة", value: leaveRequests.filter(r => r.status === "مرفوض").length, color: "#DC2626" },
+    { name: arabicSource("common.pending_2"), value: pendingLeaves, color: "#F59E0B" },
+    { name: arabicSource("common.agreed"), value: approvedLeaves, color: "#22C55E" },
+    { name: arabicSource("common.rejected"), value: leaveRequests.filter(r => r.status === arabicSource("common.rejected_3")).length, color: "#DC2626" },
   ], [leaveRequests, pendingLeaves, approvedLeaves]);
 
   const tenureDistribution = [
-    { name: "أقل من سنة", value: tenureStats.under1, color: "#3B82F6" },
-    { name: "١-٣ سنوات", value: tenureStats.y1to3, color: "#22C55E" },
-    { name: "٣-٥ سنوات", value: tenureStats.y3to5, color: "#D4AF37" },
-    { name: "أكثر من ٥", value: tenureStats.over5, color: "#8B5CF6" },
+    { name: arabicSource("dashboard.less_than_a_year"), value: tenureStats.under1, color: "#3B82F6" },
+    { name: arabicSource("dashboard.1_3_years"), value: tenureStats.y1to3, color: "#22C55E" },
+    { name: arabicSource("dashboard.3_5_years"), value: tenureStats.y3to5, color: "#D4AF37" },
+    { name: arabicSource("dashboard.more_than_5"), value: tenureStats.over5, color: "#8B5CF6" },
   ];
 
   const warningDistribution = useMemo(() => {
@@ -633,7 +634,7 @@ export function Dashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري تحميل لوحة التحكم...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("dashboard.loading_control_panel")}</span>
       </div>
     );
   }
@@ -643,8 +644,8 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">لوحة التحكم</h1>
-          <p className="text-muted-foreground mt-1">مؤشرات الأداء الرئيسية — بيانات حية من قاعدة البيانات</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.control_panel")}</h1>
+          <p className="text-muted-foreground mt-1">{arabicSource("dashboard.kpis_live_data_from_the_database")}</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Risk Score Badge */}
@@ -659,12 +660,12 @@ export function Dashboard() {
               riskScore.level === "high" ? "text-orange-400" :
               riskScore.level === "medium" ? "text-amber-400" : "text-emerald-400"
             }`} />
-            <span className="text-sm">مخاطر: <RiskBadge level={riskScore.level} /></span>
+            <span className="text-sm">{arabicSource("dashboard.risks")} <RiskBadge level={riskScore.level} /></span>
           </div>
           {unreadCount > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
               <Bell className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 text-sm">{unreadCount} إشعار جديد</span>
+              <span className="text-amber-400 text-sm">{unreadCount} {arabicSource("dashboard.new_notice")}</span>
             </div>
           )}
         </div>
@@ -673,11 +674,11 @@ export function Dashboard() {
       {/* KPI Section Tabs */}
       <div className="flex gap-2 flex-wrap">
         {([
-          { key: "overview" as const, label: "نظرة عامة", icon: BarChart3 },
-          { key: "workforce" as const, label: "القوى العاملة", icon: Users },
-          { key: "financial" as const, label: "المالية", icon: Wallet },
-          { key: "compliance" as const, label: "الامتثال والتطوير", icon: Shield },
-          { key: "recruitment" as const, label: "التوظيف", icon: UserPlus },
+          { key: "overview" as const, label: arabicSource("common.overview"), icon: BarChart3 },
+          { key: "workforce" as const, label: arabicSource("dashboard.manpower"), icon: Users },
+          { key: "financial" as const, label: arabicSource("common.finance"), icon: Wallet },
+          { key: "compliance" as const, label: arabicSource("dashboard.compliance_and_development"), icon: Shield },
+          { key: "recruitment" as const, label: arabicSource("common.recruitment"), icon: UserPlus },
         ]).map(tab => {
           const Icon = tab.icon;
           return (
@@ -705,11 +706,11 @@ export function Dashboard() {
           {/* Top-level KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "إجمالي الموظفين", value: totalEmployees, sub: `${activeEmployees} نشط · ${inactiveEmployees} غير نشط`, icon: Users, color: "text-primary" },
-              { label: "الحضور (٧ أيام)", value: `${attendanceStats.rolling7Rate}%`, sub: `اليوم ${attendanceStats.attendanceRate}%`, icon: ClipboardCheck, color: "text-emerald-400", trend: attendanceStats.attendanceTrend },
-              { label: "إجمالي التعويضات", value: formatIQD(compensationStats.totalCompensation), sub: `تكلفة/موظف ${formatIQD(compensationStats.costPerEmployee)}`, icon: Wallet, color: "text-blue-400" },
-              { label: "معدل الدوران (سنوي)", value: `${turnoverRate}%`, sub: `${newHireStats.last30} تعيين جديد (30 يوم)`, icon: Activity, color: turnoverRate > cfg.turnoverWarning ? "text-red-400" : "text-emerald-400" },
-              { label: "مستوى المخاطر", value: `${riskScore.score}/100`, sub: `${riskScore.items.length} عوامل خطر`, icon: Shield, color: riskScore.level === "low" ? "text-emerald-400" : riskScore.level === "medium" ? "text-amber-400" : "text-red-400" },
+              { label: arabicSource("common.total_employees"), value: totalEmployees, sub: `${activeEmployees} ${arabicSource("dashboard.active")} ${inactiveEmployees} ${arabicSource("common.is_inactive")}`, icon: Users, color: "text-primary" },
+              { label: arabicSource("dashboard.attendance_7_days"), value: `${attendanceStats.rolling7Rate}%`, sub: `${arabicSource("common.today")} ${attendanceStats.attendanceRate}%`, icon: ClipboardCheck, color: "text-emerald-400", trend: attendanceStats.attendanceTrend },
+              { label: arabicSource("common.total_compensation"), value: formatIQD(compensationStats.totalCompensation), sub: `${arabicSource("dashboard.cost_employee")} ${formatIQD(compensationStats.costPerEmployee)}`, icon: Wallet, color: "text-blue-400" },
+              { label: arabicSource("common.turnover_rate_annual"), value: `${turnoverRate}%`, sub: `${newHireStats.last30} ${arabicSource("dashboard.new_appointment_30_days")}`, icon: Activity, color: turnoverRate > cfg.turnoverWarning ? "text-red-400" : "text-emerald-400" },
+              { label: arabicSource("dashboard.risk_level"), value: `${riskScore.score}/100`, sub: `${riskScore.items.length} ${arabicSource("dashboard.risk_factors")}`, icon: Shield, color: riskScore.level === "low" ? "text-emerald-400" : riskScore.level === "medium" ? "text-amber-400" : "text-red-400" },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -746,37 +747,37 @@ export function Dashboard() {
               {expiryStats.expiredDocs > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
                   <FileCheck className="w-4 h-4 text-red-400 flex-shrink-0" />
-                  <p className="text-red-400 text-xs font-medium">{expiryStats.expiredDocs} وثيقة منتهية</p>
+                  <p className="text-red-400 text-xs font-medium">{expiryStats.expiredDocs} {arabicSource("common.finished_document")}</p>
                 </motion.div>
               )}
               {expiryStats.expiringDocs > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
                   <FileCheck className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                  <p className="text-amber-400 text-xs font-medium">{expiryStats.expiringDocs} وثيقة قريبة الانتهاء</p>
+                  <p className="text-amber-400 text-xs font-medium">{expiryStats.expiringDocs} {arabicSource("common.document_nearing_completion")}</p>
                 </motion.div>
               )}
               {expiryStats.expiringContracts > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
                   <Briefcase className="w-4 h-4 text-red-400 flex-shrink-0" />
-                  <p className="text-red-400 text-xs font-medium">{expiryStats.expiringContracts} عقد قريب الانتهاء</p>
+                  <p className="text-red-400 text-xs font-medium">{expiryStats.expiringContracts} {arabicSource("common.contract_soon_to_expire")}</p>
                 </motion.div>
               )}
               {probationCount > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30">
                   <Shield className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                  <p className="text-blue-400 text-xs font-medium">{probationCount} في فترة تجربة</p>
+                  <p className="text-blue-400 text-xs font-medium">{probationCount} {arabicSource("dashboard.is_in_a_trial_period")}</p>
                 </motion.div>
               )}
               {warningStats.active > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/30">
                   <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0" />
-                  <p className="text-orange-400 text-xs font-medium">{warningStats.active} إنذار نشط</p>
+                  <p className="text-orange-400 text-xs font-medium">{warningStats.active} {arabicSource("common.alarm_active")}</p>
                 </motion.div>
               )}
               {warningStats.escalationRisk > 0 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
                   <Zap className="w-4 h-4 text-red-400 flex-shrink-0" />
-                  <p className="text-red-400 text-xs font-medium">{warningStats.escalationRisk} خطر تصعيد</p>
+                  <p className="text-red-400 text-xs font-medium">{warningStats.escalationRisk} {arabicSource("common.risk_of_escalation")}</p>
                 </motion.div>
               )}
             </div>
@@ -785,31 +786,31 @@ export function Dashboard() {
           {/* Charts Row 1: Department + Attendance Donut */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">توزيع الموظفين حسب الأقسام</h3>
-              <CustomBarChart data={departmentData} color={colors.primary} height={280} barLabel="عدد الموظفين" />
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.distribution_of_employees_according_to_departments")}</h3>
+              <CustomBarChart data={departmentData} color={colors.primary} height={280} barLabel={arabicSource("common.number_of_employees")} />
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">حالة الحضور {attendanceStats.date ? `(${attendanceStats.date})` : "اليوم"}</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("common.attendance_status")} {attendanceStats.date ? `(${attendanceStats.date})` : arabicSource("common.today")}</h3>
               <div className="flex items-center justify-center" style={{ height: 240 }}>
                 <DonutChart data={attendanceChartData} />
               </div>
               {/* Attendance sub-metrics */}
               <div className="grid grid-cols-4 gap-2 mt-4">
                 <div className="text-center p-2 rounded-lg bg-muted/20">
-                  <p className="text-xs text-muted-foreground">٧ أيام</p>
+                  <p className="text-xs text-muted-foreground">{arabicSource("dashboard.7_days")}</p>
                   <p className="text-sm font-medium text-emerald-400">{attendanceStats.rolling7Rate}%</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-muted/20">
-                  <p className="text-xs text-muted-foreground">٣٠ يوم</p>
+                  <p className="text-xs text-muted-foreground">{arabicSource("dashboard.30_days")}</p>
                   <p className="text-sm font-medium text-blue-400">{attendanceStats.rolling30Rate}%</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-muted/20">
-                  <p className="text-xs text-muted-foreground">الانضباط</p>
+                  <p className="text-xs text-muted-foreground">{arabicSource("dashboard.discipline")}</p>
                   <p className="text-sm font-medium text-primary">{attendanceStats.punctualityRate}%</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-muted/20">
-                  <p className="text-xs text-muted-foreground">جهاز البصمة</p>
+                  <p className="text-xs text-muted-foreground">{arabicSource("common.fingerprint_device")}</p>
                   <p className="text-sm font-medium text-cyan-400">{attendanceStats.deviceCoverage}%</p>
                 </div>
               </div>
@@ -819,19 +820,19 @@ export function Dashboard() {
           {/* Charts Row 2: Headcount Trend + Payroll Trend */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">اتجاه عدد الموظفين (١٢ شهر)</h3>
-              <CustomLineChart data={headcountTrend} color="#3B82F6" height={250} valueLabel="عدد الموظفين" />
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.headcount_trend_12_months")}</h3>
+              <CustomLineChart data={headcountTrend} color="#3B82F6" height={250} valueLabel={arabicSource("common.number_of_employees")} />
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-foreground">صافي الرواتب الشهرية (ألف د.ع)</h3>
+                <h3 className="text-foreground">{arabicSource("common.net_monthly_salaries_thousand_iqd")}</h3>
                 {payrollMoM !== 0 && <TrendBadge value={payrollMoM} suffix="%" inverse />}
               </div>
               {monthlyPayroll.length > 0 ? (
-                <CustomLineChart data={monthlyPayroll} color={colors.primary} height={250} valueLabel="المبلغ" />
+                <CustomLineChart data={monthlyPayroll} color={colors.primary} height={250} valueLabel={arabicSource("common.amount")} />
               ) : (
-                <div className="flex items-center justify-center h-[250px] text-muted-foreground">لا توجد بيانات رواتب</div>
+                <div className="flex items-center justify-center h-[250px] text-muted-foreground">{arabicSource("common.there_is_no_salary_data")}</div>
               )}
             </motion.div>
           </div>
@@ -839,16 +840,16 @@ export function Dashboard() {
           {/* Charts Row 3: Quick KPIs + Risk Scorecard + Notifications */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">مؤشرات سريعة</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.quick_indicators")}</h3>
               <div className="space-y-3">
                 {[
-                  { label: "إجازات معلقة", value: pendingLeaves, icon: CalendarDays, color: "text-amber-400" },
-                  { label: "قروض نشطة", value: activeLoans.length, icon: CreditCard, color: "text-blue-400" },
-                  { label: "تقييمات منتظرة", value: evalStats.pending, icon: Award, color: "text-purple-400" },
-                  { label: "تدريبات جارية", value: trainingStats.ongoing, icon: GraduationCap, color: "text-emerald-400" },
-                  { label: "إنذارات نشطة", value: warningStats.active, icon: AlertTriangle, color: "text-orange-400" },
-                  { label: "وظائف مفتوحة", value: recruitmentStats.openPositions, icon: UserPlus, color: "text-cyan-400" },
-                  { label: "عمليات خروج", value: exitProcesses.filter(p => p.status !== "completed" && p.status !== "cancelled").length, icon: UserX, color: "text-red-400" },
+                  { label: arabicSource("dashboard.vacations_pending"), value: pendingLeaves, icon: CalendarDays, color: "text-amber-400" },
+                  { label: arabicSource("common.active_loans"), value: activeLoans.length, icon: CreditCard, color: "text-blue-400" },
+                  { label: arabicSource("dashboard.reviews_awaited"), value: evalStats.pending, icon: Award, color: "text-purple-400" },
+                  { label: arabicSource("dashboard.training_underway"), value: trainingStats.ongoing, icon: GraduationCap, color: "text-emerald-400" },
+                  { label: arabicSource("common.active_alarms"), value: warningStats.active, icon: AlertTriangle, color: "text-orange-400" },
+                  { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, icon: UserPlus, color: "text-cyan-400" },
+                  { label: arabicSource("dashboard.exits"), value: exitProcesses.filter(p => p.status !== "completed" && p.status !== "cancelled").length, icon: UserX, color: "text-red-400" },
                 ].map(item => {
                   const Icon = item.icon;
                   return (
@@ -867,7 +868,7 @@ export function Dashboard() {
             {/* Risk Scorecard */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className={cardCls}>
               <h3 className="text-foreground mb-4 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" /> بطاقة المخاطر
+                <Shield className="w-4 h-4 text-primary" /> {arabicSource("dashboard.risk_card")}
               </h3>
               <div className="text-center p-4 rounded-xl bg-muted/20 mb-4">
                 <p className={`text-4xl font-bold ${
@@ -875,14 +876,14 @@ export function Dashboard() {
                   riskScore.level === "high" ? "text-orange-400" :
                   riskScore.level === "medium" ? "text-amber-400" : "text-emerald-400"
                 }`}>{riskScore.score}</p>
-                <p className="text-muted-foreground text-xs mt-1">من ١٠٠</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.out_of_100")}</p>
                 <div className="mt-2"><RiskBadge level={riskScore.level} /></div>
               </div>
               <div className="space-y-2">
                 {riskScore.items.length === 0 ? (
                   <div className="text-center py-4">
                     <Heart className="w-8 h-8 text-emerald-400/30 mx-auto mb-2" />
-                    <p className="text-emerald-400 text-sm">لا توجد مخاطر</p>
+                    <p className="text-emerald-400 text-sm">{arabicSource("dashboard.no_risks")}</p>
                   </div>
                 ) : riskScore.items.slice(0, 5).map((item, i) => (
                   <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/10">
@@ -896,12 +897,12 @@ export function Dashboard() {
             {/* Notifications */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} className={cardCls}>
               <h3 className="text-foreground mb-4 flex items-center gap-2">
-                <Bell className="w-4 h-4 text-primary" /> آخر الإشعارات
+                <Bell className="w-4 h-4 text-primary" /> {arabicSource("dashboard.latest_notices")}
                 {unreadCount > 0 && <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs">{unreadCount}</span>}
               </h3>
               <div className="space-y-2.5">
                 {notifications.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-8">لا توجد إشعارات</p>
+                  <p className="text-muted-foreground text-sm text-center py-8">{arabicSource("common.no_notifications")}</p>
                 ) : notifications.slice(0, 6).map(n => (
                   <div key={n.id} className={`flex items-start gap-3 p-2.5 rounded-lg ${n.is_read ? "bg-muted/10" : "bg-primary/5 border border-primary/20"}`}>
                     <Bell className={`w-3.5 h-3.5 mt-0.5 ${n.type === "warning" ? "text-amber-400" : n.type === "error" ? "text-red-400" : "text-primary"}`} />
@@ -924,11 +925,11 @@ export function Dashboard() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "متوسط مدة الخدمة", value: `${tenureStats.avg} سنة`, sub: `وسيط ${tenureStats.median} سنة`, icon: Clock },
-              { label: "الحضور (٣٠ يوم)", value: `${attendanceStats.rolling30Rate}%`, sub: `التغيب ${attendanceStats.absenteeismRate}%`, icon: ClipboardCheck },
-              { label: "نسبة الانضباط", value: `${attendanceStats.punctualityRate}%`, sub: `${attendanceStats.late} متأخر اليوم`, icon: Target },
-              { label: "عقود نشطة", value: activeContracts, sub: `${probationCount} في التجربة`, icon: Briefcase },
-              { label: "استخدام الإجازات", value: `${leaveUtilization.rate}%`, sub: `${leaveUtilization.totalUsed} من ${leaveUtilization.totalEntitled} يوم`, icon: CalendarDays },
+              { label: arabicSource("dashboard.average_service_life"), value: `${tenureStats.avg} ${arabicSource("common.years")}`, sub: `${arabicSource("dashboard.mediator")} ${tenureStats.median} ${arabicSource("common.years")}`, icon: Clock },
+              { label: arabicSource("dashboard.attendance_30_days"), value: `${attendanceStats.rolling30Rate}%`, sub: `${arabicSource("dashboard.absenteeism")} ${attendanceStats.absenteeismRate}%`, icon: ClipboardCheck },
+              { label: arabicSource("dashboard.discipline_ratio"), value: `${attendanceStats.punctualityRate}%`, sub: `${attendanceStats.late} ${arabicSource("dashboard.late_today")}`, icon: Target },
+              { label: arabicSource("common.active_contracts"), value: activeContracts, sub: `${probationCount} ${arabicSource("dashboard.in_the_experiment")}`, icon: Briefcase },
+              { label: arabicSource("common.use_of_vacations"), value: `${leaveUtilization.rate}%`, sub: `${leaveUtilization.totalUsed} ${arabicSource("common.from")} ${leaveUtilization.totalEntitled} ${arabicSource("common.days_2")}`, icon: CalendarDays },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -951,7 +952,7 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Tenure Distribution */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">توزيع مدة الخدمة</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.distribution_of_service_period")}</h3>
               <div className="flex items-center justify-center" style={{ height: 280 }}>
                 <DonutChart data={tenureDistribution} />
               </div>
@@ -959,11 +960,11 @@ export function Dashboard() {
 
             {/* Attendance by Department */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">نسبة الحضور حسب القسم (٧ أيام)</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.attendance_percentage_by_department_7_days")}</h3>
               {deptAttendance.length > 0 ? (
-                <CustomBarChart data={deptAttendance} color="#22C55E" height={280} barLabel="نسبة الحضور %" />
+                <CustomBarChart data={deptAttendance} color="#22C55E" height={280} barLabel={arabicSource("common.attendance_rate")} />
               ) : (
-                <div className="flex items-center justify-center h-[280px] text-muted-foreground">لا توجد بيانات</div>
+                <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("common.no_data")}</div>
               )}
             </motion.div>
           </div>
@@ -971,30 +972,30 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Day of Week Pattern */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`lg:col-span-2 ${cardCls}`}>
-              <h3 className="text-foreground mb-4">نمط الحضور حسب اليوم</h3>
-              <CustomBarChart data={dayOfWeekAttendance} color="#3B82F6" height={250} barLabel="نسبة الحضور %" />
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.attendance_pattern_by_day")}</h3>
+              <CustomBarChart data={dayOfWeekAttendance} color="#3B82F6" height={250} barLabel={arabicSource("common.attendance_rate")} />
             </motion.div>
 
             {/* Leave Summary */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">ملخص الإجازات</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("common.vacation_summary")}</h3>
               <div className="space-y-3">
                 <div className="text-center p-4 rounded-lg bg-muted/20">
                   <p className="text-3xl font-semibold text-primary">{leaveRequests.length}</p>
-                  <p className="text-muted-foreground text-xs mt-1">إجمالي الطلبات</p>
+                  <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.total_orders")}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center p-2 rounded-lg bg-amber-500/10"><p className="text-amber-400 font-medium">{pendingLeaves}</p><p className="text-muted-foreground text-xs">معلقة</p></div>
-                  <div className="text-center p-2 rounded-lg bg-emerald-500/10"><p className="text-emerald-400 font-medium">{approvedLeaves}</p><p className="text-muted-foreground text-xs">مقبولة</p></div>
-                  <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-red-400 font-medium">{leaveRequests.filter(r => r.status === "مرفوض").length}</p><p className="text-muted-foreground text-xs">مرفوضة</p></div>
+                  <div className="text-center p-2 rounded-lg bg-amber-500/10"><p className="text-amber-400 font-medium">{pendingLeaves}</p><p className="text-muted-foreground text-xs">{arabicSource("common.pending_2")}</p></div>
+                  <div className="text-center p-2 rounded-lg bg-emerald-500/10"><p className="text-emerald-400 font-medium">{approvedLeaves}</p><p className="text-muted-foreground text-xs">{arabicSource("dashboard.accepted")}</p></div>
+                  <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-red-400 font-medium">{leaveRequests.filter(r => r.status === arabicSource("common.rejected_3")).length}</p><p className="text-muted-foreground text-xs">{arabicSource("common.rejected")}</p></div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">استخدام الإجازات</span>
+                    <span className="text-muted-foreground">{arabicSource("common.use_of_vacations")}</span>
                     <span className="text-primary font-medium">{leaveUtilization.rate}%</span>
                   </div>
                   <MiniBar value={leaveUtilization.rate} max={100} color="bg-primary" />
-                  <p className="text-muted-foreground text-xs mt-1">متوسط {leaveUtilization.avgUsed} يوم/موظف</p>
+                  <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.average")} {leaveUtilization.avgUsed} {arabicSource("dashboard.day_employee")}</p>
                 </div>
               </div>
             </motion.div>
@@ -1002,27 +1003,27 @@ export function Dashboard() {
 
           {/* New Hires + Turnover Summary */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-            <h3 className="text-foreground mb-4">التعيينات والدوران الوظيفي</h3>
+            <h3 className="text-foreground mb-4">{arabicSource("dashboard.appointments_and_job_turnover")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="text-center p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                 <p className="text-2xl font-semibold text-emerald-400">{newHireStats.last30}</p>
-                <p className="text-muted-foreground text-xs mt-1">تعيين (30 يوم)</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.set_30_days")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <p className="text-2xl font-semibold text-blue-400">{newHireStats.last90}</p>
-                <p className="text-muted-foreground text-xs mt-1">تعيين (90 يوم)</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.set_90_days")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <p className="text-2xl font-semibold text-primary">{newHireStats.rate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">معدل التعيين</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.assignment_rate")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
                 <p className="text-2xl font-semibold text-amber-400">{turnoverRate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">معدل الدوران (سنوي)</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.turnover_rate_annual")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
                 <p className="text-2xl font-semibold text-purple-400">{exitProcesses.filter(p => p.status !== "completed" && p.status !== "cancelled").length}</p>
-                <p className="text-muted-foreground text-xs mt-1">عمليات خروج جارية</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.exits_in_progress")}</p>
               </div>
             </div>
           </motion.div>
@@ -1036,11 +1037,11 @@ export function Dashboard() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "إجمالي التعويضات", value: formatIQD(compensationStats.totalCompensation), sub: `رواتب + بدلات`, icon: Wallet, color: "text-primary" },
-              { label: "تكلفة لكل موظف", value: formatIQD(compensationStats.costPerEmployee), sub: `وسيط الراتب ${formatIQD(medianSalary)}`, icon: Coins, color: "text-emerald-400" },
-              { label: "إجمالي البدلات", value: formatIQD(compensationStats.totalAllowances), sub: `${allAllowances.length} بدل نشط`, icon: TrendingUp, color: "text-blue-400" },
-              { label: "رصيد القروض", value: formatIQD(totalLoanBalance), sub: `${activeLoans.length} قرض (${loanUtilization}%)`, icon: CreditCard, color: "text-amber-400" },
-              { label: "عمليات خروج نشطة", value: exitProcesses.filter(p => p.status !== "completed" && p.status !== "cancelled").length, sub: `مستحقات نهاية خدمة`, icon: UserX, color: "text-red-400" },
+              { label: arabicSource("common.total_compensation"), value: formatIQD(compensationStats.totalCompensation), sub: `${arabicSource("dashboard.salaries_allowances")}`, icon: Wallet, color: "text-primary" },
+              { label: arabicSource("dashboard.cost_per_employee"), value: formatIQD(compensationStats.costPerEmployee), sub: `${arabicSource("common.median_salary")} ${formatIQD(medianSalary)}`, icon: Coins, color: "text-emerald-400" },
+              { label: arabicSource("common.total_allowances"), value: formatIQD(compensationStats.totalAllowances), sub: `${allAllowances.length} ${arabicSource("dashboard.active_allowance")}`, icon: TrendingUp, color: "text-blue-400" },
+              { label: arabicSource("dashboard.loan_balance"), value: formatIQD(totalLoanBalance), sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`, icon: CreditCard, color: "text-amber-400" },
+              { label: arabicSource("dashboard.active_exits"), value: exitProcesses.filter(p => p.status !== "completed" && p.status !== "cancelled").length, sub: `${arabicSource("dashboard.end_of_service_benefits")}`, icon: UserX, color: "text-red-400" },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -1063,22 +1064,22 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-foreground">صافي الرواتب الشهرية (ألف د.ع)</h3>
-                {payrollMoM !== 0 && <TrendBadge value={payrollMoM} suffix="% شهري" inverse />}
+                <h3 className="text-foreground">{arabicSource("common.net_monthly_salaries_thousand_iqd")}</h3>
+                {payrollMoM !== 0 && <TrendBadge value={payrollMoM} suffix={arabicSource("dashboard.monthly")} inverse />}
               </div>
               {monthlyPayroll.length > 0 ? (
-                <CustomLineChart data={monthlyPayroll} color={colors.primary} height={280} valueLabel="المبلغ" />
+                <CustomLineChart data={monthlyPayroll} color={colors.primary} height={280} valueLabel={arabicSource("common.amount")} />
               ) : (
-                <div className="flex items-center justify-center h-[280px] text-muted-foreground">لا توجد بيانات رواتب</div>
+                <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("common.there_is_no_salary_data")}</div>
               )}
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">تكلفة الرواتب حسب القسم (ألف د.ع)</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.cost_of_salaries_by_department_thousand_iqd")}</h3>
               {salaryByDept.length > 0 ? (
-                <CustomBarChart data={salaryByDept} color="#22C55E" height={280} barLabel="التكلفة" />
+                <CustomBarChart data={salaryByDept} color="#22C55E" height={280} barLabel={arabicSource("dashboard.cost")} />
               ) : (
-                <div className="flex items-center justify-center h-[280px] text-muted-foreground">لا توجد بيانات</div>
+                <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("common.no_data")}</div>
               )}
             </motion.div>
           </div>
@@ -1087,33 +1088,33 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Compensation breakdown */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">تحليل التعويضات</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.compensation_analysis")}</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">إجمالي الرواتب الأساسية</span>
+                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_basic_salaries")}</span>
                   <span className="text-sm font-medium text-primary" dir="ltr">{formatIQD(totalSalaries)}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">إجمالي البدلات</span>
+                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_allowances")}</span>
                   <span className="text-sm font-medium text-emerald-400" dir="ltr">{formatIQD(compensationStats.totalAllowances)}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">إجمالي الاستقطاعات</span>
+                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_deductions")}</span>
                   <span className="text-sm font-medium text-red-400" dir="ltr">{formatIQD(compensationStats.totalDeductions)}</span>
                 </div>
                 <div className="border-t border-border/40 pt-3">
                   <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
-                    <span className="text-sm font-medium text-foreground">صافي التعويضات</span>
+                    <span className="text-sm font-medium text-foreground">{arabicSource("dashboard.net_compensation")}</span>
                     <span className="text-sm font-bold text-primary" dir="ltr">{formatIQD(compensationStats.totalCompensation - compensationStats.totalDeductions)}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <div className="p-3 rounded-lg bg-muted/20 text-center">
-                    <p className="text-xs text-muted-foreground">متوسط الراتب</p>
+                    <p className="text-xs text-muted-foreground">{arabicSource("dashboard.average_salary")}</p>
                     <p className="text-sm font-medium text-primary" dir="ltr">{formatIQD(avgSalary)}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/20 text-center">
-                    <p className="text-xs text-muted-foreground">وسيط الراتب</p>
+                    <p className="text-xs text-muted-foreground">{arabicSource("common.median_salary")}</p>
                     <p className="text-sm font-medium text-blue-400" dir="ltr">{formatIQD(medianSalary)}</p>
                   </div>
                 </div>
@@ -1122,24 +1123,24 @@ export function Dashboard() {
 
             {/* Loan Portfolio */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">محفظة القروض</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.loan_portfolio")}</h3>
               {activeLoans.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-8">لا توجد قروض نشطة</p>
+                <p className="text-muted-foreground text-sm text-center py-8">{arabicSource("dashboard.there_are_no_active_loans")}</p>
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                       <p className="text-2xl font-semibold text-blue-400">{activeLoans.length}</p>
-                      <p className="text-muted-foreground text-xs mt-1">قروض نشطة</p>
+                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.active_loans")}</p>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
                       <p className="text-lg font-semibold text-primary" dir="ltr">{formatIQD(activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0))}</p>
-                      <p className="text-muted-foreground text-xs mt-1">إجمالي القروض</p>
+                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.total_loans")}</p>
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/20">
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">نسبة السداد</span>
+                      <span className="text-muted-foreground">{arabicSource("dashboard.payment_ratio")}</span>
                       <span className="text-emerald-400 font-medium">{pct(activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance, activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0))}%</span>
                     </div>
                     <MiniBar value={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance} max={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0)} color="bg-emerald-500" />
@@ -1147,16 +1148,16 @@ export function Dashboard() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                       <p className="text-lg font-semibold text-emerald-400" dir="ltr">{formatIQD(activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance)}</p>
-                      <p className="text-muted-foreground text-xs mt-1">المسدد</p>
+                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.the_payer")}</p>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                       <p className="text-lg font-semibold text-amber-400" dir="ltr">{formatIQD(totalLoanBalance)}</p>
-                      <p className="text-muted-foreground text-xs mt-1">المتبقي</p>
+                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.remaining")}</p>
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/20">
-                    <p className="text-xs text-muted-foreground">نسبة الموظفين المقترضين</p>
-                    <p className="text-sm font-medium text-blue-400">{loanUtilization}% من إجمالي الموظفين</p>
+                    <p className="text-xs text-muted-foreground">{arabicSource("dashboard.percentage_of_employees_who_borrow")}</p>
+                    <p className="text-sm font-medium text-blue-400">{loanUtilization}{arabicSource("dashboard.of_total_employees")}</p>
                   </div>
                 </div>
               )}
@@ -1172,11 +1173,11 @@ export function Dashboard() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "متوسط تقييم الأداء", value: `${evalStats.avgRating}/5`, sub: `تغطية ${evalStats.coverageRate}% من الموظفين`, icon: Award, color: evalStats.avgRating >= cfg.performanceGoodThreshold ? "text-emerald-400" : "text-amber-400" },
-              { label: "إنذارات نشطة", value: warningStats.active, sub: `${warningStats.escalationRisk} خطر تصعيد`, icon: AlertTriangle, color: warningStats.active > 0 ? "text-orange-400" : "text-emerald-400" },
-              { label: "إتمام التدريب", value: `${trainingStats.completionRate}%`, sub: `تغطية ${trainingStats.coverageRate}% من الموظفين`, icon: GraduationCap, color: trainingStats.completionRate >= cfg.trainingCompletionTarget ? "text-emerald-400" : "text-amber-400" },
-              { label: "وثائق منتهية/قريبة", value: expiryStats.expiredDocs + expiryStats.expiringDocs, sub: `${expiryStats.expiredDocs} منتهية · ${expiryStats.expiringDocs} قريبة`, icon: FileCheck, color: expiryStats.expiredDocs > 0 ? "text-red-400" : "text-amber-400" },
-              { label: "معدل الأداء العالي", value: `${pct(evalStats.high, evalStats.completed)}%`, sub: `${evalStats.high} من ${evalStats.completed} مقيّم`, icon: Zap, color: "text-purple-400" },
+              { label: arabicSource("dashboard.average_performance_rating"), value: `${evalStats.avgRating}/5`, sub: `${arabicSource("common.cover")} ${evalStats.coverageRate}${arabicSource("common.of_employees")}`, icon: Award, color: evalStats.avgRating >= cfg.performanceGoodThreshold ? "text-emerald-400" : "text-amber-400" },
+              { label: arabicSource("common.active_alarms"), value: warningStats.active, sub: `${warningStats.escalationRisk} ${arabicSource("common.risk_of_escalation")}`, icon: AlertTriangle, color: warningStats.active > 0 ? "text-orange-400" : "text-emerald-400" },
+              { label: arabicSource("dashboard.completion_of_training"), value: `${trainingStats.completionRate}%`, sub: `${arabicSource("common.cover")} ${trainingStats.coverageRate}${arabicSource("common.of_employees")}`, icon: GraduationCap, color: trainingStats.completionRate >= cfg.trainingCompletionTarget ? "text-emerald-400" : "text-amber-400" },
+              { label: arabicSource("dashboard.expired_nearly_documents"), value: expiryStats.expiredDocs + expiryStats.expiringDocs, sub: `${expiryStats.expiredDocs} ${arabicSource("dashboard.finished")} ${expiryStats.expiringDocs} ${arabicSource("dashboard.close")}`, icon: FileCheck, color: expiryStats.expiredDocs > 0 ? "text-red-400" : "text-amber-400" },
+              { label: arabicSource("dashboard.high_performance_rate"), value: `${pct(evalStats.high, evalStats.completed)}%`, sub: `${evalStats.high} ${arabicSource("common.from")} ${evalStats.completed} ${arabicSource("dashboard.evaluator")}`, icon: Zap, color: "text-purple-400" },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -1199,15 +1200,15 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Performance Distribution */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">توزيع تقييم الأداء</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.performance_evaluation_distribution")}</h3>
               {evalStats.completed > 0 ? (
                 <div className="space-y-4">
                   {[
-                    { label: "متميز (5)", count: evaluations.filter(e => e.status === "مكتمل" && e.overall_rating === 5).length, color: "bg-emerald-500" },
-                    { label: "تجاوز التوقعات (4)", count: evaluations.filter(e => e.status === "مكتمل" && e.overall_rating === 4).length, color: "bg-blue-500" },
-                    { label: "ضمن المتوقع (3)", count: evaluations.filter(e => e.status === "مكتمل" && e.overall_rating === 3).length, color: "bg-primary" },
-                    { label: "دون التوقعات (2)", count: evaluations.filter(e => e.status === "مكتمل" && e.overall_rating === 2).length, color: "bg-amber-500" },
-                    { label: "لم يتحقق (1)", count: evaluations.filter(e => e.status === "مكتمل" && e.overall_rating === 1).length, color: "bg-red-500" },
+                    { label: arabicSource("dashboard.featured_5"), count: evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating === 5).length, color: "bg-emerald-500" },
+                    { label: arabicSource("dashboard.exceeding_expectations_4"), count: evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating === 4).length, color: "bg-blue-500" },
+                    { label: arabicSource("dashboard.within_expected_3"), count: evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating === 3).length, color: "bg-primary" },
+                    { label: arabicSource("dashboard.below_expectations_2"), count: evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating === 2).length, color: "bg-amber-500" },
+                    { label: arabicSource("dashboard.not_achieved_1"), count: evaluations.filter(e => e.status === arabicSource("common.complete") && e.overall_rating === 1).length, color: "bg-red-500" },
                   ].map(level => (
                     <div key={level.label} className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground w-32 flex-shrink-0">{level.label}</span>
@@ -1219,23 +1220,23 @@ export function Dashboard() {
                   ))}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10">
-                      <span className="text-sm text-muted-foreground">أداء عالي (4+)</span>
+                      <span className="text-sm text-muted-foreground">{arabicSource("dashboard.high_performance_4")}</span>
                       <span className="text-sm font-medium text-emerald-400">{pct(evalStats.high, evalStats.completed)}%</span>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
-                      <span className="text-sm text-muted-foreground">يحتاج تطوير (2-)</span>
+                      <span className="text-sm text-muted-foreground">{arabicSource("dashboard.needs_development_2")}</span>
                       <span className="text-sm font-medium text-red-400">{pct(evalStats.low, evalStats.completed)}%</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-[280px] text-muted-foreground">لا توجد تقييمات مكتملة</div>
+                <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("dashboard.there_are_no_completed_reviews")}</div>
               )}
             </motion.div>
 
             {/* Warning Distribution */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">الإنذارات حسب النوع</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.alarms_by_type")}</h3>
               {warningDistribution.length > 0 ? (
                 <>
                   <div className="flex items-center justify-center" style={{ height: 220 }}>
@@ -1244,15 +1245,15 @@ export function Dashboard() {
                   {warningStats.escalationRisk > 0 && (
                     <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
                       <Zap className="w-4 h-4 text-red-400" />
-                      <span className="text-red-400 text-sm">{warningStats.escalationRisk} موظف بإنذارات متعددة — خطر تصعيد</span>
+                      <span className="text-red-400 text-sm">{warningStats.escalationRisk} {arabicSource("dashboard.employee_with_multiple_alarms_escalation_risk")}</span>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-[280px]">
                   <Shield className="w-12 h-12 text-emerald-400/30 mb-3" />
-                  <p className="text-emerald-400 text-sm">لا توجد إنذارات نشطة</p>
-                  <p className="text-muted-foreground text-xs mt-1">بيئة عمل ممتازة</p>
+                  <p className="text-emerald-400 text-sm">{arabicSource("dashboard.no_active_alarms")}</p>
+                  <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.excellent_work_environment")}</p>
                 </div>
               )}
             </motion.div>
@@ -1260,37 +1261,37 @@ export function Dashboard() {
 
           {/* Training Section */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-            <h3 className="text-foreground mb-4">ملخص التدريب والتطوير</h3>
+            <h3 className="text-foreground mb-4">{arabicSource("dashboard.summary_of_training_and_development")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <p className="text-2xl font-semibold text-primary">{trainingStats.totalPrograms}</p>
-                <p className="text-muted-foreground text-xs mt-1">إجمالي البرامج</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.total_programs")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <p className="text-2xl font-semibold text-blue-400">{trainingStats.ongoing}</p>
-                <p className="text-muted-foreground text-xs mt-1">جارية الآن</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.now_underway")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                 <p className="text-2xl font-semibold text-emerald-400">{trainingStats.completed}</p>
-                <p className="text-muted-foreground text-xs mt-1">مكتملة</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.complete_2")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
                 <p className="text-2xl font-semibold text-amber-400">{trainingStats.uniqueTrainees}</p>
-                <p className="text-muted-foreground text-xs mt-1">متدرب فريد</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.unique_trainee")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
                 <p className="text-2xl font-semibold text-purple-400">{trainingStats.completionRate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">نسبة الإتمام</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.completion_rate")}</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
                 <p className="text-2xl font-semibold text-cyan-400">{trainingStats.avgScore || "—"}</p>
-                <p className="text-muted-foreground text-xs mt-1">متوسط الدرجات</p>
+                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.average_score")}</p>
               </div>
             </div>
             {/* Coverage bar */}
             <div className="mt-4 p-3 rounded-lg bg-muted/20">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">تغطية التدريب (نسبة الموظفين المشاركين)</span>
+                <span className="text-muted-foreground">{arabicSource("dashboard.training_coverage_percentage_of_employees_participating")}</span>
                 <span className="text-primary font-medium">{trainingStats.coverageRate}%</span>
               </div>
               <MiniBar value={trainingStats.coverageRate} max={100} color={trainingStats.coverageRate >= cfg.trainingCompletionTarget ? "bg-emerald-500" : "bg-amber-500"} />
@@ -1306,11 +1307,11 @@ export function Dashboard() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "وظائف مفتوحة", value: recruitmentStats.openPositions, sub: `${jobs.length} إجمالي`, icon: Briefcase, color: "text-primary" },
-              { label: "إجمالي المتقدمين", value: recruitmentStats.totalApplicants, sub: `${recruitmentStats.avgApplicantsPerJob} متوسط/وظيفة`, icon: Users, color: "text-blue-400" },
-              { label: "متوسط وقت التوظيف", value: `${recruitmentStats.avgTimeToFill} يوم`, sub: "من التقديم للتعيين", icon: Clock, color: recruitmentStats.avgTimeToFill > cfg.timeToFillWarningDays ? "text-amber-400" : "text-emerald-400" },
-              { label: "معدل قبول العروض", value: `${recruitmentStats.offerAcceptRate}%`, sub: `${recruitmentStats.hired} تم تعيينهم`, icon: Target, color: "text-emerald-400" },
-              { label: "بنك المواهب", value: recruitmentStats.bookmarked, sub: "مرشح محفوظ", icon: Heart, color: "text-purple-400" },
+              { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, sub: `${jobs.length} ${arabicSource("dashboard.total")}`, icon: Briefcase, color: "text-primary" },
+              { label: arabicSource("common.total_applicants"), value: recruitmentStats.totalApplicants, sub: `${recruitmentStats.avgApplicantsPerJob} ${arabicSource("dashboard.average_function")}`, icon: Users, color: "text-blue-400" },
+              { label: arabicSource("dashboard.average_time_to_hire"), value: `${recruitmentStats.avgTimeToFill} ${arabicSource("common.days_2")}`, sub: arabicSource("dashboard.from_applying_for_appointment"), icon: Clock, color: recruitmentStats.avgTimeToFill > cfg.timeToFillWarningDays ? "text-amber-400" : "text-emerald-400" },
+              { label: arabicSource("dashboard.offer_acceptance_rate"), value: `${recruitmentStats.offerAcceptRate}%`, sub: `${recruitmentStats.hired} ${arabicSource("dashboard.were_appointed")}`, icon: Target, color: "text-emerald-400" },
+              { label: arabicSource("dashboard.talent_bank"), value: recruitmentStats.bookmarked, sub: arabicSource("dashboard.saved_filter"), icon: Heart, color: "text-purple-400" },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -1333,7 +1334,7 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recruitment Funnel */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">قمع التوظيف</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.recruitment_suppression")}</h3>
               {recruitmentPipeline.some(s => s.value > 0) ? (
                 <div className="space-y-3">
                   {recruitmentPipeline.map((stage, i) => {
@@ -1365,40 +1366,40 @@ export function Dashboard() {
                   })}
                   {/* Conversion summary */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 mt-4">
-                    <span className="text-sm text-muted-foreground">معدل التحويل الكلي</span>
+                    <span className="text-sm text-muted-foreground">{arabicSource("dashboard.overall_conversion_rate")}</span>
                     <span className="text-sm font-medium text-emerald-400">
                       {recruitmentPipeline[0].value > 0 ? pct(recruitmentPipeline[recruitmentPipeline.length - 1].value, recruitmentPipeline[0].value) : 0}%
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-[280px] text-muted-foreground">لا توجد بيانات توظيف</div>
+                <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("dashboard.no_employment_data")}</div>
               )}
             </motion.div>
 
             {/* Hiring vs Turnover Comparison */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
-              <h3 className="text-foreground mb-4">التعيينات مقابل الخروج</h3>
+              <h3 className="text-foreground mb-4">{arabicSource("dashboard.hire_vs_exit")}</h3>
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <UserPlus className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
                     <p className="text-3xl font-bold text-emerald-400">{newHireStats.last90}</p>
-                    <p className="text-muted-foreground text-xs mt-1">تعيين (90 يوم)</p>
+                    <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.set_90_days")}</p>
                   </div>
                   <div className="text-center p-5 rounded-xl bg-red-500/10 border border-red-500/20">
                     <UserX className="w-8 h-8 text-red-400 mx-auto mb-2" />
                     <p className="text-3xl font-bold text-red-400">
                       {exitProcesses.filter(p => p.status === "completed").length}
                     </p>
-                    <p className="text-muted-foreground text-xs mt-1">خروج (إجمالي)</p>
+                    <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.exit_total")}</p>
                   </div>
                 </div>
 
                 {/* Net growth */}
                 <div className="p-4 rounded-xl bg-muted/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">صافي النمو</span>
+                    <span className="text-sm text-muted-foreground">{arabicSource("dashboard.net_growth")}</span>
                     <span className={`text-lg font-bold ${
                       newHireStats.last90 - exitProcesses.filter(p => p.status === "completed").length >= 0
                         ? "text-emerald-400" : "text-red-400"
@@ -1411,8 +1412,8 @@ export function Dashboard() {
 
                 {/* Headcount Trend */}
                 <div>
-                  <h4 className="text-sm text-muted-foreground mb-3">اتجاه عدد الموظفين</h4>
-                  <CustomLineChart data={headcountTrend} color="#3B82F6" height={150} valueLabel="العدد" />
+                  <h4 className="text-sm text-muted-foreground mb-3">{arabicSource("dashboard.headcount_trend")}</h4>
+                  <CustomLineChart data={headcountTrend} color="#3B82F6" height={150} valueLabel={arabicSource("dashboard.number")} />
                 </div>
               </div>
             </motion.div>

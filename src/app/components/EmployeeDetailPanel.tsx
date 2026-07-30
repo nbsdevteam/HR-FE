@@ -23,7 +23,7 @@ interface LeaveRecord {
   from: string;
   to: string;
   days: number;
-  status: "موافق عليها" | "معلقة" | "مرفوضة";
+  status: string | string | string;
 }
 
 interface Attachment {
@@ -47,7 +47,7 @@ export interface Employee {
   joinDate: string;
   startDate: string;
   endDate: string | null;
-  status: "نشط" | "إجازة" | "منتهي" | "معلق";
+  status: string | string | string | string;
   salary: number;
   currency: string;
   photo: string;
@@ -71,17 +71,18 @@ export interface EmployeeOption {
 
 const departments: string[] = [...DEPARTMENTS];
 import { formatCurrency } from "../lib/payslip-engine";
+import { arabicSource } from "../i18n/source";
 
 const statusColors: Record<string, string> = {
-  "نشط": "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
-  "إجازة": "bg-primary/15 border-primary/30 text-primary",
-  "منتهي": "bg-destructive/15 border-destructive/30 text-destructive",
+  [arabicSource("common.is_active")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
+  [arabicSource("common.leave")]: "bg-primary/15 border-primary/30 text-primary",
+  [arabicSource("common.finished")]: "bg-destructive/15 border-destructive/30 text-destructive",
 };
 
 const leaveStatusColors: Record<string, string> = {
-  "موافق عليها": "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
-  "معلقة": "bg-primary/15 border-primary/30 text-primary",
-  "مرفوضة": "bg-destructive/15 border-destructive/30 text-destructive",
+  [arabicSource("common.agreed")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
+  [arabicSource("common.pending_2")]: "bg-primary/15 border-primary/30 text-primary",
+  [arabicSource("common.rejected")]: "bg-destructive/15 border-destructive/30 text-destructive",
 };
 
 type ModalTab = "info" | "custodies" | "leaves" | "attachments";
@@ -205,10 +206,10 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
         setIsEditing(false);
         onSave?.();
 
-        // Check if status changed to "منتهي" — trigger termination flow
-        if (editData.status === "منتهي" && employee.status !== "منتهي") {
+        // Trigger the termination flow when the employee status changes to ended.
+        if (editData.status === arabicSource("common.finished") && employee.status !== arabicSource("common.finished")) {
           setShowTerminationDialog(true);
-        } else if (editData.status !== "منتهي") {
+        } else if (editData.status !== arabicSource("common.finished")) {
           // Auto-sync name/info changes to biometric device
           try {
             fetch(`${SYNC_API}/device/sync-employee`, {
@@ -248,15 +249,15 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
       const data = await res.json();
       if (data.success) {
         const parts: string[] = [];
-        if (data.results?.face === "removed") parts.push("صورة الوجه");
-        if (data.results?.fingerprint === "removed") parts.push("البصمة");
-        if (data.results?.person === "removed") parts.push("الحساب من الجهاز");
-        setTerminationResult(parts.length > 0 ? `تم إزالة: ${parts.join("، ")}` : "تمت العملية");
+        if (data.results?.face === "removed") parts.push(arabicSource("common.face_image"));
+        if (data.results?.fingerprint === "removed") parts.push(arabicSource("common.footprint"));
+        if (data.results?.person === "removed") parts.push(arabicSource("shared.calculation_from_the_device"));
+        setTerminationResult(parts.length > 0 ? `${arabicSource("shared.removed")} ${parts.join("، ")}` : arabicSource("shared.the_operation_was_completed"));
       } else {
-        setTerminationResult("فشلت عملية الإزالة من الجهاز");
+        setTerminationResult(arabicSource("shared.removal_from_the_device_failed"));
       }
     } catch {
-      setTerminationResult("تعذر الاتصال بالجهاز — يمكنك الإزالة لاحقاً من صفحة أجهزة البصمة");
+      setTerminationResult(arabicSource("shared.unable_to_connect_to_device_you_can_remove_later_from_the_finger"));
     }
     setTerminationLoading(false);
     // Close dialog after showing result
@@ -334,7 +335,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
         <div className="shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
           {/* Top bar: title + actions */}
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-foreground" style={{ fontSize: 20 }}>تفاصيل الموظف</h2>
+            <h2 className="text-foreground" style={{ fontSize: 20 }}>{arabicSource("common.employee_details")}</h2>
             <div className="flex items-center gap-2">
               {isEditing ? (
                 <>
@@ -347,14 +348,14 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                     style={{ fontSize: 13 }}
                   >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    {saving ? "جاري الحفظ..." : "حفظ"}
+                    {saving ? arabicSource("common.saving") : arabicSource("common.save")}
                   </motion.button>
                   <button
                     onClick={handleCancelEdit}
                     className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                     style={{ fontSize: 13 }}
                   >
-                    إلغاء
+                    {arabicSource("common.cancel")}
                   </button>
                 </>
               ) : (
@@ -366,7 +367,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   style={{ fontSize: 13 }}
                 >
                   <Edit className="w-4 h-4" />
-                  تعديل
+                  {arabicSource("common.edit")}
                 </motion.button>
               )}
               <button
@@ -397,7 +398,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 </div>
               )}
               <div className={`absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full border-[2.5px] border-card ${
-                editData.status === "نشط" ? "bg-emerald-500" : editData.status === "إجازة" ? "bg-primary" : editData.status === "معلق" ? "bg-amber-500" : "bg-destructive"
+                editData.status === arabicSource("common.is_active") ? "bg-emerald-500" : editData.status === arabicSource("common.leave") ? "bg-primary" : editData.status === arabicSource("common.pending") ? "bg-amber-500" : "bg-destructive"
               }`} />
             </div>
             <div className="flex-1 min-w-0">
@@ -418,17 +419,17 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
         {/* Save error message */}
         {saveError && (
           <div className="shrink-0 mx-6 mt-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive" style={{ fontSize: 13 }}>
-            خطأ في الحفظ: {saveError}
+            {arabicSource("shared.error_saving")} {saveError}
           </div>
         )}
 
         {/* ===== TABS ===== */}
         <div className="shrink-0 flex items-center gap-0.5 px-6 bg-muted/5" style={{ borderBottom: "1px solid var(--border)" }}>
           {([
-            { key: "info" as ModalTab, label: "المعلومات", icon: User, count: null },
-            { key: "custodies" as ModalTab, label: "الذمم", icon: Laptop, count: editData.custodies.length },
-            { key: "leaves" as ModalTab, label: "الإجازات", icon: CalendarCheck, count: editData.leaves.length },
-            { key: "attachments" as ModalTab, label: "المرفقات", icon: Paperclip, count: editData.attachments.length },
+            { key: "info" as ModalTab, label: arabicSource("shared.information"), icon: User, count: null },
+            { key: "custodies" as ModalTab, label: arabicSource("shared.receivables"), icon: Laptop, count: editData.custodies.length },
+            { key: "leaves" as ModalTab, label: arabicSource("common.vacations"), icon: CalendarCheck, count: editData.leaves.length },
+            { key: "attachments" as ModalTab, label: arabicSource("shared.attachments"), icon: Paperclip, count: editData.attachments.length },
           ]).map(tab => {
             const TabIcon = tab.icon;
             const isActive = modalTab === tab.key;
@@ -473,7 +474,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 className="px-6 py-4"
               >
                 <FieldRow
-                  icon={Hash} label="الرقم الوظيفي" value={editData.employeeNumber} dir="ltr"
+                  icon={Hash} label={arabicSource("common.job_number")} value={editData.employeeNumber} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.employeeNumber} onChange={(e) => handleEditField("employeeNumber", e.target.value)}
@@ -481,7 +482,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={Building} label="القسم" value={editData.department}
+                  icon={Building} label={arabicSource("common.section")} value={editData.department}
                   isEditing={isEditing}
                   editElement={
                     addingNewDept ? (
@@ -500,7 +501,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                               setNewDeptName("");
                             }
                           }}
-                          placeholder="اكتب اسم القسم الجديد..."
+                          placeholder={arabicSource("shared.write_the_name_of_the_new_section")}
                           className={inputClass}
                           style={{ fontSize: 14 }}
                         />
@@ -540,13 +541,13 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                       >
                         {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
                         <option disabled style={{ borderTop: "1px solid var(--border)", fontSize: 11 }}>──────────</option>
-                        <option value="__NEW__">➕ إضافة قسم جديد...</option>
+                        <option value="__NEW__">{arabicSource("shared.add_a_new_section")}</option>
                       </select>
                     )
                   }
                 />
                 <FieldRow
-                  icon={Briefcase} label="العنوان الوظيفي" value={editData.position}
+                  icon={Briefcase} label={arabicSource("shared.job_title")} value={editData.position}
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.position} onChange={(e) => handleEditField("position", e.target.value)}
@@ -554,7 +555,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={Mail} label="البريد الإلكتروني" value={editData.email} dir="ltr"
+                  icon={Mail} label={arabicSource("common.email")} value={editData.email} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.email} onChange={(e) => handleEditField("email", e.target.value)}
@@ -562,7 +563,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={Smartphone} iconColor="text-primary" label="هاتف الموظف" value={editData.personalPhone} dir="ltr"
+                  icon={Smartphone} iconColor="text-primary" label={arabicSource("shared.employee_phone")} value={editData.personalPhone} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.personalPhone} onChange={(e) => handleEditField("personalPhone", e.target.value)}
@@ -570,7 +571,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={PhoneCall} iconColor="text-primary" label="هاتف الشركة" value={editData.companyPhone} dir="ltr"
+                  icon={PhoneCall} iconColor="text-primary" label={arabicSource("common.company_phone")} value={editData.companyPhone} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.companyPhone} onChange={(e) => handleEditField("companyPhone", e.target.value)}
@@ -578,7 +579,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={MapPin} iconColor="text-primary" label="العنوان" value={editData.address}
+                  icon={MapPin} iconColor="text-primary" label={arabicSource("common.address")} value={editData.address}
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.address} onChange={(e) => handleEditField("address", e.target.value)}
@@ -586,7 +587,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={Wallet} iconColor="text-primary" label="الراتب" value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight
+                  icon={Wallet} iconColor="text-primary" label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight
                   isEditing={isEditing}
                   editElement={
                     <input type="number" value={editData.salary} onChange={(e) => handleEditField("salary", Number(e.target.value))}
@@ -594,7 +595,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={CalendarCheck} iconColor="text-emerald-400" label="تاريخ المباشرة" value={editData.startDate} dir="ltr"
+                  icon={CalendarCheck} iconColor="text-emerald-400" label={arabicSource("common.direct_date")} value={editData.startDate} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input type="date" value={editData.startDate} onChange={(e) => handleEditField("startDate", e.target.value)}
@@ -602,8 +603,8 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={CalendarX} iconColor="text-destructive" label="تاريخ المغادرة"
-                  value={editData.endDate || "— لا يزال يعمل"} dir="ltr"
+                  icon={CalendarX} iconColor="text-destructive" label={arabicSource("shared.departure_date")}
+                  value={editData.endDate || arabicSource("shared.still_working")} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input type="date" value={editData.endDate || ""} onChange={(e) => handleEditField("endDate", e.target.value || "")}
@@ -611,7 +612,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={FileText} label="رقم الهوية" value={editData.nationalId} dir="ltr"
+                  icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <input value={editData.nationalId} onChange={(e) => handleEditField("nationalId", e.target.value)}
@@ -621,14 +622,14 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 {/* Emergency Contact — special two-part row */}
                 <div className="flex items-center gap-3 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
                   <Phone className="w-5 h-5 text-destructive shrink-0" />
-                  <span className="text-muted-foreground shrink-0 min-w-[110px]" style={{ fontSize: 13 }}>جهة اتصال طوارئ:</span>
+                  <span className="text-muted-foreground shrink-0 min-w-[110px]" style={{ fontSize: 13 }}>{arabicSource("shared.emergency_contact")}</span>
                   <div className="flex-1 min-w-0">
                     {isEditing ? (
                       <div className="flex gap-3">
                         <input value={editData.emergencyContact} onChange={(e) => handleEditField("emergencyContact", e.target.value)}
-                          placeholder="الاسم" className={inputClass} style={{ fontSize: 14 }} />
+                          placeholder={arabicSource("common.name")} className={inputClass} style={{ fontSize: 14 }} />
                         <input value={editData.emergencyPhone} onChange={(e) => handleEditField("emergencyPhone", e.target.value)}
-                          placeholder="الرقم" className={`${inputClass} max-w-[160px]`} style={{ fontSize: 14 }} dir="ltr" />
+                          placeholder={arabicSource("shared.no")} className={`${inputClass} max-w-[160px]`} style={{ fontSize: 14 }} dir="ltr" />
                       </div>
                     ) : (
                       <span className="text-foreground" style={{ fontSize: 14 }}>
@@ -638,7 +639,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   </div>
                 </div>
                 <FieldRow
-                  icon={ClipboardList} iconColor="text-destructive" label="فصيلة الدم" value={editData.bloodType} dir="ltr"
+                  icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType} dir="ltr"
                   isEditing={isEditing}
                   editElement={
                     <select value={editData.bloodType} onChange={(e) => handleEditField("bloodType", e.target.value)}
@@ -650,15 +651,15 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   }
                 />
                 <FieldRow
-                  icon={Users} iconColor="text-primary" label="المدير المباشر" value={editData.managerName}
+                  icon={Users} iconColor="text-primary" label={arabicSource("common.direct_manager")} value={editData.managerName}
                   isEditing={isEditing}
                   editElement={
                     <select value={editData.managerId || ""} onChange={(e) => {
                       const val = e.target.value || null;
-                      setEditData({ ...editData, managerId: val, managerName: val ? (allEmployees.find(emp => emp.dbId === val)?.name || "—") : "— بدون مدير" });
+                      setEditData({ ...editData, managerId: val, managerName: val ? (allEmployees.find(emp => emp.dbId === val)?.name || "—") : arabicSource("common.no_manager") });
                     }}
                       className={inputClass} style={{ fontSize: 14 }}>
-                      <option value="">بدون مدير مباشر</option>
+                      <option value="">{arabicSource("shared.without_a_direct_manager")}</option>
                       {allEmployees.map(emp => (
                         <option key={emp.dbId} value={emp.dbId}>{emp.name} ({emp.position})</option>
                       ))}
@@ -668,7 +669,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
               </motion.div>
             )}
 
-            {/* ---- CUSTODIES TAB (الذمم) ---- */}
+            {/* Custodies tab */}
             {modalTab === "custodies" && (
               <motion.div
                 key="custodies"
@@ -680,7 +681,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
               >
                 <div className="flex items-center justify-between">
                   <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-                    العهد والأغراض المستلمة من قبل الموظف
+                    {arabicSource("shared.covenant_and_items_received_by_employee")}
                   </p>
                   {isEditing && (
                     <button
@@ -689,7 +690,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                       style={{ fontSize: 12 }}
                     >
                       <PlusCircle className="w-4 h-4" />
-                      إضافة
+                      {arabicSource("common.addition")}
                     </button>
                   )}
                 </div>
@@ -704,30 +705,30 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                       className="overflow-hidden"
                     >
                       <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-3">
-                        <p className="text-primary" style={{ fontSize: 13 }}>إضافة ذمة جديدة</p>
+                        <p className="text-primary" style={{ fontSize: 13 }}>{arabicSource("shared.add_a_new_liability")}</p>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>اسم الغرض *</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("shared.purpose_name")}</label>
                             <input
                               value={newCustody.item}
                               onChange={(e) => setNewCustody({ ...newCustody, item: e.target.value })}
-                              placeholder="مثال: حاسبة محمولة"
+                              placeholder={arabicSource("shared.example_portable_calculator")}
                               className={formInputClass}
                               style={{ fontSize: 13 }}
                             />
                           </div>
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>الوصف</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("common.description")}</label>
                             <input
                               value={newCustody.description}
                               onChange={(e) => setNewCustody({ ...newCustody, description: e.target.value })}
-                              placeholder="مثال: Dell Latitude 5540"
+                              placeholder={arabicSource("shared.example_dell_latitude_5540")}
                               className={formInputClass}
                               style={{ fontSize: 13 }}
                             />
                           </div>
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>تاريخ الاستلام</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("shared.date_of_receipt")}</label>
                             <input
                               type="date"
                               value={newCustody.dateReceived}
@@ -738,11 +739,11 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                             />
                           </div>
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>الرقم التسلسلي</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("common.serial_number")}</label>
                             <input
                               value={newCustody.serialNumber}
                               onChange={(e) => setNewCustody({ ...newCustody, serialNumber: e.target.value })}
-                              placeholder="اختياري"
+                              placeholder={arabicSource("shared.optional")}
                               className={formInputClass}
                               style={{ fontSize: 13 }}
                               dir="ltr"
@@ -757,14 +758,14 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                             style={{ fontSize: 12 }}
                           >
                             <Check className="w-3.5 h-3.5" />
-                            تأكيد
+                            {arabicSource("common.confirm")}
                           </button>
                           <button
                             onClick={() => { setShowAddCustody(false); setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" }); }}
                             className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                             style={{ fontSize: 12 }}
                           >
-                            إلغاء
+                            {arabicSource("common.cancel")}
                           </button>
                         </div>
                       </div>
@@ -803,7 +804,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                     <div className="flex items-center gap-5 mt-3 ps-11">
                       <span className="flex items-center gap-1.5 text-muted-foreground" style={{ fontSize: 12 }}>
                         <Calendar className="w-3.5 h-3.5" />
-                        تاريخ الاستلام: <span dir="ltr" className="text-foreground">{custody.dateReceived}</span>
+                        {arabicSource("shared.received_date")} <span dir="ltr" className="text-foreground">{custody.dateReceived}</span>
                       </span>
                       {custody.serialNumber && (
                         <span className="flex items-center gap-1.5 text-muted-foreground" style={{ fontSize: 12 }}>
@@ -816,7 +817,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 )) : !showAddCustody && (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Laptop className="w-10 h-10 mb-3 opacity-30" />
-                    <p style={{ fontSize: 14 }}>لا توجد ذمم مسجلة</p>
+                    <p style={{ fontSize: 14 }}>{arabicSource("shared.there_are_no_receivables_recorded")}</p>
                   </div>
                 )}
               </motion.div>
@@ -832,7 +833,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 transition={{ duration: 0.15 }}
                 className="px-6 py-5 space-y-4"
               >
-                <p className="text-muted-foreground" style={{ fontSize: 13 }}>سجل الإجازات</p>
+                <p className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("shared.vacation_record")}</p>
 
                 {editData.leaves.length > 0 ? (
                   <>
@@ -856,13 +857,13 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                         </div>
                         <div className="flex items-center gap-6 mt-3 ps-11">
                           <span className="text-muted-foreground" style={{ fontSize: 13 }}>
-                            من: <span dir="ltr" className="text-foreground ms-1">{leave.from}</span>
+                            {arabicSource("shared.from")} <span dir="ltr" className="text-foreground ms-1">{leave.from}</span>
                           </span>
                           <span className="text-muted-foreground" style={{ fontSize: 13 }}>
-                            إلى: <span dir="ltr" className="text-foreground ms-1">{leave.to}</span>
+                            {arabicSource("shared.to")} <span dir="ltr" className="text-foreground ms-1">{leave.to}</span>
                           </span>
                           <span className="text-primary" style={{ fontSize: 13 }}>
-                            {leave.days} أيام
+                            {leave.days} {arabicSource("common.days")}
                           </span>
                         </div>
                       </motion.div>
@@ -870,19 +871,19 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
 
                     {/* Leave Summary */}
                     <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mt-2">
-                      <p className="text-muted-foreground mb-3" style={{ fontSize: 13 }}>ملخص الإجازات</p>
+                      <p className="text-muted-foreground mb-3" style={{ fontSize: 13 }}>{arabicSource("common.vacation_summary")}</p>
                       <div className="flex items-center gap-8">
                         <div>
                           <span className="text-foreground" style={{ fontSize: 22 }}>
                             {editData.leaves.reduce((s, l) => s + l.days, 0)}
                           </span>
-                          <span className="text-muted-foreground ms-1.5" style={{ fontSize: 13 }}>يوم مستخدم</span>
+                          <span className="text-muted-foreground ms-1.5" style={{ fontSize: 13 }}>{arabicSource("shared.user_days")}</span>
                         </div>
                         <div>
                           <span className="text-primary" style={{ fontSize: 22 }}>
-                            {Math.max(0, 30 - editData.leaves.filter(l => l.status === "موافق عليها").reduce((s, l) => s + l.days, 0))}
+                            {Math.max(0, 30 - editData.leaves.filter(l => l.status === arabicSource("common.agreed")).reduce((s, l) => s + l.days, 0))}
                           </span>
-                          <span className="text-muted-foreground ms-1.5" style={{ fontSize: 13 }}>يوم متبقي</span>
+                          <span className="text-muted-foreground ms-1.5" style={{ fontSize: 13 }}>{arabicSource("common.days_left")}</span>
                         </div>
                       </div>
                     </div>
@@ -890,7 +891,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <CalendarCheck className="w-10 h-10 mb-3 opacity-30" />
-                    <p style={{ fontSize: 14 }}>لا توجد إجازات مسجلة</p>
+                    <p style={{ fontSize: 14 }}>{arabicSource("shared.no_vacations_recorded")}</p>
                   </div>
                 )}
               </motion.div>
@@ -907,7 +908,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 className="px-6 py-5 space-y-4"
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-muted-foreground" style={{ fontSize: 13 }}>المستندات والمرفقات</p>
+                  <p className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("shared.documents_and_attachments")}</p>
                   {isEditing && (
                     <button
                       onClick={() => setShowAddAttachment(prev => !prev)}
@@ -915,7 +916,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                       style={{ fontSize: 12 }}
                     >
                       <PlusCircle className="w-4 h-4" />
-                      رفع مرفق
+                      {arabicSource("shared.lifting_attachment")}
                     </button>
                   )}
                 </div>
@@ -930,20 +931,20 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                       className="overflow-hidden"
                     >
                       <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-3">
-                        <p className="text-primary" style={{ fontSize: 13 }}>إضافة مرفق جديد</p>
+                        <p className="text-primary" style={{ fontSize: 13 }}>{arabicSource("shared.add_a_new_attachment")}</p>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>اسم المستند *</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("shared.document_name")}</label>
                             <input
                               value={newAttachment.name}
                               onChange={(e) => setNewAttachment({ ...newAttachment, name: e.target.value })}
-                              placeholder="مثال: شهادة تخرج"
+                              placeholder={arabicSource("shared.example_graduation_certificate")}
                               className={formInputClass}
                               style={{ fontSize: 13 }}
                             />
                           </div>
                           <div>
-                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>نوع الملف</label>
+                            <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>{arabicSource("shared.file_type")}</label>
                             <select
                               value={newAttachment.type}
                               onChange={(e) => setNewAttachment({ ...newAttachment, type: e.target.value })}
@@ -951,10 +952,10 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                               style={{ fontSize: 13 }}
                             >
                               <option value="PDF">PDF</option>
-                              <option value="صورة">صورة</option>
+                              <option value={arabicSource("common.image")}>{arabicSource("common.image")}</option>
                               <option value="Word">Word</option>
                               <option value="Excel">Excel</option>
-                              <option value="أخرى">أرى</option>
+                              <option value={arabicSource("common.other")}>{arabicSource("shared.i_see")}</option>
                             </select>
                           </div>
                         </div>
@@ -966,14 +967,14 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                             style={{ fontSize: 12 }}
                           >
                             <Check className="w-3.5 h-3.5" />
-                            تأكيد
+                            {arabicSource("common.confirm")}
                           </button>
                           <button
                             onClick={() => { setShowAddAttachment(false); setNewAttachment({ name: "", type: "PDF" }); }}
                             className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                             style={{ fontSize: 12 }}
                           >
-                            إلغاء
+                            {arabicSource("common.cancel")}
                           </button>
                         </div>
                       </div>
@@ -1011,7 +1012,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                 )) : !showAddAttachment && (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Paperclip className="w-10 h-10 mb-3 opacity-30" />
-                    <p style={{ fontSize: 14 }}>لا توجد مرفقات</p>
+                    <p style={{ fontSize: 14 }}>{arabicSource("shared.no_attachments")}</p>
                   </div>
                 )}
               </motion.div>
@@ -1042,23 +1043,23 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   <ShieldOff className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <h3 className="text-foreground">إنهاء خدمة الموظف</h3>
-                  <p className="text-xs text-muted-foreground">هل تريد إزالة بيانات الموظف من جهاز البصمة؟</p>
+                  <h3 className="text-foreground">{arabicSource("shared.termination_of_employee_service")}</h3>
+                  <p className="text-xs text-muted-foreground">{arabicSource("shared.do_you_want_to_remove_employee_data_from_the_fingerprint_device")}</p>
                 </div>
               </div>
 
               <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 mb-4">
                 <p className="text-xs text-amber-400 flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-                  جميع بيانات الموظف (سجلات الحضور، التقييمات، الرواتب) ستبقى محفوظة في النظام
+                  {arabicSource("shared.all_employee_data_attendance_records_evaluations_salaries_will_r")}
                 </p>
               </div>
 
               <div className="space-y-3 mb-5">
                 {[
-                  { key: "removeFace" as const, label: "إزالة صورة الوجه", icon: ScanFace, desc: "حذف بيانات التعرف على الوجه" },
-                  { key: "removeFingerprint" as const, label: "إزالة البصمات", icon: Fingerprint, desc: "حذف بيانات بصمات الأصابع" },
-                  { key: "removePerson" as const, label: "حذف الحساب من الجهاز بالكامل", icon: ShieldOff, desc: "إزالة الموظف نهائياً من جهاز البصمة" },
+                  { key: "removeFace" as const, label: arabicSource("shared.remove_face_image"), icon: ScanFace, desc: arabicSource("shared.delete_facial_recognition_data") },
+                  { key: "removeFingerprint" as const, label: arabicSource("shared.removing_fingerprints"), icon: Fingerprint, desc: arabicSource("shared.delete_fingerprint_data") },
+                  { key: "removePerson" as const, label: arabicSource("shared.delete_the_account_from_the_device_completely"), icon: ShieldOff, desc: arabicSource("shared.permanently_remove_the_employee_from_the_fingerprint_device") },
                 ].map(opt => (
                   <label key={opt.key} className="flex items-center gap-3 p-3 rounded-lg border border-border/30 hover:bg-muted/10 cursor-pointer transition-colors">
                     <input
@@ -1078,7 +1079,7 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
 
               {terminationResult && (
                 <div className={`p-3 rounded-lg border mb-4 text-sm ${
-                  terminationResult.includes("تم") ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  terminationResult.includes(arabicSource("common.done")) ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"
                 }`}>
                   {terminationResult}
                 </div>
@@ -1091,14 +1092,14 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
                   className="flex-1 h-10 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
                 >
                   {terminationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldOff className="w-4 h-4" />}
-                  {terminationLoading ? "جاري الإزالة..." : "تأكيد الإزالة"}
+                  {terminationLoading ? arabicSource("shared.removing") : arabicSource("shared.confirm_removal")}
                 </button>
                 <button
                   onClick={() => { setShowTerminationDialog(false); setTerminationResult(null); }}
                   disabled={terminationLoading}
                   className="flex-1 h-10 rounded-lg border border-border text-muted-foreground hover:bg-muted/20 transition-colors text-sm disabled:opacity-50"
                 >
-                  تخطي — إبقاء الوصول
+                  {arabicSource("shared.skip_keep_access")}
                 </button>
               </div>
             </motion.div>

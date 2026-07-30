@@ -10,6 +10,7 @@ import { supabase } from "../lib/supabase";
 import { EmptyState } from "../components/EmptyState";
 
 import { SYNC_API } from "../lib/constants";
+import { arabicSource } from "../i18n/source";
 const API = SYNC_API;
 
 // ── Types ──
@@ -93,7 +94,7 @@ function StatusBadge({ active }: { active: boolean }) {
              : "bg-red-500/10 text-red-400 border border-red-500/20"
     }`}>
       <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-red-400"}`} />
-      {active ? "متصل" : "غير متصل"}
+      {active ? arabicSource("common.is_online") : arabicSource("common.is_offline")}
     </span>
   );
 }
@@ -102,22 +103,22 @@ function CredentialIcons({ fp, face, card }: { fp: number; face: number; card: n
   return (
     <div className="flex items-center gap-2">
       {fp > 0 && (
-        <div className="flex items-center gap-0.5 text-emerald-400" title={`${fp} بصمة`}>
+        <div className="flex items-center gap-0.5 text-emerald-400" title={`${fp} ${arabicSource("common.fingerprint")}`}>
           <Fingerprint className="w-3.5 h-3.5" /><span className="text-xs">{fp}</span>
         </div>
       )}
       {face > 0 && (
-        <div className="flex items-center gap-0.5 text-blue-400" title={`${face} وجه`}>
+        <div className="flex items-center gap-0.5 text-blue-400" title={`${face} ${arabicSource("common.face")}`}>
           <ScanFace className="w-3.5 h-3.5" /><span className="text-xs">{face}</span>
         </div>
       )}
       {card > 0 && (
-        <div className="flex items-center gap-0.5 text-amber-400" title={`${card} بطاقة`}>
+        <div className="flex items-center gap-0.5 text-amber-400" title={`${card} ${arabicSource("common.card")}`}>
           <CreditCard className="w-3.5 h-3.5" /><span className="text-xs">{card}</span>
         </div>
       )}
       {fp === 0 && face === 0 && card === 0 && (
-        <span className="text-xs text-muted-foreground/50">لا بيانات</span>
+        <span className="text-xs text-muted-foreground/50">{arabicSource("devicemanagement.no_data")}</span>
       )}
     </div>
   );
@@ -144,7 +145,7 @@ export function DeviceManagement() {
         // Use default device if none registered
         setDevices([{
           id: "default",
-          name: "جهاز البصمة الرئيسي",
+          name: arabicSource("devicemanagement.the_main_fingerprint_device"),
           model: "DS-K1T342MFWX",
           ip_address: "192.168.15.15",
           is_active: true,
@@ -156,10 +157,10 @@ export function DeviceManagement() {
   }, []);
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: "overview", label: "نظرة عامة", icon: Server },
-    { key: "persons", label: "إدارة الأشخاص", icon: Users },
-    { key: "events", label: "سجل الأحداث", icon: Activity },
-    { key: "face", label: "صور الوجه", icon: Camera },
+    { key: "overview", label: arabicSource("common.overview"), icon: Server },
+    { key: "persons", label: arabicSource("devicemanagement.people_management"), icon: Users },
+    { key: "events", label: arabicSource("devicemanagement.event_log"), icon: Activity },
+    { key: "face", label: arabicSource("devicemanagement.face_pictures"), icon: Camera },
   ];
 
   return (
@@ -167,8 +168,8 @@ export function DeviceManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gradient-gold">أجهزة البصمة</h1>
-          <p className="text-muted-foreground text-sm mt-1">إدارة أجهزة الحضور والانصراف البيومترية</p>
+          <h1 className="text-gradient-gold">{arabicSource("common.fingerprint_devices")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{arabicSource("devicemanagement.management_of_biometric_attendance_and_departure_devices")}</p>
         </div>
         {devices.length > 1 && (
           <select
@@ -263,7 +264,7 @@ function OverviewTab() {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        <span className="text-muted-foreground ms-3">جاري تحميل معلومات الجهاز...</span>
+        <span className="text-muted-foreground ms-3">{arabicSource("devicemanagement.loading_device_information")}</span>
       </div>
     );
   }
@@ -275,7 +276,7 @@ function OverviewTab() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-foreground flex items-center gap-2">
             <HardDrive className="w-5 h-5 text-primary" />
-            معلومات الجهاز
+            {arabicSource("devicemanagement.device_information")}
           </h3>
           <div className="flex items-center gap-2">
             <StatusBadge active={!!info} />
@@ -287,14 +288,14 @@ function OverviewTab() {
         {info && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "اسم الجهاز", value: info.deviceName },
-              { label: "الموديل", value: info.model },
-              { label: "الرقم التسلسلي", value: info.serialNumber },
-              { label: "إصدار البرنامج", value: info.firmwareVersion },
-              { label: "عنوان IP", value: deviceIp || network?.ipAddress || "—" },
+              { label: arabicSource("devicemanagement.device_name"), value: info.deviceName },
+              { label: arabicSource("devicemanagement.model"), value: info.model },
+              { label: arabicSource("common.serial_number"), value: info.serialNumber },
+              { label: arabicSource("devicemanagement.software_version"), value: info.firmwareVersion },
+              { label: arabicSource("devicemanagement.ip_address"), value: deviceIp || network?.ipAddress || "—" },
               { label: "MAC Address", value: info.macAddress || network?.macAddress || "—" },
-              { label: "اسم الباب", value: door?.doorName || "—" },
-              { label: "مدة فتح الباب", value: door?.openDuration ? `${door.openDuration} ثانية` : "—" },
+              { label: arabicSource("devicemanagement.door_name"), value: door?.doorName || "—" },
+              { label: arabicSource("devicemanagement.duration_of_opening_the_door"), value: door?.openDuration ? `${door.openDuration} ${arabicSource("devicemanagement.seconds")}` : "—" },
             ].map((item, i) => (
               <div key={i} className="space-y-1">
                 <span className="text-xs text-muted-foreground">{item.label}</span>
@@ -310,14 +311,14 @@ function OverviewTab() {
         <div>
           <h3 className="text-foreground mb-3 flex items-center gap-2">
             <Activity className="w-5 h-5 text-primary" />
-            سعة الجهاز
+            {arabicSource("devicemanagement.device_capacity")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <CapacityBar label="الأشخاص" icon={Users} used={capacity.person.used} total={capacity.person.total} color="text-blue-400" />
-            <CapacityBar label="الوجوه" icon={ScanFace} used={capacity.face.used} total={capacity.face.total} color="text-emerald-400" />
-            <CapacityBar label="البصمات" icon={Fingerprint} used={capacity.fingerprint.used} total={capacity.fingerprint.total} color="text-purple-400" />
-            <CapacityBar label="البطاقات" icon={CreditCard} used={capacity.card.used} total={capacity.card.total} color="text-amber-400" />
-            <CapacityBar label="الأحداث" icon={Activity} used={capacity.event.used} total={capacity.event.total} color="text-red-400" />
+            <CapacityBar label={arabicSource("devicemanagement.people")} icon={Users} used={capacity.person.used} total={capacity.person.total} color="text-blue-400" />
+            <CapacityBar label={arabicSource("devicemanagement.faces")} icon={ScanFace} used={capacity.face.used} total={capacity.face.total} color="text-emerald-400" />
+            <CapacityBar label={arabicSource("devicemanagement.fingerprints")} icon={Fingerprint} used={capacity.fingerprint.used} total={capacity.fingerprint.total} color="text-purple-400" />
+            <CapacityBar label={arabicSource("devicemanagement.cards")} icon={CreditCard} used={capacity.card.used} total={capacity.card.total} color="text-amber-400" />
+            <CapacityBar label={arabicSource("devicemanagement.events")} icon={Activity} used={capacity.event.used} total={capacity.event.total} color="text-red-400" />
           </div>
         </div>
       )}
@@ -326,7 +327,7 @@ function OverviewTab() {
       <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-6">
         <h3 className="text-foreground mb-4 flex items-center gap-2">
           <Shield className="w-5 h-5 text-primary" />
-          التحكم بالباب
+          {arabicSource("devicemanagement.door_control")}
         </h3>
         <div className="flex gap-3">
           <button
@@ -335,7 +336,7 @@ function OverviewTab() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
           >
             <DoorOpen className="w-4 h-4" />
-            فتح الباب
+            {arabicSource("devicemanagement.the_door_opened")}
           </button>
           <button
             onClick={() => handleDoor("close")}
@@ -343,7 +344,7 @@ function OverviewTab() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
           >
             <DoorClosed className="w-4 h-4" />
-            إغلاق الباب
+            {arabicSource("devicemanagement.close_the_door")}
           </button>
         </div>
       </div>
@@ -402,9 +403,9 @@ function PersonsTab() {
   }, [persons, search]);
 
   const userTypeLabel = (t: string) => {
-    if (t === "normal") return "عادي";
-    if (t === "visitor") return "زائر";
-    if (t === "blackList") return "محظور";
+    if (t === "normal") return arabicSource("devicemanagement.normal");
+    if (t === "visitor") return arabicSource("devicemanagement.visitor");
+    if (t === "blackList") return arabicSource("devicemanagement.blocked");
     return t;
   };
 
@@ -424,23 +425,23 @@ function PersonsTab() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث بالاسم أو رقم الموظف..."
+            placeholder={arabicSource("devicemanagement.search_by_name_or_employee_number")}
             className="w-full ps-10 pe-4 py-2 rounded-lg bg-card/30 backdrop-blur-md border border-border/20 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/50"
           />
         </div>
-        <button onClick={load} className="p-2 rounded-lg hover:bg-muted/20 transition-colors" title="تحديث">
+        <button onClick={load} className="p-2 rounded-lg hover:bg-muted/20 transition-colors" title={arabicSource("common.update")}>
           <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
         </button>
-        <span className="text-xs text-muted-foreground">{persons.length} شخص مسجل</span>
-        {loadingFaces && <span className="text-xs text-blue-400 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />جاري تحميل الصور...</span>}
-        <span className="text-[10px] text-muted-foreground/50 border border-border/20 rounded px-2 py-1">لإضافة موظف جديد، استخدم صفحة الموظفون</span>
+        <span className="text-xs text-muted-foreground">{persons.length} {arabicSource("devicemanagement.registered_person")}</span>
+        {loadingFaces && <span className="text-xs text-blue-400 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{arabicSource("devicemanagement.loading_images")}</span>}
+        <span className="text-[10px] text-muted-foreground/50 border border-border/20 rounded px-2 py-1">{arabicSource("devicemanagement.to_add_a_new_employee_use_the_employees_page")}</span>
       </div>
 
       {/* Persons Kanban Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground ms-3">جاري تحميل الأشخاص...</span>
+          <span className="text-muted-foreground ms-3">{arabicSource("devicemanagement.loading_people")}</span>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -464,7 +465,7 @@ function PersonsTab() {
                   <div className="flex flex-col items-center">
                     <Users className="w-12 h-12 text-muted-foreground/20" />
                     {p.numOfFace === 0 && (
-                      <span className="text-[10px] text-muted-foreground/40 mt-1">لا توجد صورة</span>
+                      <span className="text-[10px] text-muted-foreground/40 mt-1">{arabicSource("devicemanagement.no_photo")}</span>
                     )}
                   </div>
                 )}
@@ -486,15 +487,15 @@ function PersonsTab() {
 
                 {/* Credentials */}
                 <div className="flex items-center justify-center gap-3">
-                  <div className={`flex items-center gap-0.5 ${p.numOfFP > 0 ? "text-emerald-400" : "text-muted-foreground/25"}`} title="بصمة">
+                  <div className={`flex items-center gap-0.5 ${p.numOfFP > 0 ? "text-emerald-400" : "text-muted-foreground/25"}`} title={arabicSource("common.fingerprint")}>
                     <Fingerprint className="w-3.5 h-3.5" />
                     <span className="text-xs">{p.numOfFP}</span>
                   </div>
-                  <div className={`flex items-center gap-0.5 ${p.numOfFace > 0 ? "text-blue-400" : "text-muted-foreground/25"}`} title="وجه">
+                  <div className={`flex items-center gap-0.5 ${p.numOfFace > 0 ? "text-blue-400" : "text-muted-foreground/25"}`} title={arabicSource("common.face")}>
                     <ScanFace className="w-3.5 h-3.5" />
                     <span className="text-xs">{p.numOfFace}</span>
                   </div>
-                  <div className={`flex items-center gap-0.5 ${p.numOfCard > 0 ? "text-amber-400" : "text-muted-foreground/25"}`} title="بطاقة">
+                  <div className={`flex items-center gap-0.5 ${p.numOfCard > 0 ? "text-amber-400" : "text-muted-foreground/25"}`} title={arabicSource("common.card")}>
                     <CreditCard className="w-3.5 h-3.5" />
                     <span className="text-xs">{p.numOfCard}</span>
                   </div>
@@ -504,7 +505,7 @@ function PersonsTab() {
           ))}
           {filtered.length === 0 && (
             <div className="col-span-full">
-              <EmptyState icon={Users} message={search ? "لا توجد نتائج" : "لا يوجد أشخاص مسجلين"} />
+              <EmptyState icon={Users} message={search ? arabicSource("common.no_results_found") : arabicSource("devicemanagement.there_are_no_people_registered")} />
             </div>
           )}
         </div>
@@ -551,7 +552,7 @@ function EventsTab() {
       <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-4">
         <div className="flex items-end gap-4 flex-wrap">
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">من تاريخ</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("common.from_date")}</label>
             <input
               type="date"
               value={startDate}
@@ -560,7 +561,7 @@ function EventsTab() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">إلى تاريخ</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("devicemanagement.to_date")}</label>
             <input
               type="date"
               value={endDate}
@@ -569,12 +570,12 @@ function EventsTab() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">رقم الموظف</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("common.employee_number")}</label>
             <input
               type="text"
               value={searchEmp}
               onChange={(e) => setSearchEmp(e.target.value)}
-              placeholder="الكل"
+              placeholder={arabicSource("common.all")}
               className="px-3 py-2 rounded-lg bg-muted/20 border border-border/20 text-foreground text-sm w-32"
               dir="ltr"
             />
@@ -585,9 +586,9 @@ function EventsTab() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 transition-colors text-sm"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            بحث
+            {arabicSource("devicemanagement.search")}
           </button>
-          <span className="text-xs text-muted-foreground">{events.length} حدث</span>
+          <span className="text-xs text-muted-foreground">{events.length} {arabicSource("devicemanagement.event")}</span>
         </div>
       </div>
 
@@ -597,7 +598,7 @@ function EventsTab() {
           <table className="w-full">
             <thead className="sticky top-0 bg-card z-10">
               <tr className="bg-muted/20 border-b border-border/20">
-                {["رقم الموظف", "الاسم", "الوقت", "طريقة التحقق", "رقم البطاقة", "الباب"].map(h => (
+                {[arabicSource("common.employee_number"), arabicSource("common.name"), arabicSource("common.time"), arabicSource("devicemanagement.verification_method"), arabicSource("devicemanagement.card_number"), arabicSource("devicemanagement.the_door")].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
                 ))}
               </tr>
@@ -622,7 +623,7 @@ function EventsTab() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6}><EmptyState icon={Activity} message="لا توجد أحداث" hint="اضغط &quot;بحث&quot; لعرض الأحداث" /></td>
+                  <td colSpan={6}><EmptyState icon={Activity} message={arabicSource("devicemanagement.there_are_no_events")} hint={arabicSource("devicemanagement.click_search_to_view_the_events")} /></td>
                 </tr>
               )}
             </tbody>
@@ -713,7 +714,7 @@ function FaceTab() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث..."
+            placeholder={arabicSource("common.search")}
             className="w-full ps-10 pe-4 py-2 rounded-lg bg-card/30 backdrop-blur-md border border-border/20 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/50"
           />
         </div>
@@ -740,7 +741,7 @@ function FaceTab() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-foreground">صورة الوجه — #{viewFace.empNo}</h4>
+                <h4 className="text-foreground">{arabicSource("devicemanagement.face_image")}{viewFace.empNo}</h4>
                 <button onClick={() => setViewFace(null)} className="p-1 rounded hover:bg-muted/20">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
@@ -754,7 +755,7 @@ function FaceTab() {
               ) : (
                 <div className="flex flex-col items-center py-8 text-muted-foreground">
                   <ScanFace className="w-16 h-16 mb-2 opacity-30" />
-                  <span>لا توجد صورة وجه مسجلة</span>
+                  <span>{arabicSource("devicemanagement.no_face_image_registered")}</span>
                 </div>
               )}
               {viewFace.image && (
@@ -763,7 +764,7 @@ function FaceTab() {
                   className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  حذف الصورة
+                  {arabicSource("devicemanagement.delete_the_image")}
                 </button>
               )}
             </motion.div>
@@ -806,7 +807,7 @@ function FaceTab() {
                     className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
                   >
                     <Eye className="w-3 h-3 inline me-1" />
-                    عرض
+                    {arabicSource("common.width")}
                   </button>
                 ) : null}
                 <label className="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer">
@@ -815,7 +816,7 @@ function FaceTab() {
                   ) : (
                     <>
                       <Upload className="w-3 h-3 inline me-1" />
-                      رفع
+                      {arabicSource("devicemanagement.lift")}
                     </>
                   )}
                   <input

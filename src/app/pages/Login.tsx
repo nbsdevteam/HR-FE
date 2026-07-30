@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Lock, Mail, Loader2, Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { arabicSource } from "../i18n/source";
 
 export function Login() {
   const { signIn, signUp } = useAuth();
@@ -15,7 +16,7 @@ export function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { setError("يرجى إدخال البريد الإلكتروني وكلمة المرور"); return; }
+    if (!email || !password) { setError(arabicSource("login.please_enter_your_email_and_password")); return; }
     setLoading(true);
     setError("");
     setSuccess("");
@@ -28,7 +29,7 @@ export function Login() {
       if (err) {
         setError(err);
       } else {
-        setSuccess("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.");
+        setSuccess(arabicSource("login.account_created_successfully_you_can_now_log_in"));
         setMode("login");
       }
     }
@@ -59,9 +60,9 @@ export function Login() {
           >
             <Lock className="w-10 h-10 text-primary" />
           </motion.div>
-          <h1 className="text-gradient-gold text-2xl font-bold mb-1">نظام إدارة الموارد البشرية</h1>
+          <h1 className="text-gradient-gold text-2xl font-bold mb-1">{arabicSource("login.human_resources_management_system")}</h1>
           <p className="text-muted-foreground" style={{ fontSize: 14 }}>
-            {mode === "login" ? "تسجيل الدخول إلى حسابك" : "إنشاء حساب جديد"}
+            {mode === "login" ? arabicSource("login.log_in_to_your_account") : arabicSource("login.create_a_new_account")}
           </p>
         </div>
 
@@ -72,7 +73,7 @@ export function Login() {
         >
           {/* Email */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>البريد الإلكتروني</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.email")}</label>
             <div className="relative">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -89,7 +90,7 @@ export function Login() {
 
           {/* Password */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>كلمة المرور</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("login.password")}</label>
             <div className="relative">
               <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -139,9 +140,9 @@ export function Login() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : mode === "login" ? (
-              <><LogIn className="w-5 h-5" /> تسجيل الدخول</>
+              <><LogIn className="w-5 h-5" /> {arabicSource("login.login")}</>
             ) : (
-              <><UserPlus className="w-5 h-5" /> إنشاء الحساب</>
+              <><UserPlus className="w-5 h-5" /> {arabicSource("login.create_account")}</>
             )}
           </motion.button>
 
@@ -153,7 +154,7 @@ export function Login() {
               className="text-primary hover:underline cursor-pointer"
               style={{ fontSize: 13 }}
             >
-              {mode === "login" ? "ليس لديك حساب؟ إنشاء حساب جديد" : "لديك حساب بالفعل؟ تسجيل الدخول"}
+              {mode === "login" ? arabicSource("login.don_t_have_an_account_create_a_new_account") : arabicSource("login.already_have_an_account_login")}
             </button>
           </div>
         </motion.form>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { arabicSource } from "../i18n/source";
 
 interface CheckResult {
   name: string;
@@ -269,15 +270,15 @@ export function Diagnostics() {
   const typeLabel = (t: string) => {
     switch (t) {
       case "table":
-        return "جدول";
+        return arabicSource("diagnostics.table");
       case "view":
         return "View";
       case "function":
-        return "دالة RPC";
+        return arabicSource("diagnostics.rpc_function");
       case "bucket":
         return "Storage";
       case "column":
-        return "عمود";
+        return arabicSource("common.column");
       default:
         return t;
     }
@@ -296,11 +297,10 @@ export function Diagnostics() {
       }}
     >
       <h1 style={{ marginBottom: 8 }}>
-        🔍 فحص قاعدة البيانات - Migration Diagnostics
+        {arabicSource("diagnostics.database_check_migration_diagnostics")}
       </h1>
       <p style={{ color: "#888", marginBottom: 24 }}>
-        يفحص كل الجداول والـ Views والأعمدة الجديدة والـ Storage Buckets والـ
-        RPC Functions
+        {arabicSource("diagnostics.scans_all_tables_views_new_columns_storage_buckets_and_rpc_funct")}
       </p>
 
       {/* Summary */}
@@ -320,7 +320,7 @@ export function Diagnostics() {
             borderRadius: 8,
           }}
         >
-          ✅ نجح: {okCount}
+          {arabicSource("diagnostics.successful")} {okCount}
         </div>
         <div
           style={{
@@ -330,7 +330,7 @@ export function Diagnostics() {
             borderRadius: 8,
           }}
         >
-          ❌ فشل: {errCount}
+          {arabicSource("diagnostics.failed")} {errCount}
         </div>
         <div
           style={{
@@ -340,7 +340,7 @@ export function Diagnostics() {
             borderRadius: 8,
           }}
         >
-          ⏳ قيد الفحص: {checkingCount}
+          {arabicSource("diagnostics.under_examination")} {checkingCount}
         </div>
         <div
           style={{
@@ -350,7 +350,7 @@ export function Diagnostics() {
             borderRadius: 8,
           }}
         >
-          المجموع: {totalCount}
+          {arabicSource("diagnostics.total")} {totalCount}
         </div>
         {done && errCount === 0 && (
           <div
@@ -362,7 +362,7 @@ export function Diagnostics() {
               fontWeight: "bold",
             }}
           >
-            🎉 كل شي شغال تمام!
+            {arabicSource("diagnostics.everything_works_perfectly")}
           </div>
         )}
       </div>
@@ -380,15 +380,15 @@ export function Diagnostics() {
           marginBottom: 24,
         }}
       >
-        {running ? "جاري الفحص..." : "إعادة الفحص"}
+        {running ? arabicSource("diagnostics.checking") : arabicSource("diagnostics.re_examination")}
       </button>
 
       {/* Tables */}
       {(
         [
-          ["table", "📋 الجداول (Tables)"],
-          ["view", "👁️ الـ Views"],
-          ["column", "📌 أعمدة employees الجديدة"],
+          ["table", arabicSource("diagnostics.tables")],
+          ["view", arabicSource("diagnostics.the_views")],
+          ["column", arabicSource("diagnostics.new_employees_columns")],
           ["bucket", "📁 Storage Buckets"],
           ["function", "⚙️ RPC Functions"],
         ] as [string, string][]
@@ -413,10 +413,10 @@ export function Diagnostics() {
                     textAlign: "right",
                   }}
                 >
-                  <th style={{ padding: 8 }}>الحالة</th>
-                  <th style={{ padding: 8 }}>الاسم</th>
-                  <th style={{ padding: 8 }}>النوع</th>
-                  <th style={{ padding: 8 }}>التفاصيل</th>
+                  <th style={{ padding: 8 }}>{arabicSource("common.status")}</th>
+                  <th style={{ padding: 8 }}>{arabicSource("common.name")}</th>
+                  <th style={{ padding: 8 }}>{arabicSource("diagnostics.type")}</th>
+                  <th style={{ padding: 8 }}>{arabicSource("common.details")}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,4 +1,5 @@
-/**
+
+import { arabicSource } from "../i18n/source";/**
  * Shared constants for the HR system.
  * Single source of truth for departments, status values, etc.
  */
@@ -11,46 +12,46 @@ export const SYNC_API = import.meta.env.VITE_SYNC_API || "http://localhost:8089/
 // ══════════════════════════ Departments ══════════════════════════
 
 export const DEPARTMENTS = [
-  "تقنية المعلومات",
-  "المالية",
-  "التسويق",
-  "الموارد البشرية",
-  "العمليات",
-  "المبيعات",
-  "الإدارة",
+  arabicSource("common.information_technology"),
+  arabicSource("common.finance"),
+  arabicSource("common.marketing"),
+  arabicSource("common.human_resources"),
+  arabicSource("common.operations"),
+  arabicSource("common.sales"),
+  arabicSource("common.management"),
 ] as const;
 
 export type Department = (typeof DEPARTMENTS)[number];
 
 /** Border color classes per department (for cards & avatars) */
 export const DEPT_BORDER_COLORS: Record<string, string> = {
-  "تقنية المعلومات": "border-cyan-500/40",
-  "المالية": "border-emerald-500/40",
-  "التسويق": "border-purple-500/40",
-  "الموارد البشرية": "border-primary/40",
-  "العمليات": "border-blue-500/40",
-  "المبيعات": "border-red-400/40",
-  "الإدارة": "border-amber-500/40",
+  [arabicSource("common.information_technology")]: "border-cyan-500/40",
+  [arabicSource("common.finance")]: "border-emerald-500/40",
+  [arabicSource("common.marketing")]: "border-purple-500/40",
+  [arabicSource("common.human_resources")]: "border-primary/40",
+  [arabicSource("common.operations")]: "border-blue-500/40",
+  [arabicSource("common.sales")]: "border-red-400/40",
+  [arabicSource("common.management")]: "border-amber-500/40",
 };
 
 /** Dot/badge solid color classes per department */
 export const DEPT_DOT_COLORS: Record<string, string> = {
-  "تقنية المعلومات": "bg-cyan-500",
-  "المالية": "bg-emerald-500",
-  "التسويق": "bg-purple-500",
-  "الموارد البشرية": "bg-primary",
-  "العمليات": "bg-blue-500",
-  "المبيعات": "bg-red-400",
-  "الإدارة": "bg-amber-500",
+  [arabicSource("common.information_technology")]: "bg-cyan-500",
+  [arabicSource("common.finance")]: "bg-emerald-500",
+  [arabicSource("common.marketing")]: "bg-purple-500",
+  [arabicSource("common.human_resources")]: "bg-primary",
+  [arabicSource("common.operations")]: "bg-blue-500",
+  [arabicSource("common.sales")]: "bg-red-400",
+  [arabicSource("common.management")]: "bg-amber-500",
 };
 
 /** Hex colors per department (for charts & hierarchy) */
 export const DEPT_HEX_COLORS: Record<string, string> = {
-  "تقنية المعلومات": "#06B6D4",
-  "المالية": "#3B82F6",
-  "التسويق": "#EC4899",
-  "الموارد البشرية": "#F43F5E",
-  "العمليات": "#EF4444",
-  "المبيعات": "#F59E0B",
-  "الإدارة": "#F97316",
+  [arabicSource("common.information_technology")]: "#06B6D4",
+  [arabicSource("common.finance")]: "#3B82F6",
+  [arabicSource("common.marketing")]: "#EC4899",
+  [arabicSource("common.human_resources")]: "#F43F5E",
+  [arabicSource("common.operations")]: "#EF4444",
+  [arabicSource("common.sales")]: "#F59E0B",
+  [arabicSource("common.management")]: "#F97316",
 };

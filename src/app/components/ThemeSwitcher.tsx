@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Palette, Check } from "lucide-react";
 import { useTheme, themes } from "./ThemeContext";
+import { arabicSource } from "../i18n/source";
 
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
@@ -24,7 +25,7 @@ export function ThemeSwitcher() {
         whileHover={{ scale: 1.1, rotate: 15 }}
         onClick={() => setOpen(!open)}
         className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-        title="تغيير الثيم"
+        title={arabicSource("shared.change_the_theme")}
       >
         <Palette className="w-5 h-5 text-muted-foreground" />
       </motion.button>
@@ -39,7 +40,7 @@ export function ThemeSwitcher() {
             className="absolute top-full mt-2 end-0 w-64 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50"
           >
             <div className="p-3 border-b border-border/40">
-              <p className="text-foreground" style={{ fontSize: 13 }}>اختر الثيم</p>
+              <p className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("shared.choose_the_theme")}</p>
             </div>
             <div className="p-2 space-y-1">
               {themes.map((t) => {

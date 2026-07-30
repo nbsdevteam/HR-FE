@@ -21,9 +21,26 @@ const auditedSources = JSON.parse(
   }),
 ).filter(
   ({ value }) =>
-    !/[<>]|<!DOCTYPE|font-family|<\/div>/.test(value) &&
-    value !== "Language / اللغة / زمان",
+    !/[<>]|<!DOCTYPE|font-family|<\/div>/.test(value),
 );
+const sourceRoot = path.resolve("src/app");
+const rawArabicFiles = [];
+
+function scanRawArabic(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (entry.name === "i18n") continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) scanRawArabic(absolute);
+    else if (/\.(?:ts|tsx)$/.test(entry.name)) {
+      const source = fs.readFileSync(absolute, "utf8");
+      if (/\p{Script=Arabic}/u.test(source)) {
+        rawArabicFiles.push(path.relative(process.cwd(), absolute));
+      }
+    }
+  }
+}
+
+scanRawArabic(sourceRoot);
 
 const baseKeys = Object.keys(catalogues.en).sort();
 const errors = [];
@@ -73,11 +90,15 @@ for (const [source, key] of Object.entries(sourceMap)) {
 }
 
 for (const { value, locations } of auditedSources) {
-  if (!sourceMap[value]) {
-    errors.push(
-      `hardcoded Arabic UI source is not catalogued: "${value}" (${locations[0]})`,
-    );
-  }
+  errors.push(
+    `hardcoded Arabic UI source must use a semantic key: "${value}" (${locations[0]})`,
+  );
+}
+
+if (rawArabicFiles.length) {
+  errors.push(
+    `Arabic script remains outside the i18n layer: ${rawArabicFiles.join(", ")}`,
+  );
 }
 
 if (errors.length) {

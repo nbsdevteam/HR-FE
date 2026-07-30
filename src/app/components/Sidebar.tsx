@@ -7,24 +7,25 @@ import {
   Settings, ChevronRight, Shield, Briefcase, Fingerprint, LogOut
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { arabicSource } from "../i18n/source";
 
 const menuItems = [
-  { id: "dashboard", label: "لوحة التحكم", icon: Home, path: "/" },
-  { id: "employees", label: "الموظفون", icon: Users, path: "/employees" },
-  { id: "attendance", label: "الحضور والانصراف", icon: Clock, path: "/attendance" },
-  { id: "leave", label: "الإجازات", icon: CalendarDays, path: "/leave" },
-  { id: "payroll", label: "الرواتب", icon: Wallet, path: "/payroll" },
-  { id: "evaluation", label: "تقييم الأداء", icon: ClipboardCheck, path: "/evaluation" },
-  { id: "warnings", label: "الإنذارات", icon: AlertTriangle, path: "/warnings" },
-  { id: "policies", label: "السياسات", icon: FileText, path: "/policies" },
-  { id: "hierarchy", label: "الهيكل التنظيمي", icon: GitBranch, path: "/hierarchy" },
-  { id: "recruitment", label: "التوظيف", icon: UserPlus, path: "/recruitment" },
-  { id: "training", label: "التدريب والتطوير", icon: GraduationCap, path: "/training" },
-  { id: "lifecycle", label: "دورة حياة الموظف", icon: Briefcase, path: "/lifecycle" },
-  { id: "reports", label: "التقارير", icon: BarChart3, path: "/reports" },
-  { id: "devices", label: "أجهزة البصمة", icon: Fingerprint, path: "/devices" },
-  { id: "audit", label: "السجلات والإشعارات", icon: Shield, path: "/audit" },
-  { id: "settings", label: "الإعدادات", icon: Settings, path: "/settings" },
+  { id: "dashboard", label: arabicSource("common.control_panel"), icon: Home, path: "/" },
+  { id: "employees", label: arabicSource("common.employees"), icon: Users, path: "/employees" },
+  { id: "attendance", label: arabicSource("common.attendance_and_departure"), icon: Clock, path: "/attendance" },
+  { id: "leave", label: arabicSource("common.vacations"), icon: CalendarDays, path: "/leave" },
+  { id: "payroll", label: arabicSource("common.salaries"), icon: Wallet, path: "/payroll" },
+  { id: "evaluation", label: arabicSource("common.performance_evaluation"), icon: ClipboardCheck, path: "/evaluation" },
+  { id: "warnings", label: arabicSource("common.alarms"), icon: AlertTriangle, path: "/warnings" },
+  { id: "policies", label: arabicSource("shared.policies"), icon: FileText, path: "/policies" },
+  { id: "hierarchy", label: arabicSource("common.organizational_structure"), icon: GitBranch, path: "/hierarchy" },
+  { id: "recruitment", label: arabicSource("common.recruitment"), icon: UserPlus, path: "/recruitment" },
+  { id: "training", label: arabicSource("common.training_and_development"), icon: GraduationCap, path: "/training" },
+  { id: "lifecycle", label: arabicSource("common.employee_life_cycle"), icon: Briefcase, path: "/lifecycle" },
+  { id: "reports", label: arabicSource("common.reports"), icon: BarChart3, path: "/reports" },
+  { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: "/devices" },
+  { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: "/audit" },
+  { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: "/settings" },
 ];
 
 export function Sidebar() {
@@ -51,7 +52,7 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-gradient-gold">نظام الموارد البشرية</h2>
+              <h2 className="text-gradient-gold">{arabicSource("shared.human_resources_system")}</h2>
             </motion.div>
           )}
         </div>
@@ -93,10 +94,10 @@ export function Sidebar() {
         <button
           onClick={() => signOut()}
           className="w-full flex items-center gap-3 px-4 py-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-          title="تسجيل الخروج"
+          title={arabicSource("common.log_out")}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span style={{ fontSize: 13 }}>تسجيل الخروج</span>}
+          {!collapsed && <span style={{ fontSize: 13 }}>{arabicSource("common.log_out")}</span>}
         </button>
       </div>
 

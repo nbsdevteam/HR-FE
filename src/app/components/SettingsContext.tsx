@@ -56,7 +56,7 @@ export function useAppSettings() {
 
 /**
  * Format a "YYYY-MM" string based on user's preferred month format.
- * "name"    → "شباط 2026"
+ * "name"    → localized long month and year
  * "numeric" → "2/2026"
  */
 export function formatMonthYear(monthYear: string, format: MonthFormat): string {
@@ -73,7 +73,7 @@ export function formatMonthYear(monthYear: string, format: MonthFormat): string 
 
 /**
  * Get just the month label (no year) based on format.
- * "name"    → "شباط"
+ * "name"    → localized long month
  * "numeric" → "2"
  */
 export function formatMonthOnly(monthNum: string, format: MonthFormat): string {

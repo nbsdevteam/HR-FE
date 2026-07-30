@@ -1541,5 +1541,7 @@
   "common.records_other": "{{count}} سجل",
   "errors.not_found_title": "الصفحة غير موجودة",
   "errors.not_found_message": "تعذر العثور على الصفحة التي طلبتها.",
-  "errors.back_to_dashboard": "العودة إلى لوحة التحكم"
+  "errors.back_to_dashboard": "العودة إلى لوحة التحكم",
+  "languages.self_name": "العربية",
+  "languages.selector_label": "اختيار اللغة"
 }
