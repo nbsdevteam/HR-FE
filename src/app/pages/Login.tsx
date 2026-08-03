@@ -2,9 +2,11 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Lock, Mail, Loader2, Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { isOdooBackend } from "../lib/api/client";
 
 export function Login() {
   const { signIn, signUp } = useAuth();
+  const odooMode = isOdooBackend();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -145,7 +147,8 @@ export function Login() {
             )}
           </motion.button>
 
-          {/* Toggle mode */}
+          {/* Toggle mode — disabled for Odoo JWT backend (admin-provisioned users only) */}
+          {!odooMode && (
           <div className="text-center pt-2">
             <button
               type="button"
@@ -156,6 +159,7 @@ export function Login() {
               {mode === "login" ? "ليس لديك حساب؟ إنشاء حساب جديد" : "لديك حساب بالفعل؟ تسجيل الدخول"}
             </button>
           </div>
+          )}
         </motion.form>
       </motion.div>
     </div>

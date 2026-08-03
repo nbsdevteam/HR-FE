@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { isOdooBackend } from "./api/client";
+import * as odooData from "./api/odooData";
 
 // ——— Raw DB types ———
 export interface DbEmployee {
@@ -556,12 +558,21 @@ export function useEmployees() {
 
   const fetchEmployees = async () => {
     setLoading(true);
-    const { data, error: err } = await supabase
-      .from("employees")
-      .select("*")
-      .order("created_at", { ascending: true });
-    if (err) setError(err.message);
-    else setEmployees(data || []);
+    try {
+      if (isOdooBackend()) {
+        setEmployees(await odooData.fetchEmployees());
+        setError(null);
+      } else {
+        const { data, error: err } = await supabase
+          .from("employees")
+          .select("*")
+          .order("created_at", { ascending: true });
+        if (err) setError(err.message);
+        else { setEmployees(data || []); setError(null); }
+      }
+    } catch (e: any) {
+      setError(e?.message || "Failed to load employees");
+    }
     setLoading(false);
   };
 
@@ -579,12 +590,25 @@ export function useHierarchyData() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [empRes, deptRes] = await Promise.all([
-      supabase.from("employees").select("*").order("created_at", { ascending: true }),
-      supabase.from("departments").select("*").order("name", { ascending: true }),
-    ]);
-    setEmployees(empRes.data || []);
-    setDepartments(deptRes.data || []);
+    try {
+      if (isOdooBackend()) {
+        const [emps, depts] = await Promise.all([
+          odooData.fetchEmployees(),
+          odooData.fetchDepartments(),
+        ]);
+        setEmployees(emps);
+        setDepartments(depts);
+      } else {
+        const [empRes, deptRes] = await Promise.all([
+          supabase.from("employees").select("*").order("created_at", { ascending: true }),
+          supabase.from("departments").select("*").order("name", { ascending: true }),
+        ]);
+        setEmployees(empRes.data || []);
+        setDepartments(deptRes.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
 
@@ -600,11 +624,20 @@ export function useAttendanceRecords(date?: string) {
   useEffect(() => {
     async function fetch() {
       setLoading(true);
-      let q = supabase.from("attendance_records").select("*");
-      if (date) q = q.eq("date", date);
-      q = q.order("date", { ascending: false }).limit(date ? 500 : 5000);
-      const { data } = await q;
-      setRecords(data || []);
+      try {
+        if (isOdooBackend()) {
+          setRecords(await odooData.fetchAttendance(date));
+        } else {
+          let q = supabase.from("attendance_records").select("*");
+          if (date) q = q.eq("date", date);
+          q = q.order("date", { ascending: false }).limit(date ? 500 : 5000);
+          const { data } = await q;
+          setRecords(data || []);
+        }
+      } catch (e) {
+        console.error(e);
+        setRecords([]);
+      }
       setLoading(false);
     }
     fetch();
@@ -620,10 +653,19 @@ export function useMonthlyRecords(monthYear?: string) {
   useEffect(() => {
     async function fetch() {
       setLoading(true);
-      let q = supabase.from("monthly_records").select("*");
-      if (monthYear) q = q.eq("month_year", monthYear);
-      const { data } = await q;
-      setRecords(data || []);
+      try {
+        if (isOdooBackend()) {
+          setRecords(await odooData.fetchMonthlyRecords(monthYear));
+        } else {
+          let q = supabase.from("monthly_records").select("*");
+          if (monthYear) q = q.eq("month_year", monthYear);
+          const { data } = await q;
+          setRecords(data || []);
+        }
+      } catch (e) {
+        console.error(e);
+        setRecords([]);
+      }
       setLoading(false);
     }
     fetch();
@@ -639,10 +681,19 @@ export function useMonthlyLedgers(monthYear?: string) {
   useEffect(() => {
     async function fetch() {
       setLoading(true);
-      let q = supabase.from("monthly_ledgers").select("*");
-      if (monthYear) q = q.eq("month_year", monthYear);
-      const { data } = await q;
-      setLedgers(data || []);
+      try {
+        if (isOdooBackend()) {
+          setLedgers(await odooData.fetchMonthlyLedgers(monthYear));
+        } else {
+          let q = supabase.from("monthly_ledgers").select("*");
+          if (monthYear) q = q.eq("month_year", monthYear);
+          const { data } = await q;
+          setLedgers(data || []);
+        }
+      } catch (e) {
+        console.error(e);
+        setLedgers([]);
+      }
       setLoading(false);
     }
     fetch();
@@ -712,9 +763,18 @@ export function useShifts() {
 
   const fetchShifts = async () => {
     setLoading(true);
-    const { data } = await supabase.from("shifts").select("*").order("is_default", { ascending: false }).order("name");
-    // Use mock data if DB returns empty (local testing)
-    setShifts(data && data.length > 0 ? data : _mockShifts);
+    try {
+      if (isOdooBackend()) {
+        const data = await odooData.fetchShifts();
+        setShifts(data.length > 0 ? data : _mockShifts);
+      } else {
+        const { data } = await supabase.from("shifts").select("*").order("is_default", { ascending: false }).order("name");
+        setShifts(data && data.length > 0 ? data : _mockShifts);
+      }
+    } catch (e) {
+      console.error(e);
+      setShifts(_mockShifts);
+    }
     setLoading(false);
   };
 
@@ -741,9 +801,18 @@ export function usePositions() {
 
   const fetchPositions = async () => {
     setLoading(true);
-    const { data } = await supabase.from("positions").select("*").order("level").order("title_ar");
-    // Use mock data if DB returns empty (local testing)
-    setPositions(data && data.length > 0 ? data : _mockPositions);
+    try {
+      if (isOdooBackend()) {
+        const data = await odooData.fetchPositions();
+        setPositions(data.length > 0 ? data : _mockPositions);
+      } else {
+        const { data } = await supabase.from("positions").select("*").order("level").order("title_ar");
+        setPositions(data && data.length > 0 ? data : _mockPositions);
+      }
+    } catch (e) {
+      console.error(e);
+      setPositions(_mockPositions);
+    }
     setLoading(false);
   };
 
@@ -758,8 +827,17 @@ export function useEmployeeShiftAssignments() {
 
   const fetchAssignments = async () => {
     setLoading(true);
-    const { data } = await supabase.from("employee_shift_assignments").select("*").eq("is_active", true).order("start_date", { ascending: false });
-    setAssignments(data || []);
+    try {
+      if (isOdooBackend()) {
+        setAssignments(await odooData.fetchShiftAssignments());
+      } else {
+        const { data } = await supabase.from("employee_shift_assignments").select("*").eq("is_active", true).order("start_date", { ascending: false });
+        setAssignments(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+      setAssignments([]);
+    }
     setLoading(false);
   };
 
@@ -774,8 +852,17 @@ export function useSystemModules() {
 
   const fetchModules = async () => {
     setLoading(true);
-    const { data } = await supabase.from("system_modules").select("*").order("sort_order");
-    setModules(data || []);
+    try {
+      if (isOdooBackend()) {
+        setModules(await odooData.fetchModules());
+      } else {
+        const { data } = await supabase.from("system_modules").select("*").order("sort_order");
+        setModules(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+      setModules([]);
+    }
     setLoading(false);
   };
 
@@ -795,8 +882,17 @@ export function useConfigurations() {
 
   const fetchConfigs = async () => {
     setLoading(true);
-    const { data } = await supabase.from("configurations").select("*").order("sort_order");
-    setConfigs(data || []);
+    try {
+      if (isOdooBackend()) {
+        setConfigs(await odooData.fetchConfigs());
+      } else {
+        const { data } = await supabase.from("configurations").select("*").order("sort_order");
+        setConfigs(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+      setConfigs([]);
+    }
     setLoading(false);
   };
 
@@ -827,11 +923,20 @@ export function usePublicHolidays(year?: number) {
 
   const fetchHolidays = async () => {
     setLoading(true);
-    let q = supabase.from("public_holidays").select("*");
-    if (year) q = q.eq("year", year);
-    q = q.order("date");
-    const { data } = await q;
-    setHolidays(data || []);
+    try {
+      if (isOdooBackend()) {
+        setHolidays(await odooData.fetchHolidays(year));
+      } else {
+        let q = supabase.from("public_holidays").select("*");
+        if (year) q = q.eq("year", year);
+        q = q.order("date");
+        const { data } = await q;
+        setHolidays(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+      setHolidays([]);
+    }
     setLoading(false);
   };
 
@@ -854,8 +959,13 @@ export function useAllowanceTypes() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("allowance_types").select("*").order("sort_order");
-    setTypes(data || []);
+    try {
+      if (isOdooBackend()) setTypes(await odooData.fetchAllowanceTypes());
+      else {
+        const { data } = await supabase.from("allowance_types").select("*").order("sort_order");
+        setTypes(data || []);
+      }
+    } catch (e) { console.error(e); setTypes([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -867,10 +977,15 @@ export function useEmployeeAllowances(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_allowances").select("*").eq("is_active", true);
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setAllowances(data || []);
+    try {
+      if (isOdooBackend()) setAllowances(await odooData.fetchEmployeeAllowances(employeeId));
+      else {
+        let q = supabase.from("employee_allowances").select("*").eq("is_active", true);
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setAllowances(data || []);
+      }
+    } catch (e) { console.error(e); setAllowances([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -882,8 +997,13 @@ export function useDeductionTypes() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("deduction_types").select("*").order("sort_order");
-    setTypes(data || []);
+    try {
+      if (isOdooBackend()) setTypes(await odooData.fetchDeductionTypes());
+      else {
+        const { data } = await supabase.from("deduction_types").select("*").order("sort_order");
+        setTypes(data || []);
+      }
+    } catch (e) { console.error(e); setTypes([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -895,10 +1015,15 @@ export function useEmployeeDeductions(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_deductions").select("*").eq("is_active", true);
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setDeductions(data || []);
+    try {
+      if (isOdooBackend()) setDeductions(await odooData.fetchEmployeeDeductions(employeeId));
+      else {
+        let q = supabase.from("employee_deductions").select("*").eq("is_active", true);
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setDeductions(data || []);
+      }
+    } catch (e) { console.error(e); setDeductions([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -928,8 +1053,13 @@ export function useLeaveTypes() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("leave_types").select("*").order("sort_order");
-    setTypes(data || []);
+    try {
+      if (isOdooBackend()) setTypes(await odooData.fetchLeaveTypes());
+      else {
+        const { data } = await supabase.from("leave_types").select("*").order("sort_order");
+        setTypes(data || []);
+      }
+    } catch (e) { console.error(e); setTypes([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -941,8 +1071,13 @@ export function useLeavePolicies() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("leave_policies").select("*").eq("is_active", true);
-    setPolicies(data || []);
+    try {
+      if (isOdooBackend()) setPolicies(await odooData.fetchLeavePolicies());
+      else {
+        const { data } = await supabase.from("leave_policies").select("*").eq("is_active", true);
+        setPolicies(data || []);
+      }
+    } catch (e) { console.error(e); setPolicies([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -954,12 +1089,17 @@ export function useLeaveRequests(filters?: { employeeId?: string; status?: strin
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("leave_requests").select("*").order("created_at", { ascending: false });
-    if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
-    if (filters?.status) q = q.eq("status", filters.status);
-    if (filters?.month) q = q.gte("start_date", filters.month + "-01").lte("start_date", filters.month + "-31");
-    const { data } = await q;
-    setRequests(data || []);
+    try {
+      if (isOdooBackend()) setRequests(await odooData.fetchLeaveRequests(filters));
+      else {
+        let q = supabase.from("leave_requests").select("*").order("created_at", { ascending: false });
+        if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
+        if (filters?.status) q = q.eq("status", filters.status);
+        if (filters?.month) q = q.gte("start_date", filters.month + "-01").lte("start_date", filters.month + "-31");
+        const { data } = await q;
+        setRequests(data || []);
+      }
+    } catch (e) { console.error(e); setRequests([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [filters?.employeeId, filters?.status, filters?.month]);
@@ -971,10 +1111,15 @@ export function useLeaveBalances(year?: number) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("leave_balances").select("*");
-    if (year) q = q.eq("year", year);
-    const { data } = await q;
-    setBalances(data || []);
+    try {
+      if (isOdooBackend()) setBalances(await odooData.fetchLeaveBalances(year));
+      else {
+        let q = supabase.from("leave_balances").select("*");
+        if (year) q = q.eq("year", year);
+        const { data } = await q;
+        setBalances(data || []);
+      }
+    } catch (e) { console.error(e); setBalances([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [year]);
@@ -986,10 +1131,15 @@ export function useLeavePermissions(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("leave_permissions").select("*").order("date", { ascending: false });
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setPermissions(data || []);
+    try {
+      if (isOdooBackend()) setPermissions(await odooData.fetchLeavePermissions(employeeId));
+      else {
+        let q = supabase.from("leave_permissions").select("*").order("date", { ascending: false });
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setPermissions(data || []);
+      }
+    } catch (e) { console.error(e); setPermissions([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1048,8 +1198,13 @@ export function useDocumentTypes() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("document_types").select("*").order("sort_order");
-    setTypes(data || []);
+    try {
+      if (isOdooBackend()) setTypes(await odooData.fetchDocumentTypes());
+      else {
+        const { data } = await supabase.from("document_types").select("*").order("sort_order");
+        setTypes(data || []);
+      }
+    } catch (e) { console.error(e); setTypes([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1061,10 +1216,15 @@ export function useEmployeeDocuments(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_documents").select("*").order("created_at", { ascending: false });
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setDocuments(data || []);
+    try {
+      if (isOdooBackend()) setDocuments(await odooData.fetchDocuments(employeeId));
+      else {
+        let q = supabase.from("employee_documents").select("*").order("created_at", { ascending: false });
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setDocuments(data || []);
+      }
+    } catch (e) { console.error(e); setDocuments([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1667,41 +1827,52 @@ export function useDeviceStatus() {
 
   const refresh = async () => {
     try {
-      // Fetch active devices
-      const { data: devices } = await supabase
-        .from("biometric_devices")
-        .select("*")
-        .eq("is_active", true);
+      let devs: DbBiometricDevice[] = [];
+      let todayDeviceEvents = 0;
+      const today = new Date().toISOString().slice(0, 10);
 
-      const devs = devices || [];
+      if (isOdooBackend()) {
+        const rows = await odooData.fetchDevices();
+        devs = rows.map((d: any) => ({
+          id: String(d.id),
+          name: d.name || "",
+          model: d.model_name || d.model || "",
+          serial_number: d.serial_number || "",
+          ip_address: d.ip_address || "",
+          port: d.port || 443,
+          protocol: d.use_https ? "https" : "http",
+          username: d.username || null,
+          location: d.location || null,
+          is_active: d.active !== false,
+          last_sync_at: d.last_sync_at || null,
+          last_heartbeat_at: d.last_heartbeat_at || null,
+          config: {},
+          created_at: "",
+        }));
+        const att = await odooData.fetchAttendance(today);
+        todayDeviceEvents = att.filter(a => a.source === "device").length;
+      } else {
+        const { data: devices } = await supabase
+          .from("biometric_devices")
+          .select("*")
+          .eq("is_active", true);
+        devs = devices || [];
+        const { count } = await supabase
+          .from("attendance_records")
+          .select("*", { count: "exact", head: true })
+          .eq("source", "device")
+          .eq("date", today);
+        todayDeviceEvents = count || 0;
+      }
+
       const totalDevices = devs.length;
       const activeDevices = devs.filter(d => d.is_active).length;
-
-      // Most recent sync across all devices
-      const syncTimes = devs
-        .map(d => d.last_sync_at)
-        .filter(Boolean)
-        .sort()
-        .reverse();
+      const syncTimes = devs.map(d => d.last_sync_at).filter(Boolean).sort().reverse();
       const lastSyncAt = syncTimes[0] || null;
-
-      // How stale is the sync?
       let syncAgeMinutes = 999;
       if (lastSyncAt) {
         syncAgeMinutes = Math.round((Date.now() - new Date(lastSyncAt).getTime()) / 60000);
       }
-
-      // Today's device event count
-      const today = new Date().toISOString().slice(0, 10);
-      const { count } = await supabase
-        .from("attendance_records")
-        .select("*", { count: "exact", head: true })
-        .eq("source", "device")
-        .eq("date", today);
-
-      const todayDeviceEvents = count || 0;
-
-      // Determine status
       let status: DeviceStatus["status"] = "no_device";
       if (totalDevices > 0) {
         if (syncAgeMinutes <= 10) status = "online";
@@ -1714,7 +1885,6 @@ export function useDeviceStatus() {
         lastSyncAt, syncAgeMinutes, todayDeviceEvents, status,
       });
     } catch {
-      // biometric_devices table may not exist yet — silently ignore
       setDeviceStatus(prev => ({ ...prev, status: "no_device" }));
     }
     setLoading(false);
