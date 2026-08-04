@@ -6,8 +6,23 @@ import {
   Calendar, BarChart3, CheckCircle, Clock, AlertCircle, Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { useEmployees, empDisplayName } from "../lib/hooks";
 import type { DbEmployee } from "../lib/hooks";
+
+// Odoo's lugal.hr.evaluation uses a fixed English status selection; the FE
+// displays Arabic labels directly. Map between them explicitly.
+const EVAL_STATUS_TO_ODOO: Record<string, string> = {
+  "قيد التقييم": "draft",
+  "مكتمل": "completed",
+  "لم يبدأ": "draft",
+};
+const ODOO_STATUS_TO_EVAL: Record<string, string> = {
+  draft: "قيد التقييم",
+  completed: "مكتمل",
+  approved: "مكتمل",
+};
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { CustomRadarChart } from "../components/custom-radar-chart";
 import { ViewToggle } from "../components/ViewToggle";
@@ -120,12 +135,24 @@ export function EvaluationPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [evRes, crRes] = await Promise.all([
-      supabase.from("evaluations").select("*").order("created_at", { ascending: false }),
-      supabase.from("evaluation_criteria").select("*"),
-    ]);
-    setEvaluations(evRes.data || []);
-    setCriteria(crRes.data || []);
+    try {
+      if (isOdooBackend()) {
+        const { evaluations: evs, criteria: crit } = await odooData.fetchEvaluationsWithCriteria();
+        setEvaluations(evs.map(e => ({ ...e, status: ODOO_STATUS_TO_EVAL[e.status] || e.status })) as any);
+        setCriteria(crit as any);
+      } else {
+        const [evRes, crRes] = await Promise.all([
+          supabase.from("evaluations").select("*").order("created_at", { ascending: false }),
+          supabase.from("evaluation_criteria").select("*"),
+        ]);
+        setEvaluations(evRes.data || []);
+        setCriteria(crRes.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+      setEvaluations([]);
+      setCriteria([]);
+    }
     setLoading(false);
   }, []);
 
@@ -611,24 +638,38 @@ function EvalDetailModal({
 
   const handleSave = async (status: "قيد التقييم" | "مكتمل") => {
     setSaving(true);
-    // Update evaluation
-    await supabase.from("evaluations").update({
-      overall_rating: overallRating,
-      status,
-      comments: comments || null,
-    }).eq("id", evaluation.id);
+    try {
+      const criteriaPayload = Object.entries(scores).map(([name, score]) => ({
+        criterion_name: name,
+        score,
+      }));
+      if (isOdooBackend()) {
+        await odooData.updateEvaluation(evaluation.id, {
+          overall_rating: overallRating,
+          status: EVAL_STATUS_TO_ODOO[status] || "draft",
+          comments: comments || null,
+          criteria: criteriaPayload,
+        });
+      } else {
+        await supabase.from("evaluations").update({
+          overall_rating: overallRating,
+          status,
+          comments: comments || null,
+        }).eq("id", evaluation.id);
 
-    // Delete existing criteria and re-insert
-    await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
-    const criteriaRows = Object.entries(scores).map(([name, score]) => ({
-      evaluation_id: evaluation.id,
-      criterion_name: name,
-      score,
-    }));
-    if (criteriaRows.length > 0) {
-      await supabase.from("evaluation_criteria").insert(criteriaRows);
+        await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
+        const criteriaRows = criteriaPayload.map(c => ({
+          evaluation_id: evaluation.id,
+          criterion_name: c.criterion_name,
+          score: c.score,
+        }));
+        if (criteriaRows.length > 0) {
+          await supabase.from("evaluation_criteria").insert(criteriaRows);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
-
     setSaving(false);
     setEditing(false);
     onUpdate();
@@ -638,8 +679,16 @@ function EvalDetailModal({
   const handleDelete = async () => {
     if (!confirm("متأكد تريد حذف هذا التقييم؟")) return;
     setDeleting(true);
-    await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
-    await supabase.from("evaluations").delete().eq("id", evaluation.id);
+    try {
+      if (isOdooBackend()) {
+        await odooData.deleteEvaluation(evaluation.id);
+      } else {
+        await supabase.from("evaluation_criteria").delete().eq("evaluation_id", evaluation.id);
+        await supabase.from("evaluations").delete().eq("id", evaluation.id);
+      }
+    } catch (e) {
+      console.error(e);
+    }
     setDeleting(false);
     onUpdate();
     onClose();
@@ -876,31 +925,46 @@ function NewEvalPanel({
   const handleCreate = async (status: "قيد التقييم" | "مكتمل") => {
     if (!selectedEmpId || !period) return;
     setSaving(true);
+    try {
+      if (isOdooBackend()) {
+        await odooData.createEvaluation({
+          employee_id: selectedEmpId,
+          evaluator_id: evaluatorId || null,
+          period,
+          overall_rating: overallRating,
+          status: EVAL_STATUS_TO_ODOO[status] || "draft",
+          comments: comments || null,
+          criteria: Object.entries(scores).map(([name, score]) => ({
+            criterion_name: name,
+            score,
+          })),
+        });
+      } else {
+        const { data: evalData, error: evalErr } = await supabase.from("evaluations").insert({
+          employee_id: selectedEmpId,
+          evaluator_id: evaluatorId || null,
+          period,
+          overall_rating: overallRating,
+          status,
+          comments: comments || null,
+        }).select().single();
 
-    // Insert evaluation
-    const { data: evalData, error: evalErr } = await supabase.from("evaluations").insert({
-      employee_id: selectedEmpId,
-      evaluator_id: evaluatorId || null,
-      period,
-      overall_rating: overallRating,
-      status,
-      comments: comments || null,
-    }).select().single();
+        if (evalErr || !evalData) {
+          console.error("Error creating evaluation:", evalErr);
+          setSaving(false);
+          return;
+        }
 
-    if (evalErr || !evalData) {
-      console.error("Error creating evaluation:", evalErr);
-      setSaving(false);
-      return;
+        const criteriaRows = Object.entries(scores).map(([name, score]) => ({
+          evaluation_id: evalData.id,
+          criterion_name: name,
+          score,
+        }));
+        await supabase.from("evaluation_criteria").insert(criteriaRows);
+      }
+    } catch (e) {
+      console.error(e);
     }
-
-    // Insert criteria
-    const criteriaRows = Object.entries(scores).map(([name, score]) => ({
-      evaluation_id: evalData.id,
-      criterion_name: name,
-      score,
-    }));
-    await supabase.from("evaluation_criteria").insert(criteriaRows);
-
     setSaving(false);
     onCreated();
   };

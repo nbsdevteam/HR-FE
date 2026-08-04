@@ -24,6 +24,24 @@ import type {
   DbEmployeeDeduction,
   DbDocumentType,
   DbEmployeeDocument,
+  DbContractType,
+  DbEmployeeContract,
+  DbExitChecklistItem,
+  DbExitProcess,
+  DbExitChecklist,
+  DbJobOpening,
+  DbApplicant,
+  DbEvaluation,
+  DbEvaluationCriteria,
+  DbWarning,
+  DbTrainingProgram,
+  DbTrainingParticipant,
+  DbPolicy,
+  DbLoan,
+  DbNotification,
+  DbAuditLog,
+  DbReportTemplate,
+  DbReportHistory,
 } from "../hooks";
 
 const sid = (v: unknown) => (v === null || v === undefined || v === false ? "" : String(v));
@@ -478,5 +496,325 @@ export function mapDocument(r: any): DbEmployeeDocument {
     status: r.status || "valid",
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+  };
+}
+
+// ——— Slice A: Lifecycle (contracts / exit / custodies) ———
+
+export function mapContractType(r: any): DbContractType {
+  return {
+    id: sid(r.id),
+    name_ar: r.name_ar || r.name || "",
+    name_en: r.name || r.name_en || null,
+    code: r.code || "",
+    description: r.description || null,
+    default_duration_months: r.default_duration_months ?? null,
+    is_renewable: bool(r.is_renewable),
+    probation_days: num(r.probation_days),
+    notice_period_days: num(r.notice_period_days),
+    is_active: r.active !== false && r.is_active !== false,
+    sort_order: num(r.sort_order),
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapEmployeeContract(r: any): DbEmployeeContract {
+  return {
+    id: sid(r.id),
+    employee_id: sid(r.employee_id),
+    contract_type_id: sid(r.contract_type_id),
+    contract_number: r.contract_number || null,
+    start_date: r.start_date || "",
+    end_date: r.end_date || null,
+    probation_end_date: r.probation_end_date || null,
+    probation_status: r.probation_status || "ongoing",
+    salary_amount: r.salary_amount ?? null,
+    salary_currency: r.salary_currency || "IQD",
+    renewal_count: num(r.renewal_count),
+    status: r.status || "active",
+    notes: r.notes || null,
+    attachment_url: r.attachment_url || null,
+    signed_date: r.signed_date || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapExitChecklistItem(r: any): DbExitChecklistItem {
+  return {
+    id: sid(r.id),
+    name_ar: r.name_ar || r.name || "",
+    name_en: r.name || r.name_en || null,
+    category: r.category || "general",
+    responsible_role: r.responsible_role || "",
+    sort_order: num(r.sort_order),
+    is_active: r.active !== false && r.is_active !== false,
+    created_at: r.created_at || empty,
+  };
+}
+
+export function mapExitProcess(r: any): DbExitProcess {
+  return {
+    id: sid(r.id),
+    employee_id: sid(r.employee_id),
+    exit_type: r.exit_type || "resignation",
+    exit_date: r.exit_date || "",
+    last_working_day: r.last_working_day || null,
+    reason: r.reason || null,
+    notice_date: r.notice_date || null,
+    notice_period_days: r.notice_period_days ?? null,
+    eos_amount: r.eos_amount ?? null,
+    eos_currency: r.eos_currency || "IQD",
+    final_settlement_amount: r.final_settlement_amount ?? null,
+    status: r.status || "initiated",
+    approved_by: r.approved_by || null,
+    notes: r.notes || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapExitChecklistLine(r: any): DbExitChecklist {
+  return {
+    id: sid(r.id),
+    exit_process_id: sid(r.exit_process_id),
+    checklist_item_id: sid(r.checklist_item_id),
+    is_completed: bool(r.is_completed),
+    completed_by: r.completed_by || null,
+    completed_at: r.completed_at || null,
+    notes: r.notes || null,
+    created_at: r.created_at || empty,
+  };
+}
+
+// ——— Slice A: Warnings, Notifications, Audit ———
+
+export function mapWarning(r: any): DbWarning {
+  return {
+    id: sid(r.id),
+    employee_id: sid(r.employee_id),
+    type: r.type || r.warning_type || "",
+    reason: r.reason || "",
+    details: r.details || null,
+    date: r.date || "",
+    issued_by: r.issued_by_name || sornull(r.issued_by_id) || null,
+    status: r.status || "active",
+    expiry_date: r.expiry_date || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapNotification(r: any): DbNotification {
+  return {
+    id: sid(r.id),
+    title: r.title || "",
+    body: r.body || null,
+    type: (r.type || r.notification_type || "info") as DbNotification["type"],
+    category: r.category || "",
+    entity_type: r.entity_type || null,
+    entity_id: sornull(r.entity_id),
+    target_employee_id: sornull(r.target_employee_id),
+    is_read: bool(r.is_read),
+    is_dismissed: bool(r.is_dismissed),
+    action_url: r.action_url || null,
+    created_at: r.created_at || empty,
+  };
+}
+
+export function mapAuditLog(r: any): DbAuditLog {
+  return {
+    id: sid(r.id),
+    action: r.action || "",
+    entity_type: r.entity_type || "",
+    entity_id: sornull(r.entity_id),
+    entity_label: r.entity_label || null,
+    actor_name: r.actor_name || "",
+    actor_employee_id: sornull(r.actor_employee_id),
+    details: r.details || {},
+    ip_address: r.ip_address || null,
+    created_at: r.created_at || empty,
+  };
+}
+
+// ——— Slice B: Evaluations, Policies, Training ———
+
+export function mapEvaluationCriterion(r: any): DbEvaluationCriteria {
+  return {
+    id: sid(r.id),
+    evaluation_id: sid(r.evaluation_id),
+    criterion_name: r.criterion_name || "",
+    score: r.score ?? null,
+    created_at: r.created_at || empty,
+  };
+}
+
+export function mapEvaluation(r: any): DbEvaluation {
+  return {
+    id: sid(r.id),
+    employee_id: sid(r.employee_id),
+    evaluator_id: sornull(r.evaluator_id),
+    period: r.period || "",
+    overall_rating: num(r.overall_rating),
+    status: r.status || "draft",
+    comments: r.comments || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapPolicy(r: any): DbPolicy {
+  return {
+    id: sid(r.id),
+    title: r.title || "",
+    category: r.category || "",
+    description: r.description || null,
+    content: r.content || null,
+    icon_name: r.icon_name || null,
+    status: r.status || "active",
+    version: num(r.version, 1),
+    last_updated: r.last_updated || empty,
+    created_at: r.created_at || empty,
+  };
+}
+
+export function mapTrainingProgram(r: any): DbTrainingProgram {
+  return {
+    id: sid(r.id),
+    title: r.title || "",
+    category: r.category || "",
+    weight: r.weight || "",
+    instructor: r.instructor || null,
+    duration: r.duration || null,
+    status: r.status || "planned",
+    completion_rate: num(r.completion_rate),
+    start_date: r.start_date || null,
+    end_date: r.end_date || null,
+    objectives: r.objectives || null,
+    max_participants: r.max_participants ?? null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapTrainingParticipant(r: any): DbTrainingParticipant {
+  return {
+    id: sid(r.id),
+    training_program_id: sid(r.training_program_id ?? r.program_id),
+    employee_id: sid(r.employee_id),
+    completion_status: r.completion_status || "enrolled",
+    score: r.score ?? null,
+    enrolled_at: r.enrolled_at || empty,
+    completed_at: r.completed_at || null,
+  };
+}
+
+// ——— Slice C: Recruitment, Loans ———
+
+export function mapJobOpening(r: any): DbJobOpening {
+  return {
+    id: sid(r.id),
+    title: r.title || "",
+    department: r.department || "",
+    location: r.location || "",
+    type: r.type || r.job_type || "",
+    status: r.status || "draft",
+    posted_date: r.posted_date || "",
+    deadline: r.deadline || null,
+    requirements: r.requirements || null,
+    description: r.description || null,
+    salary_range: r.salary_range || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+    applicant_count: num(r.applicant_count),
+    hired_count: num(r.hired_count),
+  };
+}
+
+export function mapApplicant(r: any): DbApplicant {
+  return {
+    id: sid(r.id),
+    name: r.name || "",
+    job_opening_id: sid(r.job_opening_id),
+    stage: r.stage || "تقديم",
+    applied_date: r.applied_date || "",
+    rating: num(r.rating),
+    resume_url: r.resume_url || null,
+    notes: r.notes || null,
+    phone: r.phone || null,
+    email: r.email || null,
+    skills: r.skills || null,
+    experience_years: num(r.experience_years),
+    education: r.education || null,
+    current_company: r.current_company || null,
+    city: r.city || null,
+    gender: r.gender || null,
+    birth_date: r.birth_date || null,
+    interview_notes: r.interview_notes || null,
+    is_bookmarked: bool(r.is_bookmarked),
+    source: r.source || null,
+    expected_salary: r.expected_salary ?? null,
+    salary_currency: r.salary_currency || "IQD",
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+    job_title: r.job_title || undefined,
+    job_department: r.job_department || undefined,
+    job_status: r.job_status || undefined,
+  };
+}
+
+export function mapLoan(r: any): DbLoan {
+  return {
+    id: sid(r.id),
+    employee_id: sid(r.employee_id),
+    loan_amount: num(r.loan_amount),
+    currency: r.currency || "IQD",
+    installment_amount: num(r.installment_amount),
+    total_installments: num(r.total_installments),
+    paid_installments: num(r.paid_installments),
+    remaining_amount: num(r.remaining_amount),
+    interest_rate: num(r.interest_rate),
+    status: r.status || "pending",
+    reason: r.reason || null,
+    approved_by: r.approved_by || null,
+    approved_date: r.approved_date || null,
+    start_date: r.start_date || "",
+    end_date: r.end_date || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+// ——— Slice D: Reports ———
+
+export function mapReportTemplate(r: any): DbReportTemplate {
+  return {
+    id: sid(r.id),
+    name_ar: r.name_ar || "",
+    name_en: r.name_en || null,
+    code: r.code || "",
+    description: r.description || null,
+    category: r.category || "custom",
+    data_source: r.data_source || "",
+    columns: r.columns || [],
+    default_filters: r.default_filters || {},
+    format: r.format || "table",
+    is_active: bool(r.active ?? r.is_active ?? true),
+    sort_order: num(r.sort_order),
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapReportHistory(r: any): DbReportHistory {
+  return {
+    id: sid(r.id),
+    report_template_id: sornull(r.report_template_id),
+    report_name: r.report_name || "",
+    filters_used: r.filters_used || {},
+    row_count: num(r.row_count),
+    generated_by: r.generated_by || "",
+    generated_at: r.generated_at || empty,
   };
 }

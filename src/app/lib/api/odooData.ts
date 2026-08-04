@@ -26,6 +26,24 @@ import {
   mapEmployeeDeduction,
   mapDocumentType,
   mapDocument,
+  mapContractType,
+  mapEmployeeContract,
+  mapExitChecklistItem,
+  mapExitProcess,
+  mapExitChecklistLine,
+  mapWarning,
+  mapNotification,
+  mapAuditLog,
+  mapEvaluation,
+  mapEvaluationCriterion,
+  mapPolicy,
+  mapTrainingProgram,
+  mapTrainingParticipant,
+  mapJobOpening,
+  mapApplicant,
+  mapLoan,
+  mapReportTemplate,
+  mapReportHistory,
 } from "./mappers";
 import type {
   DbEmployee,
@@ -50,6 +68,24 @@ import type {
   DbEmployeeDeduction,
   DbDocumentType,
   DbEmployeeDocument,
+  DbContractType,
+  DbEmployeeContract,
+  DbExitChecklistItem,
+  DbExitProcess,
+  DbExitChecklist,
+  DbWarning,
+  DbNotification,
+  DbAuditLog,
+  DbEvaluation,
+  DbEvaluationCriteria,
+  DbPolicy,
+  DbTrainingProgram,
+  DbTrainingParticipant,
+  DbJobOpening,
+  DbApplicant,
+  DbLoan,
+  DbReportTemplate,
+  DbReportHistory,
 } from "../hooks";
 
 async function items<T>(path: string, params: Record<string, unknown> = {}): Promise<T[]> {
@@ -488,4 +524,478 @@ export async function deleteDocument(documentId: string | number) {
 
 export async function linkEmployeesToUsers(dry_run = true, employee_ids?: number[]) {
   return hrCall("/api/hr/employees/link_users", { dry_run, employee_ids });
+}
+
+// ─── Slice A: Lifecycle (contracts / exit / custodies) ───────────────
+
+export async function fetchContractTypes(): Promise<DbContractType[]> {
+  const rows = await items<any>("/api/hr/contract_types/list", { active_only: true });
+  return rows.map(mapContractType);
+}
+
+export async function createContractType(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/contract_types/create", payload);
+}
+
+export async function updateContractType(typeId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/contract_types/${eid(typeId)}/update`, payload);
+}
+
+export async function deleteContractType(typeId: string | number) {
+  return hrCall(`/api/hr/contract_types/${eid(typeId)}/delete`, {});
+}
+
+export async function fetchContracts(employeeId?: string | number): Promise<DbEmployeeContract[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/contracts/list", params);
+  return rows.map(mapEmployeeContract);
+}
+
+export async function createContract(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/contracts/create", params);
+}
+
+export async function updateContract(contractId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/contracts/${eid(contractId)}/update`, payload);
+}
+
+export async function deleteContract(contractId: string | number) {
+  return hrCall(`/api/hr/contracts/${eid(contractId)}/delete`, {});
+}
+
+export async function fetchExitChecklistItems(): Promise<DbExitChecklistItem[]> {
+  const rows = await items<any>("/api/hr/exit/checklist_items/list", { active_only: true });
+  return rows.map(mapExitChecklistItem);
+}
+
+type ExitProcessRaw = ReturnType<typeof mapExitProcess> & { checklist?: any[] };
+
+export async function fetchExitProcesses(
+  employeeId?: string | number,
+): Promise<{ processes: DbExitProcess[]; checklist: DbExitChecklist[] }> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/exit/list", params);
+  const processes = rows.map(mapExitProcess);
+  const checklist: DbExitChecklist[] = [];
+  for (const r of rows as any[]) {
+    if (Array.isArray(r.checklist)) {
+      checklist.push(...r.checklist.map(mapExitChecklistLine));
+    }
+  }
+  return { processes, checklist };
+}
+
+export async function createExitProcess(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/exit/create", params);
+}
+
+export async function updateExitProcess(exitId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/exit/${eid(exitId)}/update`, payload);
+}
+
+export async function updateExitChecklistLine(lineId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/exit/checklist/${eid(lineId)}/update`, payload);
+}
+
+export async function fetchCustodies(employeeId?: string | number): Promise<any[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  return items<any>("/api/hr/custodies/list", params);
+}
+
+export async function createCustody(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/custodies/create", params);
+}
+
+export async function updateCustody(custodyId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/custodies/${eid(custodyId)}/update`, payload);
+}
+
+export async function deleteCustody(custodyId: string | number) {
+  return hrCall(`/api/hr/custodies/${eid(custodyId)}/delete`, {});
+}
+
+// ─── Slice A: Warnings ────────────────────────────────────────────────
+
+export async function fetchWarnings(employeeId?: string | number): Promise<DbWarning[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/warnings/list", params);
+  return rows.map(mapWarning);
+}
+
+export async function createWarning(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/warnings/create", params);
+}
+
+export async function updateWarning(warningId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/warnings/${eid(warningId)}/update`, payload);
+}
+
+export async function deleteWarning(warningId: string | number) {
+  return hrCall(`/api/hr/warnings/${eid(warningId)}/delete`, {});
+}
+
+// ─── Slice A: Notifications ───────────────────────────────────────────
+
+export async function fetchNotifications(includeDismissed = false): Promise<DbNotification[]> {
+  const rows = await items<any>("/api/hr/notifications/list", {
+    include_dismissed: includeDismissed,
+    limit: 200,
+  });
+  return rows.map(mapNotification);
+}
+
+export async function createNotification(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/notifications/create", payload);
+}
+
+export async function markNotificationRead(notificationId: string | number) {
+  return hrCall(`/api/hr/notifications/${eid(notificationId)}/mark_read`, {});
+}
+
+export async function dismissNotification(notificationId: string | number) {
+  return hrCall(`/api/hr/notifications/${eid(notificationId)}/dismiss`, {});
+}
+
+export async function markAllNotificationsRead() {
+  return hrCall("/api/hr/notifications/mark_all_read", {});
+}
+
+// ─── Slice A: Audit log ───────────────────────────────────────────────
+
+export async function fetchAuditLog(filters?: {
+  entityType?: string;
+  action?: string;
+  entityId?: string | number;
+}): Promise<DbAuditLog[]> {
+  const params: Record<string, unknown> = { limit: 200 };
+  if (filters?.entityType) params.entity_type = filters.entityType;
+  if (filters?.action) params.action = filters.action;
+  if (filters?.entityId != null) params.entity_id = filters.entityId;
+  const rows = await items<any>("/api/hr/audit/list", params);
+  return rows.map(mapAuditLog);
+}
+
+export async function createAuditLog(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/audit/create", payload);
+}
+
+// ─── Slice B: Evaluations ─────────────────────────────────────────────
+
+export async function fetchEvaluations(employeeId?: string | number): Promise<DbEvaluation[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/evaluations/list", params);
+  return rows.map(mapEvaluation);
+}
+
+export async function fetchEvaluationCriteria(): Promise<DbEvaluationCriteria[]> {
+  // Criteria are embedded in evaluations/list responses; provided for API parity.
+  const rows = await items<any>("/api/hr/evaluations/list", { limit: 500 });
+  const criteria: DbEvaluationCriteria[] = [];
+  for (const r of rows as any[]) {
+    if (Array.isArray(r.criteria)) {
+      criteria.push(...r.criteria.map(mapEvaluationCriterion));
+    }
+  }
+  return criteria;
+}
+
+export async function fetchEvaluationsWithCriteria(
+  employeeId?: string | number,
+): Promise<{ evaluations: DbEvaluation[]; criteria: DbEvaluationCriteria[] }> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/evaluations/list", params);
+  const evaluations = rows.map(mapEvaluation);
+  const criteria: DbEvaluationCriteria[] = [];
+  for (const r of rows as any[]) {
+    if (Array.isArray(r.criteria)) {
+      criteria.push(...r.criteria.map(mapEvaluationCriterion));
+    }
+  }
+  return { evaluations, criteria };
+}
+
+export async function createEvaluation(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/evaluations/create", params);
+}
+
+export async function updateEvaluation(evaluationId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/update`, payload);
+}
+
+export async function deleteEvaluation(evaluationId: string | number) {
+  return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/delete`, {});
+}
+
+// ─── Slice B: Policies ────────────────────────────────────────────────
+
+export async function fetchPolicies(): Promise<DbPolicy[]> {
+  const rows = await items<any>("/api/hr/policies/list", { limit: 200 });
+  return rows.map(mapPolicy);
+}
+
+export async function createPolicy(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/policies/create", payload);
+}
+
+export async function updatePolicy(policyId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/policies/${eid(policyId)}/update`, payload);
+}
+
+export async function deletePolicy(policyId: string | number) {
+  return hrCall(`/api/hr/policies/${eid(policyId)}/delete`, {});
+}
+
+// ─── Slice B: Training ────────────────────────────────────────────────
+
+export async function fetchTrainingPrograms(): Promise<DbTrainingProgram[]> {
+  const rows = await items<any>("/api/hr/training/programs/list", { limit: 200 });
+  return rows.map(mapTrainingProgram);
+}
+
+export async function createTrainingProgram(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/training/programs/create", payload);
+}
+
+export async function updateTrainingProgram(programId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/training/programs/${eid(programId)}/update`, payload);
+}
+
+export async function deleteTrainingProgram(programId: string | number) {
+  return hrCall(`/api/hr/training/programs/${eid(programId)}/delete`, {});
+}
+
+export async function fetchTrainingParticipants(
+  programId?: string | number,
+): Promise<DbTrainingParticipant[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (programId) params.program_id = eid(programId);
+  const rows = await items<any>("/api/hr/training/participants/list", params);
+  return rows.map(mapTrainingParticipant);
+}
+
+export async function createTrainingParticipant(payload: {
+  training_program_id: string | number;
+  employee_id: string | number;
+  completion_status?: string;
+  score?: number | null;
+}) {
+  return hrCall("/api/hr/training/participants/create", {
+    program_id: eid(payload.training_program_id),
+    employee_id: eid(payload.employee_id),
+    completion_status: payload.completion_status,
+    score: payload.score,
+  });
+}
+
+export async function updateTrainingParticipant(
+  participantId: string | number,
+  payload: Record<string, unknown>,
+) {
+  return hrCall(`/api/hr/training/participants/${eid(participantId)}/update`, payload);
+}
+
+export async function deleteTrainingParticipant(participantId: string | number) {
+  return hrCall(`/api/hr/training/participants/${eid(participantId)}/delete`, {});
+}
+
+// ─── Slice C: Recruitment ─────────────────────────────────────────────
+
+export async function fetchJobOpenings(): Promise<DbJobOpening[]> {
+  const rows = await items<any>("/api/hr/jobs/list", { limit: 200 });
+  return rows.map(mapJobOpening);
+}
+
+export async function createJobOpening(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/jobs/create", payload);
+}
+
+export async function updateJobOpening(jobId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/jobs/${eid(jobId)}/update`, payload);
+}
+
+export async function deleteJobOpening(jobId: string | number) {
+  return hrCall(`/api/hr/jobs/${eid(jobId)}/delete`, {});
+}
+
+export async function fetchApplicants(jobOpeningId?: string | number): Promise<DbApplicant[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (jobOpeningId) params.job_opening_id = eid(jobOpeningId);
+  const rows = await items<any>("/api/hr/applicants/list", params);
+  return rows.map(mapApplicant);
+}
+
+export async function createApplicant(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.job_opening_id != null) {
+    params.job_opening_id = eid(params.job_opening_id as string | number);
+  }
+  return hrCall("/api/hr/applicants/create", params);
+}
+
+export async function updateApplicant(applicantId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/applicants/${eid(applicantId)}/update`, payload);
+}
+
+export async function deleteApplicant(applicantId: string | number) {
+  return hrCall(`/api/hr/applicants/${eid(applicantId)}/delete`, {});
+}
+
+export async function uploadApplicantResume(
+  applicantId: string | number,
+  fileDataBase64: string,
+  fileName?: string,
+) {
+  return hrCall(`/api/hr/applicants/${eid(applicantId)}/upload_resume`, {
+    file_data: fileDataBase64,
+    file_name: fileName,
+  });
+}
+
+// ─── Slice C: Loans ───────────────────────────────────────────────────
+
+export async function fetchLoans(employeeId?: string | number): Promise<DbLoan[]> {
+  const params: Record<string, unknown> = { limit: 500 };
+  if (employeeId) params.employee_id = eid(employeeId);
+  const rows = await items<any>("/api/hr/payroll/loans/list", params);
+  return rows.map(mapLoan);
+}
+
+export async function createLoan(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/payroll/loans/create", params);
+}
+
+export async function updateLoan(loanId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/update`, payload);
+}
+
+export async function deleteLoan(loanId: string | number) {
+  return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/delete`, {});
+}
+
+// ─── Slice D: Reports ─────────────────────────────────────────────────
+
+export async function fetchReportTemplates(): Promise<DbReportTemplate[]> {
+  const rows = await items<any>("/api/hr/reports/templates/list", { active_only: true });
+  return rows.map(mapReportTemplate);
+}
+
+export async function createReportTemplate(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/reports/templates/create", payload);
+}
+
+export async function updateReportTemplate(templateId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/reports/templates/${eid(templateId)}/update`, payload);
+}
+
+export async function deleteReportTemplate(templateId: string | number) {
+  return hrCall(`/api/hr/reports/templates/${eid(templateId)}/delete`, {});
+}
+
+export async function fetchReportHistory(templateId?: string | number): Promise<DbReportHistory[]> {
+  const params: Record<string, unknown> = { limit: 100 };
+  if (templateId) params.report_template_id = eid(templateId);
+  const rows = await items<any>("/api/hr/reports/history/list", params);
+  return rows.map(mapReportHistory);
+}
+
+export async function createReportHistory(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.report_template_id != null) {
+    params.report_template_id = eid(params.report_template_id as string | number);
+  }
+  return hrCall("/api/hr/reports/history/create", params);
+}
+
+// ─── Slice D: Payroll catalog writes (allowances / deductions) ───────
+
+export async function createAllowanceType(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/payroll/allowance_types/create", payload);
+}
+
+export async function updateAllowanceType(typeId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/update`, payload);
+}
+
+export async function deleteAllowanceType(typeId: string | number) {
+  return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/delete`, {});
+}
+
+export async function createEmployeeAllowance(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  if (params.allowance_type_id != null) {
+    params.allowance_type_id = eid(params.allowance_type_id as string | number);
+  }
+  return hrCall("/api/hr/payroll/employee_allowances/create", params);
+}
+
+export async function updateEmployeeAllowance(allowanceId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/update`, payload);
+}
+
+export async function deleteEmployeeAllowance(allowanceId: string | number) {
+  return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/delete`, {});
+}
+
+export async function createDeductionType(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/payroll/deduction_types/create", payload);
+}
+
+export async function updateDeductionType(typeId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/update`, payload);
+}
+
+export async function deleteDeductionType(typeId: string | number) {
+  return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/delete`, {});
+}
+
+export async function createEmployeeDeduction(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  if (params.deduction_type_id != null) {
+    params.deduction_type_id = eid(params.deduction_type_id as string | number);
+  }
+  return hrCall("/api/hr/payroll/employee_deductions/create", params);
+}
+
+export async function updateEmployeeDeduction(deductionId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/update`, payload);
+}
+
+export async function deleteEmployeeDeduction(deductionId: string | number) {
+  return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/delete`, {});
+}
+
+// ─── Slice D: Leave policy CRUD ───────────────────────────────────────
+
+export async function createLeavePolicy(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.leave_type_id != null) params.leave_type_id = eid(params.leave_type_id as string | number);
+  return hrCall("/api/hr/leave/policies/create", params);
+}
+
+export async function updateLeavePolicy(policyId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/leave/policies/${eid(policyId)}/update`, payload);
+}
+
+export async function deleteLeavePolicy(policyId: string | number) {
+  return hrCall(`/api/hr/leave/policies/${eid(policyId)}/delete`, {});
 }

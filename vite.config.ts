@@ -24,21 +24,21 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      // Avoid browser CORS when talking to local Odoo
+      // Dev workstation Odoo (odoo_ws.conf → 192.168.116.204:8075)
       '/lugal': {
-        target: 'http://127.0.0.1:8069',
+        target: 'http://192.168.116.204:8075',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://127.0.0.1:8069',
+        target: 'http://192.168.116.204:8075',
         changeOrigin: true,
       },
       '/web': {
-        target: 'http://127.0.0.1:8069',
+        target: 'http://192.168.116.204:8075',
         changeOrigin: true,
       },
       '/jsonrpc': {
-        target: 'http://127.0.0.1:8069',
+        target: 'http://192.168.116.204:8075',
         changeOrigin: true,
       },
     },

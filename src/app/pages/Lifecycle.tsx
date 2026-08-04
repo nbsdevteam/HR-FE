@@ -290,23 +290,45 @@ function ContractsTab({
       ? new Date(new Date(formData.start_date).getTime() + ct.probation_days * 86400000).toISOString().substring(0, 10)
       : null;
 
-    await supabase.from("employee_contracts").insert({
-      ...formData,
-      salary_amount: formData.salary_amount || null,
-      end_date: formData.end_date || null,
-      probation_end_date: probEnd,
-      probation_status: probEnd ? "pending" : "waived",
-      status: "active",
-    });
-    refetch();
+    try {
+      if (isOdooBackend()) {
+        await odooData.createContract({
+          ...formData,
+          salary_amount: formData.salary_amount || null,
+          end_date: formData.end_date || null,
+          probation_end_date: probEnd,
+          probation_status: probEnd ? "pending" : "waived",
+          status: "active",
+        });
+      } else {
+        await supabase.from("employee_contracts").insert({
+          ...formData,
+          salary_amount: formData.salary_amount || null,
+          end_date: formData.end_date || null,
+          probation_end_date: probEnd,
+          probation_status: probEnd ? "pending" : "waived",
+          status: "active",
+        });
+      }
+      refetch();
+      setShowForm(false);
+      setFormData({ employee_id: "", contract_type_id: "", start_date: "", end_date: "", salary_amount: 0, salary_currency: "IQD", contract_number: "", notes: "" });
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في حفظ العقد");
+    }
     setSaving(false);
-    setShowForm(false);
-    setFormData({ employee_id: "", contract_type_id: "", start_date: "", end_date: "", salary_amount: 0, salary_currency: "IQD", contract_number: "", notes: "" });
   };
 
   const handleProbation = async (contractId: string, status: "passed" | "failed") => {
-    await supabase.from("employee_contracts").update({ probation_status: status }).eq("id", contractId);
-    refetch();
+    try {
+      if (isOdooBackend()) await odooData.updateContract(contractId, { probation_status: status });
+      else await supabase.from("employee_contracts").update({ probation_status: status }).eq("id", contractId);
+      refetch();
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في تحديث حالة التجربة");
+    }
   };
 
   return (
@@ -435,8 +457,14 @@ function ContractsTab({
                         )}
                         {c.status === "active" && (
                           <button onClick={async () => {
-                            await supabase.from("employee_contracts").update({ status: "terminated" }).eq("id", c.id);
-                            refetch();
+                            try {
+                              if (isOdooBackend()) await odooData.updateContract(c.id, { status: "terminated" });
+                              else await supabase.from("employee_contracts").update({ status: "terminated" }).eq("id", c.id);
+                              refetch();
+                            } catch (e) {
+                              console.error(e);
+                              alert("خطأ في إنهاء العقد");
+                            }
                           }} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title="إنهاء">
                             <UserX className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
@@ -687,52 +715,94 @@ function ExitTab({
       eosAmount = calculateEOS(emp.join_date, formData.exit_date, emp.monthly_salary);
     }
 
-    const { data: proc } = await supabase.from("employee_exit_processes").insert({
-      employee_id: formData.employee_id,
-      exit_type: formData.exit_type,
-      exit_date: formData.exit_date,
-      last_working_day: formData.last_working_day || formData.exit_date,
-      reason: formData.reason || null,
-      notice_date: formData.notice_date || null,
-      eos_amount: eosAmount,
-      status: "initiated",
-    }).select().single();
+    try {
+      if (isOdooBackend()) {
+        // Backend auto-creates checklist lines from active checklist items.
+        await odooData.createExitProcess({
+          employee_id: formData.employee_id,
+          exit_type: formData.exit_type,
+          exit_date: formData.exit_date,
+          last_working_day: formData.last_working_day || formData.exit_date,
+          reason: formData.reason || null,
+          notice_date: formData.notice_date || null,
+          eos_amount: eosAmount,
+          status: "in_progress",
+        });
+      } else {
+        const { data: proc } = await supabase.from("employee_exit_processes").insert({
+          employee_id: formData.employee_id,
+          exit_type: formData.exit_type,
+          exit_date: formData.exit_date,
+          last_working_day: formData.last_working_day || formData.exit_date,
+          reason: formData.reason || null,
+          notice_date: formData.notice_date || null,
+          eos_amount: eosAmount,
+          status: "initiated",
+        }).select().single();
 
-    // Auto-create checklist items
-    if (proc) {
-      const items = exitItems.map(item => ({
-        exit_process_id: proc.id,
-        checklist_item_id: item.id,
-        is_completed: false,
-      }));
-      if (items.length > 0) {
-        await supabase.from("employee_exit_checklist").insert(items);
+        // Auto-create checklist items
+        if (proc) {
+          const items = exitItems.map(item => ({
+            exit_process_id: proc.id,
+            checklist_item_id: item.id,
+            is_completed: false,
+          }));
+          if (items.length > 0) {
+            await supabase.from("employee_exit_checklist").insert(items);
+          }
+        }
       }
+      refetch();
+      setShowForm(false);
+      setFormData({ employee_id: "", exit_type: "resignation", exit_date: "", last_working_day: "", reason: "", notice_date: "" });
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في إنشاء إجراء إنهاء الخدمة");
     }
-
-    refetch();
     setSaving(false);
-    setShowForm(false);
-    setFormData({ employee_id: "", exit_type: "resignation", exit_date: "", last_working_day: "", reason: "", notice_date: "" });
   };
 
   const handleChecklistToggle = async (checklistId: string, completed: boolean) => {
-    await supabase.from("employee_exit_checklist").update({
-      is_completed: completed,
-      completed_at: completed ? new Date().toISOString() : null,
-    }).eq("id", checklistId);
-    refetchChecklist();
+    try {
+      if (isOdooBackend()) {
+        await odooData.updateExitChecklistLine(checklistId, { is_completed: completed });
+      } else {
+        await supabase.from("employee_exit_checklist").update({
+          is_completed: completed,
+          completed_at: completed ? new Date().toISOString() : null,
+        }).eq("id", checklistId);
+      }
+      refetchChecklist();
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في تحديث قائمة إخلاء الطرف");
+    }
   };
 
   const handleStatusUpdate = async (processId: string, status: string) => {
-    await supabase.from("employee_exit_processes").update({ status }).eq("id", processId);
-    if (status === "completed") {
-      const proc = processes.find(p => p.id === processId);
-      if (proc) {
-        await supabase.from("employees").update({ status: "منتهي", end_date: proc.exit_date }).eq("id", proc.employee_id);
+    try {
+      if (isOdooBackend()) {
+        await odooData.updateExitProcess(processId, { status });
+        if (status === "completed") {
+          const proc = processes.find(p => p.id === processId);
+          if (proc) {
+            await odooData.setEmployeeStatus(proc.employee_id, "exited");
+          }
+        }
+      } else {
+        await supabase.from("employee_exit_processes").update({ status }).eq("id", processId);
+        if (status === "completed") {
+          const proc = processes.find(p => p.id === processId);
+          if (proc) {
+            await supabase.from("employees").update({ status: "منتهي", end_date: proc.exit_date }).eq("id", proc.employee_id);
+          }
+        }
       }
+      refetch();
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في تحديث حالة إجراء الإنهاء");
     }
-    refetch();
   };
 
   // Detail view

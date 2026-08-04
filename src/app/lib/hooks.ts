@@ -1059,11 +1059,16 @@ export function useLoans(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("loans").select("*");
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    q = q.order("created_at", { ascending: false });
-    const { data } = await q;
-    setLoans(data || []);
+    try {
+      if (isOdooBackend()) setLoans(await odooData.fetchLoans(employeeId));
+      else {
+        let q = supabase.from("loans").select("*");
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        q = q.order("created_at", { ascending: false });
+        const { data } = await q;
+        setLoans(data || []);
+      }
+    } catch (e) { console.error(e); setLoans([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1194,8 +1199,13 @@ export function useContractTypes() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("contract_types").select("*").order("sort_order");
-    setTypes(data || []);
+    try {
+      if (isOdooBackend()) setTypes(await odooData.fetchContractTypes());
+      else {
+        const { data } = await supabase.from("contract_types").select("*").order("sort_order");
+        setTypes(data || []);
+      }
+    } catch (e) { console.error(e); setTypes([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1207,10 +1217,15 @@ export function useEmployeeContracts(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_contracts").select("*").order("start_date", { ascending: false });
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setContracts(data || []);
+    try {
+      if (isOdooBackend()) setContracts(await odooData.fetchContracts(employeeId));
+      else {
+        let q = supabase.from("employee_contracts").select("*").order("start_date", { ascending: false });
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setContracts(data || []);
+      }
+    } catch (e) { console.error(e); setContracts([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1304,8 +1319,13 @@ export function useExitChecklistItems() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("exit_checklist_items").select("*").eq("is_active", true).order("sort_order");
-    setItems(data || []);
+    try {
+      if (isOdooBackend()) setItems(await odooData.fetchExitChecklistItems());
+      else {
+        const { data } = await supabase.from("exit_checklist_items").select("*").eq("is_active", true).order("sort_order");
+        setItems(data || []);
+      }
+    } catch (e) { console.error(e); setItems([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1317,10 +1337,17 @@ export function useExitProcesses(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_exit_processes").select("*").order("created_at", { ascending: false });
-    if (employeeId) q = q.eq("employee_id", employeeId);
-    const { data } = await q;
-    setProcesses(data || []);
+    try {
+      if (isOdooBackend()) {
+        const { processes: rows } = await odooData.fetchExitProcesses(employeeId);
+        setProcesses(rows);
+      } else {
+        let q = supabase.from("employee_exit_processes").select("*").order("created_at", { ascending: false });
+        if (employeeId) q = q.eq("employee_id", employeeId);
+        const { data } = await q;
+        setProcesses(data || []);
+      }
+    } catch (e) { console.error(e); setProcesses([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1332,10 +1359,18 @@ export function useExitChecklist(exitProcessId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("employee_exit_checklist").select("*");
-    if (exitProcessId) q = q.eq("exit_process_id", exitProcessId);
-    const { data } = await q;
-    setChecklist(data || []);
+    try {
+      if (isOdooBackend()) {
+        // Checklist lines are embedded in the exit processes payload.
+        const { checklist: rows } = await odooData.fetchExitProcesses();
+        setChecklist(exitProcessId ? rows.filter(c => c.exit_process_id === exitProcessId) : rows);
+      } else {
+        let q = supabase.from("employee_exit_checklist").select("*");
+        if (exitProcessId) q = q.eq("exit_process_id", exitProcessId);
+        const { data } = await q;
+        setChecklist(data || []);
+      }
+    } catch (e) { console.error(e); setChecklist([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [exitProcessId]);
@@ -1399,11 +1434,16 @@ export function useJobOpenings() {
 
   const fetchJobs = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("job_openings_with_counts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setJobs(data || []);
+    try {
+      if (isOdooBackend()) setJobs(await odooData.fetchJobOpenings());
+      else {
+        const { data } = await supabase
+          .from("job_openings_with_counts")
+          .select("*")
+          .order("created_at", { ascending: false });
+        setJobs(data || []);
+      }
+    } catch (e) { console.error(e); setJobs([]); }
     setLoading(false);
   };
 
@@ -1417,11 +1457,16 @@ export function useApplicants() {
 
   const fetchApplicants = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("applicants_with_job")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setApplicants(data || []);
+    try {
+      if (isOdooBackend()) setApplicants(await odooData.fetchApplicants());
+      else {
+        const { data } = await supabase
+          .from("applicants_with_job")
+          .select("*")
+          .order("created_at", { ascending: false });
+        setApplicants(data || []);
+      }
+    } catch (e) { console.error(e); setApplicants([]); }
     setLoading(false);
   };
 
@@ -1510,11 +1555,16 @@ export function useEvaluations(filters?: { employeeId?: string; period?: string 
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("evaluations").select("*").order("created_at", { ascending: false });
-    if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
-    if (filters?.period) q = q.eq("period", filters.period);
-    const { data } = await q;
-    setEvaluations(data || []);
+    try {
+      if (isOdooBackend()) setEvaluations(await odooData.fetchEvaluations(filters?.employeeId));
+      else {
+        let q = supabase.from("evaluations").select("*").order("created_at", { ascending: false });
+        if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
+        if (filters?.period) q = q.eq("period", filters.period);
+        const { data } = await q;
+        setEvaluations(data || []);
+      }
+    } catch (e) { console.error(e); setEvaluations([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [filters?.employeeId, filters?.period]);
@@ -1526,11 +1576,16 @@ export function useWarnings(filters?: { employeeId?: string; status?: string }) 
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("warnings").select("*").order("date", { ascending: false });
-    if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
-    if (filters?.status) q = q.eq("status", filters.status);
-    const { data } = await q;
-    setWarnings(data || []);
+    try {
+      if (isOdooBackend()) setWarnings(await odooData.fetchWarnings(filters?.employeeId));
+      else {
+        let q = supabase.from("warnings").select("*").order("date", { ascending: false });
+        if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
+        if (filters?.status) q = q.eq("status", filters.status);
+        const { data } = await q;
+        setWarnings(data || []);
+      }
+    } catch (e) { console.error(e); setWarnings([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [filters?.employeeId, filters?.status]);
@@ -1542,8 +1597,13 @@ export function useTrainingPrograms() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("training_programs").select("*").order("created_at", { ascending: false });
-    setPrograms(data || []);
+    try {
+      if (isOdooBackend()) setPrograms(await odooData.fetchTrainingPrograms());
+      else {
+        const { data } = await supabase.from("training_programs").select("*").order("created_at", { ascending: false });
+        setPrograms(data || []);
+      }
+    } catch (e) { console.error(e); setPrograms([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1555,10 +1615,15 @@ export function useTrainingParticipants(programId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("training_participants").select("*");
-    if (programId) q = q.eq("training_program_id", programId);
-    const { data } = await q;
-    setParticipants(data || []);
+    try {
+      if (isOdooBackend()) setParticipants(await odooData.fetchTrainingParticipants(programId));
+      else {
+        let q = supabase.from("training_participants").select("*");
+        if (programId) q = q.eq("training_program_id", programId);
+        const { data } = await q;
+        setParticipants(data || []);
+      }
+    } catch (e) { console.error(e); setParticipants([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [programId]);
@@ -1570,8 +1635,13 @@ export function usePolicies() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("policies").select("*").order("created_at", { ascending: false });
-    setPolicies(data || []);
+    try {
+      if (isOdooBackend()) setPolicies(await odooData.fetchPolicies());
+      else {
+        const { data } = await supabase.from("policies").select("*").order("created_at", { ascending: false });
+        setPolicies(data || []);
+      }
+    } catch (e) { console.error(e); setPolicies([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1640,10 +1710,15 @@ export function useNotifications(employeeId?: string) {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("notifications").select("*").eq("is_dismissed", false).order("created_at", { ascending: false }).limit(100);
-    if (employeeId) q = q.eq("target_employee_id", employeeId);
-    const { data } = await q;
-    setNotifications(data || []);
+    try {
+      if (isOdooBackend()) setNotifications(await odooData.fetchNotifications());
+      else {
+        let q = supabase.from("notifications").select("*").eq("is_dismissed", false).order("created_at", { ascending: false }).limit(100);
+        if (employeeId) q = q.eq("target_employee_id", employeeId);
+        const { data } = await q;
+        setNotifications(data || []);
+      }
+    } catch (e) { console.error(e); setNotifications([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [employeeId]);
@@ -1656,11 +1731,17 @@ export function useAuditLog(filters?: { entityType?: string; action?: string; li
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(filters?.limit || 200);
-    if (filters?.entityType) q = q.eq("entity_type", filters.entityType);
-    if (filters?.action) q = q.eq("action", filters.action);
-    const { data } = await q;
-    setLogs(data || []);
+    try {
+      if (isOdooBackend()) {
+        setLogs(await odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }));
+      } else {
+        let q = supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(filters?.limit || 200);
+        if (filters?.entityType) q = q.eq("entity_type", filters.entityType);
+        if (filters?.action) q = q.eq("action", filters.action);
+        const { data } = await q;
+        setLogs(data || []);
+      }
+    } catch (e) { console.error(e); setLogs([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, [filters?.entityType, filters?.action, filters?.limit]);
@@ -1672,8 +1753,13 @@ export function useReportTemplates() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("report_templates").select("*").eq("is_active", true).order("sort_order");
-    setTemplates(data || []);
+    try {
+      if (isOdooBackend()) setTemplates(await odooData.fetchReportTemplates());
+      else {
+        const { data } = await supabase.from("report_templates").select("*").eq("is_active", true).order("sort_order");
+        setTemplates(data || []);
+      }
+    } catch (e) { console.error(e); setTemplates([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1685,8 +1771,13 @@ export function useReportHistory() {
   const [loading, setLoading] = useState(true);
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from("report_history").select("*").order("generated_at", { ascending: false }).limit(50);
-    setHistory(data || []);
+    try {
+      if (isOdooBackend()) setHistory(await odooData.fetchReportHistory());
+      else {
+        const { data } = await supabase.from("report_history").select("*").order("generated_at", { ascending: false }).limit(50);
+        setHistory(data || []);
+      }
+    } catch (e) { console.error(e); setHistory([]); }
     setLoading(false);
   };
   useEffect(() => { fetch(); }, []);
@@ -1703,15 +1794,29 @@ export async function logAudit(entry: {
   actor_employee_id?: string;
   details?: Record<string, any>;
 }) {
-  await supabase.from("audit_log").insert({
-    action: entry.action,
-    entity_type: entry.entity_type,
-    entity_id: entry.entity_id || null,
-    entity_label: entry.entity_label || null,
-    actor_name: entry.actor_name || "مدير الموارد البشرية",
-    actor_employee_id: entry.actor_employee_id || null,
-    details: entry.details || {},
-  });
+  try {
+    if (isOdooBackend()) {
+      await odooData.createAuditLog({
+        action: entry.action,
+        entity_type: entry.entity_type,
+        entity_id: entry.entity_id,
+        entity_label: entry.entity_label,
+        details: entry.details || {},
+      });
+    } else {
+      await supabase.from("audit_log").insert({
+        action: entry.action,
+        entity_type: entry.entity_type,
+        entity_id: entry.entity_id || null,
+        entity_label: entry.entity_label || null,
+        actor_name: entry.actor_name || "مدير الموارد البشرية",
+        actor_employee_id: entry.actor_employee_id || null,
+        details: entry.details || {},
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 /** Create a notification */
@@ -1725,16 +1830,33 @@ export async function createNotification(n: {
   target_employee_id?: string;
   action_url?: string;
 }) {
-  await supabase.from("notifications").insert({
-    title: n.title,
-    body: n.body || null,
-    type: n.type || "info",
-    category: n.category || "system",
-    entity_type: n.entity_type || null,
-    entity_id: n.entity_id || null,
-    target_employee_id: n.target_employee_id || null,
-    action_url: n.action_url || null,
-  });
+  try {
+    if (isOdooBackend()) {
+      await odooData.createNotification({
+        title: n.title,
+        body: n.body,
+        type: n.type || "info",
+        category: n.category || "system",
+        entity_type: n.entity_type,
+        entity_id: n.entity_id,
+        target_employee_id: n.target_employee_id,
+        action_url: n.action_url,
+      });
+    } else {
+      await supabase.from("notifications").insert({
+        title: n.title,
+        body: n.body || null,
+        type: n.type || "info",
+        category: n.category || "system",
+        entity_type: n.entity_type || null,
+        entity_id: n.entity_id || null,
+        target_employee_id: n.target_employee_id || null,
+        action_url: n.action_url || null,
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // ——— Helpers ———

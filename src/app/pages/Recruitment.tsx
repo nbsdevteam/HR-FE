@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   UserPlus, Plus, X, Briefcase, MapPin, Clock, Users, FileCheck, Search,
@@ -10,8 +10,48 @@ import { EmptyState } from "../components/EmptyState";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { supabase } from "../lib/supabase";
-import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant } from "../lib/hooks";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
+import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant, type DbDepartment } from "../lib/hooks";
 import { DEPARTMENTS } from "../lib/constants";
+
+// Odoo's lugal.hr.job.opening / lugal.hr.applicant use fixed English enum
+// values, while the FE displays/edits Arabic labels. Map explicitly both ways.
+const JOB_STATUS_TO_ODOO: Record<string, string> = {
+  "مفتوح": "open", "مغلق": "closed", "قيد المراجعة": "on_hold", "مسودة": "draft",
+};
+const ODOO_TO_JOB_STATUS: Record<string, string> = {
+  open: "مفتوح", closed: "مغلق", on_hold: "قيد المراجعة", draft: "مسودة",
+};
+const JOB_TYPE_TO_ODOO: Record<string, string> = {
+  "دوام كامل": "full_time", "دوام جزئي": "part_time", "عقد مؤقت": "contract",
+};
+const ODOO_TO_JOB_TYPE: Record<string, string> = {
+  full_time: "دوام كامل", part_time: "دوام جزئي", contract: "عقد مؤقت",
+  temporary: "عقد مؤقت", internship: "تدريب",
+};
+const STAGE_TO_ODOO: Record<string, string> = {
+  "تقديم": "applied", "فرز أولي": "screening", "مقابلة": "interview_1",
+  "اختبار": "assessment", "عرض": "offer", "مقبول": "hired", "مرفوض": "rejected",
+};
+const ODOO_TO_STAGE: Record<string, string> = {
+  applied: "تقديم", screening: "فرز أولي", interview_1: "مقابلة", interview_2: "مقابلة",
+  assessment: "اختبار", offer: "عرض", hired: "مقبول", rejected: "مرفوض",
+};
+const GENDER_TO_ODOO: Record<string, string> = { "ذكر": "male", "أنثى": "female" };
+const ODOO_TO_GENDER: Record<string, string> = { male: "ذكر", female: "أنثى" };
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",").pop() || "");
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 /* ──────── Constants ──────── */
 const STAGES = ["تقديم", "فرز أولي", "مقابلة", "اختبار", "عرض", "مقبول"] as const;
@@ -87,8 +127,29 @@ const labelCls = "text-foreground block mb-1.5";
 
 /* ──────── Main Component ──────── */
 export function Recruitment() {
-  const { jobs, loading: jobsLoading, refetch: refetchJobs } = useJobOpenings();
-  const { applicants, loading: appsLoading, refetch: refetchApps } = useApplicants();
+  const { jobs: rawJobs, loading: jobsLoading, refetch: refetchJobs } = useJobOpenings();
+  const { applicants: rawApplicants, loading: appsLoading, refetch: refetchApps } = useApplicants();
+
+  // Translate Odoo enum keys → Arabic display labels used throughout this page
+  const jobs = useMemo(() => (
+    isOdooBackend()
+      ? rawJobs.map(j => ({
+          ...j,
+          status: ODOO_TO_JOB_STATUS[j.status] || j.status,
+          type: ODOO_TO_JOB_TYPE[j.type] || j.type,
+        }))
+      : rawJobs
+  ), [rawJobs]);
+  const applicants = useMemo(() => (
+    isOdooBackend()
+      ? rawApplicants.map(a => ({
+          ...a,
+          stage: ODOO_TO_STAGE[a.stage] || a.stage,
+          gender: a.gender ? (ODOO_TO_GENDER[a.gender] || a.gender) : a.gender,
+          job_status: a.job_status ? (ODOO_TO_JOB_STATUS[a.job_status] || a.job_status) : a.job_status,
+        }))
+      : rawApplicants
+  ), [rawApplicants]);
 
   const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank">("applicants");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -144,6 +205,11 @@ export function Recruitment() {
 
   /* ──── CRUD Handlers ──── */
   const handleToggleBookmark = useCallback(async (app: DbApplicant) => {
+    if (isOdooBackend()) {
+      await odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked });
+      refetchApps();
+      return;
+    }
     const { error } = await supabase
       .from("applicants")
       .update({ is_bookmarked: !app.is_bookmarked })
@@ -152,17 +218,33 @@ export function Recruitment() {
   }, [refetchApps]);
 
   const handleUpdateRating = useCallback(async (id: string, rating: number) => {
+    if (isOdooBackend()) {
+      await odooData.updateApplicant(id, { rating });
+      refetchApps();
+      return;
+    }
     const { error } = await supabase.from("applicants").update({ rating }).eq("id", id);
     if (!error) refetchApps();
   }, [refetchApps]);
 
   const handleUpdateStage = useCallback(async (id: string, stage: string) => {
+    if (isOdooBackend()) {
+      await odooData.updateApplicant(id, { stage: STAGE_TO_ODOO[stage] || stage });
+      refetchApps();
+      return;
+    }
     const { error } = await supabase.from("applicants").update({ stage }).eq("id", id);
     if (!error) refetchApps();
   }, [refetchApps]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المتقدم؟")) return;
+    if (isOdooBackend()) {
+      await odooData.deleteApplicant(id);
+      setSelectedApplicant(null);
+      refetchApps();
+      return;
+    }
     const { error } = await supabase.from("applicants").delete().eq("id", id);
     if (!error) {
       setSelectedApplicant(null);
@@ -172,6 +254,32 @@ export function Recruitment() {
 
   const handleConvertToEmployee = useCallback(async (app: DbApplicant) => {
     if (!confirm(`هل تريد تحويل "${app.name}" إلى موظف في النظام؟`)) return;
+
+    if (isOdooBackend()) {
+      try {
+        const depts = await odooData.fetchDepartments();
+        const dept = depts.find(d => d.name === app.job_department);
+        await odooData.createEmployee({
+          name: app.name,
+          email: app.email || undefined,
+          phone: app.phone || undefined,
+          department_id: dept?.id || undefined,
+          gender: app.gender ? (GENDER_TO_ODOO[app.gender] || app.gender) : undefined,
+          monthly_salary: app.expected_salary || undefined,
+          status: "active",
+        });
+        await odooData.updateApplicant(app.id, {
+          stage: "hired",
+          notes: (app.notes || "") + "\n[تم التحويل لموظف]",
+        });
+        setSelectedApplicant(null);
+        refetchApps();
+        alert(`تم إضافة "${app.name}" كموظف بنجاح!`);
+      } catch (e: any) {
+        alert("خطأ في تحويل المتقدم: " + e.message);
+      }
+      return;
+    }
 
     // Retry loop handles TOCTOU race on person_id (two concurrent inserts could pick same ID)
     const MAX_RETRIES = 3;
@@ -777,7 +885,11 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
 
   const saveNotes = async () => {
     setSavingNotes(true);
-    await supabase.from("applicants").update({ interview_notes: interviewNotes }).eq("id", applicant.id);
+    if (isOdooBackend()) {
+      await odooData.updateApplicant(applicant.id, { interview_notes: interviewNotes });
+    } else {
+      await supabase.from("applicants").update({ interview_notes: interviewNotes }).eq("id", applicant.id);
+    }
     setSavingNotes(false);
     onRefresh();
   };
@@ -985,11 +1097,37 @@ function JobFormModal({ jobs, onClose, onSaved }: {
     requirements: "",
   });
   const [saving, setSaving] = useState(false);
+  const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
+
+  useEffect(() => {
+    if (isOdooBackend()) {
+      odooData.fetchDepartments().then(setOdooDepartments).catch(() => {});
+    }
+  }, []);
 
   const handleSave = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
     const reqs = form.requirements.split("\n").map(r => r.trim()).filter(Boolean);
+
+    if (isOdooBackend()) {
+      const dept = odooDepartments.find(d => d.name === form.department);
+      await odooData.createJobOpening({
+        title: form.title,
+        department_id: dept?.id || undefined,
+        location: form.location,
+        job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
+        status: "open",
+        deadline: form.deadline || null,
+        description: form.description || null,
+        salary_range: form.salary_range || null,
+        requirements: reqs.length > 0 ? reqs : [],
+      });
+      setSaving(false);
+      onSaved();
+      return;
+    }
+
     const { error } = await supabase.from("job_openings").insert({
       title: form.title,
       department: form.department,
@@ -1086,6 +1224,7 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [pendingResumeFile, setPendingResumeFile] = useState<File | null>(null);
 
   const [form, setForm] = useState({
     name: editingApplicant?.name || "",
@@ -1110,6 +1249,16 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
   const handleFileUpload = async (file: File) => {
     setUploading(true);
     setUploadError("");
+
+    if (isOdooBackend()) {
+      // Odoo's upload endpoint requires an existing applicant id, so we
+      // stage the file and upload it right after create/update succeeds.
+      setPendingResumeFile(file);
+      setForm(prev => ({ ...prev, resume_url: "pending" }));
+      setUploading(false);
+      return;
+    }
+
     const ext = file.name.split(".").pop();
     const path = `cv-${Date.now()}.${ext}`;
 
@@ -1133,6 +1282,47 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     if (!form.name.trim() || !form.job_opening_id) return;
     setSaving(true);
     const skillsArr = form.skills.split(",").map(s => s.trim()).filter(Boolean);
+
+    if (isOdooBackend()) {
+      try {
+        const odooPayload: Record<string, unknown> = {
+          name: form.name,
+          email: form.email || null,
+          phone: form.phone || null,
+          job_opening_id: form.job_opening_id,
+          stage: STAGE_TO_ODOO[form.stage] || form.stage,
+          rating: form.rating,
+          skills: skillsArr.length > 0 ? skillsArr : [],
+          experience_years: Number(form.experience_years) || 0,
+          education: form.education || null,
+          current_company: form.current_company || null,
+          city: form.city || null,
+          gender: form.gender ? (GENDER_TO_ODOO[form.gender] || form.gender) : null,
+          source: form.source || "مباشر",
+          expected_salary: form.expected_salary ? Number(form.expected_salary) : null,
+          salary_currency: form.salary_currency || "IQD",
+          notes: form.notes || null,
+        };
+        let applicantId: string | number;
+        if (isEdit) {
+          await odooData.updateApplicant(editingApplicant!.id, odooPayload);
+          applicantId = editingApplicant!.id;
+        } else {
+          const res: any = await odooData.createApplicant(odooPayload);
+          applicantId = res?.data?.id;
+        }
+        if (pendingResumeFile && applicantId) {
+          const base64 = await fileToBase64(pendingResumeFile);
+          await odooData.uploadApplicantResume(applicantId, base64, pendingResumeFile.name);
+        }
+        setSaving(false);
+        onSaved();
+      } catch (e: any) {
+        setSaving(false);
+        setUploadError(e.message || "فشل الحفظ");
+      }
+      return;
+    }
 
     const payload: any = {
       name: form.name,

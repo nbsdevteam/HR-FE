@@ -1633,7 +1633,7 @@ export function SettingsPage() {
               <button
                 onClick={async () => {
                   if (!newContractType.name_ar || !newContractType.code) return;
-                  await supabase.from("contract_types").insert({
+                  const ctPayload = {
                     name_ar: newContractType.name_ar,
                     name_en: newContractType.name_en || null,
                     code: newContractType.code,
@@ -1643,7 +1643,9 @@ export function SettingsPage() {
                     probation_days: newContractType.probation_days,
                     notice_period_days: newContractType.notice_period_days,
                     sort_order: newContractType.sort_order,
-                  });
+                  };
+                  if (isOdooBackend()) await odooData.createContractType(ctPayload);
+                  else await supabase.from("contract_types").insert(ctPayload);
                   showToast("تم إضافة نوع العقد");
                   setShowNewContractTypeForm(false);
                   setNewContractType({ name_ar: "", name_en: "", code: "", description: "", default_duration_months: 12, is_renewable: true, probation_days: 90, notice_period_days: 30, sort_order: 0 });
@@ -1676,14 +1678,16 @@ export function SettingsPage() {
                     <Toggle
                       on={ct.is_active}
                       onClick={async () => {
-                        await supabase.from("contract_types").update({ is_active: !ct.is_active }).eq("id", ct.id);
+                        if (isOdooBackend()) await odooData.updateContractType(ct.id, { is_active: !ct.is_active });
+                        else await supabase.from("contract_types").update({ is_active: !ct.is_active }).eq("id", ct.id);
                         refetchContractTypes();
                       }}
                     />
                     <button
                       onClick={async () => {
                         if (!confirm("حذف نوع العقد؟")) return;
-                        await supabase.from("contract_types").delete().eq("id", ct.id);
+                        if (isOdooBackend()) await odooData.deleteContractType(ct.id);
+                        else await supabase.from("contract_types").delete().eq("id", ct.id);
                         showToast("تم حذف نوع العقد");
                         refetchContractTypes();
                       }}

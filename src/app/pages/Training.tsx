@@ -23,6 +23,8 @@ import {
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { DonutChart } from "../components/donut-chart";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import {
   useTrainingPrograms,
   useTrainingParticipants,
@@ -33,6 +35,21 @@ import {
   DbTrainingParticipant,
   DbEmployee,
 } from "../lib/hooks";
+
+// Odoo's lugal.hr.training.* models use fixed English selections; the FE
+// displays Arabic labels driven by configurations. Map between them explicitly.
+const TRAINING_STATUS_TO_ODOO: Record<string, string> = {
+  "قادم": "planned", "جاري": "in_progress", "مكتمل": "completed", "ملغي": "cancelled",
+};
+const ODOO_TO_TRAINING_STATUS: Record<string, string> = {
+  planned: "قادم", in_progress: "جاري", completed: "مكتمل", cancelled: "ملغي",
+};
+const PARTICIPANT_STATUS_TO_ODOO: Record<string, string> = {
+  "مسجل": "enrolled", "جاري": "in_progress", "مكتمل": "completed", "منسحب": "withdrawn",
+};
+const ODOO_TO_PARTICIPANT_STATUS: Record<string, string> = {
+  enrolled: "مسجل", in_progress: "جاري", completed: "مكتمل", failed: "مكتمل", withdrawn: "منسحب",
+};
 
 // Color palettes for dynamic status/participant status assignment
 const statusColorPalette = [
@@ -134,8 +151,21 @@ export function Training() {
 
   const filters = ["الكل", ...trainingCategories];
 
+  // Translate Odoo enum keys → Arabic display labels
+  const displayPrograms = useMemo(() => {
+    if (!isOdooBackend()) return programs;
+    return programs.map((p) => ({ ...p, status: ODOO_TO_TRAINING_STATUS[p.status] || p.status }));
+  }, [programs]);
+  const displayParticipants = useMemo(() => {
+    if (!isOdooBackend()) return allParticipants;
+    return allParticipants.map((p) => ({
+      ...p,
+      completion_status: ODOO_TO_PARTICIPANT_STATUS[p.completion_status] || p.completion_status,
+    }));
+  }, [allParticipants]);
+
   const filtered = useMemo(() => {
-    let result = programs;
+    let result = displayPrograms;
     if (filter !== "الكل") {
       result = result.filter((p) => p.category === filter);
     }
@@ -143,23 +173,23 @@ export function Training() {
       result = result.filter((p) => p.title.includes(searchTerm));
     }
     return result;
-  }, [programs, filter, searchTerm]);
+  }, [displayPrograms, filter, searchTerm]);
 
   const programParticipants = (programId: string) => {
-    return allParticipants.filter((p) => p.training_program_id === programId);
+    return displayParticipants.filter((p) => p.training_program_id === programId);
   };
 
   const stats = useMemo(() => {
     return {
-      totalPrograms: programs.length,
-      ongoingPrograms: programs.filter((p) => p.status === "جاري").length,
-      completedPrograms: programs.filter((p) => p.status === "مكتمل").length,
-      totalParticipants: allParticipants.length,
-      completionRate: allParticipants.length > 0
-        ? Math.round((allParticipants.filter((p) => p.completion_status === "مكتمل").length / allParticipants.length) * 100)
+      totalPrograms: displayPrograms.length,
+      ongoingPrograms: displayPrograms.filter((p) => p.status === "جاري").length,
+      completedPrograms: displayPrograms.filter((p) => p.status === "مكتمل").length,
+      totalParticipants: displayParticipants.length,
+      completionRate: displayParticipants.length > 0
+        ? Math.round((displayParticipants.filter((p) => p.completion_status === "مكتمل").length / displayParticipants.length) * 100)
         : 0,
     };
-  }, [programs, allParticipants]);
+  }, [displayPrograms, displayParticipants]);
 
   const handleCreateProgram = async () => {
     if (!createForm.title || !createForm.category) {
@@ -172,21 +202,26 @@ export function Training() {
         ? createForm.objectives.split("\n").filter((o) => o.trim())
         : [];
 
-      const { error } = await supabase.from("training_programs").insert({
+      const payload = {
         title: createForm.title,
         category: createForm.category,
         weight: createForm.weight,
         instructor: createForm.instructor || null,
         duration: createForm.duration || null,
-        status: createForm.status,
+        status: isOdooBackend() ? (TRAINING_STATUS_TO_ODOO[createForm.status] || "planned") : createForm.status,
         completion_rate: 0,
         max_participants: createForm.max_participants ? parseInt(createForm.max_participants) : null,
         start_date: createForm.start_date || null,
         end_date: createForm.end_date || null,
         objectives: objectives.length > 0 ? objectives : null,
-      });
+      };
 
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.createTrainingProgram(payload);
+      } else {
+        const { error } = await supabase.from("training_programs").insert(payload);
+        if (error) throw error;
+      }
 
       showToast("success", "تم إنشاء البرنامج التدريبي بنجاح");
       setCreateForm({
@@ -212,17 +247,28 @@ export function Training() {
     if (!editingProgram) return;
 
     try {
-      const { error } = await supabase
-        .from("training_programs")
-        .update({
-          status: editingProgram.status,
+      const status = isOdooBackend()
+        ? (TRAINING_STATUS_TO_ODOO[editingProgram.status] || editingProgram.status)
+        : editingProgram.status;
+      if (isOdooBackend()) {
+        await odooData.updateTrainingProgram(editingProgram.id, {
+          status,
           completion_rate: editingProgram.completion_rate,
           instructor: editingProgram.instructor,
           duration: editingProgram.duration,
-        })
-        .eq("id", editingProgram.id);
-
-      if (error) throw error;
+        });
+      } else {
+        const { error } = await supabase
+          .from("training_programs")
+          .update({
+            status,
+            completion_rate: editingProgram.completion_rate,
+            instructor: editingProgram.instructor,
+            duration: editingProgram.duration,
+          })
+          .eq("id", editingProgram.id);
+        if (error) throw error;
+      }
 
       showToast("success", "تم تحديث البرنامج بنجاح");
       setEditingProgram(null);
@@ -236,13 +282,14 @@ export function Training() {
     if (!confirm("هل تريد حذف هذا البرنامج التدريبي؟")) return;
 
     try {
-      // Delete participants first
-      await supabase.from("training_participants").delete().eq("training_program_id", id);
-
-      // Delete program
-      const { error } = await supabase.from("training_programs").delete().eq("id", id);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.deleteTrainingProgram(id);
+      } else {
+        // Delete participants first
+        await supabase.from("training_participants").delete().eq("training_program_id", id);
+        const { error } = await supabase.from("training_programs").delete().eq("id", id);
+        if (error) throw error;
+      }
 
       showToast("success", "تم حذف البرنامج بنجاح");
       refetchPrograms();
@@ -259,16 +306,24 @@ export function Training() {
     }
 
     try {
-      const { error } = await supabase.from("training_participants").insert({
-        training_program_id: selectedProgramForParticipants,
-        employee_id: enrollForm.employee_id,
-        completion_status: enrollForm.completion_status,
-        score: enrollForm.score ? parseInt(enrollForm.score) : null,
-        enrolled_at: new Date().toISOString(),
-        completed_at: enrollForm.completion_status === "مكتمل" ? new Date().toISOString() : null,
-      });
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.createTrainingParticipant({
+          training_program_id: selectedProgramForParticipants,
+          employee_id: enrollForm.employee_id,
+          completion_status: PARTICIPANT_STATUS_TO_ODOO[enrollForm.completion_status] || "enrolled",
+          score: enrollForm.score ? parseInt(enrollForm.score) : null,
+        });
+      } else {
+        const { error } = await supabase.from("training_participants").insert({
+          training_program_id: selectedProgramForParticipants,
+          employee_id: enrollForm.employee_id,
+          completion_status: enrollForm.completion_status,
+          score: enrollForm.score ? parseInt(enrollForm.score) : null,
+          enrolled_at: new Date().toISOString(),
+          completed_at: enrollForm.completion_status === "مكتمل" ? new Date().toISOString() : null,
+        });
+        if (error) throw error;
+      }
 
       showToast("success", "تم تسجيل الموظف في البرنامج بنجاح");
       setEnrollForm({
@@ -285,16 +340,22 @@ export function Training() {
 
   const handleMarkCompleted = async (participantId: string, score: number) => {
     try {
-      const { error } = await supabase
-        .from("training_participants")
-        .update({
-          completion_status: "مكتمل",
-          score: score,
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", participantId);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.updateTrainingParticipant(participantId, {
+          completion_status: "completed",
+          score,
+        });
+      } else {
+        const { error } = await supabase
+          .from("training_participants")
+          .update({
+            completion_status: "مكتمل",
+            score: score,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", participantId);
+        if (error) throw error;
+      }
 
       showToast("success", "تم تحديث حالة المشارك");
       refetchParticipants();
@@ -307,12 +368,15 @@ export function Training() {
     if (!confirm("هل تريد حذف هذا المشارك من البرنامج؟")) return;
 
     try {
-      const { error } = await supabase
-        .from("training_participants")
-        .delete()
-        .eq("id", participantId);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.deleteTrainingParticipant(participantId);
+      } else {
+        const { error } = await supabase
+          .from("training_participants")
+          .delete()
+          .eq("id", participantId);
+        if (error) throw error;
+      }
 
       showToast("success", "تم حذف المشارك بنجاح");
       refetchParticipants();

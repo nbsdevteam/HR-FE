@@ -5,8 +5,19 @@ import {
   Edit2, Trash2, Save, AlertTriangle, CheckCircle, Archive, RotateCcw
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import { usePolicies, type DbPolicy } from "../lib/hooks";
+
+// Odoo's lugal.hr.policy uses a fixed English status selection; the FE
+// displays Arabic labels directly. Map between them explicitly.
+const POLICY_STATUS_TO_ODOO: Record<string, string> = {
+  "نشط": "active", "قيد المراجعة": "draft", "مؤرشف": "archived",
+};
+const ODOO_STATUS_TO_POLICY: Record<string, string> = {
+  active: "نشط", draft: "قيد المراجعة", archived: "مؤرشف",
+};
 
 const CATEGORY_ICONS: Record<string, any> = {
   "إجازات": Calendar,
@@ -66,8 +77,13 @@ export function Policies() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Translate Odoo enum keys → Arabic display labels
+  const displayPolicies = policies.map(p => (
+    isOdooBackend() ? { ...p, status: ODOO_STATUS_TO_POLICY[p.status] || p.status } : p
+  ));
+
   // Filter policies
-  const filtered = policies.filter(p => {
+  const filtered = displayPolicies.filter(p => {
     const matchSearch = (p.title?.includes(search) || p.description?.includes(search)) ?? false;
     const matchCat = selectedCategory === "الكل" || p.category === selectedCategory;
     return matchSearch && matchCat;
@@ -75,10 +91,10 @@ export function Policies() {
 
   // Calculate stats
   const stats = {
-    total: policies.length,
-    active: policies.filter(p => p.status === "نشط").length,
-    underReview: policies.filter(p => p.status === "قيد المراجعة").length,
-    archived: policies.filter(p => p.status === "مؤرشف").length,
+    total: displayPolicies.length,
+    active: displayPolicies.filter(p => p.status === "نشط").length,
+    underReview: displayPolicies.filter(p => p.status === "قيد المراجعة").length,
+    archived: displayPolicies.filter(p => p.status === "مؤرشف").length,
   };
 
   // Create policy
@@ -91,20 +107,30 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("policies").insert([
-        {
+      if (isOdooBackend()) {
+        await odooData.createPolicy({
           title: createForm.title,
           category: createForm.category,
           description: createForm.description,
           content: createForm.content,
-          status: "نشط",
+          status: "active",
           version: 1,
-          last_updated: new Date().toISOString().split('T')[0],
-          created_at: new Date().toISOString(),
-        }
-      ]);
-
-      if (error) throw error;
+        });
+      } else {
+        const { error } = await supabase.from("policies").insert([
+          {
+            title: createForm.title,
+            category: createForm.category,
+            description: createForm.description,
+            content: createForm.content,
+            status: "نشط",
+            version: 1,
+            last_updated: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+          }
+        ]);
+        if (error) throw error;
+      }
 
       showToast("تم إنشاء السياسة بنجاح");
       setCreateForm({ title: "", category: "عام", description: "", content: "" });
@@ -124,20 +150,30 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("policies")
-        .update({
+      if (isOdooBackend()) {
+        await odooData.updatePolicy(editingPolicy.id, {
           title: editingPolicy.title,
           category: editingPolicy.category,
           description: editingPolicy.description,
           content: editingPolicy.content,
-          status: editingPolicy.status,
+          status: POLICY_STATUS_TO_ODOO[editingPolicy.status] || editingPolicy.status,
           version: editingPolicy.version + 1,
-          last_updated: new Date().toISOString().split('T')[0],
-        })
-        .eq("id", editingPolicy.id);
-
-      if (error) throw error;
+        });
+      } else {
+        const { error } = await supabase
+          .from("policies")
+          .update({
+            title: editingPolicy.title,
+            category: editingPolicy.category,
+            description: editingPolicy.description,
+            content: editingPolicy.content,
+            status: editingPolicy.status,
+            version: editingPolicy.version + 1,
+            last_updated: new Date().toISOString().split('T')[0],
+          })
+          .eq("id", editingPolicy.id);
+        if (error) throw error;
+      }
 
       showToast("تم تحديث السياسة بنجاح");
       setEditingPolicy(null);
@@ -156,12 +192,15 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("policies")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.deletePolicy(id);
+      } else {
+        const { error } = await supabase
+          .from("policies")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+      }
 
       showToast("تم حذف السياسة بنجاح");
       await refetch();
@@ -183,15 +222,20 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("policies")
-        .update({
-          status: newStatus,
-          last_updated: new Date().toISOString().split('T')[0],
-        })
-        .eq("id", policy.id);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.updatePolicy(policy.id, {
+          status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus,
+        });
+      } else {
+        const { error } = await supabase
+          .from("policies")
+          .update({
+            status: newStatus,
+            last_updated: new Date().toISOString().split('T')[0],
+          })
+          .eq("id", policy.id);
+        if (error) throw error;
+      }
 
       showToast(`تم تغيير الحالة إلى: ${newStatus}`);
       await refetch();
