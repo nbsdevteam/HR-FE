@@ -10,7 +10,12 @@ import { CustomGroupedBarChart } from "../components/custom-grouped-bar-chart";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { supabase } from "../lib/supabase";
-import { useEmployees, empDisplayName, formatTime, formatWorkHours, mapAttendanceStatus, useShifts, resolveEmployeeShift, shiftToSchedule, useHierarchyData } from "../lib/hooks";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
+import {
+  useEmployees, useAttendanceRecords, empDisplayName, formatTime, formatWorkHours,
+  mapAttendanceStatus, useShifts, resolveEmployeeShift, shiftToSchedule, useHierarchyData,
+} from "../lib/hooks";
 import type { DbAttendanceRecord, DbEmployee } from "../lib/hooks";
 import type { EmployeeSchedule } from "../lib/payslip-engine";
 
@@ -99,8 +104,14 @@ export function Attendance() {
   const { employees } = useEmployees();
   const { shifts: dbShifts } = useShifts();
   const { departments: dbDepartments } = useHierarchyData();
+  const thirtyDaysAgo = useMemo(
+    () => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
+    [],
+  );
+  const { records: hookRecords, loading, refetch: refetchAttendance } = useAttendanceRecords({
+    date_from: thirtyDaysAgo,
+  });
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [searchTerm, setSearchTerm] = useState("");
@@ -113,51 +124,49 @@ export function Attendance() {
   const [excuseForm, setExcuseForm] = useState({late: false, absence: false, shortfall: false, note: ""});
   const [excuseSaving, setExcuseSaving] = useState(false);
 
-  // Fetch attendance records — server-side date filter (last 30 days by default)
   useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("attendance_records")
-        .select("*")
-        .gte("date", thirtyDaysAgo)
-        .order("date", { ascending: false });
-      const records = data || [];
-      setRawRecords(records);
-      if (records.length > 0 && !selectedDate) {
-        const dates = [...new Set(records.map(r => r.date))].sort().reverse();
-        setSelectedDate(dates[0]);
-      }
-      setLoading(false);
+    setRawRecords(hookRecords);
+    if (hookRecords.length > 0 && !selectedDate) {
+      const dates = [...new Set(hookRecords.map((r) => r.date))].sort().reverse();
+      setSelectedDate(dates[0]);
     }
-    fetch();
-  }, []);
+  }, [hookRecords]);
 
   const handleSaveExcuse = async () => {
     if (!excuseModal) return;
     setExcuseSaving(true);
     try {
-      const { error } = await supabase
-        .from("attendance_records")
-        .update({
+      if (isOdooBackend()) {
+        await odooData.excuseAttendance({
+          attendance_id: Number(excuseModal.record.id) || excuseModal.record.id,
           excused_late: excuseForm.late,
           excused_absence: excuseForm.absence,
           excused_shortfall: excuseForm.shortfall,
           excuse_note: excuseForm.note || null,
-          excused_by: "nooralnibras9@gmail.com",
-          excused_at: new Date().toISOString(),
-        })
-        .eq("id", excuseModal.record.id);
-      if (error) throw error;
-      setRawRecords(prev => prev.map(r => r.id === excuseModal.record.id ? {
+        });
+      } else {
+        const { error } = await supabase
+          .from("attendance_records")
+          .update({
+            excused_late: excuseForm.late,
+            excused_absence: excuseForm.absence,
+            excused_shortfall: excuseForm.shortfall,
+            excuse_note: excuseForm.note || null,
+            excused_by: "nooralnibras9@gmail.com",
+            excused_at: new Date().toISOString(),
+          })
+          .eq("id", excuseModal.record.id);
+        if (error) throw error;
+      }
+      setRawRecords((prev) => prev.map((r) => (r.id === excuseModal.record.id ? {
         ...r,
         excused_late: excuseForm.late,
         excused_absence: excuseForm.absence,
         excused_shortfall: excuseForm.shortfall,
         excuse_note: excuseForm.note || null,
-      } : r));
+      } : r)));
       setExcuseModal(null);
+      await refetchAttendance();
     } catch (err) {
       alert("خطأ في حفظ الإعذار");
     }
@@ -954,16 +963,28 @@ function EmployeeAttendanceDetail({
   const now = new Date();
   const [calMonth, setCalMonth] = useState(now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0"));
 
-  // Fetch ALL attendance records for this employee
+  // Fetch ALL attendance records for this employee (dual-mode)
   useEffect(() => {
     async function fetch() {
       setLoading(true);
-      const { data } = await supabase
-        .from("attendance_records")
-        .select("*")
-        .eq("employee_id", employeeId)
-        .order("date", { ascending: true });
-      setAllRecords(data || []);
+      try {
+        if (isOdooBackend()) {
+          setAllRecords(await odooData.fetchAttendance({
+            employee_id: employeeId,
+            limit: 5000,
+          }));
+        } else {
+          const { data } = await supabase
+            .from("attendance_records")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .order("date", { ascending: true });
+          setAllRecords(data || []);
+        }
+      } catch (e) {
+        console.error(e);
+        setAllRecords([]);
+      }
       setLoading(false);
     }
     fetch();

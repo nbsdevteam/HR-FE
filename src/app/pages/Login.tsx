@@ -72,19 +72,21 @@ export function Login() {
           onSubmit={handleSubmit}
           className="bg-card/30 backdrop-blur-md border border-border/40 rounded-2xl p-6 space-y-4 shadow-xl"
         >
-          {/* Email */}
+          {/* Email / username */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>البريد الإلكتروني</label>
+            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
+              {odooMode ? "اسم المستخدم" : "البريد الإلكتروني"}
+            </label>
             <div className="relative">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
-                type="email"
+                type={odooMode ? "text" : "email"}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full ps-10 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-                placeholder="example@company.com"
+                placeholder={odooMode ? "admin" : "example@company.com"}
                 dir="ltr"
-                autoComplete="email"
+                autoComplete={odooMode ? "username" : "email"}
               />
             </div>
           </div>

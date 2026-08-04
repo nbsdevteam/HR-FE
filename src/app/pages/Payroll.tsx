@@ -9,7 +9,15 @@ import {
   FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule, useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes, useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans, type DbShift } from "../lib/hooks";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
+import {
+  useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
+  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
+  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
+  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
+  type DbShift,
+} from "../lib/hooks";
 import { useAppSettings, formatMonthYear } from "../components/SettingsContext";
 import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "../lib/hooks";
 import {
@@ -77,41 +85,27 @@ export function Payroll() {
   const { loans: allLoans } = useLoans();
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [monthlyRecords, setMonthlyRecords] = useState<DbMonthlyRecord[]>([]);
-  const [ledgers, setLedgers] = useState<DbMonthlyLedger[]>([]);
-  const [attRecords, setAttRecords] = useState<DbAttendanceRecord[]>([]);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { records: monthlyRecords, loading: mrLoading, refetch: refetchMonthly } = useMonthlyRecords();
+  const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
+  const { records: attRecords, loading: attLoading, refetch: refetchAtt } = useAttendanceRecords();
+  const { requests: leaveReqRows, loading: lvLoading } = useLeaveRequests({ status: "مقبول" });
+  const leaveRequests = leaveReqRows as LeaveRequest[];
+  const loading = empLoading || mrLoading || ledLoading || attLoading || lvLoading;
   const [selectedMonth, setSelectedMonth] = useState("");
 
   // Detail panel state
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      const [mrRes, ledRes, attRes, lvRes] = await Promise.all([
-        supabase.from("monthly_records").select("*"),
-        supabase.from("monthly_ledgers").select("*"),
-        supabase.from("attendance_records").select("*").order("date", { ascending: false }).limit(5000),
-        supabase.from("leave_requests").select("*").eq("status", "مقبول"),
-      ]);
-      const records = mrRes.data || [];
-      setMonthlyRecords(records);
-      setLedgers(ledRes.data || []);
-      setAttRecords(attRes.data || []);
-      setLeaveRequests(lvRes.data || []);
-      if (records.length > 0 && !selectedMonth) {
-        const months = [...new Set(records.map((r: any) => r.month_year))].sort().reverse();
-        setSelectedMonth(months[0] as string);
-      } else if (!selectedMonth) {
-        const now = new Date();
-        setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
-      }
-      setLoading(false);
+    if (selectedMonth) return;
+    if (monthlyRecords.length > 0) {
+      const months = [...new Set(monthlyRecords.map((r) => r.month_year))].sort().reverse();
+      setSelectedMonth(months[0]);
+    } else {
+      const now = new Date();
+      setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
     }
-    fetch();
-  }, []);
+  }, [monthlyRecords, selectedMonth]);
 
   const empMap = useMemo(() => {
     const m: Record<string, DbEmployee> = {};
@@ -339,18 +333,22 @@ export function Payroll() {
         generated_at: new Date().toISOString(),
       }));
 
-      // Insert new rows first, then delete old — prevents data loss if insert fails
-      const batchId = crypto.randomUUID();
-      const taggedRows = rows.map((r: any) => ({ ...r, id: crypto.randomUUID() }));
-      const { error: insertErr } = await supabase.from("generated_payslips").insert(taggedRows);
-      if (insertErr) throw insertErr;
-
-      // Delete old payslips for this month (exclude the ones we just inserted)
-      const newIds = taggedRows.map((r: any) => r.id);
-      await supabase.from("generated_payslips")
-        .delete()
-        .eq("month", selectedMonth)
-        .not("id", "in", `(${newIds.join(",")})`);
+      if (isOdooBackend()) {
+        await odooData.generatePayslips({
+          month: selectedMonth,
+          payslips: rows,
+          replace_month: true,
+        });
+      } else {
+        const taggedRows = rows.map((r: any) => ({ ...r, id: crypto.randomUUID() }));
+        const { error: insertErr } = await supabase.from("generated_payslips").insert(taggedRows);
+        if (insertErr) throw insertErr;
+        const newIds = taggedRows.map((r: any) => r.id);
+        await supabase.from("generated_payslips")
+          .delete()
+          .eq("month", selectedMonth)
+          .not("id", "in", `(${newIds.join(",")})`);
+      }
 
       setPayslipsSaved(true);
       setTimeout(() => setPayslipsSaved(false), 3000);
@@ -454,8 +452,7 @@ export function Payroll() {
         employees={employees}
         ledgers={ledgers}
         onLedgerUpdate={async () => {
-          const { data } = await supabase.from("monthly_ledgers").select("*");
-          setLedgers(data || []);
+          await refetchLedgers();
         }}
         dbShifts={dbShifts}
         dbDepartments={dbDepartments}
@@ -817,23 +814,32 @@ function UploadTab({
       }
 
       if (attRows.length > 0) {
-        // Upsert attendance records (delete existing for same dates then insert)
-        const dates = [...new Set(attRows.map((r) => r.date))];
-        const empIds = [...new Set(attRows.map((r) => r.employee_id))];
-
-        // Delete old records for these employees and dates
-        for (const empId of empIds) {
-          await supabase
-            .from("attendance_records")
-            .delete()
-            .eq("employee_id", empId)
-            .in("date", dates);
-        }
-
-        // Insert in batches of 100
-        for (let i = 0; i < attRows.length; i += 100) {
-          const batch = attRows.slice(i, i + 100);
-          await supabase.from("attendance_records").insert(batch);
+        if (isOdooBackend()) {
+          for (let i = 0; i < attRows.length; i += 100) {
+            const batch = attRows.slice(i, i + 100).map((r: any) => ({
+              employee_id: r.employee_id,
+              date: r.date,
+              check_in_time: r.check_in_time,
+              check_out_time: r.check_out_time,
+              status: r.status,
+              source: "manual",
+            }));
+            await odooData.importAttendance(batch);
+          }
+        } else {
+          const dates = [...new Set(attRows.map((r) => r.date))];
+          const empIds = [...new Set(attRows.map((r) => r.employee_id))];
+          for (const empId of empIds) {
+            await supabase
+              .from("attendance_records")
+              .delete()
+              .eq("employee_id", empId)
+              .in("date", dates);
+          }
+          for (let i = 0; i < attRows.length; i += 100) {
+            const batch = attRows.slice(i, i + 100);
+            await supabase.from("attendance_records").insert(batch);
+          }
         }
       }
 
@@ -1154,7 +1160,9 @@ function PayrollDetailPanel({
         penalty_by_currency: { ...existingPenalty, [c]: ledgerPenalty },
       };
 
-      if (currentLedger) {
+      if (isOdooBackend()) {
+        await odooData.upsertMonthlyLedger(payload);
+      } else if (currentLedger) {
         const { error } = await supabase.from("monthly_ledgers").update(payload).eq("id", currentLedger.id);
         if (error) throw error;
       } else {
@@ -1630,14 +1638,26 @@ function PayrollDetailPanel({
                         const rec = records.find((r) => r.id === id);
                         if (rec) {
                           rec.excusedAbsence = !rec.excusedAbsence; bumpExcuseVersion();
-                          if (empId) supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                          if (empId) {
+                            if (isOdooBackend()) {
+                              odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
+                            } else {
+                              supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                            }
+                          }
                         }
                       }}
                       onExcuseShortfall={(id) => {
                         const rec = records.find((r) => r.id === id);
                         if (rec) {
                           rec.excusedShortfall = !rec.excusedShortfall; bumpExcuseVersion();
-                          if (empId) supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                          if (empId) {
+                            if (isOdooBackend()) {
+                              odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
+                            } else {
+                              supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                            }
+                          }
                         }
                       }}
                     />
@@ -1656,7 +1676,13 @@ function PayrollDetailPanel({
                       const rec = records.find((r) => r.id === id);
                       if (rec) {
                         rec.excusedShortfall = !rec.excusedShortfall; bumpExcuseVersion();
-                        if (empId) supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                        if (empId) {
+                          if (isOdooBackend()) {
+                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
+                          } else {
+                            supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                          }
+                        }
                       }
                     }}
                   />
@@ -1673,7 +1699,13 @@ function PayrollDetailPanel({
                       const rec = records.find((r) => r.id === id);
                       if (rec) {
                         rec.excusedAbsence = !rec.excusedAbsence; bumpExcuseVersion();
-                        if (empId) supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                        if (empId) {
+                          if (isOdooBackend()) {
+                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
+                          } else {
+                            supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
+                          }
+                        }
                       }
                     }}
                   />

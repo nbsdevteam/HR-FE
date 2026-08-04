@@ -617,89 +617,113 @@ export function useHierarchyData() {
   return { employees, departments, loading, refetch: fetchData };
 }
 
-export function useAttendanceRecords(date?: string) {
+export type AttendanceRecordsFilter = {
+  date?: string;
+  date_from?: string;
+  date_to?: string;
+  employeeId?: string;
+};
+
+export function useAttendanceRecords(dateOrFilter?: string | AttendanceRecordsFilter) {
+  const filter: AttendanceRecordsFilter =
+    typeof dateOrFilter === "string" || dateOrFilter === undefined
+      ? { date: dateOrFilter }
+      : dateOrFilter;
   const [records, setRecords] = useState<DbAttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      try {
-        if (isOdooBackend()) {
-          setRecords(await odooData.fetchAttendance(date));
-        } else {
-          let q = supabase.from("attendance_records").select("*");
-          if (date) q = q.eq("date", date);
-          q = q.order("date", { ascending: false }).limit(date ? 500 : 5000);
-          const { data } = await q;
-          setRecords(data || []);
-        }
-      } catch (e) {
-        console.error(e);
-        setRecords([]);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        setRecords(await odooData.fetchAttendance({
+          date: filter.date,
+          date_from: filter.date_from,
+          date_to: filter.date_to,
+          employee_id: filter.employeeId,
+        }));
+      } else {
+        let q = supabase.from("attendance_records").select("*");
+        if (filter.date) q = q.eq("date", filter.date);
+        if (filter.date_from) q = q.gte("date", filter.date_from);
+        if (filter.date_to) q = q.lte("date", filter.date_to);
+        if (filter.employeeId) q = q.eq("employee_id", filter.employeeId);
+        q = q.order("date", { ascending: false }).limit(
+          filter.date || filter.employeeId ? 500 : 5000,
+        );
+        const { data } = await q;
+        setRecords(data || []);
       }
-      setLoading(false);
+    } catch (e) {
+      console.error(e);
+      setRecords([]);
     }
-    fetch();
-  }, [date]);
+    setLoading(false);
+  };
 
-  return { records, loading };
+  useEffect(() => {
+    fetch();
+  }, [filter.date, filter.date_from, filter.date_to, filter.employeeId]);
+
+  return { records, loading, refetch: fetch };
 }
 
 export function useMonthlyRecords(monthYear?: string) {
   const [records, setRecords] = useState<DbMonthlyRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      try {
-        if (isOdooBackend()) {
-          setRecords(await odooData.fetchMonthlyRecords(monthYear));
-        } else {
-          let q = supabase.from("monthly_records").select("*");
-          if (monthYear) q = q.eq("month_year", monthYear);
-          const { data } = await q;
-          setRecords(data || []);
-        }
-      } catch (e) {
-        console.error(e);
-        setRecords([]);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        setRecords(await odooData.fetchMonthlyRecords(monthYear));
+      } else {
+        let q = supabase.from("monthly_records").select("*");
+        if (monthYear) q = q.eq("month_year", monthYear);
+        const { data } = await q;
+        setRecords(data || []);
       }
-      setLoading(false);
+    } catch (e) {
+      console.error(e);
+      setRecords([]);
     }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetch();
   }, [monthYear]);
 
-  return { records, loading };
+  return { records, loading, refetch: fetch };
 }
 
 export function useMonthlyLedgers(monthYear?: string) {
   const [ledgers, setLedgers] = useState<DbMonthlyLedger[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      try {
-        if (isOdooBackend()) {
-          setLedgers(await odooData.fetchMonthlyLedgers(monthYear));
-        } else {
-          let q = supabase.from("monthly_ledgers").select("*");
-          if (monthYear) q = q.eq("month_year", monthYear);
-          const { data } = await q;
-          setLedgers(data || []);
-        }
-      } catch (e) {
-        console.error(e);
-        setLedgers([]);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        setLedgers(await odooData.fetchMonthlyLedgers(monthYear));
+      } else {
+        let q = supabase.from("monthly_ledgers").select("*");
+        if (monthYear) q = q.eq("month_year", monthYear);
+        const { data } = await q;
+        setLedgers(data || []);
       }
-      setLoading(false);
+    } catch (e) {
+      console.error(e);
+      setLedgers([]);
     }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetch();
   }, [monthYear]);
 
-  return { ledgers, loading };
+  return { ledgers, loading, refetch: fetch };
 }
 
 // ── Mock shifts for local testing ──

@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { useAppSettings, type MonthFormat, formatMonthYear } from "../components/SettingsContext";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { useShifts, useHierarchyData, useSystemModules, useConfigurations, usePublicHolidays, useLeaveTypes, useContractTypes, useDocumentTypes, type DbShift, type DbSystemModule, type DbConfiguration, type DbPublicHoliday, type DbLeaveType, type DbContractType, type DbDocumentType } from "../lib/hooks";
 import { ShiftAssigner } from "../components/ShiftAssigner";
 
@@ -182,12 +184,17 @@ export function SettingsPage() {
 
   const saveDeptColors = async () => {
     setSavingDeptColors(true);
-    for (const [deptId, color] of Object.entries(deptColorEdits)) {
-      await supabase.from("departments").update({ color }).eq("id", deptId);
+    try {
+      for (const [deptId, color] of Object.entries(deptColorEdits)) {
+        if (isOdooBackend()) await odooData.updateDepartment(deptId, { color });
+        else await supabase.from("departments").update({ color }).eq("id", deptId);
+      }
+      setDeptColorEdits({});
+      showToast("تم حفظ ألوان الأقسام بنجاح");
+    } catch {
+      showToast("خطأ في حفظ ألوان الأقسام");
     }
     setSavingDeptColors(false);
-    setDeptColorEdits({});
-    showToast("تم حفظ ألوان الأقسام بنجاح");
   };
 
   const toggleNotif = (key: keyof typeof notifToggles) =>
@@ -272,8 +279,11 @@ export function SettingsPage() {
     });
 
     try {
-      const { error } = await supabase.from("shifts").update(updateData).eq("id", state.id);
-      if (error) throw error;
+      if (isOdooBackend()) await odooData.updateShift(state.id, updateData);
+      else {
+        const { error } = await supabase.from("shifts").update(updateData).eq("id", state.id);
+        if (error) throw error;
+      }
       showToast("تم حفظ الوردية بنجاح");
       setEditingShift(null);
       refetchShifts();
@@ -305,8 +315,11 @@ export function SettingsPage() {
     });
 
     try {
-      const { error } = await supabase.from("shifts").insert([insertData]);
-      if (error) throw error;
+      if (isOdooBackend()) await odooData.createShift(insertData);
+      else {
+        const { error } = await supabase.from("shifts").insert([insertData]);
+        if (error) throw error;
+      }
       showToast("تم إنشاء الوردية بنجاح");
       setShowNewShiftForm(false);
       setNewShiftForm({
@@ -329,8 +342,11 @@ export function SettingsPage() {
   const deleteShift = async (shiftId: string) => {
     if (!window.confirm("هل تريد حقاً حذف هذه الوردية؟")) return;
     try {
-      const { error } = await supabase.from("shifts").delete().eq("id", shiftId);
-      if (error) throw error;
+      if (isOdooBackend()) await odooData.deleteShift(shiftId);
+      else {
+        const { error } = await supabase.from("shifts").delete().eq("id", shiftId);
+        if (error) throw error;
+      }
       showToast("تم حذف الوردية بنجاح");
       refetchShifts();
     } catch (err) {
@@ -340,9 +356,12 @@ export function SettingsPage() {
 
   const setAsDefault = async (shiftId: string) => {
     try {
-      // Unset all defaults
+      if (isOdooBackend()) {
+        // Odoo shifts have no is_default flag on model; mark via description is skipped — no-op toast
+        showToast("تعيين الافتراضي غير متاح على Odoo بعد — عيّن القسم/الموظف مباشرة");
+        return;
+      }
       await supabase.from("shifts").update({ is_default: false }).eq("is_default", true);
-      // Set new default
       const { error } = await supabase.from("shifts").update({ is_default: true }).eq("id", shiftId);
       if (error) throw error;
       showToast("تم تعيين الوردية الافتراضية بنجاح");
@@ -357,7 +376,8 @@ export function SettingsPage() {
     try {
       for (const [deptId, shiftId] of Object.entries(deptShiftAssignments)) {
         const updateData = shiftId ? { default_shift_id: shiftId } : { default_shift_id: null };
-        await supabase.from("departments").update(updateData).eq("id", deptId);
+        if (isOdooBackend()) await odooData.updateDepartment(deptId, updateData);
+        else await supabase.from("departments").update(updateData).eq("id", deptId);
       }
       showToast("تم حفظ تعيينات الأقسام بنجاح");
     } catch (err) {
@@ -381,7 +401,8 @@ export function SettingsPage() {
   // ——— System Modules Toggle ———
   const toggleModule = async (module: DbSystemModule) => {
     try {
-      await supabase.from("system_modules").update({ is_enabled: !module.is_enabled }).eq("id", module.id);
+      if (isOdooBackend()) await odooData.updateModule(module.id, !module.is_enabled);
+      else await supabase.from("system_modules").update({ is_enabled: !module.is_enabled }).eq("id", module.id);
       refetchModules();
       showToast(`تم ${!module.is_enabled ? "تفعيل" : "تعطيل"} الميزة بنجاح`);
     } catch (err) {
@@ -392,7 +413,8 @@ export function SettingsPage() {
   // ——— Configuration Edit ———
   const saveConfigValue = async (configId: string, value: any) => {
     try {
-      await supabase.from("configurations").update({ config_value: value }).eq("id", configId);
+      if (isOdooBackend()) await odooData.updateConfig(configId, value);
+      else await supabase.from("configurations").update({ config_value: value }).eq("id", configId);
       refetchConfigs();
       showToast("تم حفظ الإعداد بنجاح");
       setConfigEdits((prev) => {
@@ -413,14 +435,18 @@ export function SettingsPage() {
     }
     try {
       const [year, month, day] = newHoliday.date.split("-");
-      await supabase.from("public_holidays").insert({
-        name_ar: newHoliday.name_ar,
-        name_en: newHoliday.name_en || null,
-        date: newHoliday.date,
-        is_recurring: newHoliday.is_recurring,
-        recurring_month: newHoliday.is_recurring ? parseInt(month) : null,
-        recurring_day: newHoliday.is_recurring ? parseInt(day) : null,
-      });
+      if (isOdooBackend()) {
+        await odooData.createHoliday({ name_ar: newHoliday.name_ar, date: newHoliday.date });
+      } else {
+        await supabase.from("public_holidays").insert({
+          name_ar: newHoliday.name_ar,
+          name_en: newHoliday.name_en || null,
+          date: newHoliday.date,
+          is_recurring: newHoliday.is_recurring,
+          recurring_month: newHoliday.is_recurring ? parseInt(month) : null,
+          recurring_day: newHoliday.is_recurring ? parseInt(day) : null,
+        });
+      }
       refetchHolidays();
       setNewHoliday({ name_ar: "", name_en: "", date: "", is_recurring: false });
       setShowNewHolidayForm(false);
@@ -432,7 +458,8 @@ export function SettingsPage() {
 
   const deleteHoliday = async (holidayId: string) => {
     try {
-      await supabase.from("public_holidays").delete().eq("id", holidayId);
+      if (isOdooBackend()) await odooData.deleteHoliday(holidayId);
+      else await supabase.from("public_holidays").delete().eq("id", holidayId);
       refetchHolidays();
       showToast("تم حذف العطلة بنجاح");
     } catch (err) {

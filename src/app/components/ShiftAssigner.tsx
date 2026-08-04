@@ -4,6 +4,8 @@ import {
   Clock, Users, Search, GripVertical, X, AlertTriangle, CheckCircle, Loader2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
   type DbEmployee, type DbShift, type DbEmployeeShiftAssignment,
@@ -178,15 +180,22 @@ export function ShiftAssigner() {
     const existing = empShiftMap[empId];
     if (existing === shiftId) { setSaving(false); return; } // Already there
 
-    // Update employee's shift_id directly for simplicity
-    const { error } = await supabase.from("employees").update({ shift_id: shiftId }).eq("id", empId);
-
-    if (error) {
-      setToast(`خطأ: ${error.message}`);
-    } else {
+    try {
+      if (isOdooBackend()) {
+        await odooData.createShiftAssignment({
+          employee_id: empId,
+          shift_id: shiftId,
+          set_employee_default: true,
+        });
+      } else {
+        const { error } = await supabase.from("employees").update({ shift_id: shiftId }).eq("id", empId);
+        if (error) throw error;
+      }
       const emp = employees.find(e => e.id === empId);
       const shift = shifts.find(s => s.id === shiftId);
       setToast(`تم تعيين "${emp ? empDisplayName(emp) : ""}" في دوام "${shift?.name || ""}" بنجاح`);
+    } catch (e: any) {
+      setToast(`خطأ: ${e?.message || "فشل التعيين"}`);
     }
     await refetchEmployees();
     await refetchAssignments();
@@ -196,11 +205,16 @@ export function ShiftAssigner() {
   // Remove employee from shift
   const handleRemove = useCallback(async (empId: string) => {
     setSaving(true);
-    const { error } = await supabase.from("employees").update({ shift_id: null }).eq("id", empId);
-    if (error) {
-      setToast(`خطأ: ${error.message}`);
-    } else {
+    try {
+      if (isOdooBackend()) {
+        await odooData.updateEmployee(empId, { shift_id: false });
+      } else {
+        const { error } = await supabase.from("employees").update({ shift_id: null }).eq("id", empId);
+        if (error) throw error;
+      }
       setToast("تم إلغاء تعيين الدوام");
+    } catch (e: any) {
+      setToast(`خطأ: ${e?.message || "فشل الإلغاء"}`);
     }
     await refetchEmployees();
     await refetchAssignments();

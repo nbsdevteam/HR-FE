@@ -7,6 +7,8 @@ import {
   Fingerprint, ScanFace, AlertTriangle, ShieldOff
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { DEPARTMENTS, SYNC_API } from "../lib/constants";
 
 interface Custody {
@@ -176,51 +178,68 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
     setSaving(true);
     setSaveError(null);
     try {
-      const { error } = await supabase
-        .from("employees")
-        .update({
-          arabic_name: editData.name,
-          department: editData.department,
-          position: editData.position,
+      if (isOdooBackend()) {
+        await odooData.updateEmployee(editData.dbId, {
+          name: editData.name,
           email: editData.email,
           personal_phone: editData.personalPhone,
-          company_phone: editData.companyPhone,
+          phone: editData.personalPhone || editData.companyPhone,
           monthly_salary: editData.salary,
           join_date: editData.startDate || null,
-          end_date: editData.endDate || null,
           status: editData.status,
-          address: editData.address,
+          address: editData.address || null,
           national_id: editData.nationalId,
           emergency_contact: editData.emergencyContact,
           emergency_phone: editData.emergencyPhone,
-          blood_type: editData.bloodType,
           manager_id: editData.managerId || null,
-        })
-        .eq("id", editData.dbId);
-
-      if (error) {
-        setSaveError(error.message);
-        console.error("Save error:", error);
+        });
       } else {
-        setIsEditing(false);
-        onSave?.();
-
-        // Check if status changed to "منتهي" — trigger termination flow
-        if (editData.status === "منتهي" && employee.status !== "منتهي") {
-          setShowTerminationDialog(true);
-        } else if (editData.status !== "منتهي") {
-          // Auto-sync name/info changes to biometric device
-          try {
-            fetch(`${SYNC_API}/device/sync-employee`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                employeeNo: String(employee.id),
-                name: editData.name,
-              }),
-            }).catch(() => { /* device sync is best-effort */ });
-          } catch { /* non-critical */ }
+        const { error } = await supabase
+          .from("employees")
+          .update({
+            arabic_name: editData.name,
+            department: editData.department,
+            position: editData.position,
+            email: editData.email,
+            personal_phone: editData.personalPhone,
+            company_phone: editData.companyPhone,
+            monthly_salary: editData.salary,
+            join_date: editData.startDate || null,
+            end_date: editData.endDate || null,
+            status: editData.status,
+            address: editData.address,
+            national_id: editData.nationalId,
+            emergency_contact: editData.emergencyContact,
+            emergency_phone: editData.emergencyPhone,
+            blood_type: editData.bloodType,
+            manager_id: editData.managerId || null,
+          })
+          .eq("id", editData.dbId);
+        if (error) {
+          setSaveError(error.message);
+          console.error("Save error:", error);
+          return;
         }
+      }
+
+      setIsEditing(false);
+      onSave?.();
+
+      // Check if status changed to "منتهي" — trigger termination flow
+      if (editData.status === "منتهي" && employee.status !== "منتهي") {
+        setShowTerminationDialog(true);
+      } else if (editData.status !== "منتهي") {
+        // Auto-sync name/info changes to biometric device
+        try {
+          fetch(`${SYNC_API}/device/sync-employee`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              employeeNo: String(employee.id),
+              name: editData.name,
+            }),
+          }).catch(() => { /* device sync is best-effort */ });
+        } catch { /* non-critical */ }
       }
     } catch (e: any) {
       setSaveError(e.message);

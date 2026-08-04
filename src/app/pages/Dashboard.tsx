@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Users, CalendarDays, Wallet, ClipboardCheck, TrendingUp, TrendingDown,
@@ -12,9 +12,9 @@ import { DonutChart } from "../components/donut-chart";
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { CustomLineChart } from "../components/custom-line-chart";
 import { useChartTheme } from "../components/chart-utils";
-import { supabase } from "../lib/supabase";
-import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbLeaveBalance } from "../lib/hooks";
+import type { DbLeaveBalance } from "../lib/hooks";
 import {
+  useEmployees, useAttendanceRecords, useMonthlyRecords,
   useLeaveRequests, useEmployeeContracts, useContractTypes,
   useEmployeeDocuments, useDocumentTypes, useLoans, useNotifications,
   useEvaluations, useWarnings, useTrainingPrograms, useTrainingParticipants,
@@ -68,11 +68,12 @@ function RiskBadge({ level }: { level: "low" | "medium" | "high" | "critical" })
 export function Dashboard() {
   const { colors } = useChartTheme();
   const { settings: appSettings } = useAppSettings();
-  const [employees, setEmployees] = useState<DbEmployee[]>([]);
-  const [attendance, setAttendance] = useState<DbAttendanceRecord[]>([]);
-  const [monthlyRecords, setMonthlyRecords] = useState<DbMonthlyRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [kpiSection, setKpiSection] = useState<"overview" | "workforce" | "financial" | "compliance" | "recruitment">("overview");
+
+  const { employees, loading: empLoading } = useEmployees();
+  const { records: attendance, loading: attLoading } = useAttendanceRecords();
+  const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
+  const loading = empLoading || attLoading || mrLoading;
 
   // Live data hooks
   const { requests: leaveRequests } = useLeaveRequests();
@@ -139,22 +140,6 @@ export function Dashboard() {
     employeeActiveStatus: cfgVal('employee.active_status', 'نشط'),
     employeeActiveStatusEn: cfgVal('employee.active_status_en', 'active'),
   }), [cfgNum, cfgVal]);
-
-  useEffect(() => {
-    async function fetchAll() {
-      setLoading(true);
-      const [empRes, attRes, mrRes] = await Promise.all([
-        supabase.from("employees").select("*"),
-        supabase.from("attendance_records").select("*").order("date", { ascending: false }).limit(5000),
-        supabase.from("monthly_records").select("*"),
-      ]);
-      setEmployees(empRes.data || []);
-      setAttendance(attRes.data || []);
-      setMonthlyRecords(mrRes.data || []);
-      setLoading(false);
-    }
-    fetchAll();
-  }, []);
 
   // ══════════════════════════════════════════════════
   // ═══════ CORE COMPUTATIONS ═══════

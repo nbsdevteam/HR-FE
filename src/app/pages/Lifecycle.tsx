@@ -7,6 +7,8 @@ import {
   ClipboardList, LogOut, DollarSign, RefreshCw, Timer,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import {
   useEmployees, empDisplayName, useContractTypes, useEmployeeContracts,
@@ -499,15 +501,30 @@ function DocumentsTab({
   const handleCreate = async () => {
     if (!formData.employee_id || !formData.document_type_id) return;
     setSaving(true);
-    await supabase.from("employee_documents").insert({
-      ...formData,
-      issue_date: formData.issue_date || null,
-      expiry_date: formData.expiry_date || null,
-      status: "valid",
-    });
-    refetch();
+    try {
+      if (isOdooBackend()) {
+        await odooData.createDocument({
+          employee_id: formData.employee_id,
+          document_type_id: formData.document_type_id,
+          name: formData.document_number || "Document",
+          issue_date: formData.issue_date || false,
+          expiry_date: formData.expiry_date || false,
+        });
+      } else {
+        await supabase.from("employee_documents").insert({
+          ...formData,
+          issue_date: formData.issue_date || null,
+          expiry_date: formData.expiry_date || null,
+          status: "valid",
+        });
+      }
+      refetch();
+      setShowForm(false);
+    } catch (e) {
+      console.error(e);
+      alert("خطأ في حفظ الوثيقة");
+    }
     setSaving(false);
-    setShowForm(false);
   };
 
   return (
@@ -606,7 +623,16 @@ function DocumentsTab({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={async () => { await supabase.from("employee_documents").delete().eq("id", d.id); refetch(); }}
+                      <button onClick={async () => {
+                        try {
+                          if (isOdooBackend()) await odooData.deleteDocument(d.id);
+                          else await supabase.from("employee_documents").delete().eq("id", d.id);
+                          refetch();
+                        } catch (e) {
+                          console.error(e);
+                          alert("خطأ في حذف الوثيقة");
+                        }
+                      }}
                         className="p-1 rounded hover:bg-destructive/20 cursor-pointer"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
                     </td>
                   </motion.tr>
