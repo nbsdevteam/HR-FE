@@ -4,9 +4,16 @@ import { AlertTriangle, Plus, X, Eye, FileWarning, ShieldAlert, Clock, Search, F
 import { ViewToggle } from "../components/ViewToggle";
 import { useWarnings, useEmployees, useConfigurations, empDisplayName, DbWarning, DbEmployee } from "../lib/hooks";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import { localizedConfirm } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
+
+// Odoo's lugal.hr.warning uses a fixed English selection for type/status; the FE
+// displays Arabic labels driven by configurations. Map between them by position.
+const ODOO_WARNING_TYPE_KEYS = ["verbal", "written", "first", "second", "final"];
+const ODOO_WARNING_STATUS_KEYS = ["active", "expired", "cancelled"];
 
 // Color gradients for warning types — auto-assigned by severity index (lightest → most severe)
 const typeColorPalette = [
@@ -58,6 +65,23 @@ export function Warnings() {
     statusColors[s] = statusColorPalette[Math.min(i, statusColorPalette.length - 1)];
   });
 
+  const typeKeyToLabel = (key: string) => {
+    const idx = ODOO_WARNING_TYPE_KEYS.indexOf(key);
+    return idx >= 0 ? (warningTypes[idx] || key) : key;
+  };
+  const typeLabelToKey = (label: string) => {
+    const idx = warningTypes.indexOf(label);
+    return idx >= 0 ? (ODOO_WARNING_TYPE_KEYS[idx] || "verbal") : "verbal";
+  };
+  const statusKeyToLabel = (key: string) => {
+    const idx = ODOO_WARNING_STATUS_KEYS.indexOf(key);
+    return idx >= 0 ? (warningStatuses[idx] || key) : key;
+  };
+  const statusLabelToKey = (label: string) => {
+    const idx = warningStatuses.indexOf(label);
+    return idx >= 0 ? (ODOO_WARNING_STATUS_KEYS[idx] || "active") : "active";
+  };
+
   const [showForm, setShowForm] = useState(false);
   const [selectedWarning, setSelectedWarning] = useState<WarningWithEmployee | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -84,11 +108,13 @@ export function Warnings() {
     }
   }, [toast]);
 
-  // Enrich warnings with employee data
+  // Enrich warnings with employee data (and translate Odoo enum keys → Arabic labels)
   const enrichedWarnings: WarningWithEmployee[] = warnings.map(w => {
     const emp = employees.find(e => e.id === w.employee_id);
     return {
       ...w,
+      type: isOdooBackend() ? typeKeyToLabel(w.type) : w.type,
+      status: isOdooBackend() ? statusKeyToLabel(w.status) : w.status,
       employeeName: emp ? empDisplayName(emp) : w.employee_id,
       employeeDepartment: emp?.department || "—",
     };
@@ -139,38 +165,63 @@ export function Warnings() {
 
     setSaving(true);
     try {
-      if (editingId) {
-        // Update existing warning
-        const { error } = await supabase
-          .from("warnings")
-          .update({
+      if (isOdooBackend()) {
+        if (editingId) {
+          await odooData.updateWarning(editingId, {
             employee_id: formData.employeeId,
-            type: formData.type,
+            type: typeLabelToKey(formData.type),
             reason: formData.reason,
             details: formData.details || null,
             expiry_date: formData.expiryDate || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingId);
-
-        if (error) throw error;
-        setToast(arabicSource("warnings.alarm_updated_successfully"));
-      } else {
-        // Create new warning
-        const { error } = await supabase
-          .from("warnings")
-          .insert({
+          });
+          setToast(arabicSource("warnings.alarm_updated_successfully"));
+        } else {
+          await odooData.createWarning({
             employee_id: formData.employeeId,
-            type: formData.type,
+            type: typeLabelToKey(formData.type),
             reason: formData.reason,
             details: formData.details || null,
             date: new Date().toISOString().split("T")[0],
-            status: arabicSource("common.is_active"),
             expiry_date: formData.expiryDate || null,
           });
+          setToast(arabicSource("warnings.alarm_issued_successfully"));
+        }
+      } else {
+        const currentUser = await supabase.auth.getUser();
+        const issuedById = currentUser?.data?.user?.id || "system";
 
-        if (error) throw error;
-        setToast(arabicSource("warnings.alarm_issued_successfully"));
+        if (editingId) {
+          const { error } = await supabase
+            .from("warnings")
+            .update({
+              employee_id: formData.employeeId,
+              type: formData.type,
+              reason: formData.reason,
+              details: formData.details || null,
+              expiry_date: formData.expiryDate || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", editingId);
+
+          if (error) throw error;
+          setToast(arabicSource("warnings.alarm_updated_successfully"));
+        } else {
+          const { error } = await supabase
+            .from("warnings")
+            .insert({
+              employee_id: formData.employeeId,
+              type: formData.type,
+              reason: formData.reason,
+              details: formData.details || null,
+              date: new Date().toISOString().split("T")[0],
+              issued_by: issuedById,
+              status: arabicSource("common.is_active"),
+              expiry_date: formData.expiryDate || null,
+            });
+
+          if (error) throw error;
+          setToast(arabicSource("warnings.alarm_issued_successfully"));
+        }
       }
 
       resetForm();
@@ -185,12 +236,15 @@ export function Warnings() {
 
   const handleStatusChange = async (warningId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from("warnings")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq("id", warningId);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.updateWarning(warningId, { status: statusLabelToKey(newStatus) });
+      } else {
+        const { error } = await supabase
+          .from("warnings")
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq("id", warningId);
+        if (error) throw error;
+      }
       setToast(`${arabicSource("warnings.status_changed_to")}${newStatus}"`);
       refetch();
     } catch (err) {
@@ -202,12 +256,15 @@ export function Warnings() {
     if (!localizedConfirm(arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm"))) return;
 
     try {
-      const { error } = await supabase
-        .from("warnings")
-        .delete()
-        .eq("id", warningId);
-
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.deleteWarning(warningId);
+      } else {
+        const { error } = await supabase
+          .from("warnings")
+          .delete()
+          .eq("id", warningId);
+        if (error) throw error;
+      }
       setToast(arabicSource("warnings.the_alarm_has_been_successfully_deleted"));
       refetch();
     } catch (err) {

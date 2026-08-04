@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import {
   useReportTemplates, useReportHistory, useEmployees, useHierarchyData,
   useAttendanceRecords, useMonthlyRecords, useLeaveRequests, useLeaveTypes,
@@ -229,13 +231,23 @@ export function Reports() {
     }
 
     // Log to report history
-    await supabase.from("report_history").insert({
-      report_template_id: template.id,
-      report_name: template.name_ar,
-      filters_used: { dateFrom, dateTo, department: filterDept },
-      row_count: rows.length,
-      generated_by: arabicSource("common.human_resources_manager"),
-    });
+    if (isOdooBackend()) {
+      await odooData.createReportHistory({
+        report_template_id: template.id,
+        report_name: template.name_ar,
+        filters_used: { dateFrom, dateTo, department: filterDept },
+        row_count: rows.length,
+        generated_by: arabicSource("common.human_resources_manager"),
+      });
+    } else {
+      await supabase.from("report_history").insert({
+        report_template_id: template.id,
+        report_name: template.name_ar,
+        filters_used: { dateFrom, dateTo, department: filterDept },
+        row_count: rows.length,
+        generated_by: arabicSource("common.human_resources_manager"),
+      });
+    }
     await logAudit({
       action: "export",
       entity_type: "report",

@@ -23,4 +23,28 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+
+  server: {
+    host: true,
+    port: 5173,
+    proxy: {
+      // Dev workstation Odoo (odoo_ws.conf → 192.168.116.204:8075)
+      '/lugal': {
+        target: 'http://192.168.116.204:8075',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://192.168.116.204:8075',
+        changeOrigin: true,
+      },
+      '/web': {
+        target: 'http://192.168.116.204:8075',
+        changeOrigin: true,
+      },
+      '/jsonrpc': {
+        target: 'http://192.168.116.204:8075',
+        changeOrigin: true,
+      },
+    },
+  },
 })

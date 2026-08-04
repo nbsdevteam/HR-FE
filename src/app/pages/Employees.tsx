@@ -10,6 +10,8 @@ import { EmployeeDetailPanel } from "../components/EmployeeDetailPanel";
 import type { Employee, EmployeeOption } from "../components/EmployeeDetailPanel";
 import { useEmployees, empNumber, empDisplayName } from "../lib/hooks";
 import { supabase } from "../lib/supabase";
+import { isOdooBackend } from "../lib/api/client";
+import * as odooData from "../lib/api/odooData";
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS, SYNC_API } from "../lib/constants";
 import type { DbEmployee } from "../lib/hooks";
 import { employeeStatusKeys, translateBackendCode } from "../i18n/status";
@@ -143,29 +145,45 @@ export function Employees() {
     try {
       const newPersonId = nextEmployeeId;
 
-      // Insert into Supabase
-      const { data, error } = await supabase.from("employees").insert({
-        person_id: newPersonId,
-        name: addForm.name,
-        arabic_name: addForm.name,
-        email: addForm.email || null,
-        personal_phone: addForm.personalPhone || null,
-        company_phone: addForm.companyPhone || null,
-        position: addForm.position || null,
-        address: addForm.address || null,
-        department: addForm.department || arabicSource("common.not_specified"),
-        monthly_salary: parseFloat(addForm.salary) || 0,
-        currency: "IQD",
-        join_date: addForm.joinDate || null,
-        national_id: addForm.nationalId || null,
-        status: arabicSource("common.is_active"),
-        overtime_rate: 1.5,
-        overtime_enabled: false,
-        allowed_late_minutes: 15,
-        device_employee_no: String(newPersonId),
-      }).select("*").single();
+      if (isOdooBackend()) {
+        await odooData.createEmployee({
+          name: addForm.name,
+          email: addForm.email || null,
+          personal_phone: addForm.personalPhone || null,
+          phone: addForm.personalPhone || addForm.companyPhone || null,
+          address: addForm.address || null,
+          monthly_salary: parseFloat(addForm.salary) || 0,
+          join_date: addForm.joinDate || null,
+          national_id: addForm.nationalId || null,
+          status: "active",
+          person_id: newPersonId,
+          device_employee_no: String(newPersonId),
+          gender: addForm.gender || null,
+        });
+      } else {
+        const { error } = await supabase.from("employees").insert({
+          person_id: newPersonId,
+          name: addForm.name,
+          arabic_name: addForm.name,
+          email: addForm.email || null,
+          personal_phone: addForm.personalPhone || null,
+          company_phone: addForm.companyPhone || null,
+          position: addForm.position || null,
+          address: addForm.address || null,
+          department: addForm.department || arabicSource("common.not_specified"),
+          monthly_salary: parseFloat(addForm.salary) || 0,
+          currency: "IQD",
+          join_date: addForm.joinDate || null,
+          national_id: addForm.nationalId || null,
+          status: arabicSource("common.is_active"),
+          overtime_rate: 1.5,
+          overtime_enabled: false,
+          allowed_late_minutes: 15,
+          device_employee_no: String(newPersonId),
+        }).select("*").single();
 
-      if (error) { setAddError(error.message); setAddSaving(false); return; }
+        if (error) { setAddError(error.message); setAddSaving(false); return; }
+      }
 
       // Auto-push to biometric device
       setDeviceSyncStatus("syncing");
@@ -212,8 +230,12 @@ export function Employees() {
         } catch { /* device removal is best-effort */ }
       }
       // Soft-delete: mark as inactive instead of hard-delete to preserve referential integrity
-      const { error } = await supabase.from("employees").update({ status: arabicSource("common.is_inactive"), termination_date: new Date().toISOString().substring(0, 10) }).eq("id", deleteConfirm.id);
-      if (error) throw error;
+      if (isOdooBackend()) {
+        await odooData.setEmployeeStatus(deleteConfirm.id, "suspended");
+      } else {
+        const { error } = await supabase.from("employees").update({ status: arabicSource("common.is_inactive"), termination_date: new Date().toISOString().substring(0, 10) }).eq("id", deleteConfirm.id);
+        if (error) throw error;
+      }
       refetch();
       setDeleteConfirm(null);
     } catch (e: any) {
