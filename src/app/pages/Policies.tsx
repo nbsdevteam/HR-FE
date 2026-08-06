@@ -4,8 +4,6 @@ import {
   FileText, Plus, X, Eye, ChevronDown, ChevronUp, Search, Calendar, Shield, Clock, Users, Wallet,
   Edit2, Trash2, Save, AlertTriangle, CheckCircle, Archive, RotateCcw
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import { usePolicies, type DbPolicy } from "../lib/hooks";
@@ -88,7 +86,7 @@ export function Policies() {
 
   // Translate Odoo enum keys → Arabic display labels
   const displayPolicies = policies.map(p => (
-    isOdooBackend() ? { ...p, status: ODOO_STATUS_TO_POLICY[p.status] || p.status } : p
+    { ...p, status: ODOO_STATUS_TO_POLICY[p.status] || p.status }
   ));
 
   // Filter policies
@@ -116,30 +114,14 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.createPolicy({
-          title: createForm.title,
-          category: createForm.category,
-          description: createForm.description,
-          content: createForm.content,
-          status: "active",
-          version: 1,
-        });
-      } else {
-        const { error } = await supabase.from("policies").insert([
-          {
-            title: createForm.title,
-            category: createForm.category,
-            description: createForm.description,
-            content: createForm.content,
-            status: "نشط",
-            version: 1,
-            last_updated: new Date().toISOString().split('T')[0],
-            created_at: new Date().toISOString(),
-          }
-        ]);
-        if (error) throw error;
-      }
+      await odooData.createPolicy({
+        title: createForm.title,
+        category: createForm.category,
+        description: createForm.description,
+        content: createForm.content,
+        status: "active",
+        version: 1,
+      });
 
       showToast(arabicSource("policies.the_policy_was_created_successfully"));
       setCreateForm({ title: "", category: arabicSource("common.general"), description: "", content: "" });
@@ -159,30 +141,14 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.updatePolicy(editingPolicy.id, {
-          title: editingPolicy.title,
-          category: editingPolicy.category,
-          description: editingPolicy.description,
-          content: editingPolicy.content,
-          status: POLICY_STATUS_TO_ODOO[editingPolicy.status] || editingPolicy.status,
-          version: editingPolicy.version + 1,
-        });
-      } else {
-        const { error } = await supabase
-          .from("policies")
-          .update({
-            title: editingPolicy.title,
-            category: editingPolicy.category,
-            description: editingPolicy.description,
-            content: editingPolicy.content,
-            status: editingPolicy.status,
-            version: editingPolicy.version + 1,
-            last_updated: new Date().toISOString().split('T')[0],
-          })
-          .eq("id", editingPolicy.id);
-        if (error) throw error;
-      }
+      await odooData.updatePolicy(editingPolicy.id, {
+        title: editingPolicy.title,
+        category: editingPolicy.category,
+        description: editingPolicy.description,
+        content: editingPolicy.content,
+        status: POLICY_STATUS_TO_ODOO[editingPolicy.status] || editingPolicy.status,
+        version: editingPolicy.version + 1,
+      });
 
       showToast(arabicSource("policies.the_policy_was_updated_successfully"));
       setEditingPolicy(null);
@@ -201,15 +167,7 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.deletePolicy(id);
-      } else {
-        const { error } = await supabase
-          .from("policies")
-          .delete()
-          .eq("id", id);
-        if (error) throw error;
-      }
+      await odooData.deletePolicy(id);
 
       showToast(arabicSource("policies.the_policy_was_deleted_successfully"));
       await refetch();
@@ -231,20 +189,9 @@ export function Policies() {
 
     setIsSubmitting(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.updatePolicy(policy.id, {
-          status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus,
-        });
-      } else {
-        const { error } = await supabase
-          .from("policies")
-          .update({
-            status: newStatus,
-            last_updated: new Date().toISOString().split('T')[0],
-          })
-          .eq("id", policy.id);
-        if (error) throw error;
-      }
+      await odooData.updatePolicy(policy.id, {
+        status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus,
+      });
 
       showToast(`${arabicSource("policies.status_changed_to")} ${newStatus}`);
       await refetch();

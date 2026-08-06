@@ -28,23 +28,26 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      // Dev workstation Odoo (odoo_ws.conf → 192.168.116.204:8075)
+      // Odoo backend (dev-crm.nooralnibras.com)
       '/lugal': {
-        target: 'http://192.168.116.204:8075',
+        target: 'https://dev-crm.nooralnibras.com',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://192.168.116.204:8075',
+        target: 'https://dev-crm.nooralnibras.com',
         changeOrigin: true,
       },
       '/web': {
-        target: 'http://192.168.116.204:8075',
+        target: 'https://dev-crm.nooralnibras.com',
         changeOrigin: true,
       },
       '/jsonrpc': {
-        target: 'http://192.168.116.204:8075',
+        target: 'https://dev-crm.nooralnibras.com',
         changeOrigin: true,
       },
     },
+  },
+  preview: {
+    allowedHosts: ['hr.nooralnibras.com'],
   },
 })

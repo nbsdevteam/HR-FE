@@ -8,8 +8,6 @@ import {
   ChevronLeft, ChevronRight, Banknote, Receipt, CreditCard, UserCheck,
   FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
@@ -335,22 +333,11 @@ export function Payroll() {
         generated_at: new Date().toISOString(),
       }));
 
-      if (isOdooBackend()) {
-        await odooData.generatePayslips({
-          month: selectedMonth,
-          payslips: rows,
-          replace_month: true,
-        });
-      } else {
-        const taggedRows = rows.map((r: any) => ({ ...r, id: crypto.randomUUID() }));
-        const { error: insertErr } = await supabase.from("generated_payslips").insert(taggedRows);
-        if (insertErr) throw insertErr;
-        const newIds = taggedRows.map((r: any) => r.id);
-        await supabase.from("generated_payslips")
-          .delete()
-          .eq("month", selectedMonth)
-          .not("id", "in", `(${newIds.join(",")})`);
-      }
+      await odooData.generatePayslips({
+        month: selectedMonth,
+        payslips: rows,
+        replace_month: true,
+      });
 
       setPayslipsSaved(true);
       setTimeout(() => setPayslipsSaved(false), 3000);
@@ -816,32 +803,16 @@ function UploadTab({
       }
 
       if (attRows.length > 0) {
-        if (isOdooBackend()) {
-          for (let i = 0; i < attRows.length; i += 100) {
-            const batch = attRows.slice(i, i + 100).map((r: any) => ({
-              employee_id: r.employee_id,
-              date: r.date,
-              check_in_time: r.check_in_time,
-              check_out_time: r.check_out_time,
-              status: r.status,
-              source: "manual",
-            }));
-            await odooData.importAttendance(batch);
-          }
-        } else {
-          const dates = [...new Set(attRows.map((r) => r.date))];
-          const empIds = [...new Set(attRows.map((r) => r.employee_id))];
-          for (const empId of empIds) {
-            await supabase
-              .from("attendance_records")
-              .delete()
-              .eq("employee_id", empId)
-              .in("date", dates);
-          }
-          for (let i = 0; i < attRows.length; i += 100) {
-            const batch = attRows.slice(i, i + 100);
-            await supabase.from("attendance_records").insert(batch);
-          }
+        for (let i = 0; i < attRows.length; i += 100) {
+          const batch = attRows.slice(i, i + 100).map((r: any) => ({
+            employee_id: r.employee_id,
+            date: r.date,
+            check_in_time: r.check_in_time,
+            check_out_time: r.check_out_time,
+            status: r.status,
+            source: "manual",
+          }));
+          await odooData.importAttendance(batch);
         }
       }
 
@@ -1162,15 +1133,7 @@ function PayrollDetailPanel({
         penalty_by_currency: { ...existingPenalty, [c]: ledgerPenalty },
       };
 
-      if (isOdooBackend()) {
-        await odooData.upsertMonthlyLedger(payload);
-      } else if (currentLedger) {
-        const { error } = await supabase.from("monthly_ledgers").update(payload).eq("id", currentLedger.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("monthly_ledgers").insert(payload);
-        if (error) throw error;
-      }
+      await odooData.upsertMonthlyLedger(payload);
       await onLedgerUpdate();
       setEditingLedger(false);
     } catch (e: any) {
@@ -1641,11 +1604,7 @@ function PayrollDetailPanel({
                         if (rec) {
                           rec.excusedAbsence = !rec.excusedAbsence; bumpExcuseVersion();
                           if (empId) {
-                            if (isOdooBackend()) {
-                              odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
-                            } else {
-                              supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
-                            }
+                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
                           }
                         }
                       }}
@@ -1654,11 +1613,7 @@ function PayrollDetailPanel({
                         if (rec) {
                           rec.excusedShortfall = !rec.excusedShortfall; bumpExcuseVersion();
                           if (empId) {
-                            if (isOdooBackend()) {
-                              odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
-                            } else {
-                              supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
-                            }
+                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
                           }
                         }
                       }}
@@ -1679,11 +1634,7 @@ function PayrollDetailPanel({
                       if (rec) {
                         rec.excusedShortfall = !rec.excusedShortfall; bumpExcuseVersion();
                         if (empId) {
-                          if (isOdooBackend()) {
-                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
-                          } else {
-                            supabase.from("attendance_records").update({ excused_shortfall: rec.excusedShortfall, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
-                          }
+                          odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
                         }
                       }
                     }}
@@ -1702,11 +1653,7 @@ function PayrollDetailPanel({
                       if (rec) {
                         rec.excusedAbsence = !rec.excusedAbsence; bumpExcuseVersion();
                         if (empId) {
-                          if (isOdooBackend()) {
-                            odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
-                          } else {
-                            supabase.from("attendance_records").update({ excused_absence: rec.excusedAbsence, excused_by: "nooralnibras9@gmail.com", excused_at: new Date().toISOString() }).eq("employee_id", empId).eq("date", rec.date).then();
-                          }
+                          odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
                         }
                       }
                     }}

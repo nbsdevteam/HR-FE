@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, Plus, X, Eye, FileWarning, ShieldAlert, Clock, Search, Filter, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { ViewToggle } from "../components/ViewToggle";
 import { useWarnings, useEmployees, useConfigurations, empDisplayName, DbWarning, DbEmployee } from "../lib/hooks";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import { localizedConfirm } from "../i18n/native";
@@ -113,8 +111,8 @@ export function Warnings() {
     const emp = employees.find(e => e.id === w.employee_id);
     return {
       ...w,
-      type: isOdooBackend() ? typeKeyToLabel(w.type) : w.type,
-      status: isOdooBackend() ? statusKeyToLabel(w.status) : w.status,
+      type: typeKeyToLabel(w.type),
+      status: statusKeyToLabel(w.status),
       employeeName: emp ? empDisplayName(emp) : w.employee_id,
       employeeDepartment: emp?.department || "—",
     };
@@ -165,63 +163,25 @@ export function Warnings() {
 
     setSaving(true);
     try {
-      if (isOdooBackend()) {
-        if (editingId) {
-          await odooData.updateWarning(editingId, {
-            employee_id: formData.employeeId,
-            type: typeLabelToKey(formData.type),
-            reason: formData.reason,
-            details: formData.details || null,
-            expiry_date: formData.expiryDate || null,
-          });
-          setToast(arabicSource("warnings.alarm_updated_successfully"));
-        } else {
-          await odooData.createWarning({
-            employee_id: formData.employeeId,
-            type: typeLabelToKey(formData.type),
-            reason: formData.reason,
-            details: formData.details || null,
-            date: new Date().toISOString().split("T")[0],
-            expiry_date: formData.expiryDate || null,
-          });
-          setToast(arabicSource("warnings.alarm_issued_successfully"));
-        }
+      if (editingId) {
+        await odooData.updateWarning(editingId, {
+          employee_id: formData.employeeId,
+          type: typeLabelToKey(formData.type),
+          reason: formData.reason,
+          details: formData.details || null,
+          expiry_date: formData.expiryDate || null,
+        });
+        setToast(arabicSource("warnings.alarm_updated_successfully"));
       } else {
-        const currentUser = await supabase.auth.getUser();
-        const issuedById = currentUser?.data?.user?.id || "system";
-
-        if (editingId) {
-          const { error } = await supabase
-            .from("warnings")
-            .update({
-              employee_id: formData.employeeId,
-              type: formData.type,
-              reason: formData.reason,
-              details: formData.details || null,
-              expiry_date: formData.expiryDate || null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", editingId);
-
-          if (error) throw error;
-          setToast(arabicSource("warnings.alarm_updated_successfully"));
-        } else {
-          const { error } = await supabase
-            .from("warnings")
-            .insert({
-              employee_id: formData.employeeId,
-              type: formData.type,
-              reason: formData.reason,
-              details: formData.details || null,
-              date: new Date().toISOString().split("T")[0],
-              issued_by: issuedById,
-              status: arabicSource("common.is_active"),
-              expiry_date: formData.expiryDate || null,
-            });
-
-          if (error) throw error;
-          setToast(arabicSource("warnings.alarm_issued_successfully"));
-        }
+        await odooData.createWarning({
+          employee_id: formData.employeeId,
+          type: typeLabelToKey(formData.type),
+          reason: formData.reason,
+          details: formData.details || null,
+          date: new Date().toISOString().split("T")[0],
+          expiry_date: formData.expiryDate || null,
+        });
+        setToast(arabicSource("warnings.alarm_issued_successfully"));
       }
 
       resetForm();
@@ -236,15 +196,7 @@ export function Warnings() {
 
   const handleStatusChange = async (warningId: string, newStatus: string) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.updateWarning(warningId, { status: statusLabelToKey(newStatus) });
-      } else {
-        const { error } = await supabase
-          .from("warnings")
-          .update({ status: newStatus, updated_at: new Date().toISOString() })
-          .eq("id", warningId);
-        if (error) throw error;
-      }
+      await odooData.updateWarning(warningId, { status: statusLabelToKey(newStatus) });
       setToast(`${arabicSource("warnings.status_changed_to")}${newStatus}"`);
       refetch();
     } catch (err) {
@@ -256,15 +208,7 @@ export function Warnings() {
     if (!localizedConfirm(arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm"))) return;
 
     try {
-      if (isOdooBackend()) {
-        await odooData.deleteWarning(warningId);
-      } else {
-        const { error } = await supabase
-          .from("warnings")
-          .delete()
-          .eq("id", warningId);
-        if (error) throw error;
-      }
+      await odooData.deleteWarning(warningId);
       setToast(arabicSource("warnings.the_alarm_has_been_successfully_deleted"));
       refetch();
     } catch (err) {

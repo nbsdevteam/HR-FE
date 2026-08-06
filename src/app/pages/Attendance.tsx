@@ -9,8 +9,6 @@ import {
 import { CustomGroupedBarChart } from "../components/custom-grouped-bar-chart";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, useAttendanceRecords, empDisplayName, formatTime, formatWorkHours,
@@ -138,28 +136,13 @@ export function Attendance() {
     if (!excuseModal) return;
     setExcuseSaving(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.excuseAttendance({
-          attendance_id: Number(excuseModal.record.id) || excuseModal.record.id,
-          excused_late: excuseForm.late,
-          excused_absence: excuseForm.absence,
-          excused_shortfall: excuseForm.shortfall,
-          excuse_note: excuseForm.note || null,
-        });
-      } else {
-        const { error } = await supabase
-          .from("attendance_records")
-          .update({
-            excused_late: excuseForm.late,
-            excused_absence: excuseForm.absence,
-            excused_shortfall: excuseForm.shortfall,
-            excuse_note: excuseForm.note || null,
-            excused_by: "nooralnibras9@gmail.com",
-            excused_at: new Date().toISOString(),
-          })
-          .eq("id", excuseModal.record.id);
-        if (error) throw error;
-      }
+      await odooData.excuseAttendance({
+        attendance_id: Number(excuseModal.record.id) || excuseModal.record.id,
+        excused_late: excuseForm.late,
+        excused_absence: excuseForm.absence,
+        excused_shortfall: excuseForm.shortfall,
+        excuse_note: excuseForm.note || null,
+      });
       setRawRecords((prev) => prev.map((r) => (r.id === excuseModal.record.id ? {
         ...r,
         excused_late: excuseForm.late,
@@ -965,24 +948,15 @@ function EmployeeAttendanceDetail({
   const now = new Date();
   const [calMonth, setCalMonth] = useState(now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0"));
 
-  // Fetch ALL attendance records for this employee (dual-mode)
+  // Fetch ALL attendance records for this employee
   useEffect(() => {
     async function fetch() {
       setLoading(true);
       try {
-        if (isOdooBackend()) {
-          setAllRecords(await odooData.fetchAttendance({
-            employee_id: employeeId,
-            limit: 5000,
-          }));
-        } else {
-          const { data } = await supabase
-            .from("attendance_records")
-            .select("*")
-            .eq("employee_id", employeeId)
-            .order("date", { ascending: true });
-          setAllRecords(data || []);
-        }
+        setAllRecords(await odooData.fetchAttendance({
+          employee_id: employeeId,
+          limit: 5000,
+        }));
       } catch (e) {
         console.error(e);
         setAllRecords([]);

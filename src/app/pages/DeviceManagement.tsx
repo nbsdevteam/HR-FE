@@ -6,7 +6,7 @@ import {
   HardDrive, Loader2,
   Shield, Camera, Eye, Upload, X, Trash2,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 
 import { SYNC_API } from "../lib/constants";
@@ -137,10 +137,17 @@ export function DeviceManagement() {
   // Load registered devices from DB
   useEffect(() => {
     async function loadDevices() {
-      const { data } = await supabase.from("biometric_devices").select("*").order("name");
-      if (data && data.length > 0) {
-        setDevices(data);
-        setSelectedDevice(data[0].id);
+      const rows = await odooData.fetchDevices().catch(() => []);
+      if (rows && rows.length > 0) {
+        const mapped: BiometricDevice[] = rows.map((d: any) => ({
+          id: String(d.id),
+          name: d.name || "",
+          model: d.model || "",
+          ip_address: d.ip_address || "",
+          is_active: d.is_active ?? d.active ?? true,
+        }));
+        setDevices(mapped);
+        setSelectedDevice(mapped[0].id);
       } else {
         // Use default device if none registered
         setDevices([{

@@ -9,8 +9,6 @@ import {
 import { EmptyState } from "../components/EmptyState";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant, type DbDepartment } from "../lib/hooks";
 import { DEPARTMENTS } from "../lib/constants";
@@ -135,23 +133,19 @@ export function Recruitment() {
 
   // Translate Odoo enum keys → Arabic display labels used throughout this page
   const jobs = useMemo(() => (
-    isOdooBackend()
-      ? rawJobs.map(j => ({
-          ...j,
-          status: ODOO_TO_JOB_STATUS[j.status] || j.status,
-          type: ODOO_TO_JOB_TYPE[j.type] || j.type,
-        }))
-      : rawJobs
+    rawJobs.map(j => ({
+      ...j,
+      status: ODOO_TO_JOB_STATUS[j.status] || j.status,
+      type: ODOO_TO_JOB_TYPE[j.type] || j.type,
+    }))
   ), [rawJobs]);
   const applicants = useMemo(() => (
-    isOdooBackend()
-      ? rawApplicants.map(a => ({
-          ...a,
-          stage: ODOO_TO_STAGE[a.stage] || a.stage,
-          gender: a.gender ? (ODOO_TO_GENDER[a.gender] || a.gender) : a.gender,
-          job_status: a.job_status ? (ODOO_TO_JOB_STATUS[a.job_status] || a.job_status) : a.job_status,
-        }))
-      : rawApplicants
+    rawApplicants.map(a => ({
+      ...a,
+      stage: ODOO_TO_STAGE[a.stage] || a.stage,
+      gender: a.gender ? (ODOO_TO_GENDER[a.gender] || a.gender) : a.gender,
+      job_status: a.job_status ? (ODOO_TO_JOB_STATUS[a.job_status] || a.job_status) : a.job_status,
+    }))
   ), [rawApplicants]);
 
   const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank">("applicants");
@@ -208,128 +202,51 @@ export function Recruitment() {
 
   /* ──── CRUD Handlers ──── */
   const handleToggleBookmark = useCallback(async (app: DbApplicant) => {
-    if (isOdooBackend()) {
-      await odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked });
-      refetchApps();
-      return;
-    }
-    const { error } = await supabase
-      .from("applicants")
-      .update({ is_bookmarked: !app.is_bookmarked })
-      .eq("id", app.id);
-    if (!error) refetchApps();
+    await odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked });
+    refetchApps();
   }, [refetchApps]);
 
   const handleUpdateRating = useCallback(async (id: string, rating: number) => {
-    if (isOdooBackend()) {
-      await odooData.updateApplicant(id, { rating });
-      refetchApps();
-      return;
-    }
-    const { error } = await supabase.from("applicants").update({ rating }).eq("id", id);
-    if (!error) refetchApps();
+    await odooData.updateApplicant(id, { rating });
+    refetchApps();
   }, [refetchApps]);
 
   const handleUpdateStage = useCallback(async (id: string, stage: string) => {
-    if (isOdooBackend()) {
-      await odooData.updateApplicant(id, { stage: STAGE_TO_ODOO[stage] || stage });
-      refetchApps();
-      return;
-    }
-    const { error } = await supabase.from("applicants").update({ stage }).eq("id", id);
-    if (!error) refetchApps();
+    await odooData.updateApplicant(id, { stage: STAGE_TO_ODOO[stage] || stage });
+    refetchApps();
   }, [refetchApps]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("recruitment.are_you_sure_you_want_to_delete_this_applicant"))) return;
-    if (isOdooBackend()) {
-      await odooData.deleteApplicant(id);
-      setSelectedApplicant(null);
-      refetchApps();
-      return;
-    }
-    const { error } = await supabase.from("applicants").delete().eq("id", id);
-    if (!error) {
-      setSelectedApplicant(null);
-      refetchApps();
-    }
+    await odooData.deleteApplicant(id);
+    setSelectedApplicant(null);
+    refetchApps();
   }, [refetchApps]);
 
   const handleConvertToEmployee = useCallback(async (app: DbApplicant) => {
     if (!localizedConfirm(`${arabicSource("recruitment.do_you_want_to_convert")}${app.name}${arabicSource("recruitment.to_an_employee_in_the_system")}`)) return;
 
-    if (isOdooBackend()) {
-      try {
-        const depts = await odooData.fetchDepartments();
-        const dept = depts.find(d => d.name === app.job_department);
-        await odooData.createEmployee({
-          name: app.name,
-          email: app.email || undefined,
-          phone: app.phone || undefined,
-          department_id: dept?.id || undefined,
-          gender: app.gender ? (GENDER_TO_ODOO[app.gender] || app.gender) : undefined,
-          monthly_salary: app.expected_salary || undefined,
-          status: "active",
-        });
-        await odooData.updateApplicant(app.id, {
-          stage: "hired",
-          notes: (app.notes || "") + "\n[تم التحويل لموظف]",
-        });
-        setSelectedApplicant(null);
-        refetchApps();
-        alert(`تم إضافة "${app.name}" كموظف بنجاح!`);
-      } catch (e: any) {
-        alert("خطأ في تحويل المتقدم: " + e.message);
-      }
-      return;
-    }
-
-    // Retry loop handles TOCTOU race on person_id (two concurrent inserts could pick same ID)
-    const MAX_RETRIES = 3;
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      try {
-        // Get next person_id
-        const { data: maxRow } = await supabase.from("employees").select("person_id").order("person_id", { ascending: false }).limit(1);
-        const nextPid = (maxRow?.[0]?.person_id ?? 0) + 1;
-
-        const { error } = await supabase.from("employees").insert({
-          person_id: nextPid,
-          name: app.name,
-          arabic_name: app.name,
-          english_name: app.name,
-          email: app.email || null,
-          personal_phone: app.phone || null,
-          department: app.job_department || arabicSource("common.not_specified"),
-          position: app.job_title || null,
-          monthly_salary: app.expected_salary || 0,
-          currency: app.salary_currency || "IQD",
-          join_date: new Date().toISOString().substring(0, 10),
-          status: arabicSource("common.is_active"),
-          overtime_rate: 1.5,
-          overtime_enabled: false,
-          allowed_late_minutes: 15,
-          device_employee_no: String(nextPid),
-          source: "recruitment",
-        });
-
-        if (error) {
-          // If unique constraint violation on person_id, retry with next ID
-          if (error.code === "23505" && attempt < MAX_RETRIES - 1) continue;
-          throw error;
-        }
-
-        // Mark applicant as converted
-        await supabase.from("applicants").update({ stage: arabicSource("common.accepted"), notes: (app.notes || "") + "\n" + arabicSource("recruitment.referred_to_employee") }).eq("id", app.id);
-
-        setSelectedApplicant(null);
-        refetchApps();
-        localizedAlert(`${arabicSource("common.added")}${app.name}${arabicSource("recruitment.as_employee_no")} ${nextPid} ${arabicSource("recruitment.successfully")}`);
-        return; // Success — exit retry loop
-      } catch (e: any) {
-        if (attempt === MAX_RETRIES - 1) {
-          localizedAlert(arabicSource("recruitment.error_converting_advanced") + " " + e.message);
-        }
-      }
+    try {
+      const depts = await odooData.fetchDepartments();
+      const dept = depts.find(d => d.name === app.job_department);
+      await odooData.createEmployee({
+        name: app.name,
+        email: app.email || undefined,
+        phone: app.phone || undefined,
+        department_id: dept?.id || undefined,
+        gender: app.gender ? (GENDER_TO_ODOO[app.gender] || app.gender) : undefined,
+        monthly_salary: app.expected_salary || undefined,
+        status: "active",
+      });
+      await odooData.updateApplicant(app.id, {
+        stage: "hired",
+        notes: (app.notes || "") + "\n[تم التحويل لموظف]",
+      });
+      setSelectedApplicant(null);
+      refetchApps();
+      alert(`تم إضافة "${app.name}" كموظف بنجاح!`);
+    } catch (e: any) {
+      alert("خطأ في تحويل المتقدم: " + e.message);
     }
   }, [refetchApps]);
 
@@ -891,11 +808,7 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
 
   const saveNotes = async () => {
     setSavingNotes(true);
-    if (isOdooBackend()) {
-      await odooData.updateApplicant(applicant.id, { interview_notes: interviewNotes });
-    } else {
-      await supabase.from("applicants").update({ interview_notes: interviewNotes }).eq("id", applicant.id);
-    }
+    await odooData.updateApplicant(applicant.id, { interview_notes: interviewNotes });
     setSavingNotes(false);
     onRefresh();
   };
@@ -1106,9 +1019,7 @@ function JobFormModal({ jobs, onClose, onSaved }: {
   const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
 
   useEffect(() => {
-    if (isOdooBackend()) {
-      odooData.fetchDepartments().then(setOdooDepartments).catch(() => {});
-    }
+    odooData.fetchDepartments().then(setOdooDepartments).catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -1116,36 +1027,20 @@ function JobFormModal({ jobs, onClose, onSaved }: {
     setSaving(true);
     const reqs = form.requirements.split("\n").map(r => r.trim()).filter(Boolean);
 
-    if (isOdooBackend()) {
-      const dept = odooDepartments.find(d => d.name === form.department);
-      await odooData.createJobOpening({
-        title: form.title,
-        department_id: dept?.id || undefined,
-        location: form.location,
-        job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
-        status: "open",
-        deadline: form.deadline || null,
-        description: form.description || null,
-        salary_range: form.salary_range || null,
-        requirements: reqs.length > 0 ? reqs : [],
-      });
-      setSaving(false);
-      onSaved();
-      return;
-    }
-
-    const { error } = await supabase.from("job_openings").insert({
+    const dept = odooDepartments.find(d => d.name === form.department);
+    await odooData.createJobOpening({
       title: form.title,
-      department: form.department,
+      department_id: dept?.id || undefined,
       location: form.location,
-      type: form.type,
+      job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
+      status: "open",
       deadline: form.deadline || null,
       description: form.description || null,
       salary_range: form.salary_range || null,
-      requirements: reqs.length > 0 ? reqs : null,
+      requirements: reqs.length > 0 ? reqs : [],
     });
     setSaving(false);
-    if (!error) onSaved();
+    onSaved();
   };
 
   return (
@@ -1256,31 +1151,10 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     setUploading(true);
     setUploadError("");
 
-    if (isOdooBackend()) {
-      // Odoo's upload endpoint requires an existing applicant id, so we
-      // stage the file and upload it right after create/update succeeds.
-      setPendingResumeFile(file);
-      setForm(prev => ({ ...prev, resume_url: "pending" }));
-      setUploading(false);
-      return;
-    }
-
-    const ext = file.name.split(".").pop();
-    const path = `cv-${Date.now()}.${ext}`;
-
-    const { data, error } = await supabase.storage.from("resumes").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-    if (error) {
-      setUploadError(arabicSource("recruitment.file_upload_failed") + " " + error.message);
-      setUploading(false);
-      return;
-    }
-
-    const { data: urlData } = supabase.storage.from("resumes").getPublicUrl(path);
-    setForm(prev => ({ ...prev, resume_url: urlData.publicUrl }));
+    // Odoo's upload endpoint requires an existing applicant id, so we
+    // stage the file and upload it right after create/update succeeds.
+    setPendingResumeFile(file);
+    setForm(prev => ({ ...prev, resume_url: "pending" }));
     setUploading(false);
   };
 
@@ -1289,74 +1163,43 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     setSaving(true);
     const skillsArr = form.skills.split(",").map(s => s.trim()).filter(Boolean);
 
-    if (isOdooBackend()) {
-      try {
-        const odooPayload: Record<string, unknown> = {
-          name: form.name,
-          email: form.email || null,
-          phone: form.phone || null,
-          job_opening_id: form.job_opening_id,
-          stage: STAGE_TO_ODOO[form.stage] || form.stage,
-          rating: form.rating,
-          skills: skillsArr.length > 0 ? skillsArr : [],
-          experience_years: Number(form.experience_years) || 0,
-          education: form.education || null,
-          current_company: form.current_company || null,
-          city: form.city || null,
-          gender: form.gender ? (GENDER_TO_ODOO[form.gender] || form.gender) : null,
-          source: form.source || "مباشر",
-          expected_salary: form.expected_salary ? Number(form.expected_salary) : null,
-          salary_currency: form.salary_currency || "IQD",
-          notes: form.notes || null,
-        };
-        let applicantId: string | number;
-        if (isEdit) {
-          await odooData.updateApplicant(editingApplicant!.id, odooPayload);
-          applicantId = editingApplicant!.id;
-        } else {
-          const res: any = await odooData.createApplicant(odooPayload);
-          applicantId = res?.data?.id;
-        }
-        if (pendingResumeFile && applicantId) {
-          const base64 = await fileToBase64(pendingResumeFile);
-          await odooData.uploadApplicantResume(applicantId, base64, pendingResumeFile.name);
-        }
-        setSaving(false);
-        onSaved();
-      } catch (e: any) {
-        setSaving(false);
-        setUploadError(e.message || "فشل الحفظ");
+    try {
+      const odooPayload: Record<string, unknown> = {
+        name: form.name,
+        email: form.email || null,
+        phone: form.phone || null,
+        job_opening_id: form.job_opening_id,
+        stage: STAGE_TO_ODOO[form.stage] || form.stage,
+        rating: form.rating,
+        skills: skillsArr.length > 0 ? skillsArr : [],
+        experience_years: Number(form.experience_years) || 0,
+        education: form.education || null,
+        current_company: form.current_company || null,
+        city: form.city || null,
+        gender: form.gender ? (GENDER_TO_ODOO[form.gender] || form.gender) : null,
+        source: form.source || "مباشر",
+        expected_salary: form.expected_salary ? Number(form.expected_salary) : null,
+        salary_currency: form.salary_currency || "IQD",
+        notes: form.notes || null,
+      };
+      let applicantId: string | number;
+      if (isEdit) {
+        await odooData.updateApplicant(editingApplicant!.id, odooPayload);
+        applicantId = editingApplicant!.id;
+      } else {
+        const res: any = await odooData.createApplicant(odooPayload);
+        applicantId = res?.data?.id;
       }
-      return;
+      if (pendingResumeFile && applicantId) {
+        const base64 = await fileToBase64(pendingResumeFile);
+        await odooData.uploadApplicantResume(applicantId, base64, pendingResumeFile.name);
+      }
+      setSaving(false);
+      onSaved();
+    } catch (e: any) {
+      setSaving(false);
+      setUploadError(e.message || "فشل الحفظ");
     }
-
-    const payload: any = {
-      name: form.name,
-      email: form.email || null,
-      phone: form.phone || null,
-      job_opening_id: form.job_opening_id,
-      stage: form.stage,
-      rating: form.rating,
-      skills: skillsArr.length > 0 ? skillsArr : [],
-      experience_years: Number(form.experience_years) || 0,
-      education: form.education || null,
-      current_company: form.current_company || null,
-      city: form.city || null,
-      gender: form.gender || null,
-      source: form.source || arabicSource("common.live"),
-      expected_salary: form.expected_salary ? Number(form.expected_salary) : null,
-      salary_currency: form.salary_currency || "IQD",
-      notes: form.notes || null,
-      resume_url: form.resume_url || null,
-    };
-
-    if (isEdit) {
-      await supabase.from("applicants").update(payload).eq("id", editingApplicant!.id);
-    } else {
-      await supabase.from("applicants").insert(payload);
-    }
-    setSaving(false);
-    onSaved();
   };
 
   const openJobs = jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === arabicSource("common.is_under_review"));

@@ -6,8 +6,6 @@ import {
   Trash2, Calendar, FileCheck, AlertTriangle, CheckCircle,
   ClipboardList, LogOut, DollarSign, RefreshCw, Timer,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
 import {
@@ -293,25 +291,14 @@ function ContractsTab({
       : null;
 
     try {
-      if (isOdooBackend()) {
-        await odooData.createContract({
-          ...formData,
-          salary_amount: formData.salary_amount || null,
-          end_date: formData.end_date || null,
-          probation_end_date: probEnd,
-          probation_status: probEnd ? "pending" : "waived",
-          status: "active",
-        });
-      } else {
-        await supabase.from("employee_contracts").insert({
-          ...formData,
-          salary_amount: formData.salary_amount || null,
-          end_date: formData.end_date || null,
-          probation_end_date: probEnd,
-          probation_status: probEnd ? "pending" : "waived",
-          status: "active",
-        });
-      }
+      await odooData.createContract({
+        ...formData,
+        salary_amount: formData.salary_amount || null,
+        end_date: formData.end_date || null,
+        probation_end_date: probEnd,
+        probation_status: probEnd ? "pending" : "waived",
+        status: "active",
+      });
       refetch();
       setShowForm(false);
       setFormData({ employee_id: "", contract_type_id: "", start_date: "", end_date: "", salary_amount: 0, salary_currency: "IQD", contract_number: "", notes: "" });
@@ -324,8 +311,7 @@ function ContractsTab({
 
   const handleProbation = async (contractId: string, status: "passed" | "failed") => {
     try {
-      if (isOdooBackend()) await odooData.updateContract(contractId, { probation_status: status });
-      else await supabase.from("employee_contracts").update({ probation_status: status }).eq("id", contractId);
+      await odooData.updateContract(contractId, { probation_status: status });
       refetch();
     } catch (e) {
       console.error(e);
@@ -460,8 +446,7 @@ function ContractsTab({
                         {c.status === "active" && (
                           <button onClick={async () => {
                             try {
-                              if (isOdooBackend()) await odooData.updateContract(c.id, { status: "terminated" });
-                              else await supabase.from("employee_contracts").update({ status: "terminated" }).eq("id", c.id);
+                              await odooData.updateContract(c.id, { status: "terminated" });
                               refetch();
                             } catch (e) {
                               console.error(e);
@@ -532,22 +517,13 @@ function DocumentsTab({
     if (!formData.employee_id || !formData.document_type_id) return;
     setSaving(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.createDocument({
-          employee_id: formData.employee_id,
-          document_type_id: formData.document_type_id,
-          name: formData.document_number || "Document",
-          issue_date: formData.issue_date || false,
-          expiry_date: formData.expiry_date || false,
-        });
-      } else {
-        await supabase.from("employee_documents").insert({
-          ...formData,
-          issue_date: formData.issue_date || null,
-          expiry_date: formData.expiry_date || null,
-          status: "valid",
-        });
-      }
+      await odooData.createDocument({
+        employee_id: formData.employee_id,
+        document_type_id: formData.document_type_id,
+        name: formData.document_number || "Document",
+        issue_date: formData.issue_date || false,
+        expiry_date: formData.expiry_date || false,
+      });
       refetch();
       setShowForm(false);
     } catch (e) {
@@ -655,8 +631,7 @@ function DocumentsTab({
                     <td className="px-4 py-3">
                       <button onClick={async () => {
                         try {
-                          if (isOdooBackend()) await odooData.deleteDocument(d.id);
-                          else await supabase.from("employee_documents").delete().eq("id", d.id);
+                          await odooData.deleteDocument(d.id);
                           refetch();
                         } catch (e) {
                           console.error(e);
@@ -724,42 +699,17 @@ function ExitTab({
     }
 
     try {
-      if (isOdooBackend()) {
-        // Backend auto-creates checklist lines from active checklist items.
-        await odooData.createExitProcess({
-          employee_id: formData.employee_id,
-          exit_type: formData.exit_type,
-          exit_date: formData.exit_date,
-          last_working_day: formData.last_working_day || formData.exit_date,
-          reason: formData.reason || null,
-          notice_date: formData.notice_date || null,
-          eos_amount: eosAmount,
-          status: "in_progress",
-        });
-      } else {
-        const { data: proc } = await supabase.from("employee_exit_processes").insert({
-          employee_id: formData.employee_id,
-          exit_type: formData.exit_type,
-          exit_date: formData.exit_date,
-          last_working_day: formData.last_working_day || formData.exit_date,
-          reason: formData.reason || null,
-          notice_date: formData.notice_date || null,
-          eos_amount: eosAmount,
-          status: "initiated",
-        }).select().single();
-
-        // Auto-create checklist items
-        if (proc) {
-          const items = exitItems.map(item => ({
-            exit_process_id: proc.id,
-            checklist_item_id: item.id,
-            is_completed: false,
-          }));
-          if (items.length > 0) {
-            await supabase.from("employee_exit_checklist").insert(items);
-          }
-        }
-      }
+      // Backend auto-creates checklist lines from active checklist items.
+      await odooData.createExitProcess({
+        employee_id: formData.employee_id,
+        exit_type: formData.exit_type,
+        exit_date: formData.exit_date,
+        last_working_day: formData.last_working_day || formData.exit_date,
+        reason: formData.reason || null,
+        notice_date: formData.notice_date || null,
+        eos_amount: eosAmount,
+        status: "in_progress",
+      });
       refetch();
       setShowForm(false);
       setFormData({ employee_id: "", exit_type: "resignation", exit_date: "", last_working_day: "", reason: "", notice_date: "" });
@@ -772,14 +722,7 @@ function ExitTab({
 
   const handleChecklistToggle = async (checklistId: string, completed: boolean) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.updateExitChecklistLine(checklistId, { is_completed: completed });
-      } else {
-        await supabase.from("employee_exit_checklist").update({
-          is_completed: completed,
-          completed_at: completed ? new Date().toISOString() : null,
-        }).eq("id", checklistId);
-      }
+      await odooData.updateExitChecklistLine(checklistId, { is_completed: completed });
       refetchChecklist();
     } catch (e) {
       console.error(e);
@@ -789,21 +732,11 @@ function ExitTab({
 
   const handleStatusUpdate = async (processId: string, status: string) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.updateExitProcess(processId, { status });
-        if (status === "completed") {
-          const proc = processes.find(p => p.id === processId);
-          if (proc) {
-            await odooData.setEmployeeStatus(proc.employee_id, "exited");
-          }
-        }
-      } else {
-        await supabase.from("employee_exit_processes").update({ status }).eq("id", processId);
-        if (status === "completed") {
-          const proc = processes.find(p => p.id === processId);
-          if (proc) {
-            await supabase.from("employees").update({ status: arabicSource("common.finished"), end_date: proc.exit_date }).eq("id", proc.employee_id);
-          }
+      await odooData.updateExitProcess(processId, { status });
+      if (status === "completed") {
+        const proc = processes.find(p => p.id === processId);
+        if (proc) {
+          await odooData.setEmployeeStatus(proc.employee_id, "exited");
         }
       }
       refetch();

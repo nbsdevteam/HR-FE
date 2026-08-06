@@ -23,8 +23,6 @@ import {
 } from "lucide-react";
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { DonutChart } from "../components/donut-chart";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useTrainingPrograms,
@@ -155,11 +153,9 @@ export function Training() {
 
   // Translate Odoo enum keys → Arabic display labels
   const displayPrograms = useMemo(() => {
-    if (!isOdooBackend()) return programs;
     return programs.map((p) => ({ ...p, status: ODOO_TO_TRAINING_STATUS[p.status] || p.status }));
   }, [programs]);
   const displayParticipants = useMemo(() => {
-    if (!isOdooBackend()) return allParticipants;
     return allParticipants.map((p) => ({
       ...p,
       completion_status: ODOO_TO_PARTICIPANT_STATUS[p.completion_status] || p.completion_status,
@@ -210,7 +206,7 @@ export function Training() {
         weight: createForm.weight,
         instructor: createForm.instructor || null,
         duration: createForm.duration || null,
-        status: isOdooBackend() ? (TRAINING_STATUS_TO_ODOO[createForm.status] || "planned") : createForm.status,
+        status: TRAINING_STATUS_TO_ODOO[createForm.status] || "planned",
         completion_rate: 0,
         max_participants: createForm.max_participants ? parseInt(createForm.max_participants) : null,
         start_date: createForm.start_date || null,
@@ -218,12 +214,7 @@ export function Training() {
         objectives: objectives.length > 0 ? objectives : null,
       };
 
-      if (isOdooBackend()) {
-        await odooData.createTrainingProgram(payload);
-      } else {
-        const { error } = await supabase.from("training_programs").insert(payload);
-        if (error) throw error;
-      }
+      await odooData.createTrainingProgram(payload);
 
       showToast("success", arabicSource("training.the_training_program_has_been_created_successfully"));
       setCreateForm({
@@ -249,28 +240,13 @@ export function Training() {
     if (!editingProgram) return;
 
     try {
-      const status = isOdooBackend()
-        ? (TRAINING_STATUS_TO_ODOO[editingProgram.status] || editingProgram.status)
-        : editingProgram.status;
-      if (isOdooBackend()) {
-        await odooData.updateTrainingProgram(editingProgram.id, {
-          status,
-          completion_rate: editingProgram.completion_rate,
-          instructor: editingProgram.instructor,
-          duration: editingProgram.duration,
-        });
-      } else {
-        const { error } = await supabase
-          .from("training_programs")
-          .update({
-            status,
-            completion_rate: editingProgram.completion_rate,
-            instructor: editingProgram.instructor,
-            duration: editingProgram.duration,
-          })
-          .eq("id", editingProgram.id);
-        if (error) throw error;
-      }
+      const status = TRAINING_STATUS_TO_ODOO[editingProgram.status] || editingProgram.status;
+      await odooData.updateTrainingProgram(editingProgram.id, {
+        status,
+        completion_rate: editingProgram.completion_rate,
+        instructor: editingProgram.instructor,
+        duration: editingProgram.duration,
+      });
 
       showToast("success", arabicSource("training.the_software_has_been_updated_successfully"));
       setEditingProgram(null);
@@ -284,14 +260,7 @@ export function Training() {
     if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_training_program"))) return;
 
     try {
-      if (isOdooBackend()) {
-        await odooData.deleteTrainingProgram(id);
-      } else {
-        // Delete participants first
-        await supabase.from("training_participants").delete().eq("training_program_id", id);
-        const { error } = await supabase.from("training_programs").delete().eq("id", id);
-        if (error) throw error;
-      }
+      await odooData.deleteTrainingProgram(id);
 
       showToast("success", arabicSource("training.the_program_was_deleted_successfully"));
       refetchPrograms();
@@ -308,24 +277,12 @@ export function Training() {
     }
 
     try {
-      if (isOdooBackend()) {
-        await odooData.createTrainingParticipant({
-          training_program_id: selectedProgramForParticipants,
-          employee_id: enrollForm.employee_id,
-          completion_status: PARTICIPANT_STATUS_TO_ODOO[enrollForm.completion_status] || "enrolled",
-          score: enrollForm.score ? parseInt(enrollForm.score) : null,
-        });
-      } else {
-        const { error } = await supabase.from("training_participants").insert({
-          training_program_id: selectedProgramForParticipants,
-          employee_id: enrollForm.employee_id,
-          completion_status: enrollForm.completion_status,
-          score: enrollForm.score ? parseInt(enrollForm.score) : null,
-          enrolled_at: new Date().toISOString(),
-          completed_at: enrollForm.completion_status === arabicSource("common.complete") ? new Date().toISOString() : null,
-        });
-        if (error) throw error;
-      }
+      await odooData.createTrainingParticipant({
+        training_program_id: selectedProgramForParticipants,
+        employee_id: enrollForm.employee_id,
+        completion_status: PARTICIPANT_STATUS_TO_ODOO[enrollForm.completion_status] || "enrolled",
+        score: enrollForm.score ? parseInt(enrollForm.score) : null,
+      });
 
       showToast("success", arabicSource("training.the_employee_has_been_successfully_registered_in_the_program"));
       setEnrollForm({
@@ -342,22 +299,10 @@ export function Training() {
 
   const handleMarkCompleted = async (participantId: string, score: number) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.updateTrainingParticipant(participantId, {
-          completion_status: "completed",
-          score,
-        });
-      } else {
-        const { error } = await supabase
-          .from("training_participants")
-          .update({
-            completion_status: arabicSource("common.complete"),
-            score: score,
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", participantId);
-        if (error) throw error;
-      }
+      await odooData.updateTrainingParticipant(participantId, {
+        completion_status: "completed",
+        score,
+      });
 
       showToast("success", arabicSource("training.participant_status_has_been_updated"));
       refetchParticipants();
@@ -370,15 +315,7 @@ export function Training() {
     if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_participant_from_the_program"))) return;
 
     try {
-      if (isOdooBackend()) {
-        await odooData.deleteTrainingParticipant(participantId);
-      } else {
-        const { error } = await supabase
-          .from("training_participants")
-          .delete()
-          .eq("id", participantId);
-        if (error) throw error;
-      }
+      await odooData.deleteTrainingParticipant(participantId);
 
       showToast("success", arabicSource("training.participant_has_been_successfully_deleted"));
       refetchParticipants();

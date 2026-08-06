@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Clock, Users, Search, GripVertical, X, AlertTriangle, CheckCircle, Loader2,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
@@ -182,16 +180,11 @@ export function ShiftAssigner() {
     if (existing === shiftId) { setSaving(false); return; } // Already there
 
     try {
-      if (isOdooBackend()) {
-        await odooData.createShiftAssignment({
-          employee_id: empId,
-          shift_id: shiftId,
-          set_employee_default: true,
-        });
-      } else {
-        const { error } = await supabase.from("employees").update({ shift_id: shiftId }).eq("id", empId);
-        if (error) throw error;
-      }
+      await odooData.createShiftAssignment({
+        employee_id: empId,
+        shift_id: shiftId,
+        set_employee_default: true,
+      });
       const emp = employees.find(e => e.id === empId);
       const shift = shifts.find(s => s.id === shiftId);
       setToast(`${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("shared.at_work")}${shift?.name || ""}${arabicSource("common.successfully")}`);
@@ -207,12 +200,7 @@ export function ShiftAssigner() {
   const handleRemove = useCallback(async (empId: string) => {
     setSaving(true);
     try {
-      if (isOdooBackend()) {
-        await odooData.updateEmployee(empId, { shift_id: false });
-      } else {
-        const { error } = await supabase.from("employees").update({ shift_id: null }).eq("id", empId);
-        if (error) throw error;
-      }
+      await odooData.updateEmployee(empId, { shift_id: false });
       setToast(arabicSource("shared.the_shift_assignment_has_been_cancelled"));
     } catch (e: any) {
       setToast(`${arabicSource("common.error_2")} ${e?.message || "فشل الإلغاء"}`);

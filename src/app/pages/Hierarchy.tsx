@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useHierarchyData, usePositions, empDisplayName } from "../lib/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "../lib/hooks";
-import { supabase } from "../lib/supabase";
+import * as odooData from "../lib/api/odooData";
 import i18n, { getLanguageDirection, normalizeLanguage } from "../i18n";
 import { formatDate } from "../i18n/format";
 import { translateArabicSource } from "../i18n/legacy";
@@ -1381,17 +1381,16 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
     }
 
     const updates: Record<string, any> = { position_id: positionId };
-    if (dept) updates.department = dept.name;
+    if (dept) updates.department_id = dept.id;
     if (managerId) updates.manager_id = managerId;
-    if (pos.title_ar) updates.position = pos.title_ar;
 
-    const { error } = await supabase.from("employees").update(updates).eq("id", employeeId);
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    try {
+      await odooData.updateEmployee(employeeId, updates);
       const emp = dbEmployees.find(e => e.id === employeeId);
       setToast(`${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("hierarchy.in_position")}${pos.title_ar}${arabicSource("common.successfully")}`);
       await Promise.all([refetch(), refetchPositions()]);
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
   }, [positions, dbEmployees, dbDepartments, refetch, refetchPositions]);
@@ -1408,23 +1407,22 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
       if (parent) level = parent.level + 1;
     }
 
-    const { error } = await supabase.from("positions").insert({
-      title_ar: posForm.title_ar.trim(),
-      title_en: posForm.title_en.trim() || null,
-      department_id: posForm.department_id || null,
-      reports_to_position_id: addParentId,
-      max_headcount: parseInt(posForm.max_headcount) || 1,
-      description: posForm.description.trim() || null,
-      level,
-    });
-
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    try {
+      await odooData.createDesignation({
+        title_ar: posForm.title_ar.trim(),
+        name: posForm.title_en.trim() || posForm.title_ar.trim(),
+        department_id: posForm.department_id || null,
+        reports_to_job_id: addParentId,
+        max_headcount: parseInt(posForm.max_headcount) || 1,
+        description: posForm.description.trim() || null,
+        level,
+      });
       setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
       setShowAddPositionModal(false);
       setPosForm({ title_ar: "", title_en: "", department_id: "", max_headcount: "1", description: "" });
       await refetchPositions();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
   }, [posForm, addParentId, positions, refetchPositions]);
@@ -1433,21 +1431,20 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
   const handleEditPosition = useCallback(async () => {
     if (!editingPosition || !posForm.title_ar.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("positions").update({
-      title_ar: posForm.title_ar.trim(),
-      title_en: posForm.title_en.trim() || null,
-      department_id: posForm.department_id || null,
-      max_headcount: parseInt(posForm.max_headcount) || 1,
-      description: posForm.description.trim() || null,
-    }).eq("id", editingPosition.id);
-
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    try {
+      await odooData.updateDesignation(editingPosition.id, {
+        title_ar: posForm.title_ar.trim(),
+        name: posForm.title_en.trim() || posForm.title_ar.trim(),
+        department_id: posForm.department_id || null,
+        max_headcount: parseInt(posForm.max_headcount) || 1,
+        description: posForm.description.trim() || null,
+      });
       setToast(arabicSource("hierarchy.position_updated_successfully"));
       setEditingPosition(null);
       setPosForm({ title_ar: "", title_en: "", department_id: "", max_headcount: "1", description: "" });
       await refetchPositions();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
   }, [editingPosition, posForm, refetchPositions]);
@@ -1456,12 +1453,12 @@ function PositionsView({ dbEmployees, dbDepartments, deptColors, refetch }: {
   const handleDeletePosition = useCallback(async (posId: string) => {
     if (!localizedConfirm(arabicSource("hierarchy.do_you_want_to_delete_this_post"))) return;
     setSaving(true);
-    const { error } = await supabase.from("positions").delete().eq("id", posId);
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    try {
+      await odooData.deleteDesignation(posId);
       setToast(arabicSource("hierarchy.position_deleted"));
       await refetchPositions();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
   }, [refetchPositions]);
@@ -1785,31 +1782,29 @@ export function Hierarchy() {
   const handleAddEmployee = useCallback(async (parentDbId: string, name: string, position: string, department: string) => {
     setSaving(true);
     const managerId = parentDbId === "__root__" ? null : parentDbId;
-    const newId = crypto.randomUUID();
-    // Get max person_id
-    const { data: maxRow } = await supabase.from("employees").select("person_id").order("person_id", { ascending: false }).limit(1);
-    const nextPid = (maxRow?.[0]?.person_id ?? 0) + 1;
-    const { error } = await supabase.from("employees").insert({
-      id: newId,
-      person_id: nextPid,
-      name: name,
-      arabic_name: name,
-      department,
-      position,
-      manager_id: managerId,
-      status: arabicSource("common.is_active"),
-      monthly_salary: 0,
-      currency: "IQD",
-    });
-    if (error) {
-      console.error("Add employee error:", error);
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    const dept = dbDepartments.find(d => d.name === department);
+    const pos = dbPositions.find(p => p.title_ar === position);
+    const nextPid = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0) + 1;
+    try {
+      await odooData.createEmployee({
+        name,
+        arabic_name: name,
+        person_id: nextPid,
+        department_id: dept?.id || null,
+        position_id: pos?.id || null,
+        manager_id: managerId,
+        status: arabicSource("common.is_active"),
+        monthly_salary: 0,
+        currency: "IQD",
+      });
       setToast(`${arabicSource("common.added")}${name}${arabicSource("hierarchy.successfully_completed_the_organizational_structure")}`);
       await refetch();
+    } catch (err: any) {
+      console.error("Add employee error:", err);
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
-  }, [refetch]);
+  }, [refetch, dbDepartments, dbPositions, dbEmployees]);
 
   const handleDeleteEmployee = useCallback(async (node: OrgNode, reparent: boolean) => {
     if (node.dbId === "__root__") return;
@@ -1821,16 +1816,14 @@ export function Hierarchy() {
 
     if (reparent && node.children.length > 0) {
       // Move children's manager_id to this node's parent
-      const childDbIds = node.children.map(c => c.dbId);
-      await supabase.from("employees").update({ manager_id: parentDbId }).in("id", childDbIds);
+      await Promise.all(node.children.map(c => odooData.updateEmployee(c.dbId, { manager_id: parentDbId })));
     } else if (!reparent && node.children.length > 0) {
       // Remove manager_id from all children (they become unlinked)
-      const childDbIds = node.children.map(c => c.dbId);
-      await supabase.from("employees").update({ manager_id: null }).in("id", childDbIds);
+      await Promise.all(node.children.map(c => odooData.updateEmployee(c.dbId, { manager_id: null })));
     }
 
     // Remove this employee's manager_id (unlink from hierarchy)
-    await supabase.from("employees").update({ manager_id: null }).eq("id", node.dbId);
+    await odooData.updateEmployee(node.dbId, { manager_id: null });
 
     setDeleteTarget(null);
     setSelectedNode(null);
@@ -1842,41 +1835,52 @@ export function Hierarchy() {
   const handleEditEmployee = useCallback(async (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => {
     if (dbId === "__root__") return;
     setSaving(true);
-    const supaUpdates: any = {};
+    const odooUpdates: Record<string, any> = {};
     if (updates.name !== undefined) {
-      supaUpdates.name = updates.name;
-      supaUpdates.arabic_name = updates.name;
+      odooUpdates.name = updates.name;
+      odooUpdates.arabic_name = updates.name;
     }
-    if (updates.position !== undefined) supaUpdates.position = updates.position;
-    if (updates.department !== undefined) supaUpdates.department = updates.department;
-    if (updates.manager_id !== undefined) supaUpdates.manager_id = updates.manager_id;
-    const { error } = await supabase.from("employees").update(supaUpdates).eq("id", dbId);
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    if (updates.position !== undefined) {
+      const pos = dbPositions.find(p => p.title_ar === updates.position);
+      odooUpdates.position_id = pos?.id || null;
+    }
+    if (updates.department !== undefined) {
+      const dept = dbDepartments.find(d => d.name === updates.department);
+      odooUpdates.department_id = dept?.id || null;
+    }
+    if (updates.manager_id !== undefined) odooUpdates.manager_id = updates.manager_id;
+    try {
+      await odooData.updateEmployee(dbId, odooUpdates);
       setToast(arabicSource("hierarchy.employee_data_has_been_updated_successfully"));
       setEditTarget(null);
       setSelectedNode(null);
       await refetch();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
-  }, [refetch]);
+  }, [refetch, dbDepartments, dbPositions]);
 
   const handleLinkEmployee = useCallback(async (empDbId: string, managerDbId: string) => {
     setSaving(true);
-    const { error } = await supabase.from("employees").update({ manager_id: managerDbId }).eq("id", empDbId);
-    if (error) {
-      setToast(`${arabicSource("common.error_2")} ${error.message}`);
-    } else {
+    try {
+      await odooData.updateEmployee(empDbId, { manager_id: managerDbId });
       setToast(arabicSource("hierarchy.the_employee_has_been_successfully_linked_to_his_manager"));
       await refetch();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
     setSaving(false);
   }, [refetch]);
 
   const handleAddDepartment = useCallback(async (name: string, color: string) => {
-    await supabase.from("departments").upsert({ name, color }, { onConflict: "name" });
-  }, []);
+    const existing = dbDepartments.find(d => d.name === name);
+    if (existing) {
+      await odooData.updateDepartment(existing.id, { color });
+    } else {
+      await odooData.createDepartment({ name, color });
+    }
+  }, [dbDepartments]);
 
   // Setup Owner → CEO + COO hierarchy
   const handleSetupHierarchy = useCallback(async () => {
@@ -1890,37 +1894,51 @@ export function Hierarchy() {
         return;
       }
 
-      const ownerId = crypto.randomUUID();
-      const ceoId = crypto.randomUUID();
-      const cooId = crypto.randomUUID();
-
       // Get max person_id to assign new sequential ones
-      const { data: maxRow } = await supabase.from("employees").select("person_id").order("person_id", { ascending: false }).limit(1);
-      const maxPid = maxRow?.[0]?.person_id ?? 0;
+      const maxPid = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0);
+
+      // 0. Ensure Owner + C-Level departments exist first (employees need a department_id)
+      const ownerDeptExisting = dbDepartments.find(d => d.name === arabicSource("common.owner"));
+      const ownerDeptId = ownerDeptExisting
+        ? ownerDeptExisting.id
+        : (await odooData.createDepartment({ name: arabicSource("common.owner"), color: OWNER_COLOR }) as any)?.data?.id;
+      const clevelDeptExisting = dbDepartments.find(d => d.name === arabicSource("common.senior_management"));
+      const clevelDeptId = clevelDeptExisting
+        ? clevelDeptExisting.id
+        : (await odooData.createDepartment({ name: arabicSource("common.senior_management"), color: CLEVEL_COLOR }) as any)?.data?.id;
 
       // 1. Insert Owner
-      const { error: e1 } = await supabase.from("employees").insert({
-        id: ownerId, person_id: maxPid + 1, name: arabicSource("common.owner"), arabic_name: arabicSource("common.owner"),
-        department: arabicSource("common.owner"), position: arabicSource("common.owner"),
-        manager_id: null, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
-      });
-      if (e1) { console.error("Owner insert error:", e1); setToast(`${arabicSource("hierarchy.owner_creation_error")} ${e1.message}`); setSaving(false); return; }
+      let ownerId: string;
+      try {
+        const r1: any = await odooData.createEmployee({
+          person_id: maxPid + 1, name: arabicSource("common.owner"), arabic_name: arabicSource("common.owner"),
+          department_id: ownerDeptId || null,
+          manager_id: null, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
+        });
+        ownerId = String(r1?.data?.id);
+      } catch (e1: any) { console.error("Owner insert error:", e1); setToast(`${arabicSource("hierarchy.owner_creation_error")} ${e1?.message || ""}`); setSaving(false); return; }
 
       // 2. Insert CEO under Owner
-      const { error: e2 } = await supabase.from("employees").insert({
-        id: ceoId, person_id: maxPid + 2, name: arabicSource("common.executive_director"), arabic_name: arabicSource("common.executive_director"),
-        department: arabicSource("common.senior_management"), position: "CEO",
-        manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
-      });
-      if (e2) { console.error("CEO insert error:", e2); setToast(`${arabicSource("hierarchy.ceo_creation_error")} ${e2.message}`); setSaving(false); return; }
+      let ceoId: string;
+      try {
+        const r2: any = await odooData.createEmployee({
+          person_id: maxPid + 2, name: arabicSource("common.executive_director"), arabic_name: arabicSource("common.executive_director"),
+          department_id: clevelDeptId || null,
+          manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
+        });
+        ceoId = String(r2?.data?.id);
+      } catch (e2: any) { console.error("CEO insert error:", e2); setToast(`${arabicSource("hierarchy.ceo_creation_error")} ${e2?.message || ""}`); setSaving(false); return; }
 
       // 3. Insert COO under Owner
-      const { error: e3 } = await supabase.from("employees").insert({
-        id: cooId, person_id: maxPid + 3, name: arabicSource("common.chief_operating_officer"), arabic_name: arabicSource("common.chief_operating_officer"),
-        department: arabicSource("common.senior_management"), position: "COO",
-        manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
-      });
-      if (e3) { console.error("COO insert error:", e3); setToast(`${arabicSource("hierarchy.coo_creation_error")} ${e3.message}`); setSaving(false); return; }
+      let cooId: string;
+      try {
+        const r3: any = await odooData.createEmployee({
+          person_id: maxPid + 3, name: arabicSource("common.chief_operating_officer"), arabic_name: arabicSource("common.chief_operating_officer"),
+          department_id: clevelDeptId || null,
+          manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
+        });
+        cooId = String(r3?.data?.id);
+      } catch (e3: any) { console.error("COO insert error:", e3); setToast(`${arabicSource("hierarchy.coo_creation_error")} ${e3?.message || ""}`); setSaving(false); return; }
 
       // 4. Move all existing root employees (no manager) under CEO, EXCLUDING the newly created ones
       const newIds = new Set<string>([ownerId, ceoId, cooId]);
@@ -1929,21 +1947,10 @@ export function Hierarchy() {
         .map(e => e.id);
 
       if (rootEmpIds.length > 0) {
-        const { error: e4 } = await supabase.from("employees")
-          .update({ manager_id: ceoId })
-          .in("id", rootEmpIds);
-        if (e4) console.error("Move root employees error:", e4);
+        try {
+          await Promise.all(rootEmpIds.map(id => odooData.updateEmployee(id, { manager_id: ceoId })));
+        } catch (e4: any) { console.error("Move root employees error:", e4); }
       }
-
-      // 5. Add Owner + C-Level departments
-      await supabase.from("departments").upsert(
-        { name: arabicSource("common.owner"), color: OWNER_COLOR },
-        { onConflict: "name" }
-      );
-      await supabase.from("departments").upsert(
-        { name: arabicSource("common.senior_management"), color: CLEVEL_COLOR },
-        { onConflict: "name" }
-      );
 
       setToast(arabicSource("hierarchy.structure_configured_owner_ceo_coo_edit_data_from_the_edit_butto"));
       setShowSetupModal(false);
@@ -1953,7 +1960,7 @@ export function Hierarchy() {
       setToast(`${arabicSource("common.error_2")} ${err?.message || arabicSource("hierarchy.failed_to_initialize_the_organizational_structure")}`);
     }
     setSaving(false);
-  }, [dbEmployees, refetch]);
+  }, [dbEmployees, dbDepartments, refetch]);
 
   // ── Cleanup duplicate Owner/CEO/COO entries ──
   const handleCleanupDuplicates = useCallback(async () => {
@@ -2016,30 +2023,29 @@ export function Hierarchy() {
         }
 
         if (newManagerId) {
-          await supabase.from("employees").update({ manager_id: newManagerId }).eq("id", emp.id);
+          await odooData.updateEmployee(emp.id, { manager_id: newManagerId });
         }
       }
 
-      // Now delete all duplicates (set their manager_id to null first, then delete)
+      // Unlink duplicates from the hierarchy (manager_id -> null).
+      // TODO(odoo): no delete-employee endpoint exists yet (only set_status), so
+      // duplicates are unlinked, not removed — they'll still show up in flat employee lists.
       if (allDuplicateIds.size > 0) {
         const dupArr = Array.from(allDuplicateIds);
-        // First remove any manager_id references to duplicates that might remain
-        await supabase.from("employees").update({ manager_id: null }).in("id", dupArr);
-        // Then delete the duplicate entries entirely
-        await supabase.from("employees").delete().in("id", dupArr);
+        await Promise.all(dupArr.map(id => odooData.updateEmployee(id, { manager_id: null })));
       }
 
       // Ensure kept Owner has no manager (is the true root)
       if (keepOwner) {
-        await supabase.from("employees").update({ manager_id: null }).eq("id", keepOwner.id);
+        await odooData.updateEmployee(keepOwner.id, { manager_id: null });
       }
       // Ensure kept CEO reports to kept Owner
       if (keepCeo && keepOwner) {
-        await supabase.from("employees").update({ manager_id: keepOwner.id }).eq("id", keepCeo.id);
+        await odooData.updateEmployee(keepCeo.id, { manager_id: keepOwner.id });
       }
       // Ensure kept COO reports to kept Owner
       if (keepCoo && keepOwner) {
-        await supabase.from("employees").update({ manager_id: keepOwner.id }).eq("id", keepCoo.id);
+        await odooData.updateEmployee(keepCoo.id, { manager_id: keepOwner.id });
       }
 
       const removedCount = allDuplicateIds.size;

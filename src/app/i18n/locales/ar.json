@@ -1357,6 +1357,8 @@
   "settings.leave_type_added": "تم إضافة نوع الإجازة",
   "settings.contract_type_added": "تم إضافة نوع العقد",
   "settings.document_type_added": "تم إضافة نوع الوثيقة",
+  "settings.leave_type_management_unavailable_odoo": "إدارة أنواع الإجازات غير متاحة على Odoo بعد",
+  "settings.document_type_management_unavailable_odoo": "إدارة أنواع المستندات غير متاحة على Odoo بعد",
   "settings.the_shift_was_created_successfully": "تم إنشاء الوردية بنجاح",
   "settings.the_default_shift_has_been_assigned_successfully": "تم تعيين الوردية الافتراضية بنجاح",
   "settings.vacation_has_been_successfully_deleted": "تم حذف العطلة بنجاح",

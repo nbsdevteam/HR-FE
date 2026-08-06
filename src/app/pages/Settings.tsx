@@ -28,8 +28,6 @@ import {
   Palette,
 } from "lucide-react";
 import { useAppSettings, type MonthFormat, formatMonthYear } from "../components/SettingsContext";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { useShifts, useHierarchyData, useSystemModules, useConfigurations, usePublicHolidays, useLeaveTypes, useContractTypes, useDocumentTypes, type DbShift, type DbSystemModule, type DbConfiguration, type DbPublicHoliday, type DbLeaveType, type DbContractType, type DbDocumentType } from "../lib/hooks";
 import { ShiftAssigner } from "../components/ShiftAssigner";
@@ -189,8 +187,7 @@ export function SettingsPage() {
     setSavingDeptColors(true);
     try {
       for (const [deptId, color] of Object.entries(deptColorEdits)) {
-        if (isOdooBackend()) await odooData.updateDepartment(deptId, { color });
-        else await supabase.from("departments").update({ color }).eq("id", deptId);
+        await odooData.updateDepartment(deptId, { color });
       }
       setDeptColorEdits({});
       showToast(arabicSource("settings.section_colors_were_saved_successfully"));
@@ -282,11 +279,7 @@ export function SettingsPage() {
     });
 
     try {
-      if (isOdooBackend()) await odooData.updateShift(state.id, updateData);
-      else {
-        const { error } = await supabase.from("shifts").update(updateData).eq("id", state.id);
-        if (error) throw error;
-      }
+      await odooData.updateShift(state.id, updateData);
       showToast(arabicSource("settings.the_shift_has_been_saved_successfully"));
       setEditingShift(null);
       refetchShifts();
@@ -318,11 +311,7 @@ export function SettingsPage() {
     });
 
     try {
-      if (isOdooBackend()) await odooData.createShift(insertData);
-      else {
-        const { error } = await supabase.from("shifts").insert([insertData]);
-        if (error) throw error;
-      }
+      await odooData.createShift(insertData);
       showToast(arabicSource("settings.the_shift_was_created_successfully"));
       setShowNewShiftForm(false);
       setNewShiftForm({
@@ -345,11 +334,7 @@ export function SettingsPage() {
   const deleteShift = async (shiftId: string) => {
     if (!localizedConfirm(arabicSource("settings.do_you_really_want_to_delete_this_shift"))) return;
     try {
-      if (isOdooBackend()) await odooData.deleteShift(shiftId);
-      else {
-        const { error } = await supabase.from("shifts").delete().eq("id", shiftId);
-        if (error) throw error;
-      }
+      await odooData.deleteShift(shiftId);
       showToast(arabicSource("settings.the_shift_has_been_successfully_deleted"));
       refetchShifts();
     } catch (err) {
@@ -357,21 +342,9 @@ export function SettingsPage() {
     }
   };
 
-  const setAsDefault = async (shiftId: string) => {
-    try {
-      if (isOdooBackend()) {
-        // Odoo shifts have no is_default flag on model; mark via description is skipped — no-op toast
-        showToast("تعيين الافتراضي غير متاح على Odoo بعد — عيّن القسم/الموظف مباشرة");
-        return;
-      }
-      await supabase.from("shifts").update({ is_default: false }).eq("is_default", true);
-      const { error } = await supabase.from("shifts").update({ is_default: true }).eq("id", shiftId);
-      if (error) throw error;
-      showToast(arabicSource("settings.the_default_shift_has_been_assigned_successfully"));
-      refetchShifts();
-    } catch (err) {
-      showToast(arabicSource("settings.error_setting_default_shift"));
-    }
+  const setAsDefault = async (_shiftId: string) => {
+    // Odoo shifts have no is_default flag on model; mark via description is skipped — no-op toast
+    showToast("تعيين الافتراضي غير متاح على Odoo بعد — عيّن القسم/الموظف مباشرة");
   };
 
   const saveDeptAssignments = async () => {
@@ -379,8 +352,7 @@ export function SettingsPage() {
     try {
       for (const [deptId, shiftId] of Object.entries(deptShiftAssignments)) {
         const updateData = shiftId ? { default_shift_id: shiftId } : { default_shift_id: null };
-        if (isOdooBackend()) await odooData.updateDepartment(deptId, updateData);
-        else await supabase.from("departments").update(updateData).eq("id", deptId);
+        await odooData.updateDepartment(deptId, updateData);
       }
       showToast(arabicSource("settings.section_assignments_were_saved_successfully"));
     } catch (err) {
@@ -404,8 +376,7 @@ export function SettingsPage() {
   // ——— System Modules Toggle ———
   const toggleModule = async (module: DbSystemModule) => {
     try {
-      if (isOdooBackend()) await odooData.updateModule(module.id, !module.is_enabled);
-      else await supabase.from("system_modules").update({ is_enabled: !module.is_enabled }).eq("id", module.id);
+      await odooData.updateModule(module.id, !module.is_enabled);
       refetchModules();
       showToast(`${arabicSource("common.done")} ${!module.is_enabled ? arabicSource("common.activate") : arabicSource("settings.disabled")} ${arabicSource("settings.feature_successfully")}`);
     } catch (err) {
@@ -416,8 +387,7 @@ export function SettingsPage() {
   // ——— Configuration Edit ———
   const saveConfigValue = async (configId: string, value: any) => {
     try {
-      if (isOdooBackend()) await odooData.updateConfig(configId, value);
-      else await supabase.from("configurations").update({ config_value: value }).eq("id", configId);
+      await odooData.updateConfig(configId, value);
       refetchConfigs();
       showToast(arabicSource("settings.the_setting_was_saved_successfully"));
       setConfigEdits((prev) => {
@@ -437,19 +407,7 @@ export function SettingsPage() {
       return;
     }
     try {
-      const [year, month, day] = newHoliday.date.split("-");
-      if (isOdooBackend()) {
-        await odooData.createHoliday({ name_ar: newHoliday.name_ar, date: newHoliday.date });
-      } else {
-        await supabase.from("public_holidays").insert({
-          name_ar: newHoliday.name_ar,
-          name_en: newHoliday.name_en || null,
-          date: newHoliday.date,
-          is_recurring: newHoliday.is_recurring,
-          recurring_month: newHoliday.is_recurring ? parseInt(month) : null,
-          recurring_day: newHoliday.is_recurring ? parseInt(day) : null,
-        });
-      }
+      await odooData.createHoliday({ name_ar: newHoliday.name_ar, date: newHoliday.date });
       refetchHolidays();
       setNewHoliday({ name_ar: "", name_en: "", date: "", is_recurring: false });
       setShowNewHolidayForm(false);
@@ -461,8 +419,7 @@ export function SettingsPage() {
 
   const deleteHoliday = async (holidayId: string) => {
     try {
-      if (isOdooBackend()) await odooData.deleteHoliday(holidayId);
-      else await supabase.from("public_holidays").delete().eq("id", holidayId);
+      await odooData.deleteHoliday(holidayId);
       refetchHolidays();
       showToast(arabicSource("settings.vacation_has_been_successfully_deleted"));
     } catch (err) {
@@ -1469,15 +1426,8 @@ export function SettingsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={async () => {
-                    if (!newLeaveType.name_ar || !newLeaveType.code) return;
-                    await supabase.from("leave_types").insert({
-                      ...newLeaveType,
-                      is_active: true,
-                    });
-                    refetchLeaveTypes();
-                    setShowNewLeaveTypeForm(false);
-                    setNewLeaveType({ name_ar: "", name_en: "", code: "", is_paid: true, default_days_per_year: 0, allow_half_day: false, requires_attachment: false, attachment_after_days: 0, accrual_method: "annual", is_carryover_allowed: false, max_carryover_days: 0, carryover_expiry_months: 3, is_encashable: false, encashment_percentage: 100, color: "#3b82f6", sort_order: 0 });
-                    setToastMessage(arabicSource("settings.leave_type_added"));
+                    // TODO(odoo): no create endpoint for leave types yet — /api/hr/leave/types is list-only.
+                    setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
                     setTimeout(() => setToastMessage(null), 2000);
                   }}
                   className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 cursor-pointer"
@@ -1522,16 +1472,16 @@ export function SettingsPage() {
                     <Toggle
                       on={lt.is_active}
                       onClick={async () => {
-                        await supabase.from("leave_types").update({ is_active: !lt.is_active }).eq("id", lt.id);
-                        refetchLeaveTypes();
+                        // TODO(odoo): no update endpoint for leave types yet — /api/hr/leave/types is list-only.
+                        setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
+                        setTimeout(() => setToastMessage(null), 2000);
                       }}
                     />
                     <button
                       onClick={async () => {
-                        if (localizedConfirm(arabicSource("settings.do_you_want_to_delete_this_type"))) {
-                          await supabase.from("leave_types").delete().eq("id", lt.id);
-                          refetchLeaveTypes();
-                        }
+                        // TODO(odoo): no delete endpoint for leave types yet — /api/hr/leave/types is list-only.
+                        setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
+                        setTimeout(() => setToastMessage(null), 2000);
                       }}
                       className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                     >
@@ -1647,8 +1597,7 @@ export function SettingsPage() {
                     notice_period_days: newContractType.notice_period_days,
                     sort_order: newContractType.sort_order,
                   };
-                  if (isOdooBackend()) await odooData.createContractType(ctPayload);
-                  else await supabase.from("contract_types").insert(ctPayload);
+                  await odooData.createContractType(ctPayload);
                   showToast(arabicSource("settings.contract_type_added"));
                   setShowNewContractTypeForm(false);
                   setNewContractType({ name_ar: "", name_en: "", code: "", description: "", default_duration_months: 12, is_renewable: true, probation_days: 90, notice_period_days: 30, sort_order: 0 });
@@ -1681,16 +1630,14 @@ export function SettingsPage() {
                     <Toggle
                       on={ct.is_active}
                       onClick={async () => {
-                        if (isOdooBackend()) await odooData.updateContractType(ct.id, { is_active: !ct.is_active });
-                        else await supabase.from("contract_types").update({ is_active: !ct.is_active }).eq("id", ct.id);
+                        await odooData.updateContractType(ct.id, { is_active: !ct.is_active });
                         refetchContractTypes();
                       }}
                     />
                     <button
                       onClick={async () => {
                         if (!localizedConfirm(arabicSource("settings.delete_contract_type"))) return;
-                        if (isOdooBackend()) await odooData.deleteContractType(ct.id);
-                        else await supabase.from("contract_types").delete().eq("id", ct.id);
+                        await odooData.deleteContractType(ct.id);
                         showToast(arabicSource("settings.contract_type_deleted"));
                         refetchContractTypes();
                       }}
@@ -1783,20 +1730,8 @@ export function SettingsPage() {
               </div>
               <button
                 onClick={async () => {
-                  if (!newDocType.name_ar || !newDocType.code) return;
-                  await supabase.from("document_types").insert({
-                    name_ar: newDocType.name_ar,
-                    name_en: newDocType.name_en || null,
-                    code: newDocType.code,
-                    has_expiry: newDocType.has_expiry,
-                    expiry_warning_days: newDocType.expiry_warning_days,
-                    is_required: newDocType.is_required,
-                    sort_order: newDocType.sort_order,
-                  });
-                  showToast(arabicSource("settings.document_type_added"));
-                  setShowNewDocTypeForm(false);
-                  setNewDocType({ name_ar: "", name_en: "", code: "", has_expiry: true, expiry_warning_days: 30, is_required: false, sort_order: 0 });
-                  refetchDocumentTypes();
+                  // TODO(odoo): no create endpoint for document types yet — /api/hr/document_types/list is list-only.
+                  showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
                 }}
                 className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
               >
@@ -1825,16 +1760,14 @@ export function SettingsPage() {
                     <Toggle
                       on={dt.is_active}
                       onClick={async () => {
-                        await supabase.from("document_types").update({ is_active: !dt.is_active }).eq("id", dt.id);
-                        refetchDocumentTypes();
+                        // TODO(odoo): no update endpoint for document types yet — /api/hr/document_types/list is list-only.
+                        showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
                       }}
                     />
                     <button
                       onClick={async () => {
-                        if (!localizedConfirm(arabicSource("settings.delete_document_type"))) return;
-                        await supabase.from("document_types").delete().eq("id", dt.id);
-                        showToast(arabicSource("settings.document_type_deleted"));
-                        refetchDocumentTypes();
+                        // TODO(odoo): no delete endpoint for document types yet — /api/hr/document_types/list is list-only.
+                        showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
                       }}
                       className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
                     >

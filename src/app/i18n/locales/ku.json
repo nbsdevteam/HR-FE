@@ -1357,6 +1357,8 @@
   "settings.leave_type_added": "جۆری جێهێشتن زیادکرا",
   "settings.contract_type_added": "جۆری گرێبەست زیادکرا",
   "settings.document_type_added": "جۆری بەڵگەنامە زیاد کرا",
+  "settings.leave_type_management_unavailable_odoo": "بەڕێوەبردنی جۆرەکانی مۆڵەت هێشتا لەسەر Odoo بەردەست نییە",
+  "settings.document_type_management_unavailable_odoo": "بەڕێوەبردنی جۆرەکانی بەڵگەنامە هێشتا لەسەر Odoo بەردەست نییە",
   "settings.the_shift_was_created_successfully": "شیفتەکە بە سەرکەوتوویی دروستکرا",
   "settings.the_default_shift_has_been_assigned_successfully": "گۆڕینی پێشوەختە بە سەرکەوتوویی دیاری کراوە",
   "settings.vacation_has_been_successfully_deleted": "پشوو بە سەرکەوتوویی سڕاوەتەوە",

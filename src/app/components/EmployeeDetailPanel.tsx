@@ -6,8 +6,6 @@ import {
   CalendarCheck, CalendarX, Laptop, Paperclip, PlusCircle, Check, Loader2, Users, Plus,
   Fingerprint, ScanFace, AlertTriangle, ShieldOff
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import { DEPARTMENTS, SYNC_API } from "../lib/constants";
 
@@ -179,49 +177,20 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
     setSaving(true);
     setSaveError(null);
     try {
-      if (isOdooBackend()) {
-        await odooData.updateEmployee(editData.dbId, {
-          name: editData.name,
-          email: editData.email,
-          personal_phone: editData.personalPhone,
-          phone: editData.personalPhone || editData.companyPhone,
-          monthly_salary: editData.salary,
-          join_date: editData.startDate || null,
-          status: editData.status,
-          address: editData.address || null,
-          national_id: editData.nationalId,
-          emergency_contact: editData.emergencyContact,
-          emergency_phone: editData.emergencyPhone,
-          manager_id: editData.managerId || null,
-        });
-      } else {
-        const { error } = await supabase
-          .from("employees")
-          .update({
-            arabic_name: editData.name,
-            department: editData.department,
-            position: editData.position,
-            email: editData.email,
-            personal_phone: editData.personalPhone,
-            company_phone: editData.companyPhone,
-            monthly_salary: editData.salary,
-            join_date: editData.startDate || null,
-            end_date: editData.endDate || null,
-            status: editData.status,
-            address: editData.address,
-            national_id: editData.nationalId,
-            emergency_contact: editData.emergencyContact,
-            emergency_phone: editData.emergencyPhone,
-            blood_type: editData.bloodType,
-            manager_id: editData.managerId || null,
-          })
-          .eq("id", editData.dbId);
-        if (error) {
-          setSaveError(error.message);
-          console.error("Save error:", error);
-          return;
-        }
-      }
+      await odooData.updateEmployee(editData.dbId, {
+        name: editData.name,
+        email: editData.email,
+        personal_phone: editData.personalPhone,
+        phone: editData.personalPhone || editData.companyPhone,
+        monthly_salary: editData.salary,
+        join_date: editData.startDate || null,
+        status: editData.status,
+        address: editData.address || null,
+        national_id: editData.nationalId,
+        emergency_contact: editData.emergencyContact,
+        emergency_phone: editData.emergencyPhone,
+        manager_id: editData.managerId || null,
+      });
 
       setIsEditing(false);
       onSave?.();

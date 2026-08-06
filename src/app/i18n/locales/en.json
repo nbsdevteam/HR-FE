@@ -1357,6 +1357,8 @@
   "settings.leave_type_added": "Leave type added",
   "settings.contract_type_added": "Contract type added",
   "settings.document_type_added": "Document type added",
+  "settings.leave_type_management_unavailable_odoo": "Leave type management is not yet available on Odoo",
+  "settings.document_type_management_unavailable_odoo": "Document type management is not yet available on Odoo",
   "settings.the_shift_was_created_successfully": "The shift was created successfully",
   "settings.the_default_shift_has_been_assigned_successfully": "The default shift has been assigned successfully",
   "settings.vacation_has_been_successfully_deleted": "Vacation has been successfully deleted",

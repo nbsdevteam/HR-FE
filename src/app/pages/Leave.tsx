@@ -8,8 +8,6 @@ import {
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { EmptyState } from "../components/EmptyState";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, empDisplayName, useLeaveTypes, useLeaveRequests,
@@ -106,32 +104,13 @@ export function Leave() {
   const approvedCount = requests.filter(r => r.status === arabicSource("common.accepted")).length;
   const rejectedCount = requests.filter(r => r.status === arabicSource("common.rejected_3")).length;
 
-  // Approve / Reject — Odoo uses native leave workflow; Supabase updates status + balances
+  // Approve / Reject — Odoo native leave workflow
   const handleApprove = async (id: string) => {
     try {
-      if (isOdooBackend()) {
-        try {
-          await odooData.hrApproveLeave(id);
-        } catch {
-          await odooData.managerApproveLeave(id);
-        }
-      } else {
-        const { error: updateErr } = await supabase.from("leave_requests").update({ status: arabicSource("common.accepted") }).eq("id", id);
-        if (updateErr) throw updateErr;
-
-        const req = requests.find(r => r.id === id);
-        if (req) {
-          const { data: freshBal } = await supabase.from("leave_balances")
-            .select("id, used_days")
-            .eq("employee_id", req.employee_id)
-            .or(`leave_type.eq.${req.leave_type},leave_type_id.eq.${req.leave_type_id || ""}`)
-            .limit(1)
-            .single();
-          if (freshBal) {
-            await supabase.from("leave_balances").update({ used_days: freshBal.used_days + req.days }).eq("id", freshBal.id);
-          }
-          await supabase.from("approval_requests").update({ status: "approved" }).eq("entity_type", "leave_request").eq("entity_id", id);
-        }
+      try {
+        await odooData.hrApproveLeave(id);
+      } catch {
+        await odooData.managerApproveLeave(id);
       }
       refetchRequests();
       refetchBalances();
@@ -143,13 +122,7 @@ export function Leave() {
 
   const handleReject = async (id: string, reason?: string) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.refuseLeave(id, reason);
-      } else {
-        const { error } = await supabase.from("leave_requests").update({ status: arabicSource("common.rejected_3"), rejection_reason: reason || null }).eq("id", id);
-        if (error) throw error;
-        await supabase.from("approval_requests").update({ status: "rejected" }).eq("entity_type", "leave_request").eq("entity_id", id);
-      }
+      await odooData.refuseLeave(id, reason);
       refetchRequests();
     } catch (e: any) {
       console.error("Reject error:", e.message);
@@ -159,12 +132,7 @@ export function Leave() {
 
   const handleDelete = async (id: string) => {
     try {
-      if (isOdooBackend()) {
-        await odooData.cancelLeave(id);
-      } else {
-        const { error } = await supabase.from("leave_requests").delete().eq("id", id);
-        if (error) throw error;
-      }
+      await odooData.cancelLeave(id);
       refetchRequests();
       refetchBalances();
     } catch (e: any) {
@@ -659,13 +627,11 @@ function PermissionsTab({
   refetch: () => void;
 }) {
   const handleApprove = async (id: string) => {
-    if (isOdooBackend()) await odooData.updateLeavePermission(id, "approved");
-    else await supabase.from("leave_permissions").update({ status: arabicSource("common.accepted") }).eq("id", id);
+    await odooData.updateLeavePermission(id, "approved");
     refetch();
   };
   const handleReject = async (id: string) => {
-    if (isOdooBackend()) await odooData.updateLeavePermission(id, "refused");
-    else await supabase.from("leave_permissions").update({ status: arabicSource("common.rejected_3") }).eq("id", id);
+    await odooData.updateLeavePermission(id, "refused");
     refetch();
   };
 
@@ -812,45 +778,14 @@ function LeaveRequestModal({
     setError("");
 
     try {
-      if (isOdooBackend()) {
-        await odooData.requestLeave({
-          leave_type_id: lt.id,
-          date_from: startDate,
-          date_to: isHalfDay ? startDate : (endDate || startDate),
-          reason: reason || null,
-          half_day: isHalfDay,
-          employee_id: employeeId,
-        });
-      } else {
-        const { data: insertedReq, error: dbError } = await supabase.from("leave_requests").insert({
-          employee_id: employeeId,
-          leave_type: lt.name_ar,
-          leave_type_id: lt.id,
-          start_date: startDate,
-          end_date: isHalfDay ? startDate : (endDate || startDate),
-          days,
-          is_half_day: isHalfDay,
-          half_day_period: isHalfDay ? halfDayPeriod : null,
-          reason: reason || null,
-          status: arabicSource("common.pending"),
-        }).select("id").single();
-
-        if (dbError) {
-          setError(dbError.message);
-          setSaving(false);
-          return;
-        }
-
-        if (insertedReq) {
-          await supabase.from("approval_requests").insert({
-            entity_type: "leave_request",
-            entity_id: insertedReq.id,
-            requested_by: employeeId,
-            current_step: 1,
-            status: "pending",
-          });
-        }
-      }
+      await odooData.requestLeave({
+        leave_type_id: lt.id,
+        date_from: startDate,
+        date_to: isHalfDay ? startDate : (endDate || startDate),
+        reason: reason || null,
+        half_day: isHalfDay,
+        employee_id: employeeId,
+      });
       setSaving(false);
       await onSubmit();
     } catch (e: any) {
@@ -1071,31 +1006,14 @@ function PermissionModal({
     setError("");
 
     try {
-      if (isOdooBackend()) {
-        await odooData.createLeavePermission({
-          employee_id: employeeId,
-          date,
-          start_time: startTime,
-          end_time: endTime,
-          hours,
-          reason: reason || null,
-        });
-      } else {
-        const { error: dbError } = await supabase.from("leave_permissions").insert({
-          employee_id: employeeId,
-          date,
-          start_time: startTime,
-          end_time: endTime,
-          hours,
-          reason: reason || null,
-          status: arabicSource("common.pending"),
-        });
-        if (dbError) {
-          setError(dbError.message);
-          setSaving(false);
-          return;
-        }
-      }
+      await odooData.createLeavePermission({
+        employee_id: employeeId,
+        date,
+        start_time: startTime,
+        end_time: endTime,
+        hours,
+        reason: reason || null,
+      });
       setSaving(false);
       await onSubmit();
     } catch (e: any) {

@@ -1,39 +1,24 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Lock, Mail, Loader2, Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
+import { Lock, Mail, Loader2, Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { isOdooBackend } from "../lib/api/client";
 
 export function Login() {
-  const { signIn, signUp } = useAuth();
-  const odooMode = isOdooBackend();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { setError("يرجى إدخال البريد الإلكتروني وكلمة المرور"); return; }
     setLoading(true);
     setError("");
-    setSuccess("");
 
-    if (mode === "login") {
-      const { error: err } = await signIn(email, password);
-      if (err) setError(err);
-    } else {
-      const { error: err } = await signUp(email, password);
-      if (err) {
-        setError(err);
-      } else {
-        setSuccess("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.");
-        setMode("login");
-      }
-    }
+    const { error: err } = await signIn(email, password);
+    if (err) setError(err);
     setLoading(false);
   };
 
@@ -63,7 +48,7 @@ export function Login() {
           </motion.div>
           <h1 className="text-gradient-gold text-2xl font-bold mb-1">نظام إدارة الموارد البشرية</h1>
           <p className="text-muted-foreground" style={{ fontSize: 14 }}>
-            {mode === "login" ? "تسجيل الدخول إلى حسابك" : "إنشاء حساب جديد"}
+            تسجيل الدخول إلى حسابك
           </p>
         </div>
 
@@ -72,21 +57,21 @@ export function Login() {
           onSubmit={handleSubmit}
           className="bg-card/30 backdrop-blur-md border border-border/40 rounded-2xl p-6 space-y-4 shadow-xl"
         >
-          {/* Email / username */}
+          {/* Username */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
-              {odooMode ? "اسم المستخدم" : "البريد الإلكتروني"}
+              اسم المستخدم
             </label>
             <div className="relative">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
-                type={odooMode ? "text" : "email"}
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full ps-10 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-                placeholder={odooMode ? "admin" : "example@company.com"}
+                placeholder="admin"
                 dir="ltr"
-                autoComplete={odooMode ? "username" : "email"}
+                autoComplete="username"
               />
             </div>
           </div>
@@ -103,7 +88,7 @@ export function Login() {
                 className="w-full ps-10 pe-10 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                 placeholder="••••••••"
                 dir="ltr"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                autoComplete="current-password"
               />
               <button
                 type="button"
@@ -115,19 +100,12 @@ export function Login() {
             </div>
           </div>
 
-          {/* Error/Success */}
+          {/* Error */}
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2"
               style={{ fontSize: 13 }}>
               {error}
-            </motion.p>
-          )}
-          {success && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2"
-              style={{ fontSize: 13 }}>
-              {success}
             </motion.p>
           )}
 
@@ -142,26 +120,10 @@ export function Login() {
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
-            ) : mode === "login" ? (
-              <><LogIn className="w-5 h-5" /> تسجيل الدخول</>
             ) : (
-              <><UserPlus className="w-5 h-5" /> إنشاء الحساب</>
+              <><LogIn className="w-5 h-5" /> تسجيل الدخول</>
             )}
           </motion.button>
-
-          {/* Toggle mode — disabled for Odoo JWT backend (admin-provisioned users only) */}
-          {!odooMode && (
-          <div className="text-center pt-2">
-            <button
-              type="button"
-              onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
-              className="text-primary hover:underline cursor-pointer"
-              style={{ fontSize: 13 }}
-            >
-              {mode === "login" ? "ليس لديك حساب؟ إنشاء حساب جديد" : "لديك حساب بالفعل؟ تسجيل الدخول"}
-            </button>
-          </div>
-          )}
         </motion.form>
       </motion.div>
     </div>

@@ -6,8 +6,6 @@ import {
   FileText, Settings,
   Info, CheckCircle, XCircle, Edit2, Download, Upload, LogIn,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { isOdooBackend } from "../lib/api/client";
 import * as odooData from "../lib/api/odooData";
 import {
   useNotifications, useAuditLog, useEmployees,
@@ -146,29 +144,17 @@ function NotificationsTab() {
   }, [notifications, filterType, filterCategory, searchQuery]);
 
   const markRead = async (id: string) => {
-    if (isOdooBackend()) {
-      await odooData.markNotificationRead(id);
-    } else {
-      await supabase.from("notifications").update({ is_read: true }).eq("id", id);
-    }
+    await odooData.markNotificationRead(id);
     refetch();
   };
 
   const markAllRead = async () => {
-    if (isOdooBackend()) {
-      await odooData.markAllNotificationsRead();
-    } else {
-      await supabase.from("notifications").update({ is_read: true }).eq("is_read", false);
-    }
+    await odooData.markAllNotificationsRead();
     refetch();
   };
 
   const dismiss = async (id: string) => {
-    if (isOdooBackend()) {
-      await odooData.dismissNotification(id);
-    } else {
-      await supabase.from("notifications").update({ is_dismissed: true }).eq("id", id);
-    }
+    await odooData.dismissNotification(id);
     refetch();
   };
 
