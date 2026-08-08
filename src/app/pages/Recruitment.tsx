@@ -21,6 +21,20 @@ import { formatNumber } from "../i18n/format";
 import { localizedAlert, localizedConfirm } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
 
+/**
+ * Fetch a CV through the authenticated API and hand it to the browser.
+ *
+ * Shared by the list row and the detail panel. A plain link cannot be used:
+ * the attachment is private and link navigations carry no JWT.
+ */
+async function handleDownloadResume(applicantId: string) {
+  try {
+    await odooData.downloadApplicantResume(applicantId);
+  } catch (e: any) {
+    localizedAlert(e?.message || arabicSource("common.error"));
+  }
+}
+
 // Odoo's lugal.hr.job.opening / lugal.hr.applicant use fixed English enum
 // values, while the FE displays/edits Arabic labels. Map explicitly both ways.
 const JOB_STATUS_TO_ODOO: Record<string, string> = {
@@ -695,10 +709,10 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       {app.resume_url && (
-                        <a href={app.resume_url} target="_blank" rel="noopener noreferrer"
-                          className="p-1 rounded hover:bg-primary/10 text-primary" title={arabicSource("recruitment.download_cv_2")}>
+                        <button type="button" onClick={() => { void handleDownloadResume(app.id); }}
+                          className="p-1 rounded hover:bg-primary/10 text-primary cursor-pointer" title={arabicSource("recruitment.download_cv_2")}>
                           <Download className="w-3.5 h-3.5" />
-                        </a>
+                        </button>
                       )}
                       <button onClick={() => onSelect(app)} className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer" title={arabicSource("common.show_details")}>
                         <Eye className="w-3.5 h-3.5" />
@@ -1017,12 +1031,12 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
           {/* CV */}
           {applicant.resume_url && (
             <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <a href={applicant.resume_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-emerald-400 hover:underline">
+              <button type="button" onClick={() => { void handleDownloadResume(applicant.id); }}
+                className="flex items-center gap-2 text-emerald-400 hover:underline cursor-pointer">
                 <FileText className="w-4 h-4" />
                 <span style={{ fontSize: 13 }}>{arabicSource("recruitment.download_cv")}</span>
                 <Download className="w-4 h-4" />
-              </a>
+              </button>
             </div>
           )}
 

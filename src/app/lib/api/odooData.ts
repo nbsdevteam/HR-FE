@@ -869,6 +869,39 @@ export async function uploadApplicantResume(
   });
 }
 
+/**
+ * Download an applicant's CV.
+ *
+ * The attachment is private and we authenticate with a JWT, so a plain
+ * `<a href="/web/content/...">` cannot work — the browser sends no auth on a
+ * link navigation. Fetch the bytes through the authenticated API instead and
+ * hand the browser a Blob.
+ */
+export async function downloadApplicantResume(applicantId: string | number) {
+  const res = await hrCall<{
+    file_name: string;
+    mimetype: string;
+    file_data: string;
+  }>(`/api/hr/applicants/${eid(applicantId)}/resume`, {});
+
+  const binary = atob(res.file_data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  const url = URL.createObjectURL(new Blob([bytes], { type: res.mimetype }));
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = res.file_name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    // Revoke on the next tick — revoking synchronously can cancel the download.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+}
+
 // ─── AI resume screening / Initial Rating ─────────────────────────────
 
 /** Queue (or with `sync`, immediately run) the AI screening for one applicant. */
