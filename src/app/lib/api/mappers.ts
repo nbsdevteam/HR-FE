@@ -729,6 +729,16 @@ export function mapJobOpening(r: any): DbJobOpening {
     updated_at: r.updated_at || empty,
     applicant_count: num(r.applicant_count),
     hired_count: num(r.hired_count),
+    // AI screening spec — defaulted so a pre-upgrade backend still renders.
+    required_skills: Array.isArray(r.required_skills) ? r.required_skills : [],
+    nice_to_have_skills: Array.isArray(r.nice_to_have_skills) ? r.nice_to_have_skills : [],
+    min_experience_years: num(r.min_experience_years),
+    max_experience_years: num(r.max_experience_years),
+    education_level: r.education_level || "none",
+    required_languages: Array.isArray(r.required_languages) ? r.required_languages : [],
+    required_certs: Array.isArray(r.required_certs) ? r.required_certs : [],
+    ir_auto_shortlist: num(r.ir_auto_shortlist),
+    ir_weights: r.ir_weights || null,
   };
 }
 
@@ -761,6 +771,26 @@ export function mapApplicant(r: any): DbApplicant {
     job_title: r.job_title || undefined,
     job_department: r.job_department || undefined,
     job_status: r.job_status || undefined,
+    // Initial Rating (IR) — all optional so an un-upgraded backend degrades
+    // gracefully to the client-side estimate.
+    ir_score: num(r.ir_score),
+    ir_band: r.ir_band || "",
+    ir_status: r.ir_status || "none",
+    ir_breakdown: r.ir_breakdown || null,
+    ir_summary_ar: r.ir_summary_ar || "",
+    ir_summary_en: r.ir_summary_en || "",
+    ir_confidence: num(r.ir_confidence),
+    ir_red_flags: Array.isArray(r.ir_red_flags) ? r.ir_red_flags : [],
+    ir_missing_info: Array.isArray(r.ir_missing_info) ? r.ir_missing_info : [],
+    ir_needs_review: bool(r.ir_needs_review),
+    ir_screened_at: sornull(r.ir_screened_at),
+    ir_error: r.ir_error || "",
+    matched_skills: Array.isArray(r.matched_skills) ? r.matched_skills : [],
+    missing_skills: Array.isArray(r.missing_skills) ? r.missing_skills : [],
+    suggested_job_id: sornull(r.suggested_job_id),
+    suggested_job_title: r.suggested_job_title || "",
+    suggested_job_score: num(r.suggested_job_score),
+    reference_code: r.reference_code || "",
   };
 }
 

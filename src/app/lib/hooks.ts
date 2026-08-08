@@ -1138,6 +1138,51 @@ export interface DbJobOpening {
   updated_at: string;
   applicant_count?: number;
   hired_count?: number;
+  // AI screening spec — what the IR matcher compares a CV against.
+  required_skills?: JobSkillRequirement[];
+  nice_to_have_skills?: JobSkillRequirement[];
+  min_experience_years?: number;
+  max_experience_years?: number;
+  education_level?: string;
+  required_languages?: string[];
+  required_certs?: string[];
+  ir_auto_shortlist?: number;
+  ir_weights?: Record<string, number> | null;
+}
+
+export interface JobSkillRequirement {
+  name: string;
+  /** 1 = nice, 2 = important, 3 = must-have (a missing must-have costs IR). */
+  weight?: number;
+}
+
+export type IrStatus = "none" | "pending" | "processing" | "done" | "failed" | "stale";
+export type IrBand = "excellent" | "strong" | "moderate" | "weak" | "unfit" | "";
+
+export interface IrComponent {
+  score: number;
+  weight: number;
+  contribution: number;
+  evidence: string;
+}
+
+export interface IrPenalty {
+  code: string;
+  amount: number;
+  detail: string;
+}
+
+export interface IrBreakdown {
+  components?: Record<string, IrComponent>;
+  penalties?: IrPenalty[];
+  weights?: Record<string, number>;
+  raw_total?: number;
+}
+
+export interface IrRedFlag {
+  code: string;
+  detail: string;
+  severity: string;
 }
 
 export interface DbApplicant {
@@ -1169,6 +1214,55 @@ export interface DbApplicant {
   job_title?: string;
   job_department?: string;
   job_status?: string;
+  // Initial Rating (IR) produced by the AI screening pipeline
+  ir_score?: number;
+  ir_band?: IrBand;
+  ir_status?: IrStatus;
+  ir_breakdown?: IrBreakdown | null;
+  ir_summary_ar?: string;
+  ir_summary_en?: string;
+  ir_confidence?: number;
+  ir_red_flags?: IrRedFlag[];
+  ir_missing_info?: string[];
+  ir_needs_review?: boolean;
+  ir_screened_at?: string | null;
+  ir_error?: string;
+  matched_skills?: string[];
+  missing_skills?: string[];
+  suggested_job_id?: string | null;
+  suggested_job_title?: string;
+  suggested_job_score?: number;
+  reference_code?: string;
+  /** Present only in /jobs/<id>/ranking responses. */
+  rank?: number | null;
+}
+
+export interface JobRankingStats {
+  total: number;
+  screened: number;
+  pending: number;
+  failed: number;
+  stale: number;
+  needs_review: number;
+  average_ir: number;
+  bands: Record<string, number>;
+}
+
+export interface ApplicationLink {
+  id: number;
+  name: string;
+  token: string;
+  url: string;
+  scope: "job" | "all_open";
+  job_opening_id: number | false;
+  job_title: string;
+  active: boolean;
+  expires_on: string | null;
+  max_submissions: number;
+  submission_count: number;
+  unusable_reason: string;
+  /** False when the backend has no SPA origin configured — `url` is relative. */
+  base_url_configured?: boolean;
 }
 
 export function useJobOpenings() {
@@ -1201,6 +1295,44 @@ export function useApplicants() {
 
   useEffect(() => { fetchApplicants(); }, []);
   return { applicants, loading, refetch: fetchApplicants };
+}
+
+/**
+ * Candidates for one job, ranked by their Initial Rating.
+ *
+ * While any candidate is still queued the hook polls, because screening runs
+ * asynchronously on the backend cron and HR should watch scores land without
+ * refreshing the page.
+ */
+export function useJobRanking(jobId: string | null) {
+  const [items, setItems] = useState<DbApplicant[]>([]);
+  const [stats, setStats] = useState<JobRankingStats | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchRanking = async (silent = false) => {
+    if (!jobId) { setItems([]); setStats(null); return; }
+    if (!silent) setLoading(true);
+    try {
+      const data = await odooData.fetchJobRanking(jobId);
+      setItems(data.items);
+      setStats(data.stats);
+    } catch (e) {
+      console.error(e);
+      setItems([]);
+      setStats(null);
+    }
+    if (!silent) setLoading(false);
+  };
+
+  useEffect(() => { fetchRanking(); }, [jobId]);
+
+  useEffect(() => {
+    if (!jobId || !stats?.pending) return;
+    const timer = setInterval(() => { fetchRanking(true); }, 10000);
+    return () => clearInterval(timer);
+  }, [jobId, stats?.pending]);
+
+  return { items, stats, loading, refetch: fetchRanking };
 }
 
 // ——— Evaluations, Warnings, Training, Policies Hooks ———

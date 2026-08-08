@@ -4,13 +4,18 @@ import {
   UserPlus, Plus, X, Briefcase, MapPin, Clock, Users, FileCheck, Search,
   Star, Upload, Download, Bookmark, BookmarkCheck, Eye,
   GraduationCap, Building2, Phone, Mail, FileText, Trash2, Edit3,
-  Trophy, TrendingUp, Loader2, AlertCircle
+  Trophy, TrendingUp, Loader2, AlertCircle,
+  Sparkles, Link2, Copy, RefreshCw, ShieldAlert, Check, MessageCircle,
 } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import * as odooData from "../lib/api/odooData";
-import { useJobOpenings, useApplicants, type DbJobOpening, type DbApplicant, type DbDepartment } from "../lib/hooks";
+import {
+  useJobOpenings, useApplicants, useJobRanking,
+  type DbJobOpening, type DbApplicant, type DbDepartment,
+  type ApplicationLink, type IrBand, type JobSkillRequirement,
+} from "../lib/hooks";
 import { DEPARTMENTS } from "../lib/constants";
 import { formatNumber } from "../i18n/format";
 import { localizedAlert, localizedConfirm } from "../i18n/native";
@@ -77,6 +82,12 @@ const statusColors: Record<string, string> = {
 const sourceOptions = [arabicSource("common.live"), arabicSource("recruitment.linkedin"), arabicSource("recruitment.referral_of_an_employee"), arabicSource("recruitment.recruitment_site"), arabicSource("common.other")];
 
 /* ──────── Ranking Algorithm ──────── */
+/**
+ * Fallback estimate for applicants the AI has not screened yet. It is driven by
+ * the manual star rating and a raw skills count, so it never reads the CV and
+ * never compares against the job — it is deliberately labelled as an estimate
+ * in the UI and is always superseded by the backend IR once screening lands.
+ */
 function calcRankScore(a: DbApplicant): number {
   // Rating weight: 40%
   const ratingScore = (a.rating / 5) * 40;
@@ -91,13 +102,63 @@ function calcRankScore(a: DbApplicant): number {
   return Math.round(ratingScore + stageScore + expScore + skillsScore);
 }
 
-function rankLabel(score: number): { text: string; color: string } {
-  if (score >= 80) return { text: arabicSource("recruitment.excellent"), color: "text-green-400 bg-green-500/10 border-green-500/30" };
-  if (score >= 60) return { text: arabicSource("recruitment.very_good"), color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" };
-  if (score >= 40) return { text: arabicSource("recruitment.good"), color: "text-primary bg-primary/10 border-primary/30" };
-  if (score >= 20) return { text: arabicSource("common.accepted"), color: "text-amber-400 bg-amber-500/10 border-amber-500/30" };
-  return { text: arabicSource("recruitment.weak"), color: "text-red-400 bg-red-500/10 border-red-500/30" };
+/** True when the backend produced a real Initial Rating for this applicant. */
+function hasIr(a: DbApplicant): boolean {
+  return a.ir_status === "done" && typeof a.ir_score === "number" && a.ir_score > 0;
 }
+
+/** The score to sort and display by: the AI's IR when present, else the estimate. */
+function effectiveScore(a: DbApplicant): number {
+  return hasIr(a) ? Math.round(a.ir_score as number) : calcRankScore(a);
+}
+
+const BAND_STYLES: Record<Exclude<IrBand, "">, { text: string; color: string }> = {
+  excellent: { text: arabicSource("recruitment.excellent"), color: "text-green-400 bg-green-500/10 border-green-500/30" },
+  strong: { text: arabicSource("recruitment.very_good"), color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" },
+  moderate: { text: arabicSource("recruitment.good"), color: "text-primary bg-primary/10 border-primary/30" },
+  weak: { text: arabicSource("recruitment.weak"), color: "text-amber-400 bg-amber-500/10 border-amber-500/30" },
+  unfit: { text: arabicSource("recruitment.band_unfit"), color: "text-red-400 bg-red-500/10 border-red-500/30" },
+};
+
+function bandFromScore(score: number): Exclude<IrBand, ""> {
+  if (score >= 80) return "excellent";
+  if (score >= 65) return "strong";
+  if (score >= 50) return "moderate";
+  if (score >= 35) return "weak";
+  return "unfit";
+}
+
+function rankLabel(score: number, band?: IrBand): { text: string; color: string } {
+  return BAND_STYLES[band || bandFromScore(score)];
+}
+
+/** Arabic labels for the IR component keys returned by the backend. */
+const IR_COMPONENT_LABELS: Record<string, string> = {
+  skills_match: arabicSource("recruitment.comp_skills_match"),
+  experience_relevance: arabicSource("recruitment.comp_experience_relevance"),
+  resume_quality: arabicSource("recruitment.comp_resume_quality"),
+  education_fit: arabicSource("recruitment.comp_education_fit"),
+  bonus_skills: arabicSource("recruitment.comp_bonus_skills"),
+  stability_progression: arabicSource("recruitment.comp_stability_progression"),
+  logistics_fit: arabicSource("recruitment.comp_logistics_fit"),
+};
+
+const IR_STATUS_LABELS: Record<string, string> = {
+  pending: arabicSource("recruitment.ir_pending"),
+  processing: arabicSource("recruitment.ir_processing"),
+  failed: arabicSource("recruitment.ir_failed"),
+  stale: arabicSource("recruitment.ir_stale"),
+  none: arabicSource("recruitment.ir_not_screened"),
+};
+
+const EDUCATION_LEVELS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: "none", label: arabicSource("common.not_specified") },
+  { value: "high_school", label: arabicSource("recruitment.preparatory_school") },
+  { value: "diploma", label: arabicSource("recruitment.diploma") },
+  { value: "bachelor", label: arabicSource("recruitment.bachelor_s_degree") },
+  { value: "master", label: arabicSource("recruitment.master") },
+  { value: "phd", label: arabicSource("recruitment.ph_d") },
+];
 
 /* ──────── Star Rating Component ──────── */
 function StarRating({ value, onChange, size = 14 }: { value: number; onChange?: (v: number) => void; size?: number }) {
@@ -148,10 +209,12 @@ export function Recruitment() {
     }))
   ), [rawApplicants]);
 
-  const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank">("applicants");
+  const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank" | "ai">("applicants");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [showJobForm, setShowJobForm] = useState(false);
   const [showApplicantForm, setShowApplicantForm] = useState(false);
+  const [linkJob, setLinkJob] = useState<DbJobOpening | null>(null);
+  const [aiJobId, setAiJobId] = useState<string | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<DbApplicant | null>(null);
   const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -181,7 +244,7 @@ export function Recruitment() {
 
     const dir = recSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
-      if (sortBy === "rank") return dir * (calcRankScore(a) - calcRankScore(b));
+      if (sortBy === "rank") return dir * (effectiveScore(a) - effectiveScore(b));
       if (sortBy === "rating") return dir * (a.rating - b.rating);
       if (sortBy === "date") return dir * (new Date(a.applied_date).getTime() - new Date(b.applied_date).getTime());
       if (sortBy === "job") return dir * (a.job_title || "").localeCompare(b.job_title || "", "ar");
@@ -214,6 +277,20 @@ export function Recruitment() {
   const handleUpdateStage = useCallback(async (id: string, stage: string) => {
     await odooData.updateApplicant(id, { stage: STAGE_TO_ODOO[stage] || stage });
     refetchApps();
+  }, [refetchApps]);
+
+  /** Queue one applicant for AI screening and refresh once it is accepted. */
+  const handleScreenApplicant = useCallback(async (app: DbApplicant) => {
+    if (!app.resume_url) {
+      localizedAlert(arabicSource("recruitment.no_resume_for_screening"));
+      return;
+    }
+    try {
+      await odooData.screenApplicant(app.id, { force: true });
+      refetchApps();
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("recruitment.screening_unavailable"));
+    }
   }, [refetchApps]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
@@ -318,12 +395,14 @@ export function Recruitment() {
         {[
           { id: "jobs" as const, label: arabicSource("recruitment.vacancies") },
           { id: "applicants" as const, label: arabicSource("recruitment.applicants") },
+          { id: "ai" as const, label: arabicSource("recruitment.ai_tab") },
           { id: "pipeline" as const, label: arabicSource("recruitment.recruitment_path") },
           { id: "bank" as const, label: arabicSource("recruitment.candidates_bank") },
         ].map(tab => (
           <button key={tab.id} onClick={() => setView(tab.id)}
-            className={`px-4 py-2 rounded-lg transition-colors cursor-pointer ${view === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
+            className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${view === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
             style={{ fontSize: 13 }}>
+            {tab.id === "ai" && <Sparkles className="w-3.5 h-3.5" />}
             {tab.label}
           </button>
         ))}
@@ -377,9 +456,32 @@ export function Recruitment() {
                   )}
                 </div>
               )}
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/20">
+                <button onClick={() => setLinkJob(job)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
+                  style={{ fontSize: 12 }}>
+                  <Link2 className="w-3.5 h-3.5" />{arabicSource("recruitment.apply_link")}
+                </button>
+                <button onClick={() => { setAiJobId(job.id); setView("ai"); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors cursor-pointer"
+                  style={{ fontSize: 12 }}>
+                  <Sparkles className="w-3.5 h-3.5" />{arabicSource("recruitment.ai_tab")}
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* ══════════ AI SCREENING VIEW ══════════ */}
+      {view === "ai" && (
+        <AiScreeningView
+          jobs={jobs}
+          jobId={aiJobId}
+          setJobId={setAiJobId}
+          onSelect={setSelectedApplicant}
+          onUpdateStage={handleUpdateStage}
+        />
       )}
 
       {/* ══════════ APPLICANTS VIEW ══════════ */}
@@ -481,6 +583,9 @@ export function Recruitment() {
             onSaved={() => { setShowApplicantForm(false); setEditingApplicant(null); refetchApps(); }}
           />
         )}
+        {linkJob && (
+          <ApplyLinkModal job={linkJob} onClose={() => setLinkJob(null)} />
+        )}
         {selectedApplicant && (
           <ApplicantDetailPanel
             applicant={selectedApplicant}
@@ -492,6 +597,7 @@ export function Recruitment() {
             onToggleBookmark={handleToggleBookmark}
             onRefresh={refetchApps}
             onConvertToEmployee={handleConvertToEmployee}
+            onScreen={handleScreenApplicant}
           />
         )}
       </AnimatePresence>
@@ -548,8 +654,6 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
           </thead>
           <tbody>
             {applicants.map((app, i) => {
-              const score = calcRankScore(app);
-              const rank = rankLabel(score);
               return (
                 <motion.tr key={app.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
@@ -586,9 +690,7 @@ function ApplicantsTable({ applicants, onSelect, onToggleBookmark, onUpdateRatin
                     <StarRating value={app.rating} onChange={r => onUpdateRating(app.id, r)} size={12} />
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-md border ${rank.color}`} style={{ fontSize: 11 }}>
-                      {score}% — {rank.text}
-                    </span>
+                    <IrBadge applicant={app} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -649,7 +751,7 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
     if (skillFilter) list = list.filter(a => (a.skills || []).includes(skillFilter));
 
     list.sort((a, b) => {
-      if (sortBy === "rank") return calcRankScore(b) - calcRankScore(a);
+      if (sortBy === "rank") return effectiveScore(b) - effectiveScore(a);
       if (sortBy === "rating") return b.rating - a.rating;
       if (sortBy === "date") return new Date(b.applied_date).getTime() - new Date(a.applied_date).getTime();
       return a.name.localeCompare(b.name, "ar");
@@ -714,18 +816,19 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
             <p>{arabicSource("recruitment.there_are_no_matching_candidates")}</p>
           </div>
         ) : filtered.map((app, i) => {
-          const score = calcRankScore(app);
-          const rank = rankLabel(score);
+          const score = effectiveScore(app);
+          const rank = rankLabel(score, app.ir_band);
           return (
             <motion.div key={app.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }} whileHover={{ y: -3 }}
               onClick={() => onSelect(app)}
               className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-4 shadow-lg hover:border-primary/40 transition-all cursor-pointer relative">
               {/* Rank badge */}
-              <div className="absolute top-3 start-3">
+              <div className="absolute top-3 start-3 flex items-center gap-1">
                 <span className={`px-2 py-0.5 rounded-md border ${rank.color}`} style={{ fontSize: 11 }}>
                   {score}%
                 </span>
+                {hasIr(app) && <Sparkles className="w-3 h-3 text-primary" />}
               </div>
               {/* Bookmark */}
               <div className="absolute top-3 end-3">
@@ -790,11 +893,12 @@ function CandidateBank({ applicants, jobs, onSelect, onToggleBookmark, onUpdateR
 }
 
 /* ──── Applicant Detail Panel ──── */
-function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateStage, onUpdateRating, onToggleBookmark, onRefresh, onConvertToEmployee }: {
+function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateStage, onUpdateRating, onToggleBookmark, onRefresh, onConvertToEmployee, onScreen }: {
   applicant: DbApplicant;
   onClose: () => void;
   onEdit: (a: DbApplicant) => void;
   onDelete: (id: string) => void;
+  onScreen: (a: DbApplicant) => Promise<void>;
   onUpdateStage: (id: string, s: string) => void;
   onUpdateRating: (id: string, r: number) => void;
   onToggleBookmark: (a: DbApplicant) => void;
@@ -803,8 +907,9 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
 }) {
   const [interviewNotes, setInterviewNotes] = useState(applicant.interview_notes || "");
   const [savingNotes, setSavingNotes] = useState(false);
-  const score = calcRankScore(applicant);
-  const rank = rankLabel(score);
+  const [screening, setScreening] = useState(false);
+  const score = effectiveScore(applicant);
+  const rank = rankLabel(score, applicant.ir_band);
 
   const saveNotes = async () => {
     setSavingNotes(true);
@@ -945,15 +1050,54 @@ function ApplicantDetailPanel({ applicant, onClose, onEdit, onDelete, onUpdateSt
             </button>
           </div>
 
-          {/* Ranking Breakdown */}
+          {/* Initial Rating (IR) — AI screening result, or the fallback estimate */}
           <div>
-            <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>{arabicSource("recruitment.arrangement_details")}</label>
-            <div className="grid grid-cols-2 gap-3">
-              <RankBar label={arabicSource("common.evaluation")} value={(applicant.rating / 5) * 100} weight="40%" />
-              <RankBar label={arabicSource("recruitment.progress_of_stages")} value={STAGES.indexOf(applicant.stage as any) >= 0 ? (STAGES.indexOf(applicant.stage as any) / (STAGES.length - 1)) * 100 : 0} weight="20%" />
-              <RankBar label={arabicSource("recruitment.experience")} value={Math.min(applicant.experience_years / 15, 1) * 100} weight="25%" />
-              <RankBar label={arabicSource("common.skills")} value={Math.min((applicant.skills?.length || 0) / 8, 1) * 100} weight="15%" />
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <label className="text-muted-foreground flex items-center gap-1.5" style={{ fontSize: 12 }}>
+                {hasIr(applicant) && <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                {hasIr(applicant)
+                  ? arabicSource("recruitment.ir_score")
+                  : arabicSource("recruitment.arrangement_details")}
+              </label>
+              <button
+                onClick={async () => { setScreening(true); await onScreen(applicant); setScreening(false); }}
+                disabled={screening}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer disabled:opacity-50"
+                style={{ fontSize: 11 }}
+              >
+                {screening
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <RefreshCw className="w-3.5 h-3.5" />}
+                {hasIr(applicant)
+                  ? arabicSource("recruitment.rescreen")
+                  : arabicSource("recruitment.screen_now")}
+              </button>
             </div>
+
+            {hasIr(applicant) ? (
+              <IrDetail applicant={applicant} />
+            ) : (
+              <>
+                {applicant.ir_status && applicant.ir_status !== "none" && (
+                  <div className="mb-3 flex items-center gap-2 rounded-lg border border-border/40 bg-muted/10 px-3 py-2 text-muted-foreground" style={{ fontSize: 12 }}>
+                    {applicant.ir_status === "pending" || applicant.ir_status === "processing"
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                      : <AlertCircle className="w-3.5 h-3.5 text-amber-400" />}
+                    <span>{IR_STATUS_LABELS[applicant.ir_status] || applicant.ir_status}</span>
+                    {applicant.ir_error && <span className="opacity-70" dir="ltr">{applicant.ir_error}</span>}
+                  </div>
+                )}
+                <div className="text-muted-foreground mb-2" style={{ fontSize: 11 }}>
+                  {arabicSource("recruitment.ir_estimated")}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <RankBar label={arabicSource("common.evaluation")} value={(applicant.rating / 5) * 100} weight="40%" />
+                  <RankBar label={arabicSource("recruitment.progress_of_stages")} value={STAGES.indexOf(applicant.stage as any) >= 0 ? (STAGES.indexOf(applicant.stage as any) / (STAGES.length - 1)) * 100 : 0} weight="20%" />
+                  <RankBar label={arabicSource("recruitment.experience")} value={Math.min(applicant.experience_years / 15, 1) * 100} weight="25%" />
+                  <RankBar label={arabicSource("common.skills")} value={Math.min((applicant.skills?.length || 0) / 8, 1) * 100} weight="15%" />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Convert to Employee — only for accepted applicants */}
@@ -1014,7 +1158,13 @@ function JobFormModal({ jobs, onClose, onSaved }: {
     title: "", department: arabicSource("common.information_technology"), location: arabicSource("common.baghdad"),
     type: arabicSource("common.full_time"), deadline: "", description: "", salary_range: "",
     requirements: "",
+    // AI screening spec — what the Initial Rating is computed against
+    min_experience_years: 0,
+    education_level: "none",
+    ir_auto_shortlist: 0,
   });
+  const [requiredSkills, setRequiredSkills] = useState<JobSkillRequirement[]>([]);
+  const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>([]);
   const [saving, setSaving] = useState(false);
   const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
 
@@ -1038,6 +1188,11 @@ function JobFormModal({ jobs, onClose, onSaved }: {
       description: form.description || null,
       salary_range: form.salary_range || null,
       requirements: reqs.length > 0 ? reqs : [],
+      required_skills: requiredSkills,
+      nice_to_have_skills: niceToHave,
+      min_experience_years: form.min_experience_years,
+      education_level: form.education_level,
+      ir_auto_shortlist: form.ir_auto_shortlist,
     });
     setSaving(false);
     onSaved();
@@ -1100,6 +1255,54 @@ function JobFormModal({ jobs, onClose, onSaved }: {
             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
               rows={3} placeholder={arabicSource("recruitment.job_description")} className={`${inputCls} h-auto py-3 resize-none`} />
           </div>
+
+          {/* AI screening spec — drives the Initial Rating for every applicant */}
+          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-4">
+            <div className="flex items-center gap-2 text-primary" style={{ fontSize: 13 }}>
+              <Sparkles className="w-4 h-4" />{arabicSource("recruitment.screening_spec")}
+            </div>
+            <SkillTagInput
+              label={arabicSource("recruitment.required_skills")}
+              skills={requiredSkills}
+              onChange={setRequiredSkills}
+              weighted
+            />
+            <SkillTagInput
+              label={arabicSource("recruitment.nice_to_have")}
+              skills={niceToHave}
+              onChange={setNiceToHave}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.min_experience")}</label>
+                <input type="number" min={0} max={50} value={form.min_experience_years}
+                  onChange={e => setForm({ ...form, min_experience_years: Number(e.target.value) || 0 })}
+                  className={inputCls} dir="ltr" />
+              </div>
+              <div>
+                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.education_level")}</label>
+                <select value={form.education_level}
+                  onChange={e => setForm({ ...form, education_level: e.target.value })} className={selectCls}>
+                  {EDUCATION_LEVELS.map(level => (
+                    <option key={level.value} value={level.value}>{level.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className={labelCls} style={{ fontSize: 12 }}>
+                {arabicSource("recruitment.auto_shortlist")}
+                {form.ir_auto_shortlist === 0 && ` — ${arabicSource("recruitment.auto_shortlist_off")}`}
+              </label>
+              <input type="range" min={0} max={95} step={5} value={form.ir_auto_shortlist}
+                onChange={e => setForm({ ...form, ir_auto_shortlist: Number(e.target.value) })}
+                className="w-full cursor-pointer accent-current text-primary" dir="ltr" />
+              <div className="text-muted-foreground text-center" style={{ fontSize: 11 }}>
+                {form.ir_auto_shortlist > 0 ? `${form.ir_auto_shortlist}%` : ""}
+              </div>
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving || !form.title.trim()}
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50">
@@ -1431,5 +1634,605 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   AI SCREENING — Initial Rating (IR)
+   ════════════════════════════════════════════════════════════ */
+
+/**
+ * Compact score chip. A real IR carries the sparkle mark; the client-side
+ * estimate is rendered muted so HR never mistakes one for the other.
+ */
+function IrBadge({ applicant, showStatus = true }: { applicant: DbApplicant; showStatus?: boolean }) {
+  const status = applicant.ir_status || "none";
+
+  if (!hasIr(applicant)) {
+    if (showStatus && (status === "pending" || status === "processing")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-border/40 bg-muted/10 text-muted-foreground" style={{ fontSize: 11 }}>
+          <Loader2 className="w-3 h-3 animate-spin" />{IR_STATUS_LABELS[status]}
+        </span>
+      );
+    }
+    const estimate = calcRankScore(applicant);
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-border/40 bg-muted/10 text-muted-foreground"
+        style={{ fontSize: 11 }} title={arabicSource("recruitment.ir_estimated")}>
+        {estimate}% — {arabicSource("recruitment.ir_estimated")}
+      </span>
+    );
+  }
+
+  const score = Math.round(applicant.ir_score as number);
+  const band = rankLabel(score, applicant.ir_band);
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border ${band.color}`} style={{ fontSize: 11 }}>
+      <Sparkles className="w-3 h-3" />{score}% — {band.text}
+      {applicant.ir_needs_review && <ShieldAlert className="w-3 h-3 text-amber-400" />}
+      {status === "stale" && <RefreshCw className="w-3 h-3 opacity-60" />}
+    </span>
+  );
+}
+
+/** Full IR breakdown: components with evidence, penalties, skills and flags. */
+function IrDetail({ applicant }: { applicant: DbApplicant }) {
+  const [openEvidence, setOpenEvidence] = useState<string | null>(null);
+  const breakdown = applicant.ir_breakdown || {};
+  const components = breakdown.components || {};
+  const penalties = breakdown.penalties || [];
+  const score = Math.round(applicant.ir_score || 0);
+  const band = rankLabel(score, applicant.ir_band);
+
+  return (
+    <div className="space-y-4">
+      {/* Headline score */}
+      <div className="flex items-center gap-4 rounded-xl border border-border/40 bg-muted/10 p-4">
+        <div className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center flex-shrink-0 ${band.color}`}>
+          <span style={{ fontSize: 22 }}>{score}</span>
+          <span style={{ fontSize: 9 }}>/ 100</span>
+        </div>
+        <div className="min-w-0">
+          <div className={`inline-block px-2 py-0.5 rounded-md border ${band.color}`} style={{ fontSize: 12 }}>
+            {band.text}
+          </div>
+          <p className="text-muted-foreground mt-1.5" style={{ fontSize: 11 }}>
+            {arabicSource("recruitment.ai_disclaimer")}
+          </p>
+          {Boolean(applicant.ir_confidence) && (
+            <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>
+              {arabicSource("recruitment.confidence")}: {Math.round((applicant.ir_confidence || 0) * 100)}%
+            </p>
+          )}
+        </div>
+      </div>
+
+      {applicant.ir_needs_review && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-400" style={{ fontSize: 12 }}>
+          <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+          {arabicSource("recruitment.needs_review")}
+        </div>
+      )}
+
+      {/* AI summary */}
+      {applicant.ir_summary_ar && (
+        <div>
+          <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>
+            {arabicSource("recruitment.ai_summary")}
+          </label>
+          <p className="text-foreground rounded-lg border border-border/30 bg-muted/10 p-3" style={{ fontSize: 12.5 }}>
+            {applicant.ir_summary_ar}
+          </p>
+        </div>
+      )}
+
+      {/* Weighted components — click to reveal the evidence behind a score */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {Object.entries(components).map(([key, component]) => (
+          <div key={key}>
+            <button
+              onClick={() => setOpenEvidence(openEvidence === key ? null : key)}
+              className="w-full text-start cursor-pointer"
+            >
+              <RankBar
+                label={IR_COMPONENT_LABELS[key] || key}
+                value={component.score}
+                weight={`${component.weight}%`}
+              />
+            </button>
+            {openEvidence === key && component.evidence && (
+              <p className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2" style={{ fontSize: 11 }}>
+                <span className="text-primary">{arabicSource("recruitment.evidence")}: </span>
+                {component.evidence}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Penalties */}
+      {penalties.length > 0 && (
+        <div>
+          <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
+            {arabicSource("recruitment.penalties")}
+          </label>
+          <div className="space-y-1">
+            {penalties.map((penalty, i) => (
+              <div key={i} className="flex items-start justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2">
+                <span className="text-muted-foreground" style={{ fontSize: 11.5 }}>{penalty.detail}</span>
+                <span className="text-destructive flex-shrink-0" style={{ fontSize: 11.5 }} dir="ltr">−{penalty.amount}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Skills */}
+      {(applicant.matched_skills?.length || applicant.missing_skills?.length) ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {Boolean(applicant.matched_skills?.length) && (
+            <div>
+              <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
+                {arabicSource("recruitment.matched_skills")}
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {applicant.matched_skills!.map((skill, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }}>
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {Boolean(applicant.missing_skills?.length) && (
+            <div>
+              <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
+                {arabicSource("recruitment.missing_skills")}
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {applicant.missing_skills!.map((skill, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md border border-destructive/30 bg-destructive/10 text-destructive" style={{ fontSize: 11 }}>
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* Red flags */}
+      {Boolean(applicant.ir_red_flags?.length) && (
+        <div>
+          <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
+            {arabicSource("recruitment.red_flags")}
+          </label>
+          <div className="space-y-1">
+            {applicant.ir_red_flags!.map((flag, i) => (
+              <div key={i} className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
+                <span className="text-muted-foreground" style={{ fontSize: 11.5 }}>{flag.detail}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Missing information */}
+      {Boolean(applicant.ir_missing_info?.length) && (
+        <div>
+          <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
+            {arabicSource("recruitment.missing_info")}
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {applicant.ir_missing_info!.map((info, i) => (
+              <span key={i} className="px-2 py-0.5 rounded-md bg-muted/20 border border-border/30 text-muted-foreground" style={{ fontSize: 11 }} dir="ltr">
+                {info}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Better-fit suggestion across the other open positions */}
+      {applicant.suggested_job_title && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-primary" style={{ fontSize: 12 }}>
+          <TrendingUp className="w-4 h-4 flex-shrink-0" />
+          {arabicSource("recruitment.suggested_job")}: {applicant.suggested_job_title}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──── AI Screening leaderboard ──── */
+function AiScreeningView({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
+  jobs: DbJobOpening[];
+  jobId: string | null;
+  setJobId: (id: string | null) => void;
+  onSelect: (a: DbApplicant) => void;
+  onUpdateStage: (id: string, stage: string) => void;
+}) {
+  const { items, stats, loading, refetch } = useJobRanking(jobId);
+  const [minIr, setMinIr] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  const visible = useMemo(
+    () => items.filter(a => !hasIr(a) || (a.ir_score || 0) >= minIr),
+    [items, minIr],
+  );
+
+  const screenAll = async () => {
+    if (!jobId) return;
+    setBusy(true);
+    try {
+      const result = await odooData.bulkScreenApplicants({ jobOpeningId: jobId, force: false });
+      localizedAlert(`${arabicSource("recruitment.queued_for_screening")} (${result.queued})`);
+      await refetch();
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("recruitment.screening_unavailable"));
+    }
+    setBusy(false);
+  };
+
+  const shortlistAbove = async () => {
+    const targets = items.filter(a => hasIr(a) && (a.ir_score || 0) >= minIr
+      && a.stage === arabicSource("common.introduction"));
+    if (targets.length === 0) return;
+    setBusy(true);
+    for (const applicant of targets) {
+      await odooData.updateApplicant(applicant.id, { stage: "screening" });
+    }
+    await refetch();
+    setBusy(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <select value={jobId || ""} onChange={e => setJobId(e.target.value || null)}
+          className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer min-w-[220px]"
+          style={{ fontSize: 13 }}>
+          <option value="">{arabicSource("recruitment.select_job_first")}</option>
+          {jobs.map(job => (
+            <option key={job.id} value={job.id}>{job.title}</option>
+          ))}
+        </select>
+        {jobId && (
+          <>
+            <button onClick={screenAll} disabled={busy}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+              style={{ fontSize: 13 }}>
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {arabicSource("recruitment.screen_all")}
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground" style={{ fontSize: 12 }}>
+                {arabicSource("recruitment.min_ir_filter")}
+              </span>
+              <input type="range" min={0} max={95} step={5} value={minIr}
+                onChange={e => setMinIr(Number(e.target.value))}
+                className="cursor-pointer accent-current text-primary" dir="ltr" />
+              <span className="text-foreground" style={{ fontSize: 12 }} dir="ltr">{minIr}%</span>
+            </div>
+            {minIr > 0 && (
+              <button onClick={shortlistAbove} disabled={busy}
+                className="px-4 py-2 rounded-lg border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer disabled:opacity-50"
+                style={{ fontSize: 13 }}>
+                {arabicSource("recruitment.shortlist_above")}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {!jobId ? (
+        <EmptyState icon={Sparkles} message={arabicSource("recruitment.select_job_first")} className="py-16" />
+      ) : loading ? (
+        <div className="flex items-center justify-center h-40">
+          <Loader2 className="w-7 h-7 text-primary animate-spin" />
+        </div>
+      ) : (
+        <>
+          {stats && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: arabicSource("common.total_applicants"), value: stats.total },
+                { label: arabicSource("recruitment.screened_count"), value: stats.screened },
+                { label: arabicSource("recruitment.ir_pending"), value: stats.pending },
+                { label: arabicSource("recruitment.average_ir"), value: `${stats.average_ir}%` },
+              ].map(stat => (
+                <div key={stat.label} className="bg-card/30 border border-border/40 rounded-xl p-4">
+                  <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
+                  <span className="text-gradient-gold block mt-1" style={{ fontSize: 22 }}>{stat.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {stats && stats.pending > 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 text-primary" style={{ fontSize: 12.5 }}>
+              <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+              {arabicSource("recruitment.ir_processing")} — {stats.pending}
+            </div>
+          )}
+
+          {visible.length === 0 ? (
+            <EmptyState icon={Users} message={arabicSource("recruitment.there_are_no_applicants")} className="py-12" />
+          ) : (
+            <div className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border/30 text-muted-foreground">
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}>{arabicSource("recruitment.rank_label")}</th>
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}>{arabicSource("recruitment.advanced")}</th>
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}>{arabicSource("recruitment.ir_score")}</th>
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}>{arabicSource("recruitment.matched_skills")}</th>
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}>{arabicSource("common.stage")}</th>
+                      <th className="px-4 py-3 text-start" style={{ fontSize: 12 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visible.map((app, i) => (
+                      <motion.tr key={app.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        transition={{ delay: i * 0.02 }}
+                        className="border-b border-border/20 hover:bg-muted/10 transition-colors">
+                        <td className="px-4 py-3">
+                          {app.rank ? (
+                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${
+                              app.rank <= 3 ? "bg-primary/20 text-primary border border-primary/40" : "text-muted-foreground"
+                            }`} style={{ fontSize: 12 }} dir="ltr">
+                              {app.rank}
+                            </span>
+                          ) : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => onSelect(app)}
+                            className="text-start cursor-pointer hover:text-primary transition-colors">
+                            <span className="text-foreground block">{app.name}</span>
+                            {app.email && <span className="text-muted-foreground block" style={{ fontSize: 11 }} dir="ltr">{app.email}</span>}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3"><IrBadge applicant={app} /></td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1 max-w-[240px]">
+                            {(app.matched_skills || []).slice(0, 3).map((skill, si) => (
+                              <span key={si} className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 10 }}>
+                                {skill}
+                              </span>
+                            ))}
+                            {(app.matched_skills?.length || 0) > 3 && (
+                              <span className="px-1.5 py-0.5 rounded bg-muted/20 text-muted-foreground" style={{ fontSize: 10 }}>
+                                +{(app.matched_skills?.length || 0) - 3}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select value={app.stage}
+                            onChange={e => onUpdateStage(app.id, e.target.value)}
+                            className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[app.stage] || ""}`}
+                            style={{ fontSize: 12 }}>
+                            {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            {app.resume_url && (
+                              <a href={app.resume_url} target="_blank" rel="noopener noreferrer"
+                                className="p-1 rounded hover:bg-primary/10 text-primary" title={arabicSource("recruitment.download_cv_2")}>
+                                <Download className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            <button onClick={() => onSelect(app)}
+                              className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer"
+                              title={arabicSource("common.show_details")}>
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ──── Public application link ──── */
+function ApplyLinkModal({ job, onClose }: { job: DbJobOpening; onClose: () => void }) {
+  const [link, setLink] = useState<ApplicationLink | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async (rotate = false) => {
+    setLoading(true);
+    setError("");
+    try {
+      setLink(await odooData.getJobApplyLink(job.id, { rotate }));
+    } catch (e: any) {
+      setError(e?.message || "");
+    }
+    setLoading(false);
+  }, [job.id]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  // The backend only returns an absolute URL when an SPA origin is configured
+  // (candidates on a different host than HR staff). Otherwise it sends a
+  // relative path, which we resolve against this app's own origin — so the
+  // candidate never receives a link pointing at Odoo.
+  const applyUrl = useMemo(() => {
+    if (!link) return "";
+    if (link.base_url_configured) return link.url;
+    return new URL(`/apply/${link.token}`, window.location.origin).toString();
+  }, [link]);
+
+  const copy = async () => {
+    if (!applyUrl) return;
+    try {
+      await navigator.clipboard.writeText(applyUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — the URL is visible and selectable anyway */
+    }
+  };
+
+  const rotate = async () => {
+    if (!localizedConfirm(arabicSource("recruitment.rotate_token_confirm"))) return;
+    await load(true);
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+        className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-foreground flex items-center gap-2">
+            <Link2 className="w-5 h-5 text-primary" />{arabicSource("recruitment.apply_link")}
+          </h2>
+          <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <p className="text-muted-foreground mb-4" style={{ fontSize: 13 }}>{job.title}</p>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+          </div>
+        ) : error || !link ? (
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span style={{ fontSize: 12.5 }}>{error}</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-border bg-muted/10 px-4 py-3 break-all text-foreground" style={{ fontSize: 12.5 }} dir="ltr">
+              {applyUrl}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button onClick={copy}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer"
+                style={{ fontSize: 13 }}>
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? arabicSource("recruitment.link_copied") : arabicSource("recruitment.copy_link")}
+              </button>
+              <a href={`https://wa.me/?text=${encodeURIComponent(`${job.title}\n${applyUrl}`)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                style={{ fontSize: 13 }}>
+                <MessageCircle className="w-4 h-4" />{arabicSource("recruitment.share_whatsapp")}
+              </a>
+              <button onClick={rotate}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors cursor-pointer"
+                style={{ fontSize: 13 }}>
+                <RefreshCw className="w-4 h-4" />{arabicSource("recruitment.rotate_token")}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.link_expires")}</label>
+                <input type="date" value={link.expires_on || ""} dir="ltr" className={inputCls}
+                  onChange={async e => {
+                    setLink(await odooData.updateApplicationLink(link.id, { expires_on: e.target.value || false }));
+                  }} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.link_max_submissions")}</label>
+                <input type="number" min={0} value={link.max_submissions} dir="ltr" className={inputCls}
+                  onChange={async e => {
+                    setLink(await odooData.updateApplicationLink(link.id, {
+                      max_submissions: Number(e.target.value) || 0,
+                    }));
+                  }} />
+              </div>
+            </div>
+
+            <p className="text-muted-foreground" style={{ fontSize: 12 }}>
+              {arabicSource("recruitment.link_submissions")}: {link.submission_count}
+            </p>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ──── Weighted skill tag input ──── */
+function SkillTagInput({ label, skills, onChange, weighted = false }: {
+  label: string;
+  skills: JobSkillRequirement[];
+  onChange: (skills: JobSkillRequirement[]) => void;
+  weighted?: boolean;
+}) {
+  const [draft, setDraft] = useState("");
+
+  const add = () => {
+    const name = draft.trim();
+    if (!name || skills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...skills, { name, weight: weighted ? 2 : 1 }]);
+    setDraft("");
+  };
+
+  return (
+    <div>
+      <label className={labelCls} style={{ fontSize: 12 }}>{label}</label>
+      <input
+        type="text"
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+        onBlur={add}
+        placeholder={arabicSource("recruitment.add_skill")}
+        className={inputCls}
+      />
+      {skills.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {skills.map((skill, i) => (
+            <span key={`${skill.name}-${i}`}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border/40 bg-muted/20 text-foreground"
+              style={{ fontSize: 11 }}>
+              {skill.name}
+              {weighted && (
+                <select
+                  value={skill.weight || 2}
+                  onChange={e => onChange(skills.map((s, si) =>
+                    si === i ? { ...s, weight: Number(e.target.value) } : s))}
+                  className="bg-transparent text-primary cursor-pointer outline-none"
+                  style={{ fontSize: 10 }}
+                  dir="ltr"
+                >
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                </select>
+              )}
+              <button type="button" onClick={() => onChange(skills.filter((_, si) => si !== i))}
+                className="text-destructive cursor-pointer">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
