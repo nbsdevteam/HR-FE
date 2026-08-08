@@ -86,6 +86,8 @@ import type {
   DbLoan,
   DbReportTemplate,
   DbReportHistory,
+  JobRankingStats,
+  ApplicationLink,
 } from "../hooks";
 
 async function items<T>(path: string, params: Record<string, unknown> = {}): Promise<T[]> {
@@ -865,6 +867,133 @@ export async function uploadApplicantResume(
     file_data: fileDataBase64,
     file_name: fileName,
   });
+}
+
+// ─── AI resume screening / Initial Rating ─────────────────────────────
+
+/** Queue (or with `sync`, immediately run) the AI screening for one applicant. */
+export async function screenApplicant(
+  applicantId: string | number,
+  options: { force?: boolean; sync?: boolean } = {},
+): Promise<DbApplicant> {
+  const row = await hrCall<any>(`/api/hr/applicants/${eid(applicantId)}/screen`, {
+    force: Boolean(options.force),
+    sync: Boolean(options.sync),
+  });
+  return mapApplicant(row);
+}
+
+export async function fetchApplicantScreening(applicantId: string | number): Promise<{
+  applicant: DbApplicant;
+  parsed_profile: Record<string, unknown>;
+  runs: ScreeningRun[];
+}> {
+  const data = await hrCall<any>(`/api/hr/applicants/${eid(applicantId)}/screening`, {});
+  return {
+    applicant: mapApplicant(data.applicant || {}),
+    parsed_profile: data.parsed_profile || {},
+    runs: (data.runs || []) as ScreeningRun[],
+  };
+}
+
+export async function bulkScreenApplicants(params: {
+  applicantIds?: Array<string | number>;
+  jobOpeningId?: string | number;
+  force?: boolean;
+}): Promise<{ queued: number; skipped: number }> {
+  return hrCall("/api/hr/applicants/bulk_screen", {
+    applicant_ids: params.applicantIds?.map(eid),
+    job_opening_id: params.jobOpeningId != null ? eid(params.jobOpeningId) : undefined,
+    force: Boolean(params.force),
+  });
+}
+
+export async function fetchJobRanking(
+  jobId: string | number,
+  params: { minIr?: number; stage?: string } = {},
+): Promise<{ job: DbJobOpening; items: DbApplicant[]; stats: JobRankingStats }> {
+  const data = await hrCall<any>(`/api/hr/jobs/${eid(jobId)}/ranking`, {
+    limit: 200,
+    min_ir: params.minIr,
+    stage: params.stage,
+  });
+  return {
+    job: mapJobOpening(data.job || {}),
+    items: (data.items || []).map((row: any) => ({
+      ...mapApplicant(row),
+      rank: row.rank ?? null,
+    })),
+    stats: data.stats as JobRankingStats,
+  };
+}
+
+export async function getJobApplyLink(
+  jobId: string | number,
+  params: { rotate?: boolean; expires_on?: string | null; max_submissions?: number; active?: boolean } = {},
+): Promise<ApplicationLink> {
+  return hrCall<ApplicationLink>(`/api/hr/jobs/${eid(jobId)}/apply_link`, params);
+}
+
+export async function fetchApplicationLinks(jobOpeningId?: string | number): Promise<ApplicationLink[]> {
+  return items<ApplicationLink>("/api/hr/recruitment/links/list", {
+    limit: 200,
+    job_opening_id: jobOpeningId != null ? eid(jobOpeningId) : undefined,
+  });
+}
+
+export async function updateApplicationLink(
+  linkId: string | number,
+  payload: Record<string, unknown>,
+): Promise<ApplicationLink> {
+  return hrCall<ApplicationLink>(`/api/hr/recruitment/links/${eid(linkId)}/update`, payload);
+}
+
+export async function deleteApplicationLink(linkId: string | number) {
+  return hrCall(`/api/hr/recruitment/links/${eid(linkId)}/delete`, {});
+}
+
+export async function fetchScreeningSettings(): Promise<ScreeningSettings> {
+  return hrCall<ScreeningSettings>("/api/hr/recruitment/screening_settings", {});
+}
+
+export async function updateScreeningSettings(
+  payload: Partial<{
+    weights: Record<string, number>;
+    min_confidence: number;
+    retention_months: number;
+    max_resume_mb: number;
+    model: string;
+  }>,
+): Promise<ScreeningSettings> {
+  return hrCall<ScreeningSettings>("/api/hr/recruitment/screening_settings/update", payload);
+}
+
+export interface ScreeningRun {
+  id: number;
+  model_name: string;
+  prompt_version: string;
+  ir_score: number;
+  confidence: number;
+  prompt_tokens: number;
+  output_tokens: number;
+  latency_ms: number;
+  used_vision: boolean;
+  state: string;
+  error: string;
+  created_at: string;
+}
+
+export interface ScreeningSettings {
+  weights: Record<string, number>;
+  default_weights: Record<string, number>;
+  min_confidence: number;
+  retention_months: number;
+  max_resume_mb: number;
+  model: string;
+  api_key_configured: boolean;
+  prompt_version: string;
+  runs_total: number;
+  runs_failed: number;
 }
 
 // ─── Slice C: Loans ───────────────────────────────────────────────────

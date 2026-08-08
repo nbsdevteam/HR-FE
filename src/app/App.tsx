@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
+import { publicRouter, isPublicPath } from "./publicRoutes";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { Login } from "./pages/Login";
 import { Loader2 } from "lucide-react";
@@ -24,6 +25,12 @@ function AppContent() {
 }
 
 export default function App() {
+  // The candidate application page must render for logged-out visitors, so it
+  // is resolved before the auth gate rather than inside the private router.
+  if (typeof window !== "undefined" && isPublicPath(window.location.pathname)) {
+    return <RouterProvider router={publicRouter} />;
+  }
+
   return (
     <AuthProvider>
       <AppContent />
