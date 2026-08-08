@@ -40,6 +40,8 @@ async function handleDownloadResume(applicantId: string) {
 const JOB_STATUS_TO_ODOO: Record<string, string> = {
   "مفتوح": "open", "مغلق": "closed", "قيد المراجعة": "on_hold", "مسودة": "draft",
 };
+/** Selectable vacancy statuses, in the order HR moves through them. */
+const JOB_STATUSES = ["مسودة", "مفتوح", "قيد المراجعة", "مغلق"];
 const ODOO_TO_JOB_STATUS: Record<string, string> = {
   open: "مفتوح", closed: "مغلق", on_hold: "قيد المراجعة", draft: "مسودة",
 };
@@ -231,6 +233,7 @@ export function Recruitment() {
   const [aiJobId, setAiJobId] = useState<string | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<DbApplicant | null>(null);
   const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(null);
+  const [editingJob, setEditingJob] = useState<DbJobOpening | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStage, setFilterStage] = useState<string>(arabicSource("common.all"));
   const [filterJob, setFilterJob] = useState<string>(arabicSource("common.all"));
@@ -306,6 +309,33 @@ export function Recruitment() {
       localizedAlert(e?.message || arabicSource("recruitment.screening_unavailable"));
     }
   }, [refetchApps]);
+
+  /**
+   * Change a vacancy's status in place — the common HR action (close a filled
+   * role, put one on hold) that shouldn't require opening the whole form.
+   * `jobs` carries Arabic labels, so map back to the Odoo enum before sending.
+   */
+  const handleJobStatusChange = useCallback(async (job: DbJobOpening, nextStatus: string) => {
+    if (nextStatus === job.status) return;
+    try {
+      await odooData.updateJobOpening(job.id, {
+        status: JOB_STATUS_TO_ODOO[nextStatus] || nextStatus,
+      });
+      refetchJobs();
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("common.error"));
+    }
+  }, [refetchJobs]);
+
+  const handleDeleteJob = useCallback(async (job: DbJobOpening) => {
+    if (!localizedConfirm(arabicSource("recruitment.are_you_sure_you_want_to_delete_this_vacancy"))) return;
+    try {
+      await odooData.deleteJobOpening(job.id);
+      refetchJobs();
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("common.error"));
+    }
+  }, [refetchJobs]);
 
   const handleDeleteApplicant = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("recruitment.are_you_sure_you_want_to_delete_this_applicant"))) return;
@@ -438,9 +468,16 @@ export function Recruitment() {
                   <h3 className="text-foreground">{job.title}</h3>
                   <p className="text-muted-foreground" style={{ fontSize: 13 }}>{job.department}</p>
                 </div>
-                <span className={`px-2 py-0.5 rounded-md border ${statusColors[job.status] || ""}`} style={{ fontSize: 12 }}>
-                  {job.status}
-                </span>
+                {/* Status is editable in place — closing a filled vacancy is
+                    the most frequent HR action on this card. */}
+                <select value={job.status} onChange={e => handleJobStatusChange(job, e.target.value)}
+                  title={arabicSource("recruitment.vacancy_status")}
+                  className={`px-2 py-0.5 rounded-md border bg-transparent cursor-pointer outline-none focus:ring-2 focus:ring-primary/40 ${statusColors[job.status] || ""}`}
+                  style={{ fontSize: 12 }}>
+                  {JOB_STATUSES.map(s => (
+                    <option key={s} value={s} className="bg-card text-foreground">{s}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex flex-wrap gap-3 mb-3">
                 <span className="flex items-center gap-1 text-muted-foreground" style={{ fontSize: 12 }}>
@@ -481,6 +518,16 @@ export function Recruitment() {
                   style={{ fontSize: 12 }}>
                   <Sparkles className="w-3.5 h-3.5" />{arabicSource("recruitment.ai_tab")}
                 </button>
+                <div className="flex items-center gap-1 ms-auto">
+                  <button onClick={() => setEditingJob(job)} title={arabicSource("common.edit")}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => { void handleDeleteJob(job); }} title={arabicSource("common.delete")}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -586,8 +633,15 @@ export function Recruitment() {
 
       {/* ══════════ MODALS ══════════ */}
       <AnimatePresence>
-        {showJobForm && (
-          <JobFormModal jobs={jobs} onClose={() => setShowJobForm(false)} onSaved={() => { setShowJobForm(false); refetchJobs(); }} />
+        {(showJobForm || editingJob) && (
+          <JobFormModal
+            jobs={jobs}
+            editingJob={editingJob}
+            // Remount on target change so the form re-seeds from the new job
+            // instead of keeping the previous one's useState values.
+            key={editingJob?.id || "new"}
+            onClose={() => { setShowJobForm(false); setEditingJob(null); }}
+            onSaved={() => { setShowJobForm(false); setEditingJob(null); refetchJobs(); }} />
         )}
         {showApplicantForm && (
           <ApplicantFormModal
@@ -1163,22 +1217,32 @@ function RankBar({ label, value, weight }: { label: string; value: number; weigh
 }
 
 /* ──── Job Form Modal ──── */
-function JobFormModal({ jobs, onClose, onSaved }: {
+function JobFormModal({ jobs, editingJob, onClose, onSaved }: {
   jobs: DbJobOpening[];
+  editingJob: DbJobOpening | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const isEdit = !!editingJob;
   const [form, setForm] = useState({
-    title: "", department: arabicSource("common.information_technology"), location: arabicSource("common.baghdad"),
-    type: arabicSource("common.full_time"), deadline: "", description: "", salary_range: "",
-    requirements: "",
+    title: editingJob?.title || "",
+    department: editingJob?.department || arabicSource("common.information_technology"),
+    location: editingJob?.location || arabicSource("common.baghdad"),
+    // `jobs` carries Arabic labels, so an editing job's type/status arrive
+    // already translated and map straight onto the selects.
+    type: editingJob?.type || arabicSource("common.full_time"),
+    status: editingJob?.status || "مفتوح",
+    deadline: editingJob?.deadline || "",
+    description: editingJob?.description || "",
+    salary_range: editingJob?.salary_range || "",
+    requirements: (editingJob?.requirements || []).join("\n"),
     // AI screening spec — what the Initial Rating is computed against
-    min_experience_years: 0,
-    education_level: "none",
-    ir_auto_shortlist: 0,
+    min_experience_years: editingJob?.min_experience_years ?? 0,
+    education_level: editingJob?.education_level || "none",
+    ir_auto_shortlist: editingJob?.ir_auto_shortlist ?? 0,
   });
-  const [requiredSkills, setRequiredSkills] = useState<JobSkillRequirement[]>([]);
-  const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>([]);
+  const [requiredSkills, setRequiredSkills] = useState<JobSkillRequirement[]>(editingJob?.required_skills || []);
+  const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(editingJob?.nice_to_have_skills || []);
   const [saving, setSaving] = useState(false);
   const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
 
@@ -1192,12 +1256,12 @@ function JobFormModal({ jobs, onClose, onSaved }: {
     const reqs = form.requirements.split("\n").map(r => r.trim()).filter(Boolean);
 
     const dept = odooDepartments.find(d => d.name === form.department);
-    await odooData.createJobOpening({
+    const payload = {
       title: form.title,
       department_id: dept?.id || undefined,
       location: form.location,
       job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
-      status: "open",
+      status: JOB_STATUS_TO_ODOO[form.status] || "open",
       deadline: form.deadline || null,
       description: form.description || null,
       salary_range: form.salary_range || null,
@@ -1207,9 +1271,19 @@ function JobFormModal({ jobs, onClose, onSaved }: {
       min_experience_years: form.min_experience_years,
       education_level: form.education_level,
       ir_auto_shortlist: form.ir_auto_shortlist,
-    });
-    setSaving(false);
-    onSaved();
+    };
+    try {
+      if (editingJob) {
+        await odooData.updateJobOpening(editingJob.id, payload);
+      } else {
+        await odooData.createJobOpening(payload);
+      }
+      onSaved();
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("common.error"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -1219,7 +1293,7 @@ function JobFormModal({ jobs, onClose, onSaved }: {
         onClick={e => e.stopPropagation()}
         className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">{arabicSource("common.new_vacancy")}</h2>
+          <h2 className="text-foreground">{isEdit ? arabicSource("recruitment.edit_vacancy") : arabicSource("common.new_vacancy")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer"><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
         <div className="space-y-4">
@@ -1253,6 +1327,12 @@ function JobFormModal({ jobs, onClose, onSaved }: {
               <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.deadline")}</label>
               <input type="date" value={form.deadline} onChange={e => setForm({ ...form, deadline: e.target.value })} className={inputCls} dir="ltr" />
             </div>
+          </div>
+          <div>
+            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.vacancy_status")}</label>
+            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={selectCls}>
+              {JOB_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
           <div>
             <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.salary_range")}</label>
@@ -1320,7 +1400,9 @@ function JobFormModal({ jobs, onClose, onSaved }: {
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving || !form.title.trim()}
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50">
-              {saving ? arabicSource("common.saving") : arabicSource("recruitment.job_posting")}
+              {saving ? arabicSource("common.saving")
+                : isEdit ? arabicSource("common.save")
+                : arabicSource("recruitment.job_posting")}
             </button>
             <button onClick={onClose} className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer">{arabicSource("common.cancel")}</button>
           </div>
