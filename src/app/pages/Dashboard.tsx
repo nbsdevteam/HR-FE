@@ -25,6 +25,7 @@ import {
 import { useAppSettings, formatMonthOnly } from "../components/SettingsContext";
 import { formatCurrency, formatDateTime } from "../i18n/format";
 import { arabicSource } from "../i18n/source";
+import { isLeavePending, normalizeLeaveStatus } from "../i18n/status";
 
 const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
 const formatK = (val: number) => val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val);
@@ -302,8 +303,10 @@ export function Dashboard() {
   // ═══════ WORKFORCE KPIs ═══════
   // ══════════════════════════════════════════════════
 
-  const pendingLeaves = leaveRequests.filter(r => r.status === arabicSource("common.pending")).length;
-  const approvedLeaves = leaveRequests.filter(r => r.status === arabicSource("common.accepted")).length;
+  const pendingLeaves = leaveRequests.filter(r => isLeavePending(r.status)).length;
+  const approvedLeaves = leaveRequests.filter(
+    r => normalizeLeaveStatus(r.status) === arabicSource("common.accepted"),
+  ).length;
   const activeContracts = contracts.filter(c => c.status === "active").length;
   const probationCount = contracts.filter(c => c.probation_status === "in_progress").length;
 
@@ -597,7 +600,7 @@ export function Dashboard() {
   const leaveDistribution = useMemo(() => [
     { name: arabicSource("common.pending_2"), value: pendingLeaves, color: "#F59E0B" },
     { name: arabicSource("common.agreed"), value: approvedLeaves, color: "#22C55E" },
-    { name: arabicSource("common.rejected"), value: leaveRequests.filter(r => r.status === arabicSource("common.rejected_3")).length, color: "#DC2626" },
+    { name: arabicSource("common.rejected"), value: leaveRequests.filter(r => normalizeLeaveStatus(r.status) === arabicSource("common.rejected_3")).length, color: "#DC2626" },
   ], [leaveRequests, pendingLeaves, approvedLeaves]);
 
   const tenureDistribution = [
@@ -972,7 +975,7 @@ export function Dashboard() {
                 <div className="grid grid-cols-3 gap-2">
                   <div className="text-center p-2 rounded-lg bg-amber-500/10"><p className="text-amber-400 font-medium">{pendingLeaves}</p><p className="text-muted-foreground text-xs">{arabicSource("common.pending_2")}</p></div>
                   <div className="text-center p-2 rounded-lg bg-emerald-500/10"><p className="text-emerald-400 font-medium">{approvedLeaves}</p><p className="text-muted-foreground text-xs">{arabicSource("dashboard.accepted")}</p></div>
-                  <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-red-400 font-medium">{leaveRequests.filter(r => r.status === arabicSource("common.rejected_3")).length}</p><p className="text-muted-foreground text-xs">{arabicSource("common.rejected")}</p></div>
+                  <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-red-400 font-medium">{leaveRequests.filter(r => normalizeLeaveStatus(r.status) === arabicSource("common.rejected_3")).length}</p><p className="text-muted-foreground text-xs">{arabicSource("common.rejected")}</p></div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20">
                   <div className="flex justify-between text-sm mb-2">

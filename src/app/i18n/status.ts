@@ -29,6 +29,51 @@ export const workflowStatusKeys: TranslationKeyMap = {
 };
 
 /**
+ * Leave request statuses — Odoo states + legacy Arabic labels used in Supabase/FE.
+ * Canonical filter values are arabicSource("common.pending|accepted|rejected_3").
+ */
+export const leaveStatusKeys: TranslationKeyMap = {
+  // Odoo hr.leave states
+  confirm: "common.pending",
+  validate1: "common.pending",
+  validate: "common.accepted",
+  refuse: "common.rejected_3",
+  cancel: "common.canceled",
+  draft: "common.pending",
+  // English / code aliases
+  pending: "common.pending",
+  approved: "common.accepted",
+  accepted: "common.accepted",
+  rejected: "common.rejected_3",
+  refused: "common.rejected_3",
+  canceled: "common.canceled",
+  cancelled: "common.canceled",
+  // Canonical Arabic (arabicSource)
+  [arabicSource("common.pending")]: "common.pending",
+  [arabicSource("common.accepted")]: "common.accepted",
+  [arabicSource("common.rejected_3")]: "common.rejected_3",
+  [arabicSource("common.canceled")]: "common.canceled",
+  // Legacy display labels previously emitted by mappers
+  "قيد الانتظار": "common.pending",
+  "موافقة المدير": "common.pending",
+  "مقبول": "common.accepted",
+  "مرفوض": "common.rejected_3",
+  "ملغي": "common.canceled",
+};
+
+/** Normalize any leave status string to the Arabic canonical used by Leave filters. */
+export function normalizeLeaveStatus(status: string | null | undefined): string {
+  if (!status) return "";
+  const key = leaveStatusKeys[status] ?? leaveStatusKeys[status.toLowerCase()];
+  if (!key) return status;
+  return arabicSource(key as Parameters<typeof arabicSource>[0]);
+}
+
+export function isLeavePending(status: string | null | undefined): boolean {
+  return normalizeLeaveStatus(status) === arabicSource("common.pending");
+}
+
+/**
  * Translate a backend enum without ever exposing a raw i18n key.
  * Unknown codes remain readable so newly introduced backend values do not break the UI.
  */

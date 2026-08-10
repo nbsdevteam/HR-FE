@@ -43,6 +43,7 @@ import type {
   DbReportTemplate,
   DbReportHistory,
 } from "../hooks";
+import { arabicSource } from "../../i18n/source";
 
 const sid = (v: unknown) => (v === null || v === undefined || v === false ? "" : String(v));
 const sornull = (v: unknown) => (v === null || v === undefined || v === false || v === "" ? null : String(v));
@@ -324,17 +325,30 @@ export function mapLeaveType(r: any): DbLeaveType {
   };
 }
 
-/** Map Odoo leave state → FE Arabic status labels where used. */
+/** Map Odoo leave state → FE canonical Arabic statuses used by Leave filters. */
 function mapLeaveStatus(state: string): string {
+  // Must match arabicSource("common.pending|accepted|rejected_3|canceled").
+  // Previously confirm→"قيد الانتظار" broke the Pending filter (expects "معلق").
   const m: Record<string, string> = {
-    draft: "مسودة",
-    confirm: "قيد الانتظار",
-    validate1: "موافقة المدير",
-    validate: "مقبول",
-    refuse: "مرفوض",
-    cancel: "ملغي",
+    draft: arabicSource("common.pending"),
+    confirm: arabicSource("common.pending"),
+    validate1: arabicSource("common.pending"),
+    validate: arabicSource("common.accepted"),
+    refuse: arabicSource("common.rejected_3"),
+    cancel: arabicSource("common.canceled"),
+    pending: arabicSource("common.pending"),
+    approved: arabicSource("common.accepted"),
+    accepted: arabicSource("common.accepted"),
+    rejected: arabicSource("common.rejected_3"),
+    // Legacy labels (idempotent if already mapped)
+    "قيد الانتظار": arabicSource("common.pending"),
+    "موافقة المدير": arabicSource("common.pending"),
+    معلق: arabicSource("common.pending"),
+    مقبول: arabicSource("common.accepted"),
+    مرفوض: arabicSource("common.rejected_3"),
+    ملغي: arabicSource("common.canceled"),
   };
-  return m[state] || state || "";
+  return m[state] || m[String(state || "").toLowerCase()] || state || "";
 }
 
 export function mapLeaveRequest(r: any): DbLeaveRequest {

@@ -17,6 +17,12 @@ import {
 } from "../lib/hooks";
 import { localizedAlert } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
+import {
+  isLeavePending,
+  leaveStatusKeys,
+  normalizeLeaveStatus,
+  translateBackendCode,
+} from "../i18n/status";
 
 // ══════════════════════════ Styles ══════════════════════════
 
@@ -74,7 +80,9 @@ export function Leave() {
   // Filter & search requests
   const filteredRequests = useMemo(() => {
     let list = [...requests];
-    if (filter !== arabicSource("common.all")) list = list.filter(r => r.status === filter);
+    if (filter !== arabicSource("common.all")) {
+      list = list.filter(r => normalizeLeaveStatus(r.status) === filter);
+    }
     if (search) {
       list = list.filter(r => {
         const emp = empMap[r.employee_id];
@@ -93,16 +101,22 @@ export function Leave() {
       if (leaveSortBy === "start") return dir * (a.start_date || "").localeCompare(b.start_date || "");
       if (leaveSortBy === "end") return dir * (a.end_date || "").localeCompare(b.end_date || "");
       if (leaveSortBy === "days") return dir * ((a.days || 0) - (b.days || 0));
-      if (leaveSortBy === "status") return dir * (a.status || "").localeCompare(b.status || "", "ar");
+      if (leaveSortBy === "status") {
+        return dir * normalizeLeaveStatus(a.status).localeCompare(normalizeLeaveStatus(b.status), "ar");
+      }
       return 0;
     });
     return list;
   }, [requests, filter, search, empMap, leaveSortBy, leaveSortDir]);
 
-  // Stats
-  const pendingCount = requests.filter(r => r.status === arabicSource("common.pending")).length;
-  const approvedCount = requests.filter(r => r.status === arabicSource("common.accepted")).length;
-  const rejectedCount = requests.filter(r => r.status === arabicSource("common.rejected_3")).length;
+  // Stats (normalize so legacy "قيد الانتظار" counts as pending)
+  const pendingCount = requests.filter(r => isLeavePending(r.status)).length;
+  const approvedCount = requests.filter(
+    r => normalizeLeaveStatus(r.status) === arabicSource("common.accepted"),
+  ).length;
+  const rejectedCount = requests.filter(
+    r => normalizeLeaveStatus(r.status) === arabicSource("common.rejected_3"),
+  ).length;
 
   // Approve / Reject — Odoo native leave workflow
   const handleApprove = async (id: string) => {
@@ -321,12 +335,12 @@ export function Leave() {
                             </td>
                             <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{leave.reason || "—"}</td>
                             <td className="px-4 py-3">
-                              <span className={`px-2 py-0.5 rounded-md border ${statusColors[leave.status] || ""}`} style={{ fontSize: 12 }}>
-                                {leave.status}
+                              <span className={`px-2 py-0.5 rounded-md border ${statusColors[normalizeLeaveStatus(leave.status)] || ""}`} style={{ fontSize: 12 }}>
+                                {translateBackendCode(leave.status, leaveStatusKeys)}
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              {leave.status === arabicSource("common.pending") ? (
+                              {isLeavePending(leave.status) ? (
                                 <div className="flex items-center gap-1">
                                   <button onClick={() => handleApprove(leave.id)} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer" title={arabicSource("common.accept")}>
                                     <Check className="w-4 h-4 text-emerald-400" />
@@ -359,7 +373,7 @@ export function Leave() {
               /* Kanban View */
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {kanbanColumns.map((col, ci) => {
-                  const items = filteredRequests.filter(r => r.status === col.key);
+                  const items = filteredRequests.filter(r => normalizeLeaveStatus(r.status) === col.key);
                   return (
                     <motion.div
                       key={col.key}
@@ -403,7 +417,7 @@ export function Leave() {
                                   <span className="text-muted-foreground" style={{ fontSize: 10 }} dir="ltr">{leave.start_date}</span>
                                 </div>
                               </div>
-                              {leave.status === arabicSource("common.pending") && (
+                              {isLeavePending(leave.status) && (
                                 <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/20">
                                   <button onClick={() => handleApprove(leave.id)} className="flex-1 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors cursor-pointer" style={{ fontSize: 11 }}>
                                     <Check className="w-3.5 h-3.5 inline-block" /> {arabicSource("common.accept")}
