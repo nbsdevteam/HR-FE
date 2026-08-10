@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import {
   UserPlus, Plus, X, Briefcase, MapPin, Clock, Users, FileCheck, Search,
@@ -20,6 +21,7 @@ import { DEPARTMENTS } from "../lib/constants";
 import { formatNumber } from "../i18n/format";
 import { localizedAlert, localizedConfirm } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
+import { normalizeLanguage } from "../i18n";
 
 /**
  * Fetch a CV through the authenticated API and hand it to the browser.
@@ -157,6 +159,19 @@ const IR_COMPONENT_LABELS: Record<string, string> = {
   bonus_skills: arabicSource("recruitment.comp_bonus_skills"),
   stability_progression: arabicSource("recruitment.comp_stability_progression"),
   logistics_fit: arabicSource("recruitment.comp_logistics_fit"),
+};
+
+// `ir_missing_info` mixes two sources: free-text sentences written by the model
+// and stable snake_case keys from the backend's deterministic CV checklist.
+// Only the keys can be translated, and leaving them unmapped put raw tokens
+// like "education" in front of HR next to a full English sentence.
+const MISSING_INFO_LABELS: Record<string, string> = {
+  email: arabicSource("recruitment.missing_email"),
+  phone: arabicSource("recruitment.missing_phone"),
+  work_experience: arabicSource("recruitment.missing_work_experience"),
+  experience_dates: arabicSource("recruitment.missing_experience_dates"),
+  education: arabicSource("recruitment.missing_education"),
+  skills_not_evidenced: arabicSource("recruitment.missing_skills_not_evidenced"),
 };
 
 const IR_STATUS_LABELS: Record<string, string> = {
@@ -1775,11 +1790,21 @@ function IrBadge({ applicant, showStatus = true }: { applicant: DbApplicant; sho
 /** Full IR breakdown: components with evidence, penalties, skills and flags. */
 function IrDetail({ applicant }: { applicant: DbApplicant }) {
   const [openEvidence, setOpenEvidence] = useState<string | null>(null);
+  const { i18n } = useTranslation();
   const breakdown = applicant.ir_breakdown || {};
   const components = breakdown.components || {};
   const penalties = breakdown.penalties || [];
   const score = Math.round(applicant.ir_score || 0);
   const band = rankLabel(score, applicant.ir_band);
+  // The model writes the summary twice, once per language, so an English
+  // reader gets English prose instead of Arabic run through the DOM
+  // localizer. Sorani has no summary of its own; Arabic is the closer
+  // fallback for this audience.
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const summary = language === "en"
+    ? applicant.ir_summary_en || applicant.ir_summary_ar
+    : applicant.ir_summary_ar || applicant.ir_summary_en;
+  const summaryDir = summary && summary === applicant.ir_summary_en ? "ltr" : "rtl";
 
   return (
     <div className="space-y-4">
@@ -1811,14 +1836,22 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
         </div>
       )}
 
-      {/* AI summary */}
-      {applicant.ir_summary_ar && (
+      {/* AI summary. `data-i18n-ignore` keeps the DOM localizer off model
+          prose: with no catalogue entry for a whole free-text paragraph it
+          falls back to replacing catalogued phrases substring by substring,
+          which shreds the sentences into an Arabic/English mash. */}
+      {summary && (
         <div>
           <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>
             {arabicSource("recruitment.ai_summary")}
           </label>
-          <p className="text-foreground rounded-lg border border-border/30 bg-muted/10 p-3" style={{ fontSize: 12.5 }}>
-            {applicant.ir_summary_ar}
+          <p
+            className="text-foreground rounded-lg border border-border/30 bg-muted/10 p-3"
+            style={{ fontSize: 12.5 }}
+            dir={summaryDir}
+            data-i18n-ignore
+          >
+            {summary}
           </p>
         </div>
       )}
@@ -1840,7 +1873,7 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
             {openEvidence === key && component.evidence && (
               <p className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2" style={{ fontSize: 11 }}>
                 <span className="text-primary">{arabicSource("recruitment.evidence")}: </span>
-                {component.evidence}
+                <span data-i18n-ignore>{component.evidence}</span>
               </p>
             )}
           </div>
@@ -1856,7 +1889,7 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
           <div className="space-y-1">
             {penalties.map((penalty, i) => (
               <div key={i} className="flex items-start justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2">
-                <span className="text-muted-foreground" style={{ fontSize: 11.5 }}>{penalty.detail}</span>
+                <span className="text-muted-foreground" style={{ fontSize: 11.5 }} data-i18n-ignore>{penalty.detail}</span>
                 <span className="text-destructive flex-shrink-0" style={{ fontSize: 11.5 }} dir="ltr">−{penalty.amount}</span>
               </div>
             ))}
@@ -1874,7 +1907,7 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.matched_skills!.map((skill, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }}>
+                  <span key={i} className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }} data-i18n-ignore>
                     {skill}
                   </span>
                 ))}
@@ -1888,7 +1921,7 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.missing_skills!.map((skill, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-md border border-destructive/30 bg-destructive/10 text-destructive" style={{ fontSize: 11 }}>
+                  <span key={i} className="px-2 py-0.5 rounded-md border border-destructive/30 bg-destructive/10 text-destructive" style={{ fontSize: 11 }} data-i18n-ignore>
                     {skill}
                   </span>
                 ))}
@@ -1908,7 +1941,7 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
             {applicant.ir_red_flags!.map((flag, i) => (
               <div key={i} className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2">
                 <AlertCircle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-                <span className="text-muted-foreground" style={{ fontSize: 11.5 }}>{flag.detail}</span>
+                <span className="text-muted-foreground" style={{ fontSize: 11.5 }} data-i18n-ignore>{flag.detail}</span>
               </div>
             ))}
           </div>
@@ -1922,20 +1955,35 @@ function IrDetail({ applicant }: { applicant: DbApplicant }) {
             {arabicSource("recruitment.missing_info")}
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {applicant.ir_missing_info!.map((info, i) => (
-              <span key={i} className="px-2 py-0.5 rounded-md bg-muted/20 border border-border/30 text-muted-foreground" style={{ fontSize: 11 }} dir="ltr">
-                {info}
-              </span>
-            ))}
+            {applicant.ir_missing_info!.map((info, i) => {
+              const label = MISSING_INFO_LABELS[info];
+              return (
+                <span
+                  key={i}
+                  className="px-2 py-0.5 rounded-md bg-muted/20 border border-border/30 text-muted-foreground"
+                  style={{ fontSize: 11 }}
+                  dir={label ? undefined : "ltr"}
+                  {...(label ? {} : { "data-i18n-ignore": true })}
+                >
+                  {label || info}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Better-fit suggestion across the other open positions */}
+      {/* Better-fit suggestion across the other open positions. The score is
+          shown because it is not the IR above it — it is keyword overlap, and
+          HR needs to see how thin the evidence behind the hint is. */}
       {applicant.suggested_job_title && (
         <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-primary" style={{ fontSize: 12 }}>
           <TrendingUp className="w-4 h-4 flex-shrink-0" />
-          {arabicSource("recruitment.suggested_job")}: {applicant.suggested_job_title}
+          {arabicSource("recruitment.suggested_job")}:{" "}
+          <span data-i18n-ignore>{applicant.suggested_job_title}</span>
+          {Boolean(applicant.suggested_job_score) && (
+            <span className="opacity-70" dir="ltr">({Math.round(applicant.suggested_job_score!)}%)</span>
+          )}
         </div>
       )}
     </div>
