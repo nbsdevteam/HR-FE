@@ -62,6 +62,10 @@ export function Policies() {
   const { policies, loading, refetch } = usePolicies();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(arabicSource("common.all"));
+  const [statusFilter, setStatusFilter] = useState(arabicSource("common.all"));
+  const [sortBy, setSortBy] = useState<"title" | "category" | "status" | "updated">("updated");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [expandedPolicy, setExpandedPolicy] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -89,12 +93,33 @@ export function Policies() {
     { ...p, status: ODOO_STATUS_TO_POLICY[p.status] || p.status }
   ));
 
-  // Filter policies
-  const filtered = displayPolicies.filter(p => {
-    const matchSearch = (p.title?.includes(search) || p.description?.includes(search)) ?? false;
-    const matchCat = selectedCategory === arabicSource("common.all") || p.category === selectedCategory;
-    return matchSearch && matchCat;
-  });
+  // Filter + sort policies
+  const filtered = displayPolicies
+    .filter((p) => {
+      const q = search.trim().toLowerCase();
+      const matchSearch =
+        !q ||
+        (p.title || "").toLowerCase().includes(q) ||
+        (p.description || "").toLowerCase().includes(q) ||
+        (p.content || "").toLowerCase().includes(q);
+      const matchCat =
+        selectedCategory === arabicSource("common.all") || p.category === selectedCategory;
+      const matchStatus =
+        statusFilter === arabicSource("common.all") || p.status === statusFilter;
+      return matchSearch && matchCat && matchStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === "title") return (a.title || "").localeCompare(b.title || "", "ar");
+      if (sortBy === "category") return (a.category || "").localeCompare(b.category || "", "ar");
+      if (sortBy === "status") return (a.status || "").localeCompare(b.status || "", "ar");
+      return String(b.last_updated || b.created_at || "").localeCompare(
+        String(a.last_updated || a.created_at || ""),
+      );
+    });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Calculate stats
   const stats = {
@@ -239,15 +264,15 @@ export function Policies() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-gradient-gold">{arabicSource("common.policies_and_procedures")}</h1>
-          <p className="text-muted-foreground mt-1">{arabicSource("common.internal_policies_and_systems_manual")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-gradient-gold text-xl sm:text-2xl">{arabicSource("common.policies_and_procedures")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{arabicSource("common.internal_policies_and_systems_manual")}</p>
         </div>
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.02 }}
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer w-full sm:w-auto flex-shrink-0"
         >
           <Plus className="w-5 h-5" />
           {arabicSource("policies.add_policy")}
@@ -295,16 +320,16 @@ export function Policies() {
             type="text"
             placeholder={arabicSource("policies.policy_research")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
           />
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap overflow-x-auto pb-1">
           {categories.map(cat => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
+              onClick={() => { setSelectedCategory(cat); setPage(1); }}
+              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer whitespace-nowrap flex-shrink-0 ${
                 selectedCategory === cat ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
               style={{ fontSize: 13 }}
@@ -313,6 +338,32 @@ export function Policies() {
             </button>
           ))}
         </div>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 flex-wrap">
+            {[arabicSource("common.all"), ...STATUS_OPTIONS].map((st) => (
+              <button
+                key={st}
+                onClick={() => { setStatusFilter(st); setPage(1); }}
+                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+                  statusFilter === st ? "bg-primary/90 text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"
+                }`}
+                style={{ fontSize: 12 }}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm w-full sm:w-auto"
+          >
+            <option value="updated">{arabicSource("policies.latest_update")}</option>
+            <option value="title">{arabicSource("common.address")}</option>
+            <option value="category">{arabicSource("common.category")}</option>
+            <option value="status">{arabicSource("common.status")}</option>
+          </select>
+        </div>
       </div>
 
       {/* Policies List */}
@@ -320,7 +371,7 @@ export function Policies() {
         {filtered.length === 0 ? (
           <EmptyState icon={FileText} message={arabicSource("policies.there_are_no_matching_policies_for_your_search")} />
         ) : (
-          filtered.map((policy, i) => {
+          paged.map((policy, i) => {
             const Icon = CATEGORY_ICONS[policy.category] || FileText;
             const isExpanded = expandedPolicy === policy.id;
             const localizedContent = localizePolicyText(policy.content);
@@ -401,7 +452,7 @@ export function Policies() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-2 pt-2">
+                        <div className="flex items-center gap-2 pt-2 flex-wrap">
                           <button
                             onClick={() => openViewModal(policy)}
                             className="flex items-center gap-1 px-3 py-1.5 bg-primary/20 text-primary rounded text-xs hover:bg-primary/30 transition-colors cursor-pointer"
@@ -441,6 +492,32 @@ export function Policies() {
               </motion.div>
             );
           })
+        )}
+        {filtered.length > pageSize && (
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <p className="text-muted-foreground text-xs">
+              {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} / {filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
+              >
+                ‹
+              </button>
+              <span className="text-sm text-foreground">{currentPage} / {totalPages}</span>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
+              >
+                ›
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

@@ -4,12 +4,17 @@ import { TopBar } from "./TopBar";
 import { motion } from "motion/react";
 import { ThemeProvider } from "./ThemeContext";
 import { SettingsProvider } from "./SettingsContext";
+import { NavShellProvider } from "./NavShellContext";
 import { useTranslation } from "react-i18next";
 
 function LayoutInner() {
   const { i18n } = useTranslation();
   return (
-    <div dir={i18n.dir()} className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+    <div
+      dir={i18n.dir()}
+      className="flex h-screen bg-background overflow-hidden"
+      style={{ fontFamily: "'Tajawal', sans-serif" }}
+    >
       {/* Animated background orbs — colors driven by CSS variables */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <motion.div
@@ -34,9 +39,9 @@ function LayoutInner() {
 
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10 min-w-0">
         <TopBar />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
           <Outlet />
         </main>
       </div>
@@ -48,7 +53,9 @@ export function Layout() {
   return (
     <SettingsProvider>
       <ThemeProvider>
-        <LayoutInner />
+        <NavShellProvider>
+          <LayoutInner />
+        </NavShellProvider>
       </ThemeProvider>
     </SettingsProvider>
   );

@@ -630,37 +630,36 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-gradient-gold">{arabicSource("common.control_panel")}</h1>
-          <p className="text-muted-foreground mt-1">{arabicSource("dashboard.kpis_live_data_from_the_database")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-gradient-gold text-xl sm:text-2xl">{arabicSource("common.control_panel")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{arabicSource("dashboard.kpis_live_data_from_the_database")}</p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Risk Score Badge */}
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border ${
             riskScore.level === "critical" ? "bg-red-500/10 border-red-500/30" :
             riskScore.level === "high" ? "bg-orange-500/10 border-orange-500/30" :
             riskScore.level === "medium" ? "bg-amber-500/10 border-amber-500/30" :
             "bg-emerald-500/10 border-emerald-500/30"
           }`}>
-            <Shield className={`w-4 h-4 ${
+            <Shield className={`w-4 h-4 flex-shrink-0 ${
               riskScore.level === "critical" ? "text-red-400" :
               riskScore.level === "high" ? "text-orange-400" :
               riskScore.level === "medium" ? "text-amber-400" : "text-emerald-400"
             }`} />
-            <span className="text-sm">{arabicSource("dashboard.risks")} <RiskBadge level={riskScore.level} /></span>
+            <span className="text-sm whitespace-nowrap">{arabicSource("dashboard.risks")} <RiskBadge level={riskScore.level} /></span>
           </div>
           {unreadCount > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
-              <Bell className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 text-sm">{unreadCount} {arabicSource("dashboard.new_notice")}</span>
+            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <Bell className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span className="text-amber-400 text-sm whitespace-nowrap">{unreadCount} {arabicSource("dashboard.new_notice")}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* KPI Section Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      {/* KPI Section Tabs — scrollable on narrow phones */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
         {([
           { key: "overview" as const, label: arabicSource("common.overview"), icon: BarChart3 },
           { key: "workforce" as const, label: arabicSource("dashboard.manpower"), icon: Users },
@@ -673,14 +672,14 @@ export function Dashboard() {
             <button
               key={tab.key}
               onClick={() => setKpiSection(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap flex-shrink-0 ${
                 kpiSection === tab.key
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "bg-card/30 border border-border/40 text-muted-foreground hover:text-foreground hover:border-primary/30"
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {tab.label}
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">{tab.label}</span>
             </button>
           );
         })}
