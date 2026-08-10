@@ -619,7 +619,55 @@ export function mapNotification(r: any): DbNotification {
     is_read: bool(r.is_read),
     is_dismissed: bool(r.is_dismissed),
     action_url: r.action_url || null,
+    attachments: Array.isArray(r.attachments) ? r.attachments : [],
     created_at: r.created_at || empty,
+  };
+}
+
+export function mapApprovalWorkflow(r: any): any {
+  return {
+    id: sid(r.id),
+    name_ar: r.name_ar || r.name || "",
+    name_en: r.name || null,
+    entity_type: r.entity_type || "",
+    is_active: bool(r.active !== undefined ? r.active : r.is_active),
+    steps: Array.isArray(r.steps) ? r.steps : [],
+    employee_ids: r.employee_ids || [],
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapApprovalRequest(r: any): any {
+  return {
+    id: sid(r.id),
+    workflow_id: sornull(r.workflow_id),
+    entity_type: r.entity_type || "",
+    entity_id: sid(r.entity_res_id || r.entity_id),
+    requested_by: sornull(r.requested_by_id || r.requested_by),
+    current_step: r.current_step_sequence || r.current_step || 0,
+    status: r.status || "",
+    current_step_name: r.current_step_name || "",
+    actions: Array.isArray(r.actions) ? r.actions : [],
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export function mapIssue(r: any): any {
+  return {
+    id: sid(r.id),
+    name: r.name || r.subject || "",
+    description: r.description || "",
+    category: r.category || "other",
+    priority: r.priority || "normal",
+    state: r.state || r.status || "submitted",
+    employee_id: sornull(r.employee_id),
+    employee_name: r.employee_name || "",
+    assignee_id: sornull(r.assignee_id),
+    resolution_note: r.resolution_note || null,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
   };
 }
 

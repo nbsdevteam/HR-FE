@@ -1075,6 +1075,104 @@ export function useEmployeeDocuments(employeeId?: string) {
   return { documents, loading, refetch: fetch };
 }
 
+export function useApprovalWorkflows() {
+  const [workflows, setWorkflows] = useState<DbApprovalWorkflow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) setWorkflows(await odooData.fetchApprovalWorkflows());
+      else {
+        const { data } = await supabase.from("approval_workflows").select("*");
+        setWorkflows(data || []);
+      }
+    } catch (e) { console.error(e); setWorkflows([]); }
+    setLoading(false);
+  };
+  useEffect(() => { fetch(); }, []);
+  return { workflows, loading, refetch: fetch };
+}
+
+export function useApprovalWorkflowSteps(workflowId?: string) {
+  const [steps, setSteps] = useState<DbApprovalWorkflowStep[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        const workflows = await odooData.fetchApprovalWorkflows();
+        const wf = workflows.find((w: any) => String(w.id) === String(workflowId));
+        const mapped = ((wf as any)?.steps || []).map((s: any) => ({
+          id: String(s.id),
+          workflow_id: String(workflowId || ""),
+          step_order: s.sequence || 0,
+          approver_type: s.approver_type || "",
+          approver_id: s.approver_employee_id ? String(s.approver_employee_id) : null,
+          approver_role: s.approver_permission || null,
+          can_skip: Boolean(s.can_skip),
+          auto_approve_after_days: s.auto_approve_after_days || null,
+          created_at: "",
+        }));
+        setSteps(mapped);
+      } else {
+        let q = supabase.from("approval_workflow_steps").select("*").order("step_order");
+        if (workflowId) q = q.eq("workflow_id", workflowId);
+        const { data } = await q;
+        setSteps(data || []);
+      }
+    } catch (e) { console.error(e); setSteps([]); }
+    setLoading(false);
+  };
+  useEffect(() => { fetch(); }, [workflowId]);
+  return { steps, loading, refetch: fetch };
+}
+
+export function useApprovalRequests(filters?: { entityType?: string; status?: string }) {
+  const [requests, setRequests] = useState<DbApprovalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        setRequests(await odooData.fetchApprovalRequests({
+          entityType: filters?.entityType,
+          status: filters?.status,
+        }));
+      } else {
+        let q = supabase.from("approval_requests").select("*").order("created_at", { ascending: false });
+        if (filters?.entityType) q = q.eq("entity_type", filters.entityType);
+        if (filters?.status) q = q.eq("status", filters.status);
+        const { data } = await q;
+        setRequests(data || []);
+      }
+    } catch (e) { console.error(e); setRequests([]); }
+    setLoading(false);
+  };
+  useEffect(() => { fetch(); }, [filters?.entityType, filters?.status]);
+  return { requests, loading, refetch: fetch };
+}
+
+export function useIssues(filters?: { employeeId?: string; state?: string }) {
+  const [issues, setIssues] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      if (isOdooBackend()) {
+        setIssues(await odooData.fetchIssues({
+          employeeId: filters?.employeeId,
+          state: filters?.state,
+        }));
+      } else {
+        setIssues([]);
+      }
+    } catch (e) { console.error(e); setIssues([]); }
+    setLoading(false);
+  };
+  useEffect(() => { fetch(); }, [filters?.employeeId, filters?.state]);
+  return { issues, loading, refetch: fetch };
+}
+
 export function useExitChecklistItems() {
   const [items, setItems] = useState<DbExitChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1496,6 +1594,7 @@ export interface DbNotification {
   is_read: boolean;
   is_dismissed: boolean;
   action_url: string | null;
+  attachments?: { id: number; name: string; mimetype?: string; file_size?: number }[];
   created_at: string;
 }
 

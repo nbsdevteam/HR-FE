@@ -33,6 +33,9 @@ import {
   mapExitChecklistLine,
   mapWarning,
   mapNotification,
+  mapIssue,
+  mapApprovalWorkflow,
+  mapApprovalRequest,
   mapAuditLog,
   mapEvaluation,
   mapEvaluationCriterion,
@@ -1160,4 +1163,141 @@ export async function updateLeavePolicy(policyId: string | number, payload: Reco
 
 export async function deleteLeavePolicy(policyId: string | number) {
   return hrCall(`/api/hr/leave/policies/${eid(policyId)}/delete`, {});
+}
+
+// ─── Slice F: Devices process / Issues / Approvals / Currency / Trends ─
+
+export async function syncDevices(deviceId?: string | number, processEvents = true) {
+  const params: Record<string, unknown> = { process_events: processEvents };
+  if (deviceId != null) params.device_id = eid(deviceId);
+  return hrCall("/api/hr/devices/sync", params);
+}
+
+export async function processDeviceEvents(deviceId?: string | number, limit = 500) {
+  const params: Record<string, unknown> = { limit };
+  if (deviceId != null) params.device_id = eid(deviceId);
+  return hrCall("/api/hr/devices/events/process", params);
+}
+
+export async function createDeviceEvent(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/devices/events/create", payload);
+}
+
+export async function fetchAttendanceTrends(params?: {
+  employeeId?: string | number;
+  dateFrom?: string;
+  dateTo?: string;
+}) {
+  const body: Record<string, unknown> = {};
+  if (params?.employeeId != null) body.employee_id = eid(params.employeeId);
+  if (params?.dateFrom) body.date_from = params.dateFrom;
+  if (params?.dateTo) body.date_to = params.dateTo;
+  return hrCall("/api/hr/attendance/trends", body);
+}
+
+export async function fetchIssues(filters?: {
+  employeeId?: string | number;
+  state?: string;
+  category?: string;
+}): Promise<any[]> {
+  const params: Record<string, unknown> = { limit: 200 };
+  if (filters?.employeeId != null) params.employee_id = eid(filters.employeeId);
+  if (filters?.state) params.state = filters.state;
+  if (filters?.category) params.category = filters.category;
+  const rows = await items<any>("/api/hr/issues/list", params);
+  return rows.map(mapIssue);
+}
+
+export async function createIssue(payload: Record<string, unknown>) {
+  const params = { ...payload };
+  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
+  return hrCall("/api/hr/issues/create", params);
+}
+
+export async function updateIssue(issueId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/issues/${eid(issueId)}/update`, payload);
+}
+
+export async function resolveIssue(
+  issueId: string | number,
+  resolution_note?: string,
+  state = "resolved",
+) {
+  return hrCall(`/api/hr/issues/${eid(issueId)}/resolve`, { resolution_note, state });
+}
+
+export async function fetchApprovalWorkflows(entityType = "leave_request"): Promise<any[]> {
+  const data = await hrCall<{ items?: any[] }>("/api/hr/approvals/workflows/list", {
+    entity_type: entityType,
+    active_only: true,
+  });
+  const rows = data?.items || [];
+  return rows.map(mapApprovalWorkflow);
+}
+
+export async function createApprovalWorkflow(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/approvals/workflows/create", payload);
+}
+
+export async function updateApprovalWorkflow(
+  workflowId: string | number,
+  payload: Record<string, unknown>,
+) {
+  return hrCall(`/api/hr/approvals/workflows/${eid(workflowId)}/update`, payload);
+}
+
+export async function fetchApprovalRequests(filters?: {
+  entityType?: string;
+  status?: string;
+  mineOnly?: boolean;
+}): Promise<any[]> {
+  const params: Record<string, unknown> = {
+    status: filters?.status || "pending",
+    limit: 200,
+  };
+  if (filters?.entityType) params.entity_type = filters.entityType;
+  if (filters?.mineOnly) params.mine_only = true;
+  const rows = await items<any>("/api/hr/approvals/requests/list", params);
+  return rows.map(mapApprovalRequest);
+}
+
+export async function approveApprovalRequest(requestId: string | number, comment?: string) {
+  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/approve`, { comment });
+}
+
+export async function rejectApprovalRequest(requestId: string | number, comment?: string) {
+  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/reject`, { comment });
+}
+
+export async function fetchCurrencies() {
+  return hrCall("/api/hr/currencies/list", {});
+}
+
+export async function fetchCurrencyRates(filters?: {
+  currencyFrom?: string;
+  currencyTo?: string;
+}) {
+  const params: Record<string, unknown> = { limit: 200 };
+  if (filters?.currencyFrom) params.currency_from = filters.currencyFrom;
+  if (filters?.currencyTo) params.currency_to = filters.currencyTo;
+  return items<any>("/api/hr/currency_rates/list", params);
+}
+
+export async function createCurrencyRate(payload: {
+  currency_from: string;
+  currency_to: string;
+  rate: number;
+  rate_date?: string;
+  note?: string;
+}) {
+  return hrCall("/api/hr/currency_rates/create", payload);
+}
+
+export async function convertCurrency(payload: {
+  amount: number;
+  currency_from: string;
+  currency_to: string;
+  rate_date?: string;
+}) {
+  return hrCall("/api/hr/currency_rates/convert", payload);
 }
