@@ -1,7 +1,47 @@
 # HR Device Sync Service
-## Hikvision DS-K1T342MFWX ↔ Supabase
+## Hikvision DS-K1T342MFWX ↔ Supabase / Odoo
 
 Hybrid push + poll attendance sync service that connects your Hikvision fingerprint terminal to the HR system.
+
+## Backend toggle (Supabase ↔ Odoo bridge)
+
+This service can write derived attendance/employee/notification/device data
+to either Supabase (current production) or Odoo (staging / post-cutover),
+selected by the `BACKEND` env var. The Hikvision polling/push/reconciliation
+logic (`hikvision-api.mjs`, the cron schedules in `sync-service.mjs`) is
+identical either way — only the destination of the *derived* data changes.
+See `backend-supabase.mjs` / `backend-odoo.mjs` for the adapter implementations.
+
+```bash
+BACKEND=supabase   # default — writes to Supabase, as today
+BACKEND=odoo       # writes to the lugal_hr REST API instead (needs ODOO_* vars)
+```
+
+To validate the Odoo bridge on staging before cutover:
+1. Create the service account: run
+   `Lugal-ai/scripts/hr_migration/setup_device_sync_service_account.py`
+   via `odoo-bin shell` against the staging DB, and copy the printed
+   `ODOO_SYNC_USERNAME`/`ODOO_SYNC_PASSWORD` into `.env`.
+2. Set `ODOO_API_BASE`, `ODOO_DB` in `.env` (Supabase vars stay as-is —
+   both are read regardless of `BACKEND`).
+3. `npm run test-connection` — checks the device AND, since `ODOO_API_BASE`
+   is now set, logs into Odoo and reads `/api/hr/employees/list` +
+   `/api/hr/devices/list`.
+4. `BACKEND=odoo npm run manual-sync -- 2026-04-01 2026-04-07` — backfills a
+   known date range into the staging Odoo DB using the exact same
+   check-in/check-out/overnight logic as live sync.
+5. `npm run diff-backends -- 2026-04-01 2026-04-07` — compares the resulting
+   Odoo `hr.attendance` rows against the equivalent Supabase
+   `attendance_records` for that range, matched by `device_employee_no`.
+6. Only once that diff is clean, flip `BACKEND=odoo` in production and keep
+   Supabase read-only for 1-2 weeks as a rollback path (see
+   `Lugal-ai/docs/hr_migration_analysis/08_MIGRATION_PLAN.md`, "Switch
+   device-sync to Odoo").
+
+Note: the `/api/device/*` device-management routes (persons, face photos,
+door control, `sync-employee`, `sync-status`, `next-employee-id`) always talk
+to Supabase directly regardless of `BACKEND` — they're local operational
+tooling for `DeviceManagement.tsx`, not part of this bridge's scope.
 
 ## Setup
 

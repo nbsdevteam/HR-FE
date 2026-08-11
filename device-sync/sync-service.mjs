@@ -6,19 +6,23 @@
  * 3. Full reconciliation every 30 min to catch any gaps
  * 4. Employee auto-discovery: unknown IDs → auto-create + notify HR
  *
+ * Backend: writes derived attendance/employee/notification/device data
+ * through a pluggable backend adapter (see backend-supabase.mjs /
+ * backend-odoo.mjs), selected via the BACKEND env var. The Hikvision
+ * integration below (device polling/push/reconciliation) is unchanged
+ * regardless of which backend is active — see the "Device-Sync Odoo
+ * Bridge" plan for the full rationale.
+ *
  * Run:  node sync-service.mjs
  */
 
 import "dotenv/config";
 import cron from "node-cron";
 import express from "express";
-import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { HikvisionClient } from "./hikvision-api.mjs";
-
-function uuid() {
-  return crypto.randomUUID();
-}
+import { createBackend as createSupabaseBackend } from "./backend-supabase.mjs";
+import { createBackend as createOdooBackend } from "./backend-odoo.mjs";
 
 // ── Config ──
 
@@ -34,30 +38,80 @@ const config = {
     url: process.env.SUPABASE_URL,
     serviceKey: process.env.SUPABASE_SERVICE_KEY,
   },
+  odoo: {
+    apiBase: process.env.ODOO_API_BASE || "",
+    db: process.env.ODOO_DB || "",
+    username: process.env.ODOO_SYNC_USERNAME || "",
+    password: process.env.ODOO_SYNC_PASSWORD || "",
+  },
   sync: {
     intervalMinutes: parseInt(process.env.SYNC_INTERVAL_MINUTES || "5"),
     reconcileMinutes: parseInt(process.env.FULL_RECONCILE_MINUTES || "30"),
     employeeSyncMinutes: parseInt(process.env.EMPLOYEE_SYNC_MINUTES || "60"),
     timezone: process.env.TIMEZONE || "Asia/Baghdad",
+    tzOffsetHours: parseInt(process.env.TZ_OFFSET_HOURS || "3"), // Asia/Baghdad = UTC+3
   },
   push: {
     port: parseInt(process.env.PUSH_LISTENER_PORT || "8089"),
     enabled: process.env.PUSH_LISTENER_ENABLED !== "false",
   },
+  // BACKEND=supabase (default, current production) | BACKEND=odoo (staging / post-cutover)
+  backendType: (process.env.BACKEND || "supabase").trim().toLowerCase(),
 };
 
 // ── Clients ──
 
 const hik = new HikvisionClient(config.device);
+
+// Supabase client is kept unconditionally, regardless of BACKEND: it backs
+// the polling-cursor bootstrap (loadLastSyncTime) and the pre-existing
+// /api/device/* management routes below (persons/face/door/sync-employee/...),
+// none of which are part of this bridge's scope. Only the *derived*
+// attendance/employee/notification/device-registry writes route through
+// `backend` (see createBackend() below).
 const db = createClient(config.supabase.url, config.supabase.serviceKey);
+
+const IRAQ_TZ = config.sync.timezone;
+
+function log(emoji, msg) {
+  const ts = new Date().toLocaleTimeString("en-GB", { timeZone: IRAQ_TZ });
+  console.log(`[${ts}] ${emoji} ${msg}`);
+}
+
+function todayIraq() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: IRAQ_TZ });
+}
+
+function getDayOfWeek(dateStr) {
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  return days[new Date(dateStr + "T00:00:00+03:00").getDay()];
+}
+
+const backendCtx = { log, todayIraq, getDayOfWeek, IRAQ_TZ };
+
+const backend =
+  config.backendType === "odoo"
+    ? createOdooBackend(
+        {
+          apiBase: config.odoo.apiBase,
+          db: config.odoo.db,
+          username: config.odoo.username,
+          password: config.odoo.password,
+          tzOffsetHours: config.sync.tzOffsetHours,
+          device: { ip: config.device.ip, port: config.device.port, useHttps: config.device.useHttps, username: config.device.username },
+        },
+        backendCtx,
+      )
+    : createSupabaseBackend({ url: config.supabase.url, serviceKey: config.supabase.serviceKey, deviceIp: config.device.ip }, backendCtx);
+
+log("⚙️", `Backend: ${config.backendType}${config.backendType === "odoo" ? ` (${config.odoo.apiBase})` : ""}`);
 
 // ── State ──
 
 let lastSyncTime = null; // ISO string of last successful event sync
 const processedEventIds = new Set(); // dedup within session
-const IRAQ_TZ = config.sync.timezone;
 
-// ── Persist lastSyncTime so PM2 restarts don't lose state ──
+// ── Persist lastSyncTime so PM2 restarts don't lose state (always via Supabase — see note above) ──
 
 async function loadLastSyncTime() {
   try {
@@ -77,14 +131,6 @@ async function loadLastSyncTime() {
 
 // ── Helpers ──
 
-function nowIraq() {
-  return new Date().toLocaleString("en-CA", { timeZone: IRAQ_TZ }).replace(", ", "T");
-}
-
-function todayIraq() {
-  return new Date().toLocaleDateString("en-CA", { timeZone: IRAQ_TZ });
-}
-
 function toIsoLocal(date) {
   // Format: 2026-04-22T08:30:00+03:00
   const d = date instanceof Date ? date : new Date(date);
@@ -93,17 +139,7 @@ function toIsoLocal(date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${offset}`;
 }
 
-function getDayOfWeek(dateStr) {
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  return days[new Date(dateStr + "T00:00:00+03:00").getDay()];
-}
-
-function log(emoji, msg) {
-  const ts = new Date().toLocaleTimeString("en-GB", { timeZone: IRAQ_TZ });
-  console.log(`[${ts}] ${emoji} ${msg}`);
-}
-
-// ── Retry with exponential backoff (for Supabase / device calls) ──
+// ── Retry with exponential backoff (for backend / device calls) ──
 
 async function withRetry(fn, { maxRetries = 3, baseDelayMs = 1000, label = "operation" } = {}) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -120,6 +156,8 @@ async function withRetry(fn, { maxRetries = 3, baseDelayMs = 1000, label = "oper
 
 // ══════════════════════════════════════════
 // CORE: Process a single attendance event
+// (backend-agnostic orchestration — employee lookup/creation and the
+// attendance write itself are delegated to the active `backend`)
 // ══════════════════════════════════════════
 
 async function processEvent(event) {
@@ -140,361 +178,30 @@ async function processEvent(event) {
 
   if (!employeeNo || !time) return;
 
-  const eventTime = new Date(time);
   const dateStr = time.slice(0, 10); // "2026-04-22"
   const timeStr = time.slice(11, 19); // "08:30:15"
 
-  // 1. Find employee in HR system (check device_employee_no, person_id, and national_id)
+  // 1. Find employee in the active backend
   let employee = null;
   try {
-    // Try device_employee_no first (most specific)
-    let { data } = await db
-      .from("employees")
-      .select("*")
-      .eq("device_employee_no", employeeNo)
-      .limit(1)
-      .maybeSingle();
-
-    if (!data) {
-      // Try person_id
-      const numId = parseInt(employeeNo);
-      if (!isNaN(numId)) {
-        ({ data } = await db
-          .from("employees")
-          .select("*")
-          .eq("person_id", numId)
-          .limit(1)
-          .maybeSingle());
-      }
-    }
-
-    if (!data) {
-      // Try national_id
-      ({ data } = await db
-        .from("employees")
-        .select("*")
-        .eq("national_id", employeeNo)
-        .limit(1)
-        .maybeSingle());
-    }
-
-    employee = data;
+    employee = await backend.findEmployee(employeeNo);
   } catch (lookupErr) {
     log("⚠️", `Employee lookup error for #${employeeNo}: ${lookupErr.message}`);
   }
 
   // 2. Auto-discover: employee not found → create + notify
   if (!employee) {
-    employee = await autoCreateEmployee(event);
+    employee = await backend.createEmployee({ employeeNo, name: event.name });
     if (!employee) return;
   }
 
   // 3. Upsert attendance record (use device's own check-in/out status)
   try {
-    await upsertAttendanceRecord(employee, dateStr, timeStr, verifyMode, employeeNo, attendanceStatus);
+    await backend.upsertAttendance(employee, dateStr, timeStr, verifyMode, employeeNo, attendanceStatus);
     const statusLabel = attendanceStatus === "checkIn" ? "دخول" : attendanceStatus === "checkOut" ? "خروج" : attendanceStatus || "—";
     log("✅", `${employee.arabic_name || employee.name} → ${timeStr} [${statusLabel}] (${verifyMode})`);
   } catch (upsertErr) {
     log("❌", `Upsert failed for ${employee.name}: ${upsertErr.message}`);
-  }
-}
-
-// ══════════════════════════════════════════
-// Attendance Record Logic (device-driven)
-// ══════════════════════════════════════════
-
-async function upsertAttendanceRecord(employee, dateStr, timeStr, verifyMode, employeeNo, attendanceStatus) {
-  const isCheckIn = attendanceStatus === "checkIn";
-  const isCheckOut = attendanceStatus === "checkOut";
-
-  // Handle break events → route to break tracker
-  if (attendanceStatus === "breakOut" || attendanceStatus === "breakIn") {
-    await processBreakEvent(employee, dateStr, timeStr, attendanceStatus);
-    return;
-  }
-
-  // If device didn't provide status (shouldn't happen, but safety net) — skip
-  if (!isCheckIn && !isCheckOut) {
-    log("⚠️", `No attendanceStatus for ${employee.arabic_name || employee.name} at ${timeStr} — skipping`);
-    return;
-  }
-
-  // Check if record exists for this employee + date
-  const { data: existing } = await db
-    .from("attendance_records")
-    .select("*")
-    .eq("employee_id", employee.id)
-    .eq("date", dateStr)
-    .maybeSingle();
-
-  if (isCheckIn) {
-    if (existing) {
-      // Already have a record — update check-in only if this is earlier
-      if (timeStr < existing.check_in_time) {
-        const updates = { check_in_time: timeStr };
-        // Recalculate working hours if checkout exists
-        if (existing.check_out_time) {
-          const worked = Math.max(0, timeToMinutes(existing.check_out_time) - timeToMinutes(timeStr));
-          updates.working_hours = Math.round((worked / 60) * 100) / 100;
-        }
-        const { error } = await db.from("attendance_records").update(updates).eq("id", existing.id);
-        if (error) log("❌", `Update check-in failed: ${error.message}`);
-      }
-      // Otherwise ignore — we already have the first check-in
-      return;
-    }
-
-    // No record yet — create new CHECK IN
-    const { error } = await db.from("attendance_records").insert({
-      id: uuid(),
-      employee_id: employee.id,
-      date: dateStr,
-      day_of_week: getDayOfWeek(dateStr),
-      check_in_time: timeStr,
-      check_out_time: null,
-      working_hours: 0,
-      overtime_hours: 0,
-      is_late: false,
-      late_minutes: 0,
-      is_early: false,
-      status: "checked_in",
-      auto_checkout_applied: false,
-      source: "device",
-      verify_mode: verifyMode,
-      device_employee_no: String(employeeNo || ""),
-    });
-
-    if (error) log("❌", `Insert check-in failed for ${employee.name}: ${error.message}`);
-    return;
-  }
-
-  if (isCheckOut) {
-    if (!existing) {
-      // No record for today — check if this is an overnight shift checkout
-      // (employee checked in YESTERDAY and is checking out early today)
-      const yesterday = new Date(new Date(dateStr + "T00:00:00+03:00").getTime() - 86400000)
-        .toISOString().slice(0, 10);
-      const { data: yesterdayRecord } = await db
-        .from("attendance_records")
-        .select("*")
-        .eq("employee_id", employee.id)
-        .eq("date", yesterday)
-        .is("check_out_time", null)
-        .eq("status", "checked_in")
-        .maybeSingle();
-
-      if (yesterdayRecord) {
-        // Overnight shift — close yesterday's record with today's checkout
-        const checkIn = yesterdayRecord.check_in_time;
-        const checkInMinutes = checkIn ? timeToMinutes(checkIn) : 0;
-        const checkOutMinutes = timeToMinutes(timeStr) + 1440; // add 24h in minutes for overnight
-        const workedMinutes = checkIn ? Math.max(0, checkOutMinutes - checkInMinutes) : 0;
-        const workedHours = Math.round((workedMinutes / 60) * 100) / 100;
-
-        const { error } = await db.from("attendance_records").update({
-          check_out_time: timeStr,
-          working_hours: workedHours,
-          overtime_hours: 0,
-          status: "complete",
-          auto_checkout_applied: false,
-        }).eq("id", yesterdayRecord.id);
-
-        if (error) log("❌", `Overnight checkout update failed: ${error.message}`);
-        else log("🌙", `${employee.arabic_name || employee.name} overnight checkout: yesterday ${checkIn} → today ${timeStr} (${workedHours}h)`);
-        return;
-      }
-
-      // Truly no check-in anywhere — create record with check-out only
-      const { error } = await db.from("attendance_records").insert({
-        id: uuid(),
-        employee_id: employee.id,
-        date: dateStr,
-        day_of_week: getDayOfWeek(dateStr),
-        check_in_time: null,
-        check_out_time: timeStr,
-        working_hours: 0,
-        overtime_hours: 0,
-        is_late: false,
-        late_minutes: 0,
-        is_early: false,
-        status: "missing_checkin",
-        auto_checkout_applied: false,
-        source: "device",
-        verify_mode: verifyMode,
-        device_employee_no: String(employeeNo || ""),
-      });
-
-      if (error) log("❌", `Insert check-out (no check-in) failed: ${error.message}`);
-      log("⚠️", `${employee.arabic_name || employee.name} checked out at ${timeStr} with no check-in`);
-      return;
-    }
-
-    // Update to latest check-out time
-    const checkIn = existing.check_in_time;
-    const checkInMinutes = checkIn ? timeToMinutes(checkIn) : 0;
-    const checkOutMinutes = timeToMinutes(timeStr);
-    const workedMinutes = checkIn ? Math.max(0, checkOutMinutes - checkInMinutes) : 0;
-    const workedHours = Math.round((workedMinutes / 60) * 100) / 100;
-
-    // Calculate overtime if employee has a shift
-    let overtimeHours = 0;
-    if (employee.shift_id && workedHours > 0) {
-      const { data: shift } = await db
-        .from("shifts")
-        .select("target_hours_per_day")
-        .eq("id", employee.shift_id)
-        .maybeSingle();
-      if (shift && workedHours > shift.target_hours_per_day) {
-        overtimeHours = Math.round((workedHours - shift.target_hours_per_day) * 100) / 100;
-      }
-    }
-
-    const { error } = await db
-      .from("attendance_records")
-      .update({
-        check_out_time: timeStr,
-        working_hours: workedHours,
-        overtime_hours: overtimeHours,
-        status: checkIn ? "complete" : "missing_checkin",
-        auto_checkout_applied: false,
-      })
-      .eq("id", existing.id);
-
-    if (error) log("❌", `Update check-out failed for ${employee.name}: ${error.message}`);
-  }
-}
-
-function timeToMinutes(timeStr) {
-  if (!timeStr) return 0;
-  const parts = timeStr.split(":").map(Number);
-  const h = parts[0] || 0;
-  const m = parts[1] || 0;
-  const s = parts[2] || 0;
-  return h * 60 + m + s / 60;
-}
-
-// ══════════════════════════════════════════
-// Auto-Create Unknown Employees
-// ══════════════════════════════════════════
-
-async function autoCreateEmployee(event) {
-  const { employeeNo, name } = event;
-
-  log("🆕", `Unknown employee #${employeeNo} "${name}" — auto-creating...`);
-
-  // Try to get more info from device
-  let deviceName = name || `موظف #${employeeNo}`;
-
-  // Create employee with pending status
-  const newEmployee = {
-    id: uuid(),
-    person_id: parseInt(employeeNo) || 0,
-    name: deviceName,
-    arabic_name: deviceName,
-    department: "غير محدد",
-    monthly_salary: 0,
-    currency: "IQD",
-    overtime_rate: 1.5,
-    overtime_enabled: false,
-    allowed_late_minutes: 15,
-    status: "معلق", // Pending — needs HR review
-    national_id: null, // will be filled by HR — device employeeNo is NOT the national ID
-    device_employee_no: String(employeeNo),
-  };
-
-  const { data, error } = await db
-    .from("employees")
-    .insert(newEmployee)
-    .select("*")
-    .single();
-
-  if (error) {
-    log("❌", `Auto-create failed for #${employeeNo}: ${error.message}`);
-    return null;
-  }
-
-  // Create notification for HR
-  try {
-    await db.from("notifications").insert({
-      id: uuid(),
-      title: `موظف جديد من البصمة: "${deviceName}" (#${employeeNo})`,
-      body: `تم إضافة موظف جديد تلقائياً من جهاز البصمة. يرجى مراجعة وإكمال بياناته.`,
-      type: "warning",
-      category: "attendance",
-      entity_type: "employee",
-      entity_id: data.id,
-      target_employee_id: null,
-      action_url: `/employees/${data.id}`,
-    });
-  } catch (notifErr) {
-    log("⚠️", `Notification insert failed (non-critical): ${notifErr.message}`);
-  }
-
-  log("🔔", `Notification created for HR — review employee "${deviceName}"`);
-  return data;
-}
-
-// ══════════════════════════════════════════
-// Employee Sync (device → HR system)
-// ══════════════════════════════════════════
-
-async function syncEmployees() {
-  log("👥", "Syncing enrolled users from device...");
-
-  try {
-    const users = await hik.fetchAllUsers();
-    log("👥", `Found ${users.length} users on device`);
-
-    // Get all HR employees
-    const { data: hrEmployees } = await db
-      .from("employees")
-      .select("*");
-
-    const hrMap = new Map();
-    (hrEmployees || []).forEach((e) => {
-      if (e.person_id) hrMap.set(String(e.person_id), e);
-      if (e.national_id) hrMap.set(e.national_id, e);
-      if (e.device_employee_no) hrMap.set(e.device_employee_no, e);
-    });
-
-    let newCount = 0;
-    let updatedCount = 0;
-    for (const user of users) {
-      const existing = hrMap.get(user.employeeNo);
-      if (!existing) {
-        // Not in HR system — auto-create
-        await autoCreateEmployee({
-          employeeNo: user.employeeNo,
-          name: user.name || `موظف #${user.employeeNo}`,
-        });
-        newCount++;
-      } else {
-        // Existing employee — sync name updates from device
-        // If device name changed (and isn't a generic placeholder), update HR system name field
-        const deviceName = user.name || "";
-        const hrName = existing.name || "";
-        if (deviceName && deviceName !== hrName && !deviceName.startsWith("موظف #")) {
-          const updates = { name: deviceName, device_employee_no: user.employeeNo };
-          // Only update arabic_name if not already set to something different by HR
-          if (!existing.arabic_name || existing.arabic_name === hrName) {
-            updates.arabic_name = deviceName;
-          }
-          await db.from("employees").update(updates).eq("id", existing.id);
-          log("✏️", `Updated name for #${user.employeeNo}: "${hrName}" → "${deviceName}"`);
-          updatedCount++;
-        }
-        // Always ensure device_employee_no is linked
-        if (!existing.device_employee_no) {
-          await db.from("employees").update({ device_employee_no: user.employeeNo }).eq("id", existing.id);
-        }
-      }
-    }
-
-    if (newCount > 0) log("🆕", `Auto-created ${newCount} new employees from device`);
-    if (updatedCount > 0) log("✏️", `Updated ${updatedCount} employee names from device`);
-    if (newCount === 0 && updatedCount === 0) log("✓", "All device users are already in sync");
-  } catch (err) {
-    log("❌", `Employee sync failed: ${err.message}`);
   }
 }
 
@@ -524,8 +231,12 @@ async function pollEvents() {
     }
 
     lastSyncTime = endTime;
-    await updateDeviceSyncTimestamp();
-    if (processed > 0) log("📊", `Processed ${processed} events → Supabase`);
+    try {
+      await backend.heartbeat({ status: "online", markSynced: true });
+    } catch (err) {
+      log("⚠️", `Could not update device heartbeat: ${err.message}`);
+    }
+    if (processed > 0) log("📊", `Processed ${processed} events → ${config.backendType}`);
   } catch (err) {
     log("❌", `Poll failed: ${err.message}`);
     if (err.stack) log("📋", err.stack.split("\n")[1]?.trim() || "");
@@ -535,17 +246,6 @@ async function pollEvents() {
 // ══════════════════════════════════════════
 // Full Reconciliation (catch-up for today)
 // ══════════════════════════════════════════
-
-// Update biometric_devices.last_sync_at in Supabase (so frontend knows sync is fresh)
-async function updateDeviceSyncTimestamp() {
-  try {
-    await db.from("biometric_devices")
-      .update({ last_sync_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
-      .eq("ip_address", config.device.ip);
-  } catch (err) {
-    log("⚠️", `Could not update device timestamp: ${err.message}`);
-  }
-}
 
 async function fullReconcile() {
   const today = todayIraq();
@@ -565,18 +265,36 @@ async function fullReconcile() {
       processed++;
     }
 
-    await updateDeviceSyncTimestamp();
+    try {
+      await backend.heartbeat({ status: "online", markSynced: true });
+    } catch (err) {
+      log("⚠️", `Could not update device heartbeat: ${err.message}`);
+    }
     log("📊", `Reconcile done: ${processed} events processed for ${today}`);
-
-    // Log Supabase record count for today
-    const { count } = await db
-      .from("attendance_records")
-      .select("*", { count: "exact", head: true })
-      .eq("date", today);
-    log("📊", `Supabase has ${count || 0} attendance records for today`);
   } catch (err) {
     log("❌", `Reconciliation failed: ${err.message}`);
     if (err.stack) log("📋", err.stack.split("\n")[1]?.trim() || "");
+  }
+}
+
+// ══════════════════════════════════════════
+// Employee Sync (device → HR system)
+// ══════════════════════════════════════════
+
+async function syncEmployees() {
+  log("👥", "Syncing enrolled users from device...");
+
+  try {
+    const users = await hik.fetchAllUsers();
+    log("👥", `Found ${users.length} users on device`);
+
+    const { newCount, updatedCount } = await backend.reconcileEmployees(users);
+
+    if (newCount > 0) log("🆕", `Auto-created ${newCount} new employees from device`);
+    if (updatedCount > 0) log("✏️", `Updated ${updatedCount} employee names from device`);
+    if (newCount === 0 && updatedCount === 0) log("✓", "All device users are already in sync");
+  } catch (err) {
+    log("❌", `Employee sync failed: ${err.message}`);
   }
 }
 
@@ -637,6 +355,7 @@ function startPushListener() {
   app.get("/health", (req, res) => {
     res.json({
       status: "running",
+      backend: config.backendType,
       lastSync: lastSyncTime,
       processedCount: processedEventIds.size,
       uptime: process.uptime(),
@@ -648,7 +367,6 @@ function startPushListener() {
     log("🔄", "Manual sync triggered from UI");
     try {
       await fullReconcile();
-      await updateDeviceSyncTimestamp();
       res.json({ success: true, lastSync: lastSyncTime, message: "Sync complete" });
     } catch (err) {
       log("❌", `Manual sync failed: ${err.message}`);
@@ -671,6 +389,7 @@ function startPushListener() {
   app.get("/api/status", (req, res) => {
     res.json({
       status: "running",
+      backend: config.backendType,
       lastSync: lastSyncTime,
       processedCount: processedEventIds.size,
       uptime: Math.round(process.uptime()),
@@ -680,6 +399,8 @@ function startPushListener() {
 
   // ══════════════════════════════════════════
   // Device Management API
+  // (unchanged — always backed by Supabase; not part of this bridge's scope,
+  // see HR-FE/device-sync README's "Backend toggle" section)
   // ══════════════════════════════════════════
 
   // GET /api/device/info — device overview + capacity
@@ -1076,381 +797,31 @@ function parsePushEvent(body) {
 }
 
 // ══════════════════════════════════════════
-// Late Detection (runs after check-in)
-// ══════════════════════════════════════════
-
-async function detectLateArrivals() {
-  const today = todayIraq();
-
-  // Get today's records that have check_in but no late calculation yet
-  const { data: records } = await db
-    .from("attendance_records")
-    .select("id, employee_id, check_in_time, is_late")
-    .eq("date", today)
-    .not("check_in_time", "is", null);
-
-  if (!records || records.length === 0) return;
-
-  for (const record of records) {
-    // Get employee's shift
-    const { data: emp } = await db
-      .from("employees")
-      .select("*")
-      .eq("id", record.employee_id)
-      .maybeSingle();
-
-    if (!emp?.shift_id) continue;
-
-    const { data: shift } = await db
-      .from("shifts")
-      .select("*")
-      .eq("id", emp.shift_id)
-      .maybeSingle();
-
-    if (!shift?.start_time) continue;
-
-    const shiftStart = timeToMinutes(shift.start_time);
-    const checkIn = timeToMinutes(record.check_in_time);
-    const gracePeriod = emp.allowed_late_minutes || 15;
-    const lateMinutes = Math.max(0, checkIn - shiftStart - gracePeriod);
-
-    if (lateMinutes > 0 && !record.is_late) {
-      await db.from("attendance_records").update({
-        is_late: true,
-        late_minutes: lateMinutes,
-      }).eq("id", record.id);
-    }
-  }
-}
-
-// ══════════════════════════════════════════
-// ⑬ Auto-Checkout at Shift End (Option A)
-// ══════════════════════════════════════════
-
-const AUTO_CHECKOUT_GRACE_MINUTES = 30; // grace period after shift end
-
-async function autoCheckout() {
-  const today = todayIraq();
-  const nowMinutes = timeToMinutes(
-    new Date().toLocaleTimeString("en-GB", { timeZone: IRAQ_TZ, hour12: false })
-  );
-
-  log("🕐", `Auto-checkout check for ${today} (now = ${Math.floor(nowMinutes / 60)}:${String(Math.floor(nowMinutes % 60)).padStart(2, "0")})...`);
-
-  try {
-    // Get all open records for today (checked_in, no checkout)
-    const { data: openRecords } = await db
-      .from("attendance_records")
-      .select("id, employee_id, check_in_time, status")
-      .eq("date", today)
-      .is("check_out_time", null)
-      .in("status", ["checked_in"]);
-
-    if (!openRecords || openRecords.length === 0) {
-      log("✓", "No open records to auto-checkout");
-      return;
-    }
-
-    // Get all employees with shifts
-    const empIds = openRecords.map((r) => r.employee_id);
-    const { data: employees } = await db
-      .from("employees")
-      .select("id, name, arabic_name, shift_id")
-      .in("id", empIds);
-
-    if (!employees) return;
-
-    // Build shift cache
-    const shiftIds = [...new Set(employees.filter((e) => e.shift_id).map((e) => e.shift_id))];
-    const { data: shifts } = await db
-      .from("shifts")
-      .select("id, end_time, target_hours_per_day")
-      .in("id", shiftIds);
-
-    const shiftMap = new Map((shifts || []).map((s) => [s.id, s]));
-    const empMap = new Map(employees.map((e) => [e.id, e]));
-
-    let autoCount = 0;
-
-    for (const record of openRecords) {
-      const emp = empMap.get(record.employee_id);
-      if (!emp?.shift_id) continue;
-
-      const shift = shiftMap.get(emp.shift_id);
-      if (!shift?.end_time) continue;
-
-      const shiftEndMinutes = timeToMinutes(shift.end_time);
-      const deadlineMinutes = shiftEndMinutes + AUTO_CHECKOUT_GRACE_MINUTES;
-
-      // Only auto-checkout if we're past shift_end + grace
-      if (nowMinutes < deadlineMinutes) continue;
-
-      // Use the shift's end_time as the checkout time (Option A: estimated hours)
-      const checkOutTime = shift.end_time;
-      const checkInMinutes = record.check_in_time ? timeToMinutes(record.check_in_time) : 0;
-      const workedMinutes = record.check_in_time
-        ? Math.max(0, timeToMinutes(checkOutTime) - checkInMinutes)
-        : 0;
-      const workedHours = Math.round((workedMinutes / 60) * 100) / 100;
-
-      // Calculate overtime
-      let overtimeHours = 0;
-      if (shift.target_hours_per_day && workedHours > shift.target_hours_per_day) {
-        overtimeHours = Math.round((workedHours - shift.target_hours_per_day) * 100) / 100;
-      }
-
-      const { error } = await db.from("attendance_records").update({
-        check_out_time: checkOutTime,
-        working_hours: workedHours,
-        overtime_hours: overtimeHours,
-        status: "auto_checkout",
-        auto_checkout_applied: true,
-      }).eq("id", record.id);
-
-      if (!error) {
-        autoCount++;
-        log("🕐", `Auto-checkout: ${emp.arabic_name || emp.name} → ${checkOutTime} (${workedHours}h, shift end)`);
-      }
-    }
-
-    if (autoCount > 0) log("📋", `Auto-checkout applied to ${autoCount} employees`);
-  } catch (err) {
-    log("❌", `Auto-checkout failed: ${err.message}`);
-  }
-}
-
-// ══════════════════════════════════════════
-// ⑭ Absent Detection
-// ══════════════════════════════════════════
-
-async function detectAbsences() {
-  const today = todayIraq();
-  const dayOfWeek = getDayOfWeek(today);
-
-  log("🔍", `Checking absences for ${today} (${dayOfWeek})...`);
-
-  try {
-    // Get all active employees with shifts
-    const { data: employees } = await db
-      .from("employees")
-      .select("id, name, arabic_name, shift_id, status")
-      .in("status", ["نشط", "active"])
-      .not("shift_id", "is", null);
-
-    if (!employees || employees.length === 0) return;
-
-    // Get today's attendance records
-    const { data: todayRecords } = await db
-      .from("attendance_records")
-      .select("employee_id")
-      .eq("date", today);
-
-    const presentIds = new Set((todayRecords || []).map((r) => r.employee_id));
-
-    // Get approved leaves for today
-    const { data: leaves } = await db
-      .from("leave_requests")
-      .select("employee_id")
-      .eq("status", "approved")
-      .lte("start_date", today)
-      .gte("end_date", today);
-
-    const onLeaveIds = new Set((leaves || []).map((l) => l.employee_id));
-
-    // Get shifts to check if today is a working day
-    const shiftIds = [...new Set(employees.map((e) => e.shift_id))];
-    const { data: shifts } = await db
-      .from("shifts")
-      .select("id, working_days")
-      .in("id", shiftIds);
-
-    const shiftMap = new Map((shifts || []).map((s) => [s.id, s]));
-
-    let absentCount = 0;
-    for (const emp of employees) {
-      // Skip if already has a record or is on leave
-      if (presentIds.has(emp.id) || onLeaveIds.has(emp.id)) continue;
-
-      // Skip if today isn't a working day for their shift
-      const shift = shiftMap.get(emp.shift_id);
-      if (shift?.working_days) {
-        const workDays = Array.isArray(shift.working_days) ? shift.working_days : [];
-        if (workDays.length > 0 && !workDays.includes(dayOfWeek)) continue;
-      }
-
-      // Create absent record
-      const { error } = await db.from("attendance_records").upsert({
-        id: uuid(),
-        employee_id: emp.id,
-        date: today,
-        day_of_week: dayOfWeek,
-        check_in_time: null,
-        check_out_time: null,
-        working_hours: 0,
-        overtime_hours: 0,
-        is_late: false,
-        late_minutes: 0,
-        is_early: false,
-        status: "absent",
-        auto_checkout_applied: false,
-        source: "system",
-      }, { onConflict: "employee_id,date", ignoreDuplicates: true });
-
-      if (!error) absentCount++;
-    }
-
-    if (absentCount > 0) log("📋", `Marked ${absentCount} employees as absent for ${today}`);
-    else log("✓", "No absences to record");
-  } catch (err) {
-    log("❌", `Absence detection failed: ${err.message}`);
-  }
-}
-
-// ══════════════════════════════════════════
-// ⑮ Device Health Monitoring
-// ══════════════════════════════════════════
-
-let consecutiveHealthFailures = 0;
-const MAX_HEALTH_FAILURES = 3;
-
-async function checkDeviceHealth() {
-  try {
-    const info = await hik.getDeviceInfo();
-    if (consecutiveHealthFailures > 0) {
-      log("💚", `Device back online after ${consecutiveHealthFailures} failed checks`);
-
-      // Clear any previous offline notification
-      try {
-        await db.from("notifications")
-          .update({ type: "info", title: "جهاز البصمة متصل مرة أخرى", body: `عاد جهاز البصمة ${info.model} للعمل.` })
-          .eq("category", "device_health")
-          .eq("type", "error");
-      } catch { /* non-critical */ }
-    }
-    consecutiveHealthFailures = 0;
-
-    // Update heartbeat
-    await db.from("biometric_devices")
-      .update({ last_heartbeat_at: new Date().toISOString(), status: "online" })
-      .eq("ip_address", config.device.ip);
-
-  } catch (err) {
-    consecutiveHealthFailures++;
-    log("⚠️", `Device health check failed (${consecutiveHealthFailures}/${MAX_HEALTH_FAILURES}): ${err.message}`);
-
-    // Update device status
-    try {
-      await db.from("biometric_devices")
-        .update({ status: consecutiveHealthFailures >= MAX_HEALTH_FAILURES ? "offline" : "degraded" })
-        .eq("ip_address", config.device.ip);
-    } catch { /* non-critical */ }
-
-    if (consecutiveHealthFailures === MAX_HEALTH_FAILURES) {
-      log("🔴", "Device appears OFFLINE — creating notification for HR");
-      try {
-        await db.from("notifications").insert({
-          id: uuid(),
-          title: "⚠️ جهاز البصمة غير متصل",
-          body: `فشل الاتصال بجهاز البصمة (${config.device.ip}) لمدة ${MAX_HEALTH_FAILURES} محاولات متتالية. يرجى التحقق من الجهاز والشبكة.`,
-          type: "error",
-          category: "device_health",
-          entity_type: "device",
-          entity_id: null,
-          target_employee_id: null,
-        });
-      } catch (notifErr) {
-        log("⚠️", `Could not create offline notification: ${notifErr.message}`);
-      }
-    }
-  }
-}
-
-// ══════════════════════════════════════════
-// ⑯ Break Tracking (breakOut / breakIn)
-// ══════════════════════════════════════════
-
-// The upsertAttendanceRecord already skips breakOut/breakIn with a log.
-// This new function handles them properly.
-
-async function processBreakEvent(employee, dateStr, timeStr, attendanceStatus) {
-  const isBreakOut = attendanceStatus === "breakOut";
-  const isBreakIn = attendanceStatus === "breakIn";
-
-  if (!isBreakOut && !isBreakIn) return;
-
-  // Get today's attendance record
-  const { data: record } = await db
-    .from("attendance_records")
-    .select("id, breaks")
-    .eq("employee_id", employee.id)
-    .eq("date", dateStr)
-    .maybeSingle();
-
-  if (!record) {
-    log("⚠️", `Break event for ${employee.arabic_name || employee.name} but no attendance record for ${dateStr}`);
-    return;
-  }
-
-  // Parse existing breaks (stored as JSON array)
-  let breaks = [];
-  try {
-    breaks = record.breaks ? (typeof record.breaks === "string" ? JSON.parse(record.breaks) : record.breaks) : [];
-  } catch { breaks = []; }
-
-  if (isBreakOut) {
-    // Start a new break period
-    breaks.push({ break_out: timeStr, break_in: null });
-    log("☕", `${employee.arabic_name || employee.name} started break at ${timeStr}`);
-  } else if (isBreakIn) {
-    // Close the last open break
-    const openBreak = breaks.findLast((b) => b.break_out && !b.break_in);
-    if (openBreak) {
-      openBreak.break_in = timeStr;
-      const breakMinutes = Math.max(0, timeToMinutes(timeStr) - timeToMinutes(openBreak.break_out));
-      openBreak.duration_minutes = Math.round(breakMinutes * 100) / 100;
-      log("☕", `${employee.arabic_name || employee.name} ended break at ${timeStr} (${openBreak.duration_minutes} min)`);
-    } else {
-      // No open break — just record it
-      breaks.push({ break_out: null, break_in: timeStr });
-      log("⚠️", `${employee.arabic_name || employee.name} break-in at ${timeStr} but no matching break-out`);
-    }
-  }
-
-  // Calculate total break minutes
-  const totalBreakMinutes = breaks.reduce((sum, b) => sum + (b.duration_minutes || 0), 0);
-
-  await db.from("attendance_records").update({
-    breaks: JSON.stringify(breaks),
-    total_break_minutes: Math.round(totalBreakMinutes * 100) / 100,
-  }).eq("id", record.id);
-}
-
-// ══════════════════════════════════════════
 // STARTUP
 // ══════════════════════════════════════════
 
 async function main() {
   console.log("═══════════════════════════════════════════");
   console.log("  HR Device Sync Service");
-  console.log("  Hikvision DS-K1T342MFWX ↔ Supabase");
+  console.log(`  Hikvision DS-K1T342MFWX ↔ ${config.backendType === "odoo" ? "Odoo" : "Supabase"}`);
   console.log("═══════════════════════════════════════════");
 
   // Test device connection
+  let deviceInfo = null;
   try {
-    const info = await hik.getDeviceInfo();
-    log("🔗", `Connected to device: ${info.model} (${info.serialNumber})`);
+    deviceInfo = await hik.getDeviceInfo();
+    log("🔗", `Connected to device: ${deviceInfo.model} (${deviceInfo.serialNumber})`);
   } catch (err) {
     log("❌", `Cannot connect to device at ${config.device.ip}: ${err.message}`);
     log("💡", "Check: IP, port, username, password, and network connectivity");
     process.exit(1);
   }
 
-  // Test Supabase connection
+  // Test backend connection (Supabase or Odoo — see `backend.init()`)
   try {
-    const { count } = await db.from("employees").select("*", { count: "exact", head: true });
-    log("🔗", `Connected to Supabase — ${count} employees in system`);
+    await backend.init({ deviceInfo });
   } catch (err) {
-    log("❌", `Cannot connect to Supabase: ${err.message}`);
+    log("❌", `Cannot connect to backend (${config.backendType}): ${err.message}`);
     process.exit(1);
   }
 
@@ -1460,12 +831,12 @@ async function main() {
   // Initial full sync
   await fullReconcile();
   await syncEmployees();
-  await detectLateArrivals();
+  await backend.detectLateArrivals();
 
   // ── Schedule: Poll every N minutes ──
   cron.schedule(`*/${config.sync.intervalMinutes} * * * *`, async () => {
     await pollEvents();
-    await detectLateArrivals();
+    await backend.detectLateArrivals();
   });
   log("⏰", `Polling every ${config.sync.intervalMinutes} minutes`);
 
@@ -1478,15 +849,22 @@ async function main() {
   log("⏰", `Employee sync every ${config.sync.employeeSyncMinutes} minutes`);
 
   // ── Schedule: Device health check every 5 minutes ──
-  cron.schedule("*/5 * * * *", checkDeviceHealth);
+  cron.schedule("*/5 * * * *", async () => {
+    try {
+      const info = await hik.getDeviceInfo();
+      await backend.checkDeviceHealth(info, null);
+    } catch (err) {
+      await backend.checkDeviceHealth(null, err);
+    }
+  });
   log("⏰", "Device health monitoring every 5 minutes");
 
   // ── Schedule: Auto-checkout every 15 minutes (catches shift-end + grace) ──
-  cron.schedule("*/15 * * * *", autoCheckout);
+  cron.schedule("*/15 * * * *", () => backend.autoCheckout());
   log("⏰", "Auto-checkout check every 15 minutes");
 
   // ── Schedule: Absent detection at 10:00 AM Iraq time daily ──
-  cron.schedule("0 10 * * *", detectAbsences, { timezone: IRAQ_TZ });
+  cron.schedule("0 10 * * *", () => backend.detectAbsences(), { timezone: IRAQ_TZ });
   log("⏰", "Absence detection scheduled at 10:00 AM daily");
 
   // ── Start push listener ──
