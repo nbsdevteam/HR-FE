@@ -63,19 +63,28 @@ const config = {
 
 const hik = new HikvisionClient(config.device);
 
-// Supabase client is kept unconditionally, regardless of BACKEND: it backs
-// the polling-cursor bootstrap (loadLastSyncTime) and the pre-existing
-// /api/device/* management routes below (persons/face/door/sync-employee/...),
-// none of which are part of this bridge's scope. Only the *derived*
-// attendance/employee/notification/device-registry writes route through
-// `backend` (see createBackend() below).
-const db = createClient(config.supabase.url, config.supabase.serviceKey);
+// Supabase client backs the polling-cursor bootstrap (loadLastSyncTime) and
+// the pre-existing /api/device/* management routes. When BACKEND=odoo for
+// staging and SUPABASE_* is unset, skip creating the client so the sync
+// listener can still start; those Supabase-only routes will return 503.
+const db =
+  config.supabase.url && config.supabase.serviceKey
+    ? createClient(config.supabase.url, config.supabase.serviceKey)
+    : null;
 
 const IRAQ_TZ = config.sync.timezone;
 
 function log(emoji, msg) {
   const ts = new Date().toLocaleTimeString("en-GB", { timeZone: IRAQ_TZ });
   console.log(`[${ts}] ${emoji} ${msg}`);
+}
+
+if (!db) {
+  log(
+    "⚠️",
+    "SUPABASE_URL/SERVICE_KEY not set — /api/device/* Supabase routes disabled; " +
+      `attendance writes use BACKEND=${config.backendType}`,
+  );
 }
 
 function todayIraq() {
@@ -114,6 +123,7 @@ const processedEventIds = new Set(); // dedup within session
 // ── Persist lastSyncTime so PM2 restarts don't lose state (always via Supabase — see note above) ──
 
 async function loadLastSyncTime() {
+  if (!db) return;
   try {
     const { data } = await db
       .from("biometric_devices")
@@ -127,6 +137,15 @@ async function loadLastSyncTime() {
   } catch (err) {
     log("⚠️", `Could not restore lastSyncTime: ${err.message}`);
   }
+}
+
+function requireSupabase(res) {
+  if (db) return false;
+  res.status(503).json({
+    success: false,
+    error: "Supabase is not configured on this host (Odoo-only mode)",
+  });
+  return true;
 }
 
 // ── Helpers ──
@@ -560,6 +579,7 @@ function startPushListener() {
   // GET /api/device/next-employee-id — get next available employee ID (max of HR + device + 1)
   app.get("/api/device/next-employee-id", async (req, res) => {
     try {
+      if (requireSupabase(res)) return;
       // Get max from HR system
       const { data: hrMax } = await db
         .from("employees")
@@ -624,11 +644,15 @@ function startPushListener() {
         } catch (e) { results.person = `error: ${e.message}`; }
       }
 
-      // Update HR record to clear device link
+      // Update HR record to clear device link (Supabase-backed management route)
       if (removePerson) {
-        await db.from("employees")
-          .update({ device_employee_no: null })
-          .eq("device_employee_no", empNo);
+        if (!db) {
+          results.hrUnlink = "skipped: supabase not configured";
+        } else {
+          await db.from("employees")
+            .update({ device_employee_no: null })
+            .eq("device_employee_no", empNo);
+        }
       }
 
       res.json({ success: true, results });
@@ -694,6 +718,7 @@ function startPushListener() {
   // GET /api/device/sync-status — compare device persons vs HR employees
   app.get("/api/device/sync-status", async (req, res) => {
     try {
+      if (requireSupabase(res)) return;
       const [users, { data: hrEmployees }] = await Promise.all([
         hik.fetchAllUsers(),
         db.from("employees").select("id, name, arabic_name, person_id, device_employee_no, status"),
