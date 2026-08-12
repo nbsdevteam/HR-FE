@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Search, Plus, Filter, Edit, Trash2, Eye, X, Calendar, Loader2,
@@ -8,10 +8,10 @@ import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { EmployeeDetailPanel } from "../components/EmployeeDetailPanel";
 import type { Employee, EmployeeOption } from "../components/EmployeeDetailPanel";
-import { useEmployees, empNumber, empDisplayName } from "../lib/hooks";
+import { useEmployees, usePositions, empNumber, empDisplayName } from "../lib/hooks";
 import * as odooData from "../lib/api/odooData";
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS, SYNC_API } from "../lib/constants";
-import type { DbEmployee } from "../lib/hooks";
+import type { DbEmployee, DbDepartment } from "../lib/hooks";
 import { employeeStatusKeys, translateBackendCode } from "../i18n/status";
 import { localizedAlert } from "../i18n/native";
 
@@ -82,7 +82,7 @@ export function Employees() {
   // Add Employee form state
   const [addForm, setAddForm] = useState({
     name: "", email: "", personalPhone: "", companyPhone: "",
-    position: "", address: "", department: "", salary: "",
+    designationId: "", address: "", departmentId: "", salary: "",
     joinDate: "", nationalId: "", gender: "male" as "male" | "female",
   });
   const [addSaving, setAddSaving] = useState(false);
@@ -95,8 +95,21 @@ export function Employees() {
   const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
   const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
 
+  // Real hr.department (section) and hr.job (designation) options for the Add Employee dropdowns
+  const { positions: designations } = usePositions();
+  const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
+  useEffect(() => {
+    odooData.fetchDepartments().then(setDbDepartmentOptions).catch(() => {});
+  }, []);
+  const designationOptions = useMemo(
+    () => addForm.departmentId
+      ? designations.filter(p => !p.department_id || p.department_id === addForm.departmentId)
+      : designations,
+    [designations, addForm.departmentId],
+  );
+
   const resetAddForm = () => {
-    setAddForm({ name: "", email: "", personalPhone: "", companyPhone: "", position: "", address: "", department: "", salary: "", joinDate: "", nationalId: "", gender: "male" });
+    setAddForm({ name: "", email: "", personalPhone: "", companyPhone: "", designationId: "", address: "", departmentId: "", salary: "", joinDate: "", nationalId: "", gender: "male" });
     setAddError(null);
     setDeviceSyncStatus("idle");
     setNextEmployeeId(null);
@@ -156,6 +169,8 @@ export function Employees() {
         person_id: newPersonId,
         device_employee_no: String(newPersonId),
         gender: addForm.gender || null,
+        department_id: addForm.departmentId || null,
+        designation_id: addForm.designationId || null,
       });
 
       // Auto-push to biometric device
@@ -689,14 +704,17 @@ export function Employees() {
                       <input type="text" value={addForm.companyPhone} onChange={(e) => setAddForm(f => ({ ...f, companyPhone: e.target.value }))} placeholder="07XXXXXXXXX" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.job_position")}</label>
-                      <input type="text" value={addForm.position} onChange={(e) => setAddForm(f => ({ ...f, position: e.target.value }))} placeholder={arabicSource("common.position")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
+                      <select value={addForm.departmentId} onChange={(e) => setAddForm(f => ({ ...f, departmentId: e.target.value, designationId: "" }))} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                        <option value="">{arabicSource("employees.select_the_section")}</option>
+                        {dbDepartmentOptions.map(d => (<option key={d.id} value={d.id}>{d.name}</option>))}
+                      </select>
                     </div>
                     <div>
-                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
-                      <select value={addForm.department} onChange={(e) => setAddForm(f => ({ ...f, department: e.target.value }))} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                        <option value="">{arabicSource("employees.select_the_section")}</option>
-                        {realDepts.filter(d => d !== arabicSource("common.all")).map(d => (<option key={d} value={d}>{d}</option>))}
+                      <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.job_position")}</label>
+                      <select value={addForm.designationId} onChange={(e) => setAddForm(f => ({ ...f, designationId: e.target.value }))} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                        <option value="">{arabicSource("common.select")}</option>
+                        {designationOptions.map(p => (<option key={p.id} value={p.id}>{p.title_ar || p.title_en || p.id}</option>))}
                       </select>
                     </div>
                     <div>
