@@ -10,6 +10,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { arabicSource } from "../i18n/source";
 import { useNavShell } from "./NavShellContext";
 import { useAuth } from "../lib/auth";
+import { SYNC_API } from "../lib/constants";
 
 const quotes = [
   arabicSource("shared.success_is_the_result_of_preparation_hard_work_and_learning_from"),
@@ -70,9 +71,9 @@ export function TopBar() {
   async function triggerSync() {
     setSyncing(true);
     try {
-      const res = await fetch("http://localhost:8089/api/sync", {
+      const res = await fetch(`${SYNC_API}/sync`, {
         method: "POST",
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(120000),
       }).catch(() => null);
       if (res?.ok) await new Promise((r) => setTimeout(r, 3000));
     } catch {

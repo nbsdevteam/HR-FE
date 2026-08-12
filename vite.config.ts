@@ -45,9 +45,24 @@ export default defineConfig({
         target: 'https://dev-crm.nooralnibras.com',
         changeOrigin: true,
       },
+      // Hikvision device-sync bridge (Iraq LAN host .204)
+      '/device-api': {
+        target: 'http://192.168.116.204:8089',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/device-api/, '/api'),
+      },
     },
   },
   preview: {
     allowedHosts: ['hr.nooralnibras.com'],
+    // Same-origin public path for remote testers (India → hr.nooralnibras.com)
+    // Browser calls /device-api/*; preview proxies to the Iraq device-sync :8089.
+    proxy: {
+      '/device-api': {
+        target: 'http://192.168.116.204:8089',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/device-api/, '/api'),
+      },
+    },
   },
 })

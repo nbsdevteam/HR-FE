@@ -6,8 +6,14 @@ import { arabicSource } from "../i18n/source";/**
 
 // ══════════════════════════ Sync Service API ══════════════════════════
 
-/** Base URL for the biometric sync service API */
-export const SYNC_API = import.meta.env.VITE_SYNC_API || "http://localhost:8089/api";
+/**
+ * Base URL for the biometric sync / device-management API.
+ * Production (hr.nooralnibras.com): same-origin `/device-api` (proxied to Iraq :8089).
+ * Local LAN: override with VITE_SYNC_API=http://localhost:8089/api
+ */
+export const SYNC_API =
+  import.meta.env.VITE_SYNC_API ||
+  (import.meta.env.DEV ? "http://localhost:8089/api" : "/device-api");
 
 // ══════════════════════════ Departments ══════════════════════════
 
