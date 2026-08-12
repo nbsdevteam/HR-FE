@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { DonutChart } from "../components/donut-chart";
+import { EmployeeSelect } from "../components/EmployeeSelect";
 import * as odooData from "../lib/api/odooData";
 import {
   useTrainingPrograms,
@@ -994,27 +995,13 @@ export function Training() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm text-foreground mb-2">{arabicSource("common.employee_3")}</label>
-                  <select
+                  <EmployeeSelect
+                    employees={employees}
                     value={enrollForm.employee_id}
-                    onChange={(e) =>
-                      setEnrollForm({ ...enrollForm, employee_id: e.target.value })
-                    }
-                    className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
-                  >
-                    <option value="">{arabicSource("training.select_employee")}</option>
-                    {employees
-                      .filter(
-                        (e) =>
-                          !programParticipants(selectedProgramForParticipants || "").some(
-                            (p) => p.employee_id === e.id
-                          )
-                      )
-                      .map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                          {empDisplayName(emp)}
-                        </option>
-                      ))}
-                  </select>
+                    onChange={(id) => setEnrollForm({ ...enrollForm, employee_id: id })}
+                    placeholder={arabicSource("training.select_employee")}
+                    excludeIds={programParticipants(selectedProgramForParticipants || "").map((p) => p.employee_id)}
+                  />
                 </div>
 
                 <div>

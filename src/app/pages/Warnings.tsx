@@ -5,6 +5,7 @@ import { ViewToggle } from "../components/ViewToggle";
 import { useWarnings, useEmployees, useConfigurations, empDisplayName, DbWarning, DbEmployee } from "../lib/hooks";
 import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
+import { EmployeeSelect } from "../components/EmployeeSelect";
 import { localizedConfirm } from "../i18n/native";
 import { arabicSource } from "../i18n/source";
 
@@ -96,7 +97,6 @@ export function Warnings() {
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [employeeSearch, setEmployeeSearch] = useState("");
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -237,7 +237,6 @@ export function Warnings() {
       expiryDate: "",
     });
     setEditingId(null);
-    setEmployeeSearch("");
   };
 
   return (
@@ -697,40 +696,12 @@ export function Warnings() {
               <form onSubmit={handleCreateWarning} className="space-y-4">
                 <div>
                   <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      placeholder={arabicSource("warnings.find_the_employee")}
-                      value={employeeSearch}
-                      onChange={(e) => setEmployeeSearch(e.target.value)}
-                      className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-                    />
-                    {employeeSearch && (
-                      <div className="border border-border rounded-lg bg-input-background max-h-48 overflow-y-auto">
-                        {employees
-                          .filter(e => empDisplayName(e).includes(employeeSearch))
-                          .map(emp => (
-                            <button
-                              key={emp.id}
-                              type="button"
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, employeeId: emp.id }));
-                                setEmployeeSearch("");
-                              }}
-                              className="w-full text-right px-4 py-2 hover:bg-muted/20 transition-colors border-b border-border/20 last:border-b-0 cursor-pointer"
-                            >
-                              <div className="text-foreground">{empDisplayName(emp)}</div>
-                              <div className="text-xs text-muted-foreground">{emp.department}</div>
-                            </button>
-                          ))}
-                      </div>
-                    )}
-                    {formData.employeeId && (
-                      <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm">
-                        ✓ {employees.find(e => e.id === formData.employeeId)?.arabic_name || arabicSource("warnings.selected_employee")}
-                      </div>
-                    )}
-                  </div>
+                  <EmployeeSelect
+                    employees={employees}
+                    value={formData.employeeId}
+                    onChange={(id) => setFormData((prev) => ({ ...prev, employeeId: id }))}
+                    placeholder={arabicSource("warnings.find_the_employee")}
+                  />
                 </div>
 
                 <div>

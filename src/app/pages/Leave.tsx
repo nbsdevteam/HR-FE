@@ -8,6 +8,7 @@ import {
 import { ViewToggle } from "../components/ViewToggle";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { EmptyState } from "../components/EmptyState";
+import { EmployeeSelect } from "../components/EmployeeSelect";
 import * as odooData from "../lib/api/odooData";
 import {
   useEmployees, empDisplayName, useLeaveTypes, useLeaveRequests,
@@ -735,13 +736,8 @@ function LeaveRequestModal({
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [empSearch, setEmpSearch] = useState("");
 
   const selectedType = leaveTypes.find(t => t.id === leaveTypeId);
-
-  const filteredEmployees = employees.filter(e =>
-    !empSearch || empDisplayName(e).includes(empSearch) || e.department?.includes(empSearch)
-  );
 
   // Calculate working days (excluding Friday & Saturday — Iraqi weekend)
   const days = useMemo(() => {
@@ -837,24 +833,11 @@ function LeaveRequestModal({
           {/* Employee Selection */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
-            <input
-              type="text" value={empSearch} onChange={e => setEmpSearch(e.target.value)}
-              placeholder={arabicSource("common.search_for_an_employee")} className={inputCls}
+            <EmployeeSelect
+              employees={employees}
+              value={employeeId}
+              onChange={setEmployeeId}
             />
-            {empSearch && !employeeId && (
-              <div className="mt-1 max-h-32 overflow-y-auto border border-border rounded-lg bg-card">
-                {filteredEmployees.slice(0, 8).map(emp => (
-                  <button
-                    key={emp.id}
-                    onClick={() => { setEmployeeId(emp.id); setEmpSearch(empDisplayName(emp)); }}
-                    className="w-full px-3 py-2 text-start text-foreground hover:bg-primary/10 transition-colors cursor-pointer"
-                    style={{ fontSize: 13 }}
-                  >
-                    {empDisplayName(emp)} — {emp.department}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Leave Type */}
@@ -998,11 +981,6 @@ function PermissionModal({
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [empSearch, setEmpSearch] = useState("");
-
-  const filteredEmployees = employees.filter(e =>
-    !empSearch || empDisplayName(e).includes(empSearch)
-  );
 
   const hours = useMemo(() => {
     if (!startTime || !endTime) return 0;
@@ -1065,24 +1043,11 @@ function PermissionModal({
           {/* Employee */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
-            <input
-              type="text" value={empSearch} onChange={e => setEmpSearch(e.target.value)}
-              placeholder={arabicSource("common.search_for_an_employee")} className={inputCls}
+            <EmployeeSelect
+              employees={employees}
+              value={employeeId}
+              onChange={setEmployeeId}
             />
-            {empSearch && !employeeId && (
-              <div className="mt-1 max-h-32 overflow-y-auto border border-border rounded-lg bg-card">
-                {filteredEmployees.slice(0, 8).map(emp => (
-                  <button
-                    key={emp.id}
-                    onClick={() => { setEmployeeId(emp.id); setEmpSearch(empDisplayName(emp)); }}
-                    className="w-full px-3 py-2 text-start text-foreground hover:bg-primary/10 transition-colors cursor-pointer"
-                    style={{ fontSize: 13 }}
-                  >
-                    {empDisplayName(emp)}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           <div>

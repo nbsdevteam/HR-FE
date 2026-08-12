@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import * as odooData from "../lib/api/odooData";
 import { EmptyState } from "../components/EmptyState";
+import { EmployeeSelect } from "../components/EmployeeSelect";
 import {
   useEmployees, empDisplayName, useContractTypes, useEmployeeContracts,
   useDocumentTypes, useEmployeeDocuments, useExitChecklistItems,
@@ -273,7 +274,6 @@ function ContractsTab({
     salary_amount: 0, salary_currency: "IQD", contract_number: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
-  const [empSearch, setEmpSearch] = useState("");
 
   const filtered = contracts.filter(c => {
     if (!search) return true;
@@ -340,15 +340,11 @@ function ContractsTab({
               {/* Employee */}
               <div>
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
-                {empSearch && !formData.employee_id && (
-                  <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
-                    {employees.filter(e => empDisplayName(e).includes(empSearch)).slice(0, 5).map(e => (
-                      <button key={e.id} onClick={() => { setFormData(p => ({ ...p, employee_id: e.id })); setEmpSearch(empDisplayName(e)); }}
-                        className="w-full px-3 py-1.5 text-start text-foreground hover:bg-primary/10 cursor-pointer" style={{ fontSize: 12 }}>{empDisplayName(e)}</button>
-                    ))}
-                  </div>
-                )}
+                <EmployeeSelect
+                  employees={employees}
+                  value={formData.employee_id}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                />
               </div>
               {/* Contract Type */}
               <div>
@@ -491,7 +487,6 @@ function DocumentsTab({
     issue_date: "", expiry_date: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
-  const [empSearch, setEmpSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
   // Auto-compute document statuses
@@ -560,15 +555,11 @@ function DocumentsTab({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
-                {empSearch && !formData.employee_id && (
-                  <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
-                    {employees.filter(e => empDisplayName(e).includes(empSearch)).slice(0, 5).map(e => (
-                      <button key={e.id} onClick={() => { setFormData(p => ({ ...p, employee_id: e.id })); setEmpSearch(empDisplayName(e)); }}
-                        className="w-full px-3 py-1.5 text-start text-foreground hover:bg-primary/10 cursor-pointer" style={{ fontSize: 12 }}>{empDisplayName(e)}</button>
-                    ))}
-                  </div>
-                )}
+                <EmployeeSelect
+                  employees={employees}
+                  value={formData.employee_id}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                />
               </div>
               <div>
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.document_type_2")}</label>
@@ -676,7 +667,6 @@ function ExitTab({
     last_working_day: "", reason: "", notice_date: "",
   });
   const [saving, setSaving] = useState(false);
-  const [empSearch, setEmpSearch] = useState("");
 
   // Fetch checklist for selected process
   const { checklist, refetch: refetchChecklist } = useExitChecklist(selectedProcess || undefined);
@@ -888,15 +878,12 @@ function ExitTab({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
-                <input type="text" value={empSearch} onChange={e => { setEmpSearch(e.target.value); setFormData(p => ({ ...p, employee_id: "" })); }} placeholder={arabicSource("common.search")} className={inputCls} />
-                {empSearch && !formData.employee_id && (
-                  <div className="mt-1 max-h-28 overflow-y-auto border border-border rounded-lg bg-card">
-                    {employees.filter(e => empDisplayName(e).includes(empSearch) && e.status !== arabicSource("common.finished")).slice(0, 5).map(e => (
-                      <button key={e.id} onClick={() => { setFormData(p => ({ ...p, employee_id: e.id })); setEmpSearch(empDisplayName(e)); }}
-                        className="w-full px-3 py-1.5 text-start text-foreground hover:bg-primary/10 cursor-pointer" style={{ fontSize: 12 }}>{empDisplayName(e)}</button>
-                    ))}
-                  </div>
-                )}
+                <EmployeeSelect
+                  employees={employees}
+                  value={formData.employee_id}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                  filter={(e) => e.status !== arabicSource("common.finished")}
+                />
               </div>
               <div>
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.termination_type_2")}</label>

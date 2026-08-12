@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { localizedConfirm } from "../i18n/native";
 import * as odooData from "../lib/api/odooData";
+import { EmployeeSelect } from "../components/EmployeeSelect";
 import { useEmployees, empDisplayName } from "../lib/hooks";
 import type { DbEmployee } from "../lib/hooks";
 
@@ -946,16 +947,12 @@ function NewEvalPanel({
             {/* Employee Selection */}
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
-              <select
+              <EmployeeSelect
+                employees={activeEmployees}
                 value={selectedEmpId}
-                onChange={e => setSelectedEmpId(e.target.value)}
-                className={inputCls}
-              >
-                <option value="">{arabicSource("evaluation.select_employee")}</option>
-                {activeEmployees.map(e => (
-                  <option key={e.id} value={e.id}>{empDisplayName(e)} — {e.department || ""}</option>
-                ))}
-              </select>
+                onChange={setSelectedEmpId}
+                placeholder={arabicSource("evaluation.select_employee")}
+              />
             </div>
 
             {/* Auto-detected Manager */}
@@ -973,17 +970,15 @@ function NewEvalPanel({
                 ) : (
                   <div className="ps-6">
                     <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("evaluation.there_is_no_direct_manager_assigned_choose_an_evaluator_manually")}</p>
-                    <select
-                      value={evaluatorId}
-                      onChange={e => setEvaluatorId(e.target.value)}
-                      className={`${inputCls} mt-2`}
-                      style={{ height: 38 }}
-                    >
-                      <option value="">{arabicSource("common.select_evaluator")}</option>
-                      {activeEmployees.filter(e => e.id !== selectedEmpId).map(e => (
-                        <option key={e.id} value={e.id}>{empDisplayName(e)}</option>
-                      ))}
-                    </select>
+                    <div className="mt-2">
+                      <EmployeeSelect
+                        employees={activeEmployees}
+                        value={evaluatorId}
+                        onChange={setEvaluatorId}
+                        placeholder={arabicSource("common.select_evaluator")}
+                        excludeIds={selectedEmpId ? [selectedEmpId] : []}
+                      />
+                    </div>
                   </div>
                 )}
                 {evaluatorEmp && (
@@ -1005,16 +1000,13 @@ function NewEvalPanel({
             {selectedEmp && evaluatorId === "" && selectedEmp.manager_id && (
               <div>
                 <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.choose_another_rater")}</label>
-                <select
+                <EmployeeSelect
+                  employees={activeEmployees}
                   value={evaluatorId}
-                  onChange={e => setEvaluatorId(e.target.value)}
-                  className={inputCls}
-                >
-                  <option value="">{arabicSource("common.select_evaluator")}</option>
-                  {activeEmployees.filter(e => e.id !== selectedEmpId).map(e => (
-                    <option key={e.id} value={e.id}>{empDisplayName(e)}</option>
-                  ))}
-                </select>
+                  onChange={setEvaluatorId}
+                  placeholder={arabicSource("common.select_evaluator")}
+                  excludeIds={selectedEmpId ? [selectedEmpId] : []}
+                />
               </div>
             )}
 

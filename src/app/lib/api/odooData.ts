@@ -100,7 +100,8 @@ async function items<T>(path: string, params: Record<string, unknown> = {}): Pro
 }
 
 export async function fetchEmployees(): Promise<DbEmployee[]> {
-  const rows = await items<any>("/api/hr/employees/list", { limit: 200, offset: 0 });
+  // Backend allows up to 5000; load the full active roster for dropdowns.
+  const rows = await items<any>("/api/hr/employees/list", { limit: 5000, offset: 0 });
   return rows.map(mapEmployee);
 }
 
