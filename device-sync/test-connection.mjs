@@ -7,6 +7,7 @@
 
 import "dotenv/config";
 import { HikvisionClient } from "./hikvision-api.mjs";
+import { OdooClient } from "./odoo-client.mjs";
 
 // Allow self-signed certificates (Hikvision uses self-signed HTTPS)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -143,6 +144,36 @@ async function test() {
     console.log();
   } catch (err) {
     console.log(`   ⚠️  Could not fetch yesterday's events: ${err.message}\n`);
+  }
+
+  // 6. Odoo backend (only if ODOO_API_BASE is configured — staging validation, step 8 of the bridge plan)
+  if (process.env.ODOO_API_BASE) {
+    console.log("6️⃣  Testing Odoo backend connection (BACKEND=odoo)...");
+    const odoo = new OdooClient({
+      apiBase: process.env.ODOO_API_BASE,
+      db: process.env.ODOO_DB || "",
+      username: process.env.ODOO_SYNC_USERNAME,
+      password: process.env.ODOO_SYNC_PASSWORD,
+      log: (...args) => console.log("  ", ...args),
+    });
+    try {
+      await odoo.login();
+      console.log(`   ✅ Logged in as ${process.env.ODOO_SYNC_USERNAME} (db=${process.env.ODOO_DB || "default"})`);
+      const employees = await odoo.call("/api/hr/employees/list", { limit: 1 });
+      console.log(`   ✅ /api/hr/employees/list OK — ${employees?.total ?? 0} employees visible to this service account`);
+      const devices = await odoo.call("/api/hr/devices/list", { active_only: false });
+      console.log(`   ✅ /api/hr/devices/list OK — ${devices?.items?.length ?? 0} device(s) registered\n`);
+    } catch (err) {
+      console.log(`   ❌ Odoo connection failed: ${err.message}\n`);
+      console.log(`   Troubleshooting:`);
+      console.log(`   - Was the service account created? See:`);
+      console.log(`     Lugal-ai/scripts/hr_migration/setup_device_sync_service_account.py`);
+      console.log(`   - Check ODOO_API_BASE, ODOO_DB, ODOO_SYNC_USERNAME, ODOO_SYNC_PASSWORD in .env`);
+      console.log(`   - Confirm the lugal_hr / lugal_auth modules are installed on that DB\n`);
+      process.exitCode = 1;
+    }
+  } else {
+    console.log("6️⃣  Skipping Odoo backend check (ODOO_API_BASE not set — still on BACKEND=supabase)\n");
   }
 
   console.log("═══════════════════════════════════════");
