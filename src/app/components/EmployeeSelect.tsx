@@ -57,19 +57,26 @@ export function EmployeeSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const exclude = useMemo(() => new Set(excludeIds || []), [excludeIds]);
+  const exclude = useMemo(
+    () => new Set((excludeIds || []).map((id) => String(id))),
+    [excludeIds],
+  );
+
+  const valueKey = value == null || value === "" ? "" : String(value);
 
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
     return employees
-      .filter((e) => !exclude.has(e.id))
+      .filter((e) => !exclude.has(String(e.id)))
       .filter((e) => (filter ? filter(e) : true))
       .filter((e) => matchesQuery(e, q))
       .slice()
       .sort((a, b) => empDisplayName(a).localeCompare(empDisplayName(b), "ar"));
   }, [employees, exclude, filter, query]);
 
-  const selected = employees.find((e) => e.id === value) || null;
+  const selected =
+    (valueKey && employees.find((e) => String(e.id) === valueKey)) || null;
+  const selectedName = selected ? empDisplayName(selected) : "";
 
   useEffect(() => {
     if (!open) return;
@@ -85,12 +92,12 @@ export function EmployeeSelect({
         setQuery("");
       }
     };
-    document.addEventListener("mousedown", onDoc);
+    // Use click (not mousedown) so option selection isn't raced by outside-close.
+    document.addEventListener("click", onDoc);
     document.addEventListener("keydown", onKey);
-    // Focus search when opened
     requestAnimationFrame(() => searchRef.current?.focus());
     return () => {
-      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("click", onDoc);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -100,34 +107,45 @@ export function EmployeeSelect({
     arabicSource("training.select_employee") ||
     arabicSource("common.search_for_an_employee");
 
+  const pick = (emp: DbEmployee) => {
+    onChange(String(emp.id));
+    setOpen(false);
+    setQuery("");
+  };
+
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <button
         type="button"
         disabled={disabled}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           if (disabled) return;
           setOpen((v) => !v);
           setQuery("");
         }}
         className="w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none flex items-center justify-between gap-2 cursor-pointer disabled:opacity-50"
       >
-        <span className={`truncate text-start ${selected ? "text-foreground" : "text-muted-foreground"}`} style={{ fontSize: 13 }}>
-          {selected
-            ? `${empDisplayName(selected)}${showDepartment && selected.department ? ` — ${selected.department}` : ""}`
-            : label}
+        <span
+          className={`truncate text-start ${selectedName ? "text-foreground" : "text-muted-foreground"}`}
+          style={{ fontSize: 13 }}
+          title={selectedName || undefined}
+        >
+          {selectedName || label}
         </span>
         <span className="flex items-center gap-1 shrink-0">
-          {selected && !disabled && (
+          {selectedName && !disabled && (
             <span
               role="button"
               tabIndex={0}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 onChange("");
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
                   e.stopPropagation();
                   onChange("");
                 }
@@ -143,7 +161,10 @@ export function EmployeeSelect({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden">
+        <div
+          className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="p-2 border-b border-border/40 flex items-center gap-2">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <input
@@ -151,6 +172,7 @@ export function EmployeeSelect({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
               placeholder={arabicSource("common.search_for_an_employee")}
               className="w-full h-8 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
               style={{ fontSize: 13 }}
@@ -163,23 +185,25 @@ export function EmployeeSelect({
               </p>
             ) : (
               options.map((emp) => {
-                const active = emp.id === value;
+                const active = String(emp.id) === valueKey;
+                const name = empDisplayName(emp);
                 return (
                   <button
                     key={emp.id}
                     type="button"
-                    onClick={() => {
-                      onChange(emp.id);
-                      setOpen(false);
-                      setQuery("");
+                    onMouseDown={(e) => {
+                      // Prevent input blur / outside handlers from swallowing the pick.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      pick(emp);
                     }}
                     className={`w-full px-3 py-2 text-start hover:bg-primary/10 cursor-pointer border-b border-border/10 last:border-b-0 ${
                       active ? "bg-primary/10 text-primary" : "text-foreground"
                     }`}
                     style={{ fontSize: 13 }}
                   >
-                    <div className="truncate">{empDisplayName(emp)}</div>
-                    {(showDepartment || emp.device_employee_no) && (
+                    <div className="truncate font-medium">{name}</div>
+                    {showDepartment && (emp.department || emp.device_employee_no) && (
                       <div className="text-muted-foreground truncate" style={{ fontSize: 11 }}>
                         {[emp.department, emp.device_employee_no ? `#${emp.device_employee_no}` : ""]
                           .filter(Boolean)
@@ -192,7 +216,8 @@ export function EmployeeSelect({
             )}
           </div>
           <div className="px-3 py-1.5 border-t border-border/40 text-muted-foreground" style={{ fontSize: 10 }}>
-            {options.length} / {employees.filter((e) => !exclude.has(e.id) && (!filter || filter(e))).length}
+            {options.length} /{" "}
+            {employees.filter((e) => !exclude.has(String(e.id)) && (!filter || filter(e))).length}
           </div>
         </div>
       )}

@@ -1766,9 +1766,17 @@ export function empNumber(personId: number): string {
   return `EMP-${String(personId).padStart(4, "0")}`;
 }
 
-/** Get display name — prefer arabic_name, fallback to name */
+/** Get display name — prefer real Arabic/English names over login-style usernames. */
 export function empDisplayName(e: DbEmployee): string {
-  return e.arabic_name || e.name || "—";
+  const ar = (e.arabic_name || "").trim();
+  const en = (e.name || "").trim();
+  const looksLikeLogin = (s: string) =>
+    /^[a-z0-9._-]+$/i.test(s) && (s.includes(".") || s.includes("_"));
+  if (ar && /[\u0600-\u06FF]/.test(ar)) return ar;
+  if (en && !looksLikeLogin(en)) return en;
+  if (ar) return ar;
+  if (en) return en;
+  return "—";
 }
 
 /** Map attendance status from DB to Arabic display */
