@@ -127,6 +127,7 @@ export function mapAttendance(r: any): DbAttendanceRecord {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
+    employee_name: r.employee_name || "",
     date: r.date || "",
     day_of_week: r.day_of_week || "",
     check_in_time: timeFromDt(r.check_in) || r.check_in_time || null,

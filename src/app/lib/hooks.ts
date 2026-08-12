@@ -50,6 +50,7 @@ export interface DbDepartment {
 export interface DbAttendanceRecord {
   id: string;
   employee_id: string;
+  employee_name?: string;
   date: string;
   day_of_week: string;
   check_in_time: string | null;

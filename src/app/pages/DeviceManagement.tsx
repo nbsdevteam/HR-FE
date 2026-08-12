@@ -528,19 +528,59 @@ function PersonsTab() {
 function EventsTab() {
   const [events, setEvents] = useState<DeviceEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [searchEmp, setSearchEmp] = useState("");
 
+  // Event log reads imported/synced attendance from Odoo (date-range safe).
+  // The live Hikvision /device/events API only has a short device buffer and
+  // was returning "today" punches even when July was selected.
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const params = new URLSearchParams({ startDate, endDate });
-      if (searchEmp) params.set("employeeNo", searchEmp);
-      const res = await fetch(`${API}/device/events?${params}`);
-      const data = await res.json();
-      if (data.success) setEvents(data.events);
-    } catch { /* offline */ }
+      const rows = await odooData.fetchAttendance({
+        date_from: startDate,
+        date_to: endDate,
+        limit: 5000,
+      });
+      const empFilter = searchEmp.trim();
+      const mapped: DeviceEvent[] = [];
+      for (const r of rows) {
+        const empNo = String(r.device_employee_no || "").trim();
+        if (empFilter && empNo !== empFilter && !String(r.employee_id).includes(empFilter)) {
+          continue;
+        }
+        const name = r.employee_name || "—";
+        const verify = r.verify_mode || (r.source === "device" ? "device" : r.source || "—");
+        if (r.check_in_time) {
+          mapped.push({
+            employeeNo: empNo || "—",
+            name,
+            time: `${r.date}T${r.check_in_time}`,
+            verifyMode: String(verify),
+            cardNo: "",
+            doorNo: 1,
+          });
+        }
+        if (r.check_out_time) {
+          mapped.push({
+            employeeNo: empNo || "—",
+            name,
+            time: `${r.date}T${r.check_out_time}`,
+            verifyMode: String(verify),
+            cardNo: "",
+            doorNo: 1,
+          });
+        }
+      }
+      mapped.sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
+      setEvents(mapped);
+    } catch (e: any) {
+      setEvents([]);
+      setError(e?.message || "Failed to load attendance history");
+    }
     setLoading(false);
   }, [startDate, endDate, searchEmp]);
 
@@ -597,6 +637,10 @@ function EventsTab() {
           </button>
           <span className="text-xs text-muted-foreground">{events.length} {arabicSource("devicemanagement.event")}</span>
         </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Showing attendance history from HR database (imported + device sync), not the device live buffer.
+        </p>
+        {error && <p className="text-xs text-destructive mt-2">{error}</p>}
       </div>
 
       {/* Events Table */}
