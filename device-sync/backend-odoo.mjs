@@ -409,7 +409,9 @@ export function createBackend(config, ctx) {
       }
       consecutiveHealthFailures = 0;
       try {
-        await heartbeat({ status: "online" });
+        // markSynced keeps last_sync_at fresh so the FE TopBar stays green
+        // even when there are no new punches (health runs every 5 minutes).
+        await heartbeat({ status: "online", markSynced: true });
       } catch (e) {
         log("⚠️", `Could not update device heartbeat: ${e.message}`);
       }

@@ -1863,6 +1863,18 @@ export interface DeviceStatus {
   status: "online" | "stale" | "offline" | "no_device";
 }
 
+/** Odoo Datetime fields are UTC-naive ("YYYY-MM-DD HH:MM:SS"). Parse as UTC. */
+function odooUtcMs(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const iso = raw.includes("T") ? raw : raw.replace(" ", "T");
+  const hasTz = /([zZ]|[+-]\d{2}:?\d{2})$/.test(iso);
+  const d = new Date(hasTz ? iso : `${iso}Z`);
+  const ms = d.getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
+
 export function useDeviceStatus() {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>({
     devices: [], totalDevices: 0, activeDevices: 0,
@@ -1899,11 +1911,21 @@ export function useDeviceStatus() {
 
       const totalDevices = devs.length;
       const activeDevices = devs.filter(d => d.is_active).length;
-      const syncTimes = devs.map(d => d.last_sync_at).filter(Boolean).sort().reverse();
-      const lastSyncAt = syncTimes[0] || null;
+      // Use the freshest of last_sync_at / last_heartbeat_at (both Odoo UTC-naive).
+      let lastSyncAt: string | null = null;
+      let lastMs: number | null = null;
+      for (const d of devs) {
+        for (const ts of [d.last_sync_at, d.last_heartbeat_at]) {
+          const ms = odooUtcMs(ts);
+          if (ms != null && (lastMs == null || ms > lastMs)) {
+            lastMs = ms;
+            lastSyncAt = ts;
+          }
+        }
+      }
       let syncAgeMinutes = 999;
-      if (lastSyncAt) {
-        syncAgeMinutes = Math.round((Date.now() - new Date(lastSyncAt).getTime()) / 60000);
+      if (lastMs != null) {
+        syncAgeMinutes = Math.max(0, Math.round((Date.now() - lastMs) / 60000));
       }
       let status: DeviceStatus["status"] = "no_device";
       if (totalDevices > 0) {
