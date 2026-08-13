@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
@@ -7,20 +6,9 @@ import { ThemeProvider } from "./ThemeContext";
 import { SettingsProvider } from "./SettingsContext";
 import { NavShellProvider } from "./NavShellContext";
 import { useTranslation } from "react-i18next";
-import { localizedAlert } from "../i18n/native";
 
 function LayoutInner() {
   const { i18n } = useTranslation();
-
-  useEffect(() => {
-    const onApiError = (ev: Event) => {
-      const detail = (ev as CustomEvent<{ message?: string }>).detail;
-      if (detail?.message) localizedAlert(detail.message);
-    };
-    window.addEventListener("hr:api-error", onApiError);
-    return () => window.removeEventListener("hr:api-error", onApiError);
-  }, []);
-
   return (
     <div
       dir={i18n.dir()}
