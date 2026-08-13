@@ -698,8 +698,9 @@ export function Warnings() {
                   <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
                   <EmployeeSelect
                     employees={employees}
+                    labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
                     value={formData.employeeId}
-                    onChange={(id) => setFormData((prev) => ({ ...prev, employeeId: id }))}
+                    onChange={(id) => setFormData((prev) => ({ ...prev, employeeId: String(id) }))}
                     placeholder={arabicSource("warnings.find_the_employee")}
                   />
                 </div>

@@ -949,8 +949,9 @@ function NewEvalPanel({
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
               <EmployeeSelect
                 employees={activeEmployees}
+                labels={Object.fromEntries(activeEmployees.map((e) => [String(e.id), empDisplayName(e)]))}
                 value={selectedEmpId}
-                onChange={setSelectedEmpId}
+                onChange={(id) => setSelectedEmpId(String(id))}
                 placeholder={arabicSource("evaluation.select_employee")}
               />
             </div>
@@ -973,8 +974,9 @@ function NewEvalPanel({
                     <div className="mt-2">
                       <EmployeeSelect
                         employees={activeEmployees}
+                        labels={Object.fromEntries(activeEmployees.map((e) => [String(e.id), empDisplayName(e)]))}
                         value={evaluatorId}
-                        onChange={setEvaluatorId}
+                        onChange={(id) => setEvaluatorId(String(id))}
                         placeholder={arabicSource("common.select_evaluator")}
                         excludeIds={selectedEmpId ? [selectedEmpId] : []}
                       />
@@ -1002,8 +1004,9 @@ function NewEvalPanel({
                 <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.choose_another_rater")}</label>
                 <EmployeeSelect
                   employees={activeEmployees}
+                  labels={Object.fromEntries(activeEmployees.map((e) => [String(e.id), empDisplayName(e)]))}
                   value={evaluatorId}
-                  onChange={setEvaluatorId}
+                  onChange={(id) => setEvaluatorId(String(id))}
                   placeholder={arabicSource("common.select_evaluator")}
                   excludeIds={selectedEmpId ? [selectedEmpId] : []}
                 />

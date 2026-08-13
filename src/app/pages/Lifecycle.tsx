@@ -115,6 +115,13 @@ export function Lifecycle() {
     return m;
   }, [employees]);
 
+  // Same id→name map the contracts table uses — keep EmployeeSelect labels in sync.
+  const employeeLabels = useMemo(() => {
+    const m: Record<string, string> = {};
+    employees.forEach((e) => { m[String(e.id)] = empDisplayName(e); });
+    return m;
+  }, [employees]);
+
   const loading = empLoading || contractsLoading || docsLoading || exitLoading;
 
   // Stats
@@ -223,7 +230,8 @@ export function Lifecycle() {
           <motion.div key="contracts" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <ContractsTab
               contracts={contracts} contractTypes={contractTypes} empMap={empMap}
-              employees={employees} refetch={refetchContracts} search={search}
+              employees={employees} employeeLabels={employeeLabels}
+              refetch={refetchContracts} search={search}
               onSearchChange={setSearch} statusLabels={statusLabels} statusColors={statusColors}
             />
           </motion.div>
@@ -232,7 +240,8 @@ export function Lifecycle() {
           <motion.div key="documents" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <DocumentsTab
               documents={documents} docTypes={docTypes} empMap={empMap}
-              employees={employees} refetch={refetchDocs}
+              employees={employees} employeeLabels={employeeLabels}
+              refetch={refetchDocs}
               statusLabels={statusLabels} statusColors={statusColors}
             />
           </motion.div>
@@ -241,7 +250,8 @@ export function Lifecycle() {
           <motion.div key="exit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <ExitTab
               processes={exitProcesses} exitItems={exitItems} empMap={empMap}
-              employees={employees} refetch={refetchExit}
+              employees={employees} employeeLabels={employeeLabels}
+              refetch={refetchExit}
               exitTypeLabels={exitTypeLabels} statusLabels={statusLabels} statusColors={statusColors}
               checklistCategoryLabels={checklistCategoryLabels}
             />
@@ -255,13 +265,14 @@ export function Lifecycle() {
 // ══════════════════════════ Contracts Tab ══════════════════════════
 
 function ContractsTab({
-  contracts, contractTypes, empMap, employees, refetch, search, onSearchChange,
+  contracts, contractTypes, empMap, employees, employeeLabels, refetch, search, onSearchChange,
   statusLabels, statusColors,
 }: {
   contracts: DbEmployeeContract[];
   contractTypes: DbContractType[];
   empMap: Record<string, any>;
   employees: any[];
+  employeeLabels: Record<string, string>;
   refetch: () => void;
   search: string;
   onSearchChange: (s: string) => void;
@@ -342,8 +353,9 @@ function ContractsTab({
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
                 <EmployeeSelect
                   employees={employees}
+                  labels={employeeLabels}
                   value={formData.employee_id}
-                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: String(id) }))}
                 />
               </div>
               {/* Contract Type */}
@@ -470,13 +482,14 @@ function ContractsTab({
 // ══════════════════════════ Documents Tab ══════════════════════════
 
 function DocumentsTab({
-  documents, docTypes, empMap, employees, refetch,
+  documents, docTypes, empMap, employees, employeeLabels, refetch,
   statusLabels, statusColors,
 }: {
   documents: DbEmployeeDocument[];
   docTypes: DbDocumentType[];
   empMap: Record<string, any>;
   employees: any[];
+  employeeLabels: Record<string, string>;
   refetch: () => void;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
@@ -557,8 +570,9 @@ function DocumentsTab({
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
                 <EmployeeSelect
                   employees={employees}
+                  labels={employeeLabels}
                   value={formData.employee_id}
-                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: String(id) }))}
                 />
               </div>
               <div>
@@ -647,13 +661,14 @@ function DocumentsTab({
 // ══════════════════════════ Exit Process Tab ══════════════════════════
 
 function ExitTab({
-  processes, exitItems, empMap, employees, refetch,
+  processes, exitItems, empMap, employees, employeeLabels, refetch,
   exitTypeLabels, statusLabels, statusColors, checklistCategoryLabels,
 }: {
   processes: DbExitProcess[];
   exitItems: DbExitChecklistItem[];
   empMap: Record<string, any>;
   employees: any[];
+  employeeLabels: Record<string, string>;
   refetch: () => void;
   exitTypeLabels: Record<string, string>;
   statusLabels: Record<string, string>;
@@ -880,8 +895,9 @@ function ExitTab({
                 <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
                 <EmployeeSelect
                   employees={employees}
+                  labels={employeeLabels}
                   value={formData.employee_id}
-                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: id }))}
+                  onChange={(id) => setFormData((p) => ({ ...p, employee_id: String(id) }))}
                   filter={(e) => e.status !== arabicSource("common.finished")}
                 />
               </div>

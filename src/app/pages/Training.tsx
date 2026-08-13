@@ -997,8 +997,9 @@ export function Training() {
                   <label className="block text-sm text-foreground mb-2">{arabicSource("common.employee_3")}</label>
                   <EmployeeSelect
                     employees={employees}
+                    labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
                     value={enrollForm.employee_id}
-                    onChange={(id) => setEnrollForm({ ...enrollForm, employee_id: id })}
+                    onChange={(id) => setEnrollForm({ ...enrollForm, employee_id: String(id) })}
                     placeholder={arabicSource("training.select_employee")}
                     excludeIds={programParticipants(selectedProgramForParticipants || "").map((p) => p.employee_id)}
                   />

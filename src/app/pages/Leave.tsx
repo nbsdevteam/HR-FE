@@ -835,8 +835,9 @@ function LeaveRequestModal({
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
             <EmployeeSelect
               employees={employees}
+              labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
               value={employeeId}
-              onChange={setEmployeeId}
+              onChange={(id) => setEmployeeId(String(id))}
             />
           </div>
 
@@ -1045,8 +1046,9 @@ function PermissionModal({
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
             <EmployeeSelect
               employees={employees}
+              labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
               value={employeeId}
-              onChange={setEmployeeId}
+              onChange={(id) => setEmployeeId(String(id))}
             />
           </div>
 

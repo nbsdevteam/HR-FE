@@ -13,6 +13,12 @@ type Props = {
   disabled?: boolean;
   showDepartment?: boolean;
   excludeIds?: string[];
+  /**
+   * Optional id→label map from the parent (e.g. empMap). Used when the parent
+   * already resolves names successfully (contracts table) so the closed field
+   * stays in sync even if local state is reset.
+   */
+  labels?: Record<string, string>;
 };
 
 function matchesQuery(emp: DbEmployee, q: string): boolean {
@@ -35,9 +41,15 @@ function matchesQuery(emp: DbEmployee, q: string): boolean {
   return hay.includes(q);
 }
 
+/** Resolve employee row for a controlled value (id is canonical). */
+function findEmployee(employees: DbEmployee[], valueKey: string): DbEmployee | null {
+  if (!valueKey) return null;
+  return employees.find((e) => String(e.id) === valueKey) || null;
+}
+
 /**
- * Searchable employee dropdown. Keeps the chosen label in local state so the
- * closed field always shows the employee name after pick.
+ * Searchable employee dropdown. Display name is derived from value + employees
+ * (and optional parent labels map) — not from ephemeral local-only state.
  */
 export function EmployeeSelect({
   employees,
@@ -49,14 +61,12 @@ export function EmployeeSelect({
   disabled = false,
   showDepartment = true,
   excludeIds,
+  labels,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  // Persist label from the click so the button never falls back to placeholder
-  // even if the employees array remounts or id types differ briefly.
-  const [pickedLabel, setPickedLabel] = useState("");
 
   const exclude = useMemo(
     () => new Set((excludeIds || []).map((id) => String(id))),
@@ -64,26 +74,19 @@ export function EmployeeSelect({
   );
 
   const valueKey = value == null || value === "" ? "" : String(value);
+  const selected = useMemo(
+    () => findEmployee(employees, valueKey),
+    [employees, valueKey],
+  );
 
-  const selected =
-    (valueKey && employees.find((e) => String(e.id) === valueKey)) || null;
-
+  // Canonical display: employees row → parent labels map → empty (placeholder).
   const selectedName = useMemo(() => {
     if (!valueKey) return "";
     if (selected) return empDisplayName(selected);
-    return pickedLabel;
-  }, [valueKey, selected, pickedLabel]);
-
-  // Sync label when value is set externally (edit forms) or employees load later.
-  useEffect(() => {
-    if (!valueKey) {
-      setPickedLabel("");
-      return;
-    }
-    if (selected) {
-      setPickedLabel(empDisplayName(selected));
-    }
-  }, [valueKey, selected]);
+    const fromLabels = labels?.[valueKey];
+    if (fromLabels) return fromLabels;
+    return "";
+  }, [valueKey, selected, labels]);
 
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -97,7 +100,7 @@ export function EmployeeSelect({
 
   useEffect(() => {
     if (!open) return;
-    const onDoc = (ev: MouseEvent) => {
+    const onPointerDown = (ev: MouseEvent) => {
       if (!rootRef.current?.contains(ev.target as Node)) {
         setOpen(false);
         setQuery("");
@@ -109,11 +112,12 @@ export function EmployeeSelect({
         setQuery("");
       }
     };
-    document.addEventListener("click", onDoc, true);
+    // pointerdown bubble (not capture-click) avoids racing option selection.
+    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
     requestAnimationFrame(() => searchRef.current?.focus());
     return () => {
-      document.removeEventListener("click", onDoc, true);
+      document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -124,45 +128,48 @@ export function EmployeeSelect({
     arabicSource("common.search_for_an_employee");
 
   const pick = (emp: DbEmployee) => {
-    const name = empDisplayName(emp);
-    setPickedLabel(name);
+    // Always persist the Odoo hr.employee id (same key empMap / contracts use).
     onChange(String(emp.id));
     setOpen(false);
     setQuery("");
   };
 
   const clear = () => {
-    setPickedLabel("");
     onChange("");
   };
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
-      <button
-        type="button"
-        disabled={disabled}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+      <div
+        className={`w-full h-10 px-3 rounded-lg border border-border bg-input-background flex items-center gap-2 ${
+          disabled ? "opacity-50" : "cursor-pointer"
+        } focus-within:ring-2 focus-within:ring-ring`}
+        onClick={() => {
           if (disabled) return;
           setOpen((v) => !v);
           setQuery("");
         }}
-        className="w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none flex items-center gap-2 cursor-pointer disabled:opacity-50"
       >
-        {/* min-w-0 flex-1 is required so truncate works inside a flex row */}
-        <span
-          className={`min-w-0 flex-1 truncate text-start ${
-            selectedName ? "text-foreground font-medium" : "text-muted-foreground"
-          }`}
+        {/*
+          Readonly input guarantees the browser paints the value. A flex+truncate
+          <span> inside a <button> was collapsing / not updating after pick.
+        */}
+        <input
+          type="text"
+          readOnly
+          disabled={disabled}
+          value={selectedName}
+          placeholder={label}
+          data-employee-id={valueKey || undefined}
+          className="min-w-0 flex-1 h-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground cursor-pointer"
           style={{ fontSize: 13 }}
           dir="auto"
-          title={selectedName || undefined}
-        >
-          {selectedName || label}
-        </span>
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onFocus={() => {
+            if (!disabled) setOpen(true);
+          }}
+        />
         <span className="flex items-center gap-1 shrink-0">
           {!!valueKey && !disabled && (
             <span
@@ -188,13 +195,12 @@ export function EmployeeSelect({
           )}
           <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
         </span>
-      </button>
+      </div>
 
       {open && (
         <div
           className="absolute z-[80] mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <div className="p-2 border-b border-border/40 flex items-center gap-2">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -225,6 +231,7 @@ export function EmployeeSelect({
                     role="option"
                     aria-selected={active}
                     onMouseDown={(e) => {
+                      // mousedown + preventDefault: commit before blur/outside handlers.
                       e.preventDefault();
                       e.stopPropagation();
                       pick(emp);
