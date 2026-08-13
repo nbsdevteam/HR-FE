@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -9,13 +9,24 @@ import {
 import { useTranslation } from "react-i18next";
 import { arabicSource } from "../i18n/source";
 import { useNavShell } from "./NavShellContext";
+import { useAuth } from "../lib/auth";
+import { isPhase1Allowed, type PHASE1_GATES } from "../lib/permissions";
 
-const menuItems = [
+type Phase1Module = keyof typeof PHASE1_GATES;
+
+const menuItems: Array<{
+  id: string;
+  label: string;
+  icon: typeof Home;
+  path: string;
+  /** Phase-1 RBAC gate; omit = visible to any authenticated user (later phases). */
+  phase1?: Phase1Module;
+}> = [
   { id: "dashboard", label: arabicSource("common.control_panel"), icon: Home, path: "/" },
   { id: "employees", label: arabicSource("common.employees"), icon: Users, path: "/employees" },
   { id: "attendance", label: arabicSource("common.attendance_and_departure"), icon: Clock, path: "/attendance" },
   { id: "leave", label: arabicSource("common.vacations"), icon: CalendarDays, path: "/leave" },
-  { id: "payroll", label: arabicSource("common.salaries"), icon: Wallet, path: "/payroll" },
+  { id: "payroll", label: arabicSource("common.salaries"), icon: Wallet, path: "/payroll", phase1: "payroll" },
   { id: "evaluation", label: arabicSource("common.performance_evaluation"), icon: ClipboardCheck, path: "/evaluation" },
   { id: "warnings", label: arabicSource("common.alarms"), icon: AlertTriangle, path: "/warnings" },
   { id: "policies", label: arabicSource("shared.policies"), icon: FileText, path: "/policies" },
@@ -24,9 +35,9 @@ const menuItems = [
   { id: "training", label: arabicSource("common.training_and_development"), icon: GraduationCap, path: "/training" },
   { id: "lifecycle", label: arabicSource("common.employee_life_cycle"), icon: Briefcase, path: "/lifecycle" },
   { id: "reports", label: arabicSource("common.reports"), icon: BarChart3, path: "/reports" },
-  { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: "/devices" },
-  { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: "/audit" },
-  { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: "/settings" },
+  { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: "/devices", phase1: "devices" },
+  { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: "/audit", phase1: "audit" },
+  { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: "/settings", phase1: "settings" },
 ];
 
 function SidebarNav({
@@ -38,10 +49,22 @@ function SidebarNav({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { permissionsReady, permissions, routes } = useAuth();
+
+  const visibleItems = useMemo(() => {
+    if (!permissionsReady) {
+      // Avoid flashing restricted modules before permissions load.
+      return menuItems.filter((item) => !item.phase1);
+    }
+    return menuItems.filter((item) => {
+      if (!item.phase1) return true;
+      return isPhase1Allowed({ permissions, routes }, item.phase1);
+    });
+  }, [permissionsReady, permissions, routes]);
 
   return (
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto relative z-10">
-      {menuItems.map((item, index) => {
+      {visibleItems.map((item, index) => {
         const isActive = location.pathname === item.path;
         const Icon = item.icon;
         return (

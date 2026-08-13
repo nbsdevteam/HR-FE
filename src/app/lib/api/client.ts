@@ -3,12 +3,62 @@
  * Enable by setting VITE_API_BASE (and optionally VITE_ODOO_DB).
  */
 
+import type { HrPermissionState } from "../permissions";
+import { emptyPermissionState } from "../permissions";
+
 const BASE_URL = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const ODOO_DB = import.meta.env.VITE_ODOO_DB || "";
 
 const TOKEN_KEY = "lugal_hr_access_token";
 const REFRESH_KEY = "lugal_hr_refresh_token";
 const USER_KEY = "lugal_hr_user";
+
+export type HrApiErrorCode = "forbidden" | "unauthorized" | "error";
+
+export class HrApiError extends Error {
+  code: HrApiErrorCode;
+
+  constructor(message: string, code: HrApiErrorCode = "error") {
+    super(message);
+    this.name = "HrApiError";
+    this.code = code;
+  }
+}
+
+export function isForbiddenError(err: unknown): boolean {
+  return err instanceof HrApiError && err.code === "forbidden";
+}
+
+function classifyApiMessage(msg: string): HrApiErrorCode {
+  const m = (msg || "").toLowerCase();
+  if (m.includes("unauthorized") || m.includes("authentication")) return "unauthorized";
+  if (
+    m.includes("forbidden") ||
+    m.includes("permission required") ||
+    m.includes("permission denied") ||
+    m.includes("access denied")
+  ) {
+    return "forbidden";
+  }
+  return "error";
+}
+
+function throwApiError(msg: string): never {
+  const code = classifyApiMessage(msg);
+  const friendly =
+    code === "forbidden"
+      ? "ليس لديك صلاحية لتنفيذ هذا الإجراء"
+      : code === "unauthorized"
+        ? "انتهت الجلسة أو غير مصرح — يرجى تسجيل الدخول مجدداً"
+        : msg;
+  const err = new HrApiError(friendly, code);
+  if (typeof window !== "undefined" && (code === "forbidden" || code === "unauthorized")) {
+    window.dispatchEvent(
+      new CustomEvent("hr:api-error", { detail: { code, message: friendly } }),
+    );
+  }
+  throw err;
+}
 
 export function isOdooBackend(): boolean {
   return Boolean(BASE_URL);
@@ -56,13 +106,22 @@ export interface HrAuthUser {
 }
 
 async function parseJsonrpc(res: Response) {
-  const envelope = await res.json();
+  let envelope: any;
+  try {
+    envelope = await res.json();
+  } catch {
+    if (res.status === 403) throwApiError("Forbidden");
+    if (res.status === 401) throwApiError("Unauthorized");
+    throw new HrApiError(`HTTP ${res.status}`, "error");
+  }
+  if (res.status === 403) throwApiError("Forbidden");
+  if (res.status === 401) throwApiError("Unauthorized");
   if (envelope.error) {
     const msg =
       envelope.error?.data?.message ||
       envelope.error?.message ||
       "JSON-RPC error";
-    throw new Error(msg);
+    throwApiError(String(msg));
   }
   return envelope.result ?? envelope;
 }
@@ -140,9 +199,24 @@ export async function hrCall<T = unknown>(
   });
   const result = await parseJsonrpc(res);
   if (result && result.success === false) {
-    throw new Error(result.error || result.message || "HR API error");
+    throwApiError(String(result.error || result.message || "HR API error"));
   }
   // Some auth endpoints return tokens at top level
   if (result?.data !== undefined) return result.data as T;
   return result as T;
+}
+
+/** CRM effective permissions for the Bearer user (same tree Digi/CRM uses). */
+export async function fetchMyPermissions(): Promise<HrPermissionState> {
+  const data = await hrCall<Record<string, unknown>>("/api/crm/me/permissions", {});
+  if (!data || typeof data !== "object") {
+    return emptyPermissionState();
+  }
+  return {
+    permissions: (data.permissions as HrPermissionState["permissions"]) || {},
+    routes: (data.routes as Record<string, boolean>) || {},
+    role: String(data.role || "none"),
+    role_label: String(data.role_label || ""),
+    job_title: String(data.job_title || ""),
+  };
 }
