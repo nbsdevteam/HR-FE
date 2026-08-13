@@ -5,12 +5,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { useDeviceStatus } from "../lib/hooks";
+import { useDeviceStatus, useNotifications } from "../lib/hooks";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { arabicSource } from "../i18n/source";
 import { useNavShell } from "./NavShellContext";
 import { useAuth } from "../lib/auth";
 import { SYNC_API } from "../lib/constants";
+import * as odooData from "../lib/api/odooData";
 
 const quotes = [
   arabicSource("shared.success_is_the_result_of_preparation_hard_work_and_learning_from"),
@@ -20,15 +21,23 @@ const quotes = [
   arabicSource("shared.continuous_development_is_the_key_to_institutional_excellence"),
 ];
 
-const notifications = [
-  { id: 1, text: arabicSource("shared.ahmed_mohamed_s_leave_request_has_been_accepted"), time: arabicSource("shared.30_minutes_ago"), icon: CalendarDays, color: "text-emerald-400", read: false },
-  { id: 2, text: arabicSource("shared.a_warning_was_issued_to_sarah_khaled"), time: arabicSource("shared.an_hour_ago"), icon: AlertTriangle, color: "text-destructive", read: false },
-  { id: 3, text: arabicSource("shared.marketing_team_performance_evaluation_completed"), time: arabicSource("shared.2_hours_ago"), icon: CheckCircle, color: "text-primary", read: false },
-];
+function notificationIcon(type: string) {
+  if (type === "warning" || type === "error") return AlertTriangle;
+  if (type === "success") return CheckCircle;
+  return CalendarDays;
+}
+
+function notificationColor(type: string) {
+  if (type === "warning") return "text-amber-400";
+  if (type === "error") return "text-destructive";
+  if (type === "success") return "text-emerald-400";
+  return "text-primary";
+}
 
 export function TopBar() {
   const { toggleMobileNav, isDesktop } = useNavShell();
   const { user, signOut } = useAuth();
+  const { notifications, unreadCount, refetch: refetchNotifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
@@ -232,9 +241,11 @@ export function TopBar() {
             className="relative p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute -top-1 -end-1 bg-destructive h-4 w-4 rounded-full flex items-center justify-center" style={{ fontSize: 9 }}>
-              <span className="text-destructive-foreground">3</span>
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -end-1 bg-destructive h-4 min-w-4 px-1 rounded-full flex items-center justify-center" style={{ fontSize: 9 }}>
+                <span className="text-destructive-foreground">{unreadCount > 99 ? "99+" : unreadCount}</span>
+              </span>
+            )}
           </motion.button>
 
           <AnimatePresence>
@@ -247,26 +258,52 @@ export function TopBar() {
               >
                 <div className="flex items-center justify-between p-3 border-b border-border/40">
                   <p className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("common.notices")}</p>
-                  <button onClick={() => setBellOpen(false)} className="p-1 rounded hover:bg-muted/30 cursor-pointer">
-                    <X className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await odooData.markAllNotificationsRead();
+                            await refetchNotifications();
+                          } catch { /* ignore */ }
+                        }}
+                        className="px-2 py-0.5 rounded text-xs text-primary hover:bg-primary/10 cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                    <button onClick={() => setBellOpen(false)} className="p-1 rounded hover:bg-muted/30 cursor-pointer">
+                      <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  </div>
                 </div>
                 <div className="max-h-72 overflow-y-auto">
-                  {notifications.map((n) => {
-                    const Icon = n.icon;
+                  {notifications.length === 0 ? (
+                    <p className="p-4 text-sm text-muted-foreground text-center">{arabicSource("common.no_results_found")}</p>
+                  ) : notifications.slice(0, 30).map((n) => {
+                    const Icon = notificationIcon(n.type);
                     return (
                       <div
                         key={n.id}
+                        onClick={async () => {
+                          if (!n.is_read) {
+                            try {
+                              await odooData.markNotificationRead(n.id);
+                              await refetchNotifications();
+                            } catch { /* ignore */ }
+                          }
+                        }}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20 transition-colors border-b border-border/10 last:border-b-0 cursor-pointer"
                       >
                         <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5 flex-shrink-0">
-                          <Icon className={`w-4 h-4 ${n.color}`} />
+                          <Icon className={`w-4 h-4 ${notificationColor(n.type)}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-foreground" style={{ fontSize: 13 }}>{n.text}</p>
-                          <p className="text-muted-foreground mt-0.5" style={{ fontSize: 11 }}>{n.time}</p>
+                          <p className="text-foreground" style={{ fontSize: 13 }}>{n.title}</p>
+                          {n.body && <p className="text-muted-foreground mt-0.5" style={{ fontSize: 11 }}>{n.body}</p>}
+                          <p className="text-muted-foreground mt-0.5" style={{ fontSize: 11 }} dir="ltr">{n.created_at}</p>
                         </div>
-                        {!n.read && <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />}
+                        {!n.is_read && <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />}
                       </div>
                     );
                   })}

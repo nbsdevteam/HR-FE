@@ -297,9 +297,13 @@ function ContractsTab({
     if (!formData.employee_id || !formData.contract_type_id || !formData.start_date) return;
     setSaving(true);
     const ct = contractTypes.find(t => t.id === formData.contract_type_id);
-    const probEnd = ct && ct.probation_days > 0
-      ? new Date(new Date(formData.start_date).getTime() + ct.probation_days * 86400000).toISOString().substring(0, 10)
-      : null;
+    // Calendar-day arithmetic (avoid UTC shift from toISOString).
+    const probEnd = (() => {
+      if (!ct || !(ct.probation_days > 0) || !formData.start_date) return null;
+      const [y, m, d] = formData.start_date.split("-").map(Number);
+      const end = new Date(y, m - 1, d + Number(ct.probation_days));
+      return `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+    })();
 
     try {
       await odooData.createContract({
@@ -742,6 +746,23 @@ function ExitTab({
         const proc = processes.find(p => p.id === processId);
         if (proc) {
           await odooData.setEmployeeStatus(proc.employee_id, "exited");
+          // Return open custodies so exit clears outstanding assets.
+          try {
+            const open = await odooData.fetchCustodies(proc.employee_id);
+            const today = new Date().toISOString().slice(0, 10);
+            await Promise.all(
+              (open || [])
+                .filter((c: any) => !c.return_date && c.status !== "returned")
+                .map((c: any) =>
+                  odooData.updateCustody(c.id, {
+                    status: "returned",
+                    return_date: today,
+                  }),
+                ),
+            );
+          } catch (custodyErr) {
+            console.error(custodyErr);
+          }
         }
       }
       refetch();

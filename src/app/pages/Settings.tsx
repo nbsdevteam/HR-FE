@@ -1426,9 +1426,30 @@ export function SettingsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={async () => {
-                    // TODO(odoo): no create endpoint for leave types yet — /api/hr/leave/types is list-only.
-                    setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
-                    setTimeout(() => setToastMessage(null), 2000);
+                    try {
+                      await odooData.createLeaveType({
+                        name: newLeaveType.name_en || newLeaveType.name_ar,
+                        name_ar: newLeaveType.name_ar,
+                        code: newLeaveType.code,
+                        is_paid: newLeaveType.is_paid,
+                        default_days_per_year: newLeaveType.default_days_per_year,
+                        allow_half_day: newLeaveType.allow_half_day,
+                        requires_attachment: newLeaveType.requires_attachment,
+                        is_carryover_allowed: newLeaveType.is_carryover_allowed,
+                        max_carryover_days: newLeaveType.max_carryover_days,
+                        is_encashable: newLeaveType.is_encashable,
+                        encashment_percentage: newLeaveType.encashment_percentage,
+                        accrual_method: newLeaveType.accrual_method === "annual" ? "yearly" : newLeaveType.accrual_method,
+                        color: newLeaveType.color,
+                        sort_order: newLeaveType.sort_order,
+                      });
+                      setShowNewLeaveTypeForm(false);
+                      await refetchLeaveTypes();
+                      setToastMessage("Saved");
+                    } catch (e: any) {
+                      setToastMessage(e?.message || "Failed to create leave type");
+                    }
+                    setTimeout(() => setToastMessage(null), 2500);
                   }}
                   className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 cursor-pointer"
                 >
@@ -1472,16 +1493,24 @@ export function SettingsPage() {
                     <Toggle
                       on={lt.is_active}
                       onClick={async () => {
-                        // TODO(odoo): no update endpoint for leave types yet — /api/hr/leave/types is list-only.
-                        setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
-                        setTimeout(() => setToastMessage(null), 2000);
+                        try {
+                          await odooData.updateLeaveType(lt.id, { is_active: !lt.is_active });
+                          await refetchLeaveTypes();
+                        } catch (e: any) {
+                          setToastMessage(e?.message || "Failed to update leave type");
+                          setTimeout(() => setToastMessage(null), 2500);
+                        }
                       }}
                     />
                     <button
                       onClick={async () => {
-                        // TODO(odoo): no delete endpoint for leave types yet — /api/hr/leave/types is list-only.
-                        setToastMessage(arabicSource("settings.leave_type_management_unavailable_odoo"));
-                        setTimeout(() => setToastMessage(null), 2000);
+                        try {
+                          await odooData.deleteLeaveType(lt.id);
+                          await refetchLeaveTypes();
+                        } catch (e: any) {
+                          setToastMessage(e?.message || "Failed to delete leave type");
+                          setTimeout(() => setToastMessage(null), 2500);
+                        }
                       }}
                       className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                     >
@@ -1730,8 +1759,19 @@ export function SettingsPage() {
               </div>
               <button
                 onClick={async () => {
-                  // TODO(odoo): no create endpoint for document types yet — /api/hr/document_types/list is list-only.
-                  showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
+                  try {
+                    await odooData.createDocumentType({
+                      name: newDocType.name_ar || newDocType.name_en,
+                      code: newDocType.code,
+                      sequence: newDocType.sort_order || 10,
+                      active: true,
+                    });
+                    setShowNewDocTypeForm(false);
+                    await refetchDocumentTypes();
+                    showToast("Saved");
+                  } catch (e: any) {
+                    showToast(e?.message || "Failed to create document type");
+                  }
                 }}
                 className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
               >
@@ -1760,14 +1800,22 @@ export function SettingsPage() {
                     <Toggle
                       on={dt.is_active}
                       onClick={async () => {
-                        // TODO(odoo): no update endpoint for document types yet — /api/hr/document_types/list is list-only.
-                        showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
+                        try {
+                          await odooData.updateDocumentType(dt.id, { active: !dt.is_active });
+                          await refetchDocumentTypes();
+                        } catch (e: any) {
+                          showToast(e?.message || "Failed to update document type");
+                        }
                       }}
                     />
                     <button
                       onClick={async () => {
-                        // TODO(odoo): no delete endpoint for document types yet — /api/hr/document_types/list is list-only.
-                        showToast(arabicSource("settings.document_type_management_unavailable_odoo"));
+                        try {
+                          await odooData.deleteDocumentType(dt.id);
+                          await refetchDocumentTypes();
+                        } catch (e: any) {
+                          showToast(e?.message || "Failed to delete document type");
+                        }
                       }}
                       className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
                     >

@@ -27,6 +27,7 @@
  */
 
 import { OdooClient } from "./odoo-client.mjs";
+import { baghdadLocalToOdooUtc, HR_BUSINESS_TZ } from "./timezone.mjs";
 
 const EMPLOYEE_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -53,30 +54,6 @@ function shiftDateStr(dateStr, deltaDays) {
     .slice(0, 10);
 }
 
-/**
- * Convert a *local* Asia/Baghdad wall-clock date+time (as reported by the
- * device) into the UTC "YYYY-MM-DD HH:MM:SS" string Odoo's Datetime fields
- * expect. Handles day rollover correctly (e.g. 01:00 local -> previous day UTC).
- */
-function toUtcDatetimeString(dateStr, timeStr, offsetHours) {
-  const sign = offsetHours >= 0 ? "+" : "-";
-  const abs = Math.abs(offsetHours);
-  const offsetStr = `${sign}${String(Math.trunc(abs)).padStart(2, "0")}:${String(Math.round((abs % 1) * 60)).padStart(2, "0")}`;
-  const d = new Date(`${dateStr}T${timeStr}${offsetStr}`);
-  if (Number.isNaN(d.getTime())) throw new Error(`Invalid local datetime: ${dateStr}T${timeStr}${offsetStr}`);
-  return d.toISOString().slice(0, 19).replace("T", " ");
-}
-
-/** Inverse of toUtcDatetimeString: UTC "YYYY-MM-DD HH:MM:SS" -> local HH:MM:SS time-of-day. */
-function utcStringToLocalTimeStr(utcStr, offsetHours) {
-  if (!utcStr) return null;
-  const d = new Date(utcStr.replace(" ", "T") + "Z");
-  if (Number.isNaN(d.getTime())) return null;
-  const local = new Date(d.getTime() + offsetHours * 3600 * 1000);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}:${pad(local.getUTCSeconds())}`;
-}
-
 function normalizeEmployee(item) {
   return {
     id: item.id,
@@ -97,7 +74,8 @@ function normalizeEmployee(item) {
  */
 export function createBackend(config, ctx) {
   const { log, todayIraq, getDayOfWeek } = ctx;
-  const tzOffsetHours = config.tzOffsetHours ?? 3;
+  // tzOffsetHours kept for config compat; conversion uses IANA Asia/Baghdad.
+  void (config.tzOffsetHours ?? 3);
 
   const odoo = new OdooClient({
     apiBase: config.apiBase,
@@ -251,72 +229,44 @@ export function createBackend(config, ctx) {
     return row && !row.check_out ? row : null;
   }
 
+  /**
+   * Append-only raw punch ledger. Pairing is done server-side by
+   * lugal.hr.device.event.process_to_attendance (auto_process=true).
+   * Idempotent via device_event_id (device + employee + UTC time + status).
+   */
   async function upsertAttendance(employee, dateStr, timeStr, verifyMode, employeeNo, attendanceStatus) {
     if (attendanceStatus === "breakOut" || attendanceStatus === "breakIn") {
       await _processBreakEvent(employee, attendanceStatus);
       return;
     }
 
-    const isCheckIn = attendanceStatus === "checkIn";
-    const isCheckOut = attendanceStatus === "checkOut";
-    if (!isCheckIn && !isCheckOut) {
-      log("⚠️", `No attendanceStatus for ${employee.arabic_name || employee.name} at ${timeStr} — skipping`);
-      return;
-    }
-
+    // Accept checkIn/checkOut or unknown status — every punch is a ledger row.
+    // Server pairing decides check-in vs check-out from open attendance.
     const deviceIdVal = await _ensureDevice().catch(() => null);
-    const baseVals = {
+    const eventTimeUtc = baghdadLocalToOdooUtc(dateStr, timeStr);
+    const deviceEventId = [
+      deviceIdVal || "nodev",
+      String(employeeNo || employee.id),
+      eventTimeUtc.replace(/[\s:]/g, ""),
+      attendanceStatus || "punch",
+    ].join("-");
+
+    await odoo.call("/api/hr/devices/events/create", {
+      device_id: deviceIdVal || undefined,
       employee_id: employee.id,
-      source: "device",
-      verify_mode: verifyMode,
-      device_employee_no: String(employeeNo || ""),
-      ...(deviceIdVal ? { device_id: deviceIdVal } : {}),
-    };
-
-    if (isCheckIn) {
-      const existing = await _attendanceForDate(employee.id, dateStr);
-      if (existing && existing.check_in) {
-        const existingLocal = utcStringToLocalTimeStr(existing.check_in, tzOffsetHours);
-        if (existingLocal && !(timeStr < existingLocal)) return; // keep the earliest check-in, like the Supabase backend
-      }
-      await odoo.call("/api/hr/attendance/upsert", {
-        ...baseVals,
-        date: dateStr,
-        check_in: toUtcDatetimeString(dateStr, timeStr, tzOffsetHours),
-      });
-      return;
-    }
-
-    // isCheckOut
-    const existingToday = await _attendanceForDate(employee.id, dateStr);
-    if (!existingToday) {
-      const yesterday = shiftDateStr(dateStr, -1);
-      const openYesterday = await _openAttendanceForDate(employee.id, yesterday);
-      if (openYesterday) {
-        await odoo.call("/api/hr/attendance/upsert", {
-          ...baseVals,
-          date: yesterday,
-          check_out: toUtcDatetimeString(dateStr, timeStr, tzOffsetHours),
-          status: "complete",
-        });
-        log("🌙", `${employee.arabic_name || employee.name} overnight checkout: ${yesterday} → ${dateStr} ${timeStr}`);
-        return;
-      }
-
-      await odoo.call("/api/hr/attendance/upsert", {
-        ...baseVals,
-        date: dateStr,
-        check_out: toUtcDatetimeString(dateStr, timeStr, tzOffsetHours),
-        status: "missing_checkin",
-      });
-      log("⚠️", `${employee.arabic_name || employee.name} checked out at ${timeStr} with no check-in`);
-      return;
-    }
-
-    await odoo.call("/api/hr/attendance/upsert", {
-      ...baseVals,
-      date: dateStr,
-      check_out: toUtcDatetimeString(dateStr, timeStr, tzOffsetHours),
+      employee_no: String(employeeNo || ""),
+      employee_name: employee.arabic_name || employee.name || "",
+      event_time: eventTimeUtc,
+      event_date: dateStr, // Baghdad calendar date from device
+      verify_mode: verifyMode || undefined,
+      device_event_id: deviceEventId,
+      auto_process: true,
+      raw_payload: {
+        attendance_status: attendanceStatus || null,
+        local_date: dateStr,
+        local_time: timeStr,
+        timezone: HR_BUSINESS_TZ,
+      },
     });
   }
 
@@ -487,7 +437,7 @@ export function createBackend(config, ctx) {
         await odoo.call("/api/hr/attendance/upsert", {
           employee_id: row.employee_id,
           date: today,
-          check_out: toUtcDatetimeString(today, endTimeStr, tzOffsetHours),
+          check_out: baghdadLocalToOdooUtc(today, endTimeStr),
           status: "complete",
           auto_checkout_applied: true,
           source: "device",

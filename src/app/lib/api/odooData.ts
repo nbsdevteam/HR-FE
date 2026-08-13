@@ -105,6 +105,22 @@ export async function fetchEmployees(): Promise<DbEmployee[]> {
   return rows.map(mapEmployee);
 }
 
+/** Scoped dashboard cards from Odoo (present/absent/on_leave/late). */
+export async function fetchHrDashboard(params?: {
+  departmentId?: string | number;
+  newJoinerDays?: number;
+}): Promise<Record<string, unknown>> {
+  const body: Record<string, unknown> = {};
+  if (params?.departmentId != null) body.department_id = eid(params.departmentId);
+  if (params?.newJoinerDays != null) body.new_joiner_days = params.newJoinerDays;
+  return hrCall("/api/hr/dashboard", body);
+}
+
+/** Server-side payroll compute (same snapshot contract as FE generate). */
+export async function computePayrollServer(month: string) {
+  return hrCall("/api/hr/payroll/compute", { month });
+}
+
 /** Current user's linked hr.employee (JWT only; does not require hr.employees.list). */
 export async function fetchCurrentEmployee(): Promise<DbEmployee> {
   const data = await hrCall<any>("/api/hr/employees/me", {});
@@ -213,6 +229,30 @@ export async function fetchHolidays(year?: number): Promise<DbPublicHoliday[]> {
 export async function fetchLeaveTypes(): Promise<DbLeaveType[]> {
   const rows = await items<any>("/api/hr/leave/types");
   return rows.map(mapLeaveType);
+}
+
+export async function createLeaveType(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/leave/types/create", payload);
+}
+
+export async function updateLeaveType(typeId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/leave/types/${eid(typeId)}/update`, payload);
+}
+
+export async function deleteLeaveType(typeId: string | number) {
+  return hrCall(`/api/hr/leave/types/${eid(typeId)}/delete`, {});
+}
+
+export async function createDocumentType(payload: Record<string, unknown>) {
+  return hrCall("/api/hr/document_types/create", payload);
+}
+
+export async function updateDocumentType(typeId: string | number, payload: Record<string, unknown>) {
+  return hrCall(`/api/hr/document_types/${eid(typeId)}/update`, payload);
+}
+
+export async function deleteDocumentType(typeId: string | number) {
+  return hrCall(`/api/hr/document_types/${eid(typeId)}/delete`, {});
 }
 
 export async function fetchLeavePolicies(): Promise<DbLeavePolicy[]> {
@@ -1204,6 +1244,27 @@ export async function processDeviceEvents(deviceId?: string | number, limit = 50
 
 export async function createDeviceEvent(payload: Record<string, unknown>) {
   return hrCall("/api/hr/devices/events/create", payload);
+}
+
+/** Raw punch ledger (lugal.hr.device.event). */
+export async function fetchDeviceEvents(filters?: {
+  deviceId?: string | number;
+  employeeNo?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  processed?: boolean;
+  limit?: number;
+}): Promise<any[]> {
+  const params: Record<string, unknown> = {
+    limit: filters?.limit ?? 2000,
+    offset: 0,
+  };
+  if (filters?.deviceId != null) params.device_id = eid(filters.deviceId);
+  if (filters?.employeeNo) params.employee_no = filters.employeeNo;
+  if (filters?.dateFrom) params.date_from = filters.dateFrom;
+  if (filters?.dateTo) params.date_to = filters.dateTo;
+  if (filters?.processed !== undefined) params.processed = filters.processed;
+  return items<any>("/api/hr/devices/events/list", params);
 }
 
 export async function fetchAttendanceTrends(params?: {

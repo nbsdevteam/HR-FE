@@ -533,53 +533,72 @@ function EventsTab() {
   const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [searchEmp, setSearchEmp] = useState("");
 
-  // Event log reads imported/synced attendance from Odoo (date-range safe).
-  // The live Hikvision /device/events API only has a short device buffer and
-  // was returning "today" punches even when July was selected.
+  // Prefer raw punch ledger (lugal.hr.device.event). Fall back to paired
+  // attendance rows if the ledger is empty or the list call is forbidden.
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const rows = await odooData.fetchAttendance({
-        date_from: startDate,
-        date_to: endDate,
-        limit: 5000,
-      });
       const empFilter = searchEmp.trim();
-      const mapped: DeviceEvent[] = [];
-      for (const r of rows) {
-        const empNo = String(r.device_employee_no || "").trim();
-        if (empFilter && empNo !== empFilter && !String(r.employee_id).includes(empFilter)) {
-          continue;
-        }
-        const name = r.employee_name || "—";
-        const verify = r.verify_mode || (r.source === "device" ? "device" : r.source || "—");
-        if (r.check_in_time) {
-          mapped.push({
-            employeeNo: empNo || "—",
-            name,
-            time: `${r.date}T${r.check_in_time}`,
-            verifyMode: String(verify),
-            cardNo: "",
-            doorNo: 1,
-          });
-        }
-        if (r.check_out_time) {
-          mapped.push({
-            employeeNo: empNo || "—",
-            name,
-            time: `${r.date}T${r.check_out_time}`,
-            verifyMode: String(verify),
-            cardNo: "",
-            doorNo: 1,
-          });
+      let mapped: DeviceEvent[] = [];
+      try {
+        const ledger = await odooData.fetchDeviceEvents({
+          dateFrom: startDate,
+          dateTo: endDate,
+          employeeNo: empFilter || undefined,
+          limit: 2000,
+        });
+        mapped = (ledger || []).map((r: any) => ({
+          employeeNo: String(r.employee_no || r.device_employee_no || "—"),
+          name: r.employee_name || "—",
+          time: String(r.event_time || "").replace(" ", "T"),
+          verifyMode: String(r.verify_mode || (r.processed ? "processed" : "pending")),
+          cardNo: String(r.card_no || ""),
+          doorNo: Number(r.door_no) || 0,
+        }));
+      } catch {
+        mapped = [];
+      }
+      if (mapped.length === 0) {
+        const rows = await odooData.fetchAttendance({
+          date_from: startDate,
+          date_to: endDate,
+          limit: 5000,
+        });
+        for (const r of rows) {
+          const empNo = String(r.device_employee_no || "").trim();
+          if (empFilter && empNo !== empFilter && !String(r.employee_id).includes(empFilter)) {
+            continue;
+          }
+          const name = r.employee_name || "—";
+          const verify = r.verify_mode || (r.source === "device" ? "device" : r.source || "—");
+          if (r.check_in_time) {
+            mapped.push({
+              employeeNo: empNo || "—",
+              name,
+              time: `${r.date}T${r.check_in_time}`,
+              verifyMode: String(verify),
+              cardNo: "",
+              doorNo: 1,
+            });
+          }
+          if (r.check_out_time) {
+            mapped.push({
+              employeeNo: empNo || "—",
+              name,
+              time: `${r.date}T${r.check_out_time}`,
+              verifyMode: String(verify),
+              cardNo: "",
+              doorNo: 1,
+            });
+          }
         }
       }
       mapped.sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
       setEvents(mapped);
     } catch (e: any) {
       setEvents([]);
-      setError(e?.message || "Failed to load attendance history");
+      setError(e?.message || "Failed to load punch ledger");
     }
     setLoading(false);
   }, [startDate, endDate, searchEmp]);

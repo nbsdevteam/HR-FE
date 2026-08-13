@@ -14,6 +14,7 @@ import {
   useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
   useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
   useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
+  useLeaveTypes,
   type DbShift,
 } from "../lib/hooks";
 import { useAppSettings, formatMonthYear } from "../components/SettingsContext";
@@ -89,7 +90,12 @@ export function Payroll() {
   const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
   const { records: attRecords, loading: attLoading, refetch: refetchAtt } = useAttendanceRecords();
   const { requests: leaveReqRows, loading: lvLoading } = useLeaveRequests({ status: "مقبول" });
+  const { types: leaveTypes } = useLeaveTypes();
   const leaveRequests = leaveReqRows as LeaveRequest[];
+  const leaveTypeInfos = useMemo(
+    () => leaveTypes.map((t) => ({ code: t.code || t.id, name_ar: t.name_ar || t.name_en || "", is_paid: Boolean(t.is_paid) })),
+    [leaveTypes],
+  );
   const loading = empLoading || mrLoading || ledLoading || attLoading || lvLoading;
   const [selectedMonth, setSelectedMonth] = useState("");
 
@@ -260,8 +266,38 @@ export function Payroll() {
 
       let processed = processAttendanceRecords(rawRecsAll, config, selectedMonth, empSettings, holidayDates);
 
-      // Apply leave data
-      const leaveDateMap = buildLeaveDateMap(leaveRequests, empId, selectedMonth);
+      // Align with Odoo day status (absent / holiday / leave / excused) when present.
+      const statusByDate = new Map(empAtt.map((a) => [a.date, a]));
+      processed = processed.map((rec) => {
+        const a = statusByDate.get(rec.date);
+        if (!a) return rec;
+        const st = String(a.status || "");
+        if (st === "holiday" && !rec.checkInTime) {
+          return { ...rec, status: "holiday" as const, isScheduledWorkingDay: false, workingHours: 0 };
+        }
+        if (st === "leave" && !rec.checkInTime) {
+          return {
+            ...rec,
+            status: "leave" as const,
+            isLeaveDay: true,
+            excusedAbsence: true,
+            workingHours: 0,
+          };
+        }
+        if ((st === "absent" || st === "absent_due_to_late_threshold") && !rec.checkInTime) {
+          return {
+            ...rec,
+            status: st as ProcessedAttendanceRecord["status"],
+            absenceReason: "no_punches",
+            excusedAbsence: Boolean(a.excused_absence) || rec.excusedAbsence,
+          };
+        }
+        if (a.excused_absence) return { ...rec, excusedAbsence: true };
+        return rec;
+      });
+
+      // Apply approved leave (paid/unpaid) using leave-type is_paid flags.
+      const leaveDateMap = buildLeaveDateMap(leaveRequests, empId, selectedMonth, leaveTypeInfos);
       if (Object.keys(leaveDateMap).length > 0) {
         processed = applyLeaveToRecords(processed, leaveDateMap);
       }
@@ -300,7 +336,7 @@ export function Payroll() {
     }
 
     return rows.sort((a, b) => a.name.localeCompare(b.name, "ar"));
-  }, [attRecords, monthlyRecords, selectedMonth, empMap, ledgers, leaveRequests, holidayDates, allEmployeeAllowances, allowanceTypes, allEmployeeDeductions, deductionTypes, allLoans, dbDepartments, dbShifts]);
+  }, [attRecords, monthlyRecords, selectedMonth, empMap, ledgers, leaveRequests, leaveTypeInfos, holidayDates, allEmployeeAllowances, allowanceTypes, allEmployeeDeductions, deductionTypes, allLoans, dbDepartments, dbShifts]);
 
   // Stats
   const totalBasic = payrollData.reduce((s, r) => s + r.basicSalary, 0);
@@ -348,6 +384,22 @@ export function Payroll() {
     setSavingPayslips(false);
   };
 
+  /** Server-side compute (attendance/leave/holiday) — same snapshot contract. */
+  const handleServerComputePayslips = async () => {
+    if (!selectedMonth) return;
+    setSavingPayslips(true);
+    try {
+      await odooData.computePayrollServer(selectedMonth);
+      setPayslipsSaved(true);
+      setTimeout(() => setPayslipsSaved(false), 3000);
+      localizedAlert("Server payroll computed");
+    } catch (e: any) {
+      console.error("Server payroll compute failed:", e.message);
+      localizedAlert(arabicSource("payroll.error_saving_statements") + " " + e.message);
+    }
+    setSavingPayslips(false);
+  };
+
   if (loading || empLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -379,6 +431,16 @@ export function Payroll() {
           >
             {savingPayslips ? <Loader2 className="w-4 h-4 animate-spin" /> : payslipsSaved ? <CheckCircle className="w-4 h-4" /> : <Download className="w-4 h-4" />}
             {savingPayslips ? arabicSource("common.saving") : payslipsSaved ? arabicSource("payroll.saved") : arabicSource("payroll.save_statements")}
+          </button>
+          <button
+            onClick={handleServerComputePayslips}
+            disabled={savingPayslips || !selectedMonth}
+            title="Server compute from attendance/leave/holidays"
+            className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50"
+            style={{ fontSize: 13 }}
+          >
+            <Calculator className="w-4 h-4" />
+            Server compute
           </button>
         </div>
       </div>

@@ -19,6 +19,7 @@ import {
 import { formatCurrency, formatDateTime } from "../i18n/format";
 import { translateCataloguedValue } from "../i18n/legacy";
 import { arabicSource } from "../i18n/source";
+import { downloadExcelCsv } from "../lib/export";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -121,14 +122,44 @@ export function Reports() {
         if (dateFrom) filtered = filtered.filter(r => r.date >= dateFrom);
         if (dateTo) filtered = filtered.filter(r => r.date <= dateTo);
         if (filterDept) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDept);
+        rows = filtered.map(r => {
+          let statusLabel = r.status || "—";
+          if (r.status === "complete" || r.status === "missing_checkout") {
+            statusLabel = r.is_late ? arabicSource("common.late") : arabicSource("common.present");
+          } else if (r.status === "absent" || r.status === "absent_due_to_late_threshold") {
+            statusLabel = arabicSource("common.absent");
+          } else if (r.status === "leave") {
+            statusLabel = arabicSource("common.vacations_2") || "Leave";
+          } else if (r.status === "holiday") {
+            statusLabel = "Holiday";
+          }
+          return {
+            employee_name: empMap[r.employee_id] || r.employee_id,
+            date: r.date,
+            // check_in/out already converted to Asia/Baghdad in mapAttendance
+            check_in: r.check_in_time || "—",
+            check_out: r.check_out_time || "—",
+            status: statusLabel,
+            delay_minutes: r.late_minutes || 0,
+            overtime_hours: r.overtime_hours ? r.overtime_hours.toFixed(1) : "0",
+          };
+        });
+        break;
+      }
+      case "leave_requests":
+      case "leave_monthly": {
+        let filtered = leaveRequests;
+        if (dateFrom) filtered = filtered.filter(r => r.start_date >= dateFrom);
+        if (dateTo) filtered = filtered.filter(r => r.start_date <= dateTo);
+        if (filterDept) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDept);
         rows = filtered.map(r => ({
           employee_name: empMap[r.employee_id] || r.employee_id,
-          date: r.date,
-          check_in: r.check_in_time || "—",
-          check_out: r.check_out_time || "—",
-          status: r.status === "complete" ? (r.is_late ? arabicSource("common.late") : arabicSource("common.present")) : r.status === "absent" ? arabicSource("common.absent") : r.status,
-          delay_minutes: r.late_minutes || 0,
-          overtime_hours: r.overtime_hours ? r.overtime_hours.toFixed(1) : "0",
+          leave_type: r.leave_type || "—",
+          start_date: r.start_date,
+          end_date: r.end_date,
+          days: r.days,
+          status: r.status,
+          reason: r.reason || "—",
         }));
         break;
       }
@@ -249,22 +280,21 @@ export function Reports() {
     setGenerating(false);
   };
 
-  // Export to CSV
+  // Export to CSV / Excel-friendly UTF-8 BOM CSV
   const exportCSV = () => {
     if (!generatedData || !selectedTemplate) return;
     const cols = selectedTemplate.columns;
-    const header = cols.map(c => translateCataloguedValue(c.label)).join(",");
-    const csvRows = generatedData.map(row =>
-      cols.map(c => `"${translateCataloguedValue(String(row[c.key] || "")).replace(/"/g, '""')}"`).join(",")
+    const rows = generatedData.map((row) => {
+      const out: Record<string, unknown> = {};
+      for (const c of cols) {
+        out[translateCataloguedValue(c.label)] = translateCataloguedValue(String(row[c.key] || ""));
+      }
+      return out;
+    });
+    downloadExcelCsv(
+      `${selectedTemplate.code}_${new Date().toISOString().slice(0, 10)}`,
+      rows,
     );
-    const csv = "\uFEFF" + [header, ...csvRows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedTemplate.code}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg";

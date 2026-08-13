@@ -6,6 +6,7 @@
 import * as XLSX from "xlsx";
 import { formatCurrency as formatIntlCurrency, formatNumber } from "../i18n/format";
 import { arabicSource } from "../i18n/source";
+import { normalizeLeaveStatus } from "../i18n/status";
 
 // ──────────────────────── Types ────────────────────────
 
@@ -979,12 +980,13 @@ export function buildLeaveDateMap(
 ): Record<string, LeaveDateEntry> {
   const map: Record<string, LeaveDateEntry> = {};
   const [y, m] = monthYear.split("-").map(Number);
-  const monthStart = new Date(y, m - 1, 1);
   const monthEnd = new Date(y, m, 0); // last day of month
 
+  const acceptedKey = arabicSource("common.accepted");
   for (const lv of leaves) {
     if (lv.employee_id !== employeeId) continue;
-    if (lv.status !== arabicSource("common.accepted")) continue;
+    // Accept Odoo validate / approved / localized "accepted" labels.
+    if (normalizeLeaveStatus(lv.status) !== acceptedKey) continue;
 
     // Determine if unpaid: first check leave_types table, fallback to hardcoded name
     let isUnpaid = lv.leave_type === arabicSource("common.without_salary");
@@ -993,22 +995,24 @@ export function buildLeaveDateMap(
       if (typeInfo) isUnpaid = !typeInfo.is_paid;
     }
 
-    const start = new Date(lv.start_date + "T00:00:00Z");
-    const end = new Date(lv.end_date + "T00:00:00Z");
+    // Calendar-date iteration (no UTC shift) so leave days match Baghdad dates.
+    const clampStart = lv.start_date > `${monthYear}-01` ? lv.start_date : `${y}-${String(m).padStart(2, "0")}-01`;
+    const lastDay = monthEnd.getDate();
+    const clampEndCandidate = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const clampEnd = lv.end_date < clampEndCandidate ? lv.end_date : clampEndCandidate;
+    if (!clampStart || !clampEnd || clampStart > clampEnd) continue;
 
-    // Iterate each day in the leave range that falls within the month
-    const cursor = new Date(Math.max(start.getTime(), monthStart.getTime()));
-    const rangeEnd = new Date(Math.min(end.getTime(), monthEnd.getTime()));
-
-    while (cursor <= rangeEnd) {
-      const dateStr = `${cursor.getUTCFullYear()}-${String(cursor.getUTCMonth() + 1).padStart(2, "0")}-${String(cursor.getUTCDate()).padStart(2, "0")}`;
-      map[dateStr] = {
+    let cur = clampStart;
+    while (cur <= clampEnd) {
+      map[cur] = {
         leaveType: lv.leave_type,
         isUnpaid,
         isHalfDay: lv.is_half_day || false,
         halfDayPeriod: lv.half_day_period,
       };
-      cursor.setUTCDate(cursor.getUTCDate() + 1);
+      const [cy, cm, cd] = cur.split("-").map(Number);
+      const next = new Date(cy, cm - 1, cd + 1);
+      cur = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
     }
   }
   return map;

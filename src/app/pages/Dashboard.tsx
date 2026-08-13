@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import * as odooData from "../lib/api/odooData";
 import {
   Users, CalendarDays, Wallet, ClipboardCheck, TrendingUp, TrendingDown,
   AlertTriangle, UserPlus, Clock, GraduationCap, Loader2,
@@ -72,11 +73,28 @@ export function Dashboard() {
   const { colors } = useChartTheme();
   const { settings: appSettings } = useAppSettings();
   const [kpiSection, setKpiSection] = useState<"overview" | "workforce" | "financial" | "compliance" | "recruitment">("overview");
+  const [serverCards, setServerCards] = useState<{
+    present?: number; absent?: number; on_leave?: number; late?: number; employees?: number;
+  } | null>(null);
 
   const { employees, loading: empLoading } = useEmployees();
   const { records: attendance, loading: attLoading } = useAttendanceRecords();
   const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
   const loading = empLoading || attLoading || mrLoading;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await odooData.fetchHrDashboard();
+        const cards = (data as any)?.cards || data;
+        if (!cancelled && cards) setServerCards(cards);
+      } catch {
+        if (!cancelled) setServerCards(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Live data hooks
   const { requests: leaveRequests } = useLeaveRequests();
@@ -223,14 +241,30 @@ export function Dashboard() {
     const deviceCount = latestRecs.filter((r: any) => r.source === "device").length;
     const deviceCoverage = latestRecs.length > 0 ? pct(deviceCount, latestRecs.length) : 0;
 
+    // Prefer authoritative Odoo dashboard cards for today's headcount KPIs.
+    const mergedToday = serverCards
+      ? {
+          ...today,
+          present: Number(serverCards.present ?? today.present),
+          absent: Number(serverCards.absent ?? today.absent),
+          late: Number(serverCards.late ?? today.late),
+          leave: Number(serverCards.on_leave ?? today.leave),
+        }
+      : today;
+    const mergedAttendanceRate = totalEmployees > 0
+      ? pct(mergedToday.present + mergedToday.late, totalEmployees)
+      : attendanceRate;
+
     return {
-      ...today, date: latestDate, attendanceRate, prevAttendanceRate, punctualityRate,
+      ...mergedToday, date: latestDate,
+      attendanceRate: mergedAttendanceRate,
+      prevAttendanceRate, punctualityRate,
       prevAbsent: prev.absent, prevLate: prev.late,
       rolling7Rate, rolling30Rate, absenteeismRate,
-      attendanceTrend: attendanceRate - prevAttendanceRate,
+      attendanceTrend: mergedAttendanceRate - prevAttendanceRate,
       deviceCount, deviceCoverage,
     };
-  }, [attendance, totalEmployees]);
+  }, [attendance, totalEmployees, serverCards]);
 
   // Attendance by department (last 7 days)
   const deptAttendance = useMemo(() => {
