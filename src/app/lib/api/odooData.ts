@@ -105,6 +105,28 @@ export async function fetchEmployees(): Promise<DbEmployee[]> {
   return rows.map(mapEmployee);
 }
 
+/** Current user's linked hr.employee (JWT only; does not require hr.employees.list). */
+export async function fetchCurrentEmployee(): Promise<DbEmployee> {
+  const data = await hrCall<any>("/api/hr/employees/me", {});
+  return mapEmployee(data);
+}
+
+/**
+ * Leave-scoped capability flags from existing CRM effective permissions.
+ * Does not change packs — read-only probe for FE leave UX.
+ */
+export async function fetchHrLeaveEmployeeCaps(): Promise<{
+  canListEmployees: boolean;
+  canManageLeaveTypes: boolean;
+}> {
+  const data = await hrCall<any>("/api/crm/me/permissions", {});
+  const hr = data?.permissions?.hr || {};
+  return {
+    canListEmployees: Boolean(hr?.employees?.list),
+    canManageLeaveTypes: Boolean(hr?.leave?.manage_types),
+  };
+}
+
 export async function fetchDepartments(): Promise<DbDepartment[]> {
   const rows = await items<any>("/api/hr/departments/list", { limit: 200 });
   return rows.map(mapDepartment);

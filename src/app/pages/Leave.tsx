@@ -11,7 +11,7 @@ import { EmptyState } from "../components/EmptyState";
 import { EmployeeSelect } from "../components/EmployeeSelect";
 import * as odooData from "../lib/api/odooData";
 import {
-  useEmployees, empDisplayName, useLeaveTypes, useLeaveRequests,
+  useLeaveEmployeeScope, empDisplayName, useLeaveTypes, useLeaveRequests,
   useLeaveBalances, useLeavePermissions, resolveLeaveEntitlement,
   useLeavePolicies,
   type DbLeaveRequest, type DbLeaveType, type DbLeaveBalance, type DbLeavePermission,
@@ -53,7 +53,12 @@ type TabId = (typeof TABS)[number]["id"];
 // ══════════════════════════ Main Component ══════════════════════════
 
 export function Leave() {
-  const { employees, loading: empLoading } = useEmployees();
+  const {
+    employees,
+    loading: empLoading,
+    selfOnly,
+    linkError: employeeLinkError,
+  } = useLeaveEmployeeScope();
   const { types: leaveTypes, loading: typesLoading } = useLeaveTypes();
   const { policies } = useLeavePolicies();
   const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests();
@@ -474,6 +479,9 @@ export function Leave() {
             employees={employees}
             leaveTypes={activeLeaveTypes}
             balances={balances}
+            selfOnly={selfOnly}
+            linkError={employeeLinkError}
+            employeesLoading={empLoading}
             onClose={() => setShowForm(false)}
             onSubmit={async () => { refetchRequests(); refetchBalances(); setShowForm(false); }}
           />
@@ -719,15 +727,21 @@ function PermissionsTab({
 // ══════════════════════════ Leave Request Modal ══════════════════════════
 
 function LeaveRequestModal({
-  employees, leaveTypes, balances, onClose, onSubmit,
+  employees, leaveTypes, balances, selfOnly, linkError, employeesLoading,
+  onClose, onSubmit,
 }: {
   employees: any[];
   leaveTypes: DbLeaveType[];
   balances: DbLeaveBalance[];
+  selfOnly: boolean;
+  linkError: string | null;
+  employeesLoading: boolean;
   onClose: () => void;
   onSubmit: () => Promise<void>;
 }) {
-  const [employeeId, setEmployeeId] = useState("");
+  const selfEmployee = selfOnly ? employees[0] || null : null;
+  const selfEmployeeId = selfEmployee ? String(selfEmployee.id) : "";
+  const [employeeId, setEmployeeId] = useState(selfEmployeeId);
   const [leaveTypeId, setLeaveTypeId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -736,6 +750,12 @@ function LeaveRequestModal({
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (selfOnly && selfEmployeeId) {
+      setEmployeeId(selfEmployeeId);
+    }
+  }, [selfOnly, selfEmployeeId]);
 
   const selectedType = leaveTypes.find(t => t.id === leaveTypeId);
 
@@ -771,7 +791,11 @@ function LeaveRequestModal({
   }, [employeeId, leaveTypeId, balances, leaveTypes]);
 
   const handleSubmit = async () => {
-    if (!employeeId || !leaveTypeId || !startDate) {
+    if (selfOnly && (linkError || !selfEmployee)) {
+      setError(linkError || "Your user account is not linked to an employee. Please contact HR.");
+      return;
+    }
+    if ((!selfOnly && !employeeId) || !leaveTypeId || !startDate) {
       setError(arabicSource("common.please_fill_out_all_required_fields"));
       return;
     }
@@ -788,14 +812,21 @@ function LeaveRequestModal({
     setError("");
 
     try {
-      await odooData.requestLeave({
+      // Self-only: omit employee_id so backend uses current_employee().
+      // List + manage_types: pass selected employee (existing HR behavior).
+      // List without manage_types: still pass selection for UI consistency; backend
+      // ignores employee_id unless manage_types (unchanged permission model).
+      const payload: Parameters<typeof odooData.requestLeave>[0] = {
         leave_type_id: lt.id,
         date_from: startDate,
         date_to: isHalfDay ? startDate : (endDate || startDate),
         reason: reason || null,
         half_day: isHalfDay,
-        employee_id: employeeId,
-      });
+      };
+      if (!selfOnly) {
+        payload.employee_id = employeeId;
+      }
+      await odooData.requestLeave(payload);
       setSaving(false);
       await onSubmit();
     } catch (e: any) {
@@ -833,12 +864,36 @@ function LeaveRequestModal({
           {/* Employee Selection */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
-            <EmployeeSelect
-              employees={employees}
-              labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
-              value={employeeId}
-              onChange={(id) => setEmployeeId(String(id))}
-            />
+            {selfOnly ? (
+              employeesLoading ? (
+                <div className={`${inputCls} flex items-center text-muted-foreground`} style={{ fontSize: 13 }}>
+                  <Loader2 className="w-4 h-4 animate-spin me-2" />
+                </div>
+              ) : linkError || !selfEmployee ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 13 }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {linkError || "Your user account is not linked to an employee. Please contact HR."}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  value={empDisplayName(selfEmployee)}
+                  className={`${inputCls} opacity-80 cursor-not-allowed`}
+                  style={{ fontSize: 13 }}
+                  dir="auto"
+                  aria-label="My employee"
+                />
+              )
+            ) : (
+              <EmployeeSelect
+                employees={employees}
+                labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+                value={employeeId}
+                onChange={(id) => setEmployeeId(String(id))}
+              />
+            )}
           </div>
 
           {/* Leave Type */}
@@ -947,7 +1002,7 @@ function LeaveRequestModal({
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleSubmit}
-              disabled={saving}
+              disabled={saving || employeesLoading || (selfOnly && (!!linkError || !selfEmployee))}
               className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
