@@ -44,6 +44,7 @@ import type {
   DbReportHistory,
 } from "../hooks";
 import { arabicSource } from "../../i18n/source";
+import { odooUtcNaiveToBaghdadTime } from "../timezone";
 
 const sid = (v: unknown) => (v === null || v === undefined || v === false ? "" : String(v));
 const sornull = (v: unknown) => (v === null || v === undefined || v === false || v === "" ? null : String(v));
@@ -51,10 +52,12 @@ const num = (v: unknown, d = 0) => (typeof v === "number" ? v : Number(v) || d);
 const bool = (v: unknown) => Boolean(v);
 const empty = "";
 
+/**
+ * Odoo attendance Datetime is UTC-naive. Map to Asia/Baghdad wall-clock HH:MM:SS
+ * for all HR UI / payroll / report consumers of DbAttendanceRecord times.
+ */
 function timeFromDt(dt: string | null | undefined): string | null {
-  if (!dt) return null;
-  const part = String(dt).includes(" ") ? String(dt).split(" ")[1] : String(dt);
-  return part?.slice(0, 8) || null;
+  return odooUtcNaiveToBaghdadTime(dt);
 }
 
 function hhmmFromFloatOrLabel(v: unknown, label?: unknown): string {
@@ -130,8 +133,8 @@ export function mapAttendance(r: any): DbAttendanceRecord {
     employee_name: r.employee_name || "",
     date: r.date || "",
     day_of_week: r.day_of_week || "",
-    check_in_time: timeFromDt(r.check_in) || r.check_in_time || null,
-    check_out_time: timeFromDt(r.check_out) || r.check_out_time || null,
+    check_in_time: timeFromDt(r.check_in) || timeFromDt(r.check_in_time) || null,
+    check_out_time: timeFromDt(r.check_out) || timeFromDt(r.check_out_time) || null,
     working_hours: num(r.worked_hours ?? r.working_hours),
     overtime_hours: num(r.overtime_hours),
     is_late: bool(r.is_late),
