@@ -569,20 +569,16 @@ export function useEmployees() {
   return { employees, loading, error, refetch: fetchEmployees };
 }
 
-const UNLINKED_EMPLOYEE_MSG =
-  "Your user account is not linked to an employee. Please contact HR.";
-
 /**
- * Employee roster for Leave pages.
- * - hr.employees.list → full list (existing HR/Admin behavior)
- * - otherwise → current employee via /api/hr/employees/me (self-only, no roster API)
+ * Employee roster for Leave pages (HR APIs only — no /api/crm permission probe).
+ * - hr.employees.list succeeds → full roster dropdown
+ * - list Forbidden → /api/hr/employees/me + selfOnly (agent self-leave)
  */
 export function useLeaveEmployeeScope() {
   const [employees, setEmployees] = useState<DbEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selfOnly, setSelfOnly] = useState(false);
-  const [canManageLeaveTypes, setCanManageLeaveTypes] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
 
   const fetch = async () => {
@@ -590,27 +586,15 @@ export function useLeaveEmployeeScope() {
     setError(null);
     setLinkError(null);
     try {
-      const caps = await odooData.fetchHrLeaveEmployeeCaps();
-      setCanManageLeaveTypes(caps.canManageLeaveTypes);
-      if (caps.canListEmployees) {
-        setSelfOnly(false);
-        setEmployees(await odooData.fetchEmployees());
-      } else {
-        setSelfOnly(true);
-        try {
-          const me = await odooData.fetchCurrentEmployee();
-          setEmployees([me]);
-        } catch (e: any) {
-          setEmployees([]);
-          const msg = String(e?.message || "");
-          setLinkError(
-            /no hr employee linked|not linked/i.test(msg) ? UNLINKED_EMPLOYEE_MSG : msg || UNLINKED_EMPLOYEE_MSG,
-          );
-        }
-      }
+      const scope = await odooData.resolveLeaveEmployeeScope();
+      setSelfOnly(scope.selfOnly);
+      setEmployees(scope.employees);
+      setLinkError(scope.linkError);
     } catch (e: any) {
       setError(e?.message || "Failed to load employees");
+      setSelfOnly(false);
       setEmployees([]);
+      setLinkError(null);
     }
     setLoading(false);
   };
@@ -624,7 +608,6 @@ export function useLeaveEmployeeScope() {
     loading,
     error,
     selfOnly,
-    canManageLeaveTypes,
     linkError,
     refetch: fetch,
   };

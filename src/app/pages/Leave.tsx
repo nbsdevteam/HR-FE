@@ -822,10 +822,8 @@ function LeaveRequestModal({
         date_to: isHalfDay ? startDate : (endDate || startDate),
         reason: reason || null,
         half_day: isHalfDay,
+        ...odooData.leaveRequestEmployeeIdField(selfOnly, employeeId),
       };
-      if (!selfOnly) {
-        payload.employee_id = employeeId;
-      }
       await odooData.requestLeave(payload);
       setSaving(false);
       await onSubmit();

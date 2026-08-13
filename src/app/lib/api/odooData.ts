@@ -127,20 +127,80 @@ export async function fetchCurrentEmployee(): Promise<DbEmployee> {
   return mapEmployee(data);
 }
 
+const UNLINKED_EMPLOYEE_MSG =
+  "Your user account is not linked to an employee. Please contact HR.";
+
+/** True when /api/hr/employees/list failed due to missing hr.employees.list (not network). */
+export function isEmployeesListForbiddenError(error: unknown): boolean {
+  const msg = String(
+    error && typeof error === "object" && "message" in error
+      ? (error as { message?: unknown }).message
+      : error ?? "",
+  );
+  return /forbidden|hr\.employees\.list|permission required/i.test(msg);
+}
+
+export type LeaveEmployeeScopeResult = {
+  selfOnly: boolean;
+  employees: DbEmployee[];
+  linkError: string | null;
+};
+
+export type LeaveEmployeeScopeDeps = {
+  fetchEmployees: () => Promise<DbEmployee[]>;
+  fetchCurrentEmployee: () => Promise<DbEmployee>;
+};
+
 /**
- * Leave-scoped capability flags from existing CRM effective permissions.
- * Does not change packs — read-only probe for FE leave UX.
+ * Resolve Leave page employee roster without CRM permission APIs.
+ * - Has hr.employees.list → full /employees/list (HR/admin dropdown).
+ * - Forbidden on list → /employees/me + selfOnly (agent self-leave).
  */
-export async function fetchHrLeaveEmployeeCaps(): Promise<{
-  canListEmployees: boolean;
-  canManageLeaveTypes: boolean;
-}> {
-  const data = await hrCall<any>("/api/crm/me/permissions", {});
-  const hr = data?.permissions?.hr || {};
-  return {
-    canListEmployees: Boolean(hr?.employees?.list),
-    canManageLeaveTypes: Boolean(hr?.leave?.manage_types),
-  };
+export async function resolveLeaveEmployeeScope(
+  deps: LeaveEmployeeScopeDeps = {
+    fetchEmployees,
+    fetchCurrentEmployee,
+  },
+): Promise<LeaveEmployeeScopeResult> {
+  try {
+    const employees = await deps.fetchEmployees();
+    return { selfOnly: false, employees, linkError: null };
+  } catch (listErr) {
+    if (!isEmployeesListForbiddenError(listErr)) {
+      throw listErr;
+    }
+  }
+
+  try {
+    const me = await deps.fetchCurrentEmployee();
+    return { selfOnly: true, employees: [me], linkError: null };
+  } catch (e: unknown) {
+    const msg = String(
+      e && typeof e === "object" && "message" in e
+        ? (e as { message?: unknown }).message
+        : e ?? "",
+    );
+    return {
+      selfOnly: true,
+      employees: [],
+      linkError: /no hr employee linked|not linked/i.test(msg)
+        ? UNLINKED_EMPLOYEE_MSG
+        : msg || UNLINKED_EMPLOYEE_MSG,
+    };
+  }
+}
+
+/**
+ * Self-leave payloads must omit employee_id so the backend uses current_employee().
+ * Roster mode may include a selected employee_id (HR manage_types path unchanged).
+ */
+export function leaveRequestEmployeeIdField(
+  selfOnly: boolean,
+  employeeId: string | number | null | undefined,
+): { employee_id: string | number } | Record<string, never> {
+  if (selfOnly) return {};
+  if (employeeId == null || employeeId === "") return {};
+  return { employee_id: employeeId };
 }
 
 export async function fetchDepartments(): Promise<DbDepartment[]> {
