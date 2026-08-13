@@ -13,7 +13,6 @@ import {
 } from "../lib/hooks";
 import { formatDateTime } from "../i18n/format";
 import { arabicSource } from "../i18n/source";
-import { useAuth } from "../lib/auth";
 
 const actionLabels: Record<string, string> = {
   create: arabicSource("common.create"),
@@ -90,16 +89,7 @@ const notifTypeIcons: Record<string, any> = {
 };
 
 export function AuditCenter() {
-  const { can } = useAuth();
-  const canAuditLog = can("hr.audit.list");
   const [activeTab, setActiveTab] = useState<"notifications" | "audit">("notifications");
-
-  const tabs = [
-    { key: "notifications" as const, label: arabicSource("common.notices"), icon: Bell },
-    ...(canAuditLog
-      ? [{ key: "audit" as const, label: arabicSource("auditcenter.audit_log"), icon: Shield }]
-      : []),
-  ];
 
   return (
     <div className="space-y-6">
@@ -110,7 +100,10 @@ export function AuditCenter() {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border/40 pb-1">
-        {tabs.map(tab => {
+        {[
+          { key: "notifications" as const, label: arabicSource("common.notices"), icon: Bell },
+          { key: "audit" as const, label: arabicSource("auditcenter.audit_log"), icon: Shield },
+        ].map(tab => {
           const Icon = tab.icon;
           return (
             <button
@@ -129,7 +122,7 @@ export function AuditCenter() {
         })}
       </div>
 
-      {activeTab === "audit" && canAuditLog ? <AuditTrailTab /> : <NotificationsTab />}
+      {activeTab === "notifications" ? <NotificationsTab /> : <AuditTrailTab />}
     </div>
   );
 }

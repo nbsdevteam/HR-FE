@@ -44,7 +44,6 @@ import {
 import { CustomBarChart } from "../components/custom-bar-chart";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import { arabicSource } from "../i18n/source";
-import { useAuth } from "../lib/auth";
 
 // ══════════════════════════ Constants ══════════════════════════
 
@@ -73,12 +72,6 @@ function formatIQD(val: number) {
 // ══════════════════════════ Main Component ══════════════════════════
 
 export function Payroll() {
-  const { can } = useAuth();
-  const canViewPayroll = can("hr.payroll.view");
-  const canGeneratePayroll = can("hr.payroll.generate");
-  const canImportPayroll = can("hr.payroll.import");
-  const canEditPayroll = can("hr.payroll.edit");
-
   const { employees, loading: empLoading } = useEmployees();
   const { settings: appSettings } = useAppSettings();
   const { shifts: dbShifts } = useShifts();
@@ -92,12 +85,6 @@ export function Payroll() {
   const { loans: allLoans } = useLoans();
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-
-  useEffect(() => {
-    if (activeTab === "upload" && !canImportPayroll) {
-      setActiveTab("overview");
-    }
-  }, [activeTab, canImportPayroll]);
   const { records: monthlyRecords, loading: mrLoading, refetch: refetchMonthly } = useMonthlyRecords();
   const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
   const { records: attRecords, loading: attLoading, refetch: refetchAtt } = useAttendanceRecords();
@@ -370,20 +357,6 @@ export function Payroll() {
     );
   }
 
-  if (!canViewPayroll) {
-    return (
-      <div className={`${cardCls} p-8 text-center`}>
-        <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-3" />
-        <h2 className="text-foreground mb-2">غير مصرح بعرض الرواتب</h2>
-        <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-          تحتاج إلى صلاحية <code className="text-primary">hr.payroll.view</code> لعرض بيانات الرواتب.
-        </p>
-      </div>
-    );
-  }
-
-  const visibleTabs = TABS.filter((tab) => tab.id !== "upload" || canImportPayroll);
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -398,23 +371,21 @@ export function Payroll() {
               <option key={m} value={m}>{displayMonth(m)}</option>
             ))}
           </select>
-          {canGeneratePayroll && (
-            <button
-              onClick={handleSavePayslips}
-              disabled={savingPayslips || payslipsSaved || payrollData.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
-              style={{ fontSize: 13 }}
-            >
-              {savingPayslips ? <Loader2 className="w-4 h-4 animate-spin" /> : payslipsSaved ? <CheckCircle className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-              {savingPayslips ? arabicSource("common.saving") : payslipsSaved ? arabicSource("payroll.saved") : arabicSource("payroll.save_statements")}
-            </button>
-          )}
+          <button
+            onClick={handleSavePayslips}
+            disabled={savingPayslips || payslipsSaved || payrollData.length === 0}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+            style={{ fontSize: 13 }}
+          >
+            {savingPayslips ? <Loader2 className="w-4 h-4 animate-spin" /> : payslipsSaved ? <CheckCircle className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+            {savingPayslips ? arabicSource("common.saving") : payslipsSaved ? arabicSource("payroll.saved") : arabicSource("payroll.save_statements")}
+          </button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
-        {visibleTabs.map((tab) => {
+        {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -450,7 +421,7 @@ export function Payroll() {
             />
           </motion.div>
         )}
-        {activeTab === "upload" && canImportPayroll && (
+        {activeTab === "upload" && (
           <motion.div key="upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <UploadTab
               employees={employees}
@@ -482,7 +453,6 @@ export function Payroll() {
         allEmployeeDeductions={allEmployeeDeductions}
         allLoans={allLoans}
         appSettings={appSettings}
-        canEditPayroll={canEditPayroll}
       />
     </div>
   );
@@ -1022,7 +992,6 @@ function PayrollDetailPanel({
   allEmployeeDeductions,
   allLoans,
   appSettings,
-  canEditPayroll = false,
 }: {
   empId: string | null;
   onClose: () => void;
@@ -1041,7 +1010,6 @@ function PayrollDetailPanel({
   allEmployeeDeductions: any[];
   allLoans: any[];
   appSettings: any;
-  canEditPayroll?: boolean;
 }) {
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [showShortfall, setShowShortfall] = useState(false);
@@ -1338,7 +1306,7 @@ function PayrollDetailPanel({
                         </button>
                       ))}
                     </div>
-                  {canEditPayroll && !editingLedger ? (
+                  {!editingLedger ? (
                     <button
                       onClick={() => setEditingLedger(true)}
                       className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer flex items-center gap-2"
@@ -1346,7 +1314,7 @@ function PayrollDetailPanel({
                     >
                       <Pencil className="w-3.5 h-3.5" /> {arabicSource("common.edit")}
                     </button>
-                  ) : canEditPayroll && editingLedger ? (
+                  ) : (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setEditingLedger(false)}
@@ -1365,7 +1333,7 @@ function PayrollDetailPanel({
                         {arabicSource("common.save")}
                       </button>
                     </div>
-                  ) : null}
+                  )}
                   </div>
                 </div>
 
