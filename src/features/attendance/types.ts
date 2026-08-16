@@ -70,6 +70,56 @@ export type TodayAttendanceStats = {
 
 export type AttendanceStatusCountKey = "present" | "late" | "absent" | "leave";
 
+export type DeviceInfo = {
+  deviceName: string;
+  model: string;
+  serialNumber: string;
+  firmwareVersion: string;
+  macAddress: string;
+};
+
+export type DeviceCapacity = {
+  person: { used: number; total: number };
+  face: { used: number; total: number };
+  fingerprint: { used: number; total: number };
+  card: { used: number; total: number };
+  event: { used: number; total: number };
+};
+
+export type DevicePerson = {
+  employeeNo: string;
+  name: string;
+  userType: string;
+  gender: string | null;
+  numOfCard: number;
+  numOfFP: number;
+  numOfFace: number;
+};
+
+export type DeviceEvent = {
+  employeeNo: string;
+  name: string;
+  time: string;
+  verifyMode: string;
+  cardNo: string;
+  doorNo: number;
+};
+
+export type BiometricDevice = {
+  id: string;
+  name: string;
+  model: string;
+  ip_address: string;
+  is_active: boolean;
+};
+
+export type DeviceManagementTab = "overview" | "persons" | "events" | "face";
+
+export type DeviceFacePreview = {
+  empNo: string;
+  image: string;
+};
+
 export const dayNames: Record<string, string> = {
   sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
   wednesday: arabicSource("common.wednesday"), thursday: arabicSource("common.thursday"), friday: arabicSource("common.friday"), saturday: arabicSource("common.saturday"),
