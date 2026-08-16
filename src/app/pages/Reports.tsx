@@ -10,7 +10,7 @@ import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import * as odooData from "../lib/api/odooData";
 import {
   useReportTemplates, useReportHistory, useEmployees, useHierarchyData,
-  useLeaveRequests, useLeaveTypes,
+  useLeaveTypes,
   useLeaveBalances, useEmployeeContracts, useContractTypes, useEmployeeDocuments,
   useDocumentTypes, useLoans, useAllowanceTypes, useEmployeeAllowances,
   useDeductionTypes, useEmployeeDeductions,
@@ -33,6 +33,11 @@ import {
   buildPayrollMonthlyFilters,
   formatPayrollReportCell,
 } from "../lib/reports/payrollMonthly";
+import {
+  LEAVE_STATUS_FILTER_OPTIONS,
+  buildLeaveRequestsFilters,
+  formatLeaveReportCell,
+} from "../lib/reports/leaveRequests";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -67,7 +72,6 @@ export function Reports() {
   const { history, loading: historyLoading, refetch: refetchHistory } = useReportHistory();
   const { employees } = useEmployees();
   const { departments } = useHierarchyData();
-  const { requests: leaveRequests } = useLeaveRequests();
   const { types: leaveTypes } = useLeaveTypes();
   const { balances: leaveBalances } = useLeaveBalances();
   const { contracts } = useEmployeeContracts();
@@ -88,6 +92,7 @@ export function Reports() {
   const [filterDept, setFilterDept] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterExcuse, setFilterExcuse] = useState<"" | "excused" | "not_excused">("");
+  const [filterLeaveStatus, setFilterLeaveStatus] = useState("");
   const [generatedData, setGeneratedData] = useState<Record<string, any>[] | null>(null);
   const [generatedColumns, setGeneratedColumns] = useState<ReportColumn[] | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -171,19 +176,23 @@ export function Reports() {
         }
         case "leave_requests":
         case "leave_monthly": {
-          let filtered = leaveRequests;
-          if (dateFrom) filtered = filtered.filter(r => r.start_date >= dateFrom);
-          if (dateTo) filtered = filtered.filter(r => r.start_date <= dateTo);
-          if (filterDeptName) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDeptName);
-          rows = filtered.map(r => ({
-            employee_name: empMap[r.employee_id] || r.employee_id,
-            leave_type: r.leave_type || "—",
-            start_date: r.start_date,
-            end_date: r.end_date,
-            days: r.days,
-            status: r.status,
-            reason: r.reason || "—",
-          }));
+          const deptId = resolveDepartmentId(departments, filterDept);
+          const filters = buildLeaveRequestsFilters({
+            dateFrom,
+            dateTo,
+            departmentId: deptId,
+            status: filterLeaveStatus,
+          });
+          const result = await odooData.generateHrReport({
+            code: template.code === "leave_monthly" ? "leave_monthly" : "leave_requests",
+            report_template_id: template.id,
+            filters,
+            create_history: true,
+            generated_by: arabicSource("common.human_resources_manager"),
+          });
+          rows = result.rows || [];
+          setGeneratedColumns(result.columns || null);
+          usedBackendHistory = true;
           break;
         }
         case "payroll_monthly": {
@@ -336,6 +345,14 @@ export function Reports() {
         const out: Record<string, unknown> = {};
         for (const c of cols) {
           out[c.label] = formatPayrollReportCell(c.key, row[c.key]);
+        }
+        return out;
+      });
+    } else if (code === "leave_requests" || code === "leave_monthly") {
+      rows = generatedData.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const c of cols) {
+          out[c.label] = formatLeaveReportCell(c.key, row[c.key]);
         }
         return out;
       });
@@ -507,6 +524,16 @@ export function Reports() {
             title="Excuse filter"
           >
             {ATTENDANCE_EXCUSE_FILTER_OPTIONS.map(o => (
+              <option key={o.value || "all"} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <select
+            value={filterLeaveStatus}
+            onChange={e => setFilterLeaveStatus(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            title="Leave status filter"
+          >
+            {LEAVE_STATUS_FILTER_OPTIONS.map(o => (
               <option key={o.value || "all"} value={o.value}>{o.label}</option>
             ))}
           </select>
@@ -726,6 +753,7 @@ export function Reports() {
                         {dateTo && ` ${arabicSource("reports.to")} ${dateTo}`}
                         {filterStatus && ` · ${filterStatus}`}
                         {filterExcuse && ` · ${filterExcuse}`}
+                        {filterLeaveStatus && ` · ${filterLeaveStatus}`}
                       </p>
                     </div>
                     <div className="overflow-x-auto border border-border/30 rounded-xl">
@@ -750,7 +778,9 @@ export function Reports() {
                                     ? formatAttendanceReportCell(col.key, row[col.key], row)
                                     : selectedTemplate.code === "payroll_monthly"
                                       ? formatPayrollReportCell(col.key, row[col.key])
-                                      : (row[col.key] ?? "—")}
+                                      : (selectedTemplate.code === "leave_requests" || selectedTemplate.code === "leave_monthly")
+                                        ? formatLeaveReportCell(col.key, row[col.key])
+                                        : (row[col.key] ?? "—")}
                                 </td>
                               ))}
                             </tr>
