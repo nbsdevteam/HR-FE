@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import * as odooData from "@/shared/api/odooData";
 import {
   useEmployees, useAttendanceRecords, empDisplayName, formatTime, formatWorkHours,
@@ -10,6 +11,7 @@ import type { DbAttendanceRecord, DbEmployee } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { AttendanceRow, dayNames } from "@/features/attendance/types";
+import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
 import { EmployeeAttendanceDetail } from "../components/EmployeeAttendanceDetail";
 import { AttendanceHeader } from "../components/AttendanceHeader";
 import { AttendanceStatsCards } from "../components/AttendanceStatsCards";
@@ -19,7 +21,7 @@ import { AttendanceFilters } from "../components/AttendanceFilters";
 import { AttendanceRecordsView } from "../components/AttendanceRecordsView";
 import { ExcuseModal } from "../components/ExcuseModal";
 
-export function Attendance() {
+export const Attendance = () => {
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -32,6 +34,8 @@ export function Attendance() {
   const [excuseModal, setExcuseModal] = useState<{record: AttendanceRow} | null>(null);
   const [excuseForm, setExcuseForm] = useState({late: false, absence: false, shortfall: false, note: ""});
   const [excuseSaving, setExcuseSaving] = useState(false);
+
+  const { i18n } = useTranslation();
 
   const thirtyDaysAgo = useMemo(
     () => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
@@ -127,26 +131,10 @@ export function Attendance() {
   }, [rawRecords, selectedDate, empMap, searchTerm, statusFilter, sortBy, sortDir]);
 
   // Stats
-  const allDayRows = useMemo(() =>
-    rawRecords.filter(r => r.date === selectedDate).map(r => mapAttendanceStatus(r.status, r.is_late)),
-  [rawRecords, selectedDate]);
-
-  const todayStats = useMemo(() => {
-    const selectedRecords = rawRecords.filter(r => r.date === selectedDate);
-    const workedRecords = selectedRecords.filter(r => r.working_hours > 0);
-
-    return {
-      present: allDayRows.filter(s => s === arabicSource("common.present")).length,
-      late: allDayRows.filter(s => s === arabicSource("common.late")).length,
-      absent: allDayRows.filter(s => s === arabicSource("common.absent")).length,
-      leave: allDayRows.filter(s => s === arabicSource("common.leave")).length,
-      total: allDayRows.length,
-      avgHours: workedRecords.length === 0
-        ? "0"
-        : (workedRecords.reduce((s, r) => s + r.working_hours, 0) / workedRecords.length).toFixed(1),
-      autoCheckouts: selectedRecords.filter(r => r.auto_checkout_applied).length,
-    };
-  }, [allDayRows, rawRecords, selectedDate]);
+  const todayStats = useMemo(
+    () => buildTodayAttendanceStats(rawRecords, selectedDate, i18n.resolvedLanguage),
+    [rawRecords, selectedDate, i18n.resolvedLanguage],
+  );
 
   // Weekly chart
   const weeklyAttendance = useMemo(() => {
@@ -291,7 +279,7 @@ export function Attendance() {
       />
     </div>
   );
-}
+};
 
 // ══════════════════════════════════════════════════════════════
 // Employee Attendance Detail — Calendar + Monthly + Overall

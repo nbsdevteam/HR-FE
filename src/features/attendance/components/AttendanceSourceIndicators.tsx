@@ -1,10 +1,9 @@
 import { Fingerprint, Timer } from "lucide-react";
 import type { DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import type { TodayAttendanceStats } from "../types";
 
-type TodayStats = { total: number; autoCheckouts: number };
-
-export function AttendanceSourceIndicators({ todayStats, rawRecords, selectedDate }: { todayStats: TodayStats; rawRecords: DbAttendanceRecord[]; selectedDate: string }) {
+export const AttendanceSourceIndicators = ({ todayStats, rawRecords, selectedDate }: { todayStats: TodayAttendanceStats; rawRecords: DbAttendanceRecord[]; selectedDate: string }) => {
   return (
     <div className="flex items-center gap-4 px-1 flex-wrap">
       {todayStats.total > 0 && (
@@ -23,4 +22,4 @@ export function AttendanceSourceIndicators({ todayStats, rawRecords, selectedDat
       )}
     </div>
   );
-}
+};

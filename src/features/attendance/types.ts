@@ -11,7 +11,7 @@ export interface AttendanceRow {
   checkOut: string;
   rawCheckIn: string | null;
   rawCheckOut: string | null;
-  status: string | string | string | string;
+  status: string;
   rawStatus: string;
   workHours: string;
   workHoursNum: number;
@@ -57,6 +57,18 @@ export type AttendanceEmployeeMap = Record<
     deptColor?: string | null;
   }
 >;
+
+export type TodayAttendanceStats = {
+  present: number;
+  late: number;
+  absent: number;
+  leave: number;
+  total: number;
+  avgHours: string;
+  autoCheckouts: number;
+};
+
+export type AttendanceStatusCountKey = "present" | "late" | "absent" | "leave";
 
 export const dayNames: Record<string, string> = {
   sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
