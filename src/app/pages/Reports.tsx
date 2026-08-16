@@ -10,7 +10,7 @@ import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import * as odooData from "../lib/api/odooData";
 import {
   useReportTemplates, useReportHistory, useEmployees, useHierarchyData,
-  useMonthlyRecords, useLeaveRequests, useLeaveTypes,
+  useLeaveRequests, useLeaveTypes,
   useLeaveBalances, useEmployeeContracts, useContractTypes, useEmployeeDocuments,
   useDocumentTypes, useLoans, useAllowanceTypes, useEmployeeAllowances,
   useDeductionTypes, useEmployeeDeductions,
@@ -29,6 +29,10 @@ import {
   resolveDepartmentId,
   type ReportColumn,
 } from "../lib/reports/attendanceMonthly";
+import {
+  buildPayrollMonthlyFilters,
+  formatPayrollReportCell,
+} from "../lib/reports/payrollMonthly";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -63,7 +67,6 @@ export function Reports() {
   const { history, loading: historyLoading, refetch: refetchHistory } = useReportHistory();
   const { employees } = useEmployees();
   const { departments } = useHierarchyData();
-  const { records: monthlyRecords } = useMonthlyRecords();
   const { requests: leaveRequests } = useLeaveRequests();
   const { types: leaveTypes } = useLeaveTypes();
   const { balances: leaveBalances } = useLeaveBalances();
@@ -184,22 +187,25 @@ export function Reports() {
           break;
         }
         case "payroll_monthly": {
-          let filtered = monthlyRecords;
-          if (filterDeptName) {
-            const deptEmpIds = employees.filter(e => e.department === filterDeptName).map(e => e.id);
-            filtered = filtered.filter(r => deptEmpIds.includes(r.employee_id));
-          }
-          rows = filtered.map(r => {
-            const calc = r.salary_calculation || {} as any;
-            return {
-              employee_name: empMap[r.employee_id] || r.employee_id,
-              department: empDeptMap[r.employee_id] || "—",
-              basic_salary: formatIQD(calc.baseSalary || 0),
-              allowances: formatIQD((calc.allowances || []).reduce((s: number, a: any) => s + (a.amount || 0), 0)),
-              deductions: formatIQD((calc.deductions || []).reduce((s: number, d: any) => s + (d.amount || 0), 0)),
-              net_salary: formatIQD(calc.netSalary || 0),
-            };
+          const deptId = resolveDepartmentId(departments, filterDept);
+          const filters = buildPayrollMonthlyFilters({
+            dateFrom,
+            dateTo,
+            departmentId: deptId,
           });
+          if (!dateFrom && filters.date_from) setDateFrom(String(filters.date_from));
+          if (!dateTo && filters.date_to) setDateTo(String(filters.date_to));
+
+          const result = await odooData.generateHrReport({
+            code: "payroll_monthly",
+            report_template_id: template.id,
+            filters,
+            create_history: true,
+            generated_by: arabicSource("common.human_resources_manager"),
+          });
+          rows = result.rows || [];
+          setGeneratedColumns(result.columns || null);
+          usedBackendHistory = true;
           break;
         }
         case "leave_balances": {
@@ -321,16 +327,27 @@ export function Reports() {
   const exportCSV = () => {
     if (!generatedData || !selectedTemplate) return;
     const cols = displayColumns;
-    const isAttendance = selectedTemplate.code === "attendance_monthly";
-    const rows = isAttendance
-      ? columnsForExport(cols, generatedData)
-      : generatedData.map((row) => {
-          const out: Record<string, unknown> = {};
-          for (const c of cols) {
-            out[translateCataloguedValue(c.label)] = translateCataloguedValue(String(row[c.key] ?? ""));
-          }
-          return out;
-        });
+    const code = selectedTemplate.code;
+    let rows: Record<string, unknown>[];
+    if (code === "attendance_monthly") {
+      rows = columnsForExport(cols, generatedData);
+    } else if (code === "payroll_monthly") {
+      rows = generatedData.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const c of cols) {
+          out[c.label] = formatPayrollReportCell(c.key, row[c.key]);
+        }
+        return out;
+      });
+    } else {
+      rows = generatedData.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const c of cols) {
+          out[translateCataloguedValue(c.label)] = translateCataloguedValue(String(row[c.key] ?? ""));
+        }
+        return out;
+      });
+    }
     downloadExcelCsv(
       `${selectedTemplate.code}_${new Date().toISOString().slice(0, 10)}`,
       rows,
@@ -731,7 +748,9 @@ export function Reports() {
                                 <td key={col.key} className="p-3 text-foreground" style={{ fontSize: 12 }}>
                                   {selectedTemplate.code === "attendance_monthly"
                                     ? formatAttendanceReportCell(col.key, row[col.key], row)
-                                    : (row[col.key] ?? "—")}
+                                    : selectedTemplate.code === "payroll_monthly"
+                                      ? formatPayrollReportCell(col.key, row[col.key])
+                                      : (row[col.key] ?? "—")}
                                 </td>
                               ))}
                             </tr>
