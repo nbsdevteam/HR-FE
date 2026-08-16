@@ -475,6 +475,7 @@ export function EvaluationPage() {
           <NewEvalPanel
             employees={employees}
             empMap={empMap}
+            loading={empLoading}
             onClose={() => setShowNewEval(false)}
             onCreated={() => { setShowNewEval(false); fetchData(); }}
           />
@@ -842,15 +843,22 @@ function EvalDetailModal({
 function NewEvalPanel({
   employees,
   empMap,
+  loading,
   onClose,
   onCreated,
 }: {
   employees: DbEmployee[];
   empMap: Record<string, DbEmployee>;
+  loading?: boolean;
   onClose: () => void;
   onCreated: () => void;
 }) {
-  const activeEmployees = employees.filter(e => !e.status || e.status === arabicSource("common.is_active"));
+  // Odoo returns status codes (active/onboarding/...). Comparing only to the
+  // Arabic label "نشط" hid the entire roster. Keep everyone except exited.
+  const activeEmployees = employees.filter((e) => {
+    const s = String(e.status || "").trim().toLowerCase();
+    return !["exited", "terminated", "ended", "finished"].includes(s);
+  });
   const [selectedEmpId, setSelectedEmpId] = useState("");
   const [evaluatorId, setEvaluatorId] = useState("");
   const [cycle, setCycle] = useState<EvalCycleType>(arabicSource("common.quarterly"));
@@ -952,7 +960,8 @@ function NewEvalPanel({
                 labels={Object.fromEntries(activeEmployees.map((e) => [String(e.id), empDisplayName(e)]))}
                 value={selectedEmpId}
                 onChange={(id) => setSelectedEmpId(String(id))}
-                placeholder={arabicSource("evaluation.select_employee")}
+                placeholder={loading ? arabicSource("common.loading") : arabicSource("evaluation.select_employee")}
+                disabled={Boolean(loading)}
               />
             </div>
 
