@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  PUNCH_AUDIT_DETAIL_COLUMNS,
+  PUNCH_AUDIT_DISPLAY_COLUMNS,
   buildPunchAuditFilters,
   formatPunchAuditCell,
+  isPunchAuditReport,
 } from "./punchAudit";
 
 describe("buildPunchAuditFilters", () => {
@@ -33,6 +36,23 @@ describe("buildPunchAuditFilters", () => {
       date_to: "2026-07-15",
       device_id: 9,
     });
+  });
+});
+
+describe("punch audit column sets", () => {
+  it("keeps the HR table to eight display columns", () => {
+    expect(PUNCH_AUDIT_DISPLAY_COLUMNS.map((c) => c.key)).toEqual([
+      "employee_no",
+      "employee_name",
+      "department",
+      "event_date",
+      "punch_time",
+      "punch_role_label",
+      "device_name",
+      "problem_label",
+    ]);
+    expect(PUNCH_AUDIT_DETAIL_COLUMNS.some((c) => c.key === "device_event_id")).toBe(true);
+    expect(isPunchAuditReport("punch_audit")).toBe(true);
   });
 });
 

@@ -15,6 +15,38 @@ export type PunchAuditFilterInput = {
   now?: Date;
 };
 
+export const PUNCH_AUDIT_DISPLAY_COLUMNS: { key: string; label: string }[] = [
+  { key: "employee_no", label: "Employee No" },
+  { key: "employee_name", label: "Employee" },
+  { key: "department", label: "Department" },
+  { key: "event_date", label: "Date" },
+  { key: "punch_time", label: "Punch Time (Asia/Baghdad)" },
+  { key: "punch_role_label", label: "Punch Type" },
+  { key: "device_name", label: "Device" },
+  { key: "problem_label", label: "Status / Problem" },
+];
+
+export const PUNCH_AUDIT_DETAIL_COLUMNS: { key: string; label: string }[] = [
+  { key: "device_event_id", label: "Device Event ID" },
+  { key: "punch_role", label: "Punch Role" },
+  { key: "punch_source_label", label: "Punch Source" },
+  { key: "verify_mode", label: "Verification Method" },
+  { key: "card_no", label: "Card No" },
+  { key: "door_no", label: "Door" },
+  { key: "processed", label: "Processed" },
+  { key: "process_error", label: "Process Error" },
+  { key: "attendance_id", label: "Attendance ID" },
+  { key: "attendance_check_in", label: "Attendance Check-in (Baghdad)" },
+  { key: "attendance_check_out", label: "Attendance Check-out (Baghdad)" },
+  { key: "attendance_source", label: "Attendance Source" },
+  { key: "attendance_day_status", label: "Attendance Day Status" },
+  { key: "problem", label: "Problem Code" },
+];
+
+export function isPunchAuditReport(code?: string | null): boolean {
+  return code === "punch_audit" || code === "device_events" || code === "punch_ledger";
+}
+
 export const PUNCH_PROBLEM_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "All punch results" },
   { value: "problems", label: "Problems only" },

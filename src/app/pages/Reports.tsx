@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { useReportTitle } from "../lib/useDocumentTitle";
 import { printWithReportTitle } from "../lib/documentTitle";
 import { motion, AnimatePresence } from "motion/react";
@@ -6,7 +6,7 @@ import {
   BarChart3, Download, FileText, Users, CalendarDays, Wallet,
   ClipboardCheck, Clock, AlertTriangle, Search, Loader2,
   Eye, X, Briefcase, FileCheck, UserPlus, GraduationCap, History,
-  Table, LayoutGrid, Printer,
+  Table, LayoutGrid, Printer, ChevronRight,
 } from "lucide-react";
 import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import * as odooData from "../lib/api/odooData";
@@ -42,9 +42,12 @@ import {
   formatLeaveReportCell,
 } from "../lib/reports/leaveRequests";
 import {
+  PUNCH_AUDIT_DETAIL_COLUMNS,
+  PUNCH_AUDIT_DISPLAY_COLUMNS,
   PUNCH_PROBLEM_FILTER_OPTIONS,
   buildPunchAuditFilters,
   formatPunchAuditCell,
+  isPunchAuditReport,
 } from "../lib/reports/punchAudit";
 
 const categoryIcons: Record<string, any> = {
@@ -110,6 +113,7 @@ export function Reports() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [rptSortBy, setRptSortBy] = useState<"name" | "category">("name");
   const [rptSortDir, setRptSortDir] = useState<"asc" | "desc">("asc");
+  const [expandedPunch, setExpandedPunch] = useState<number | null>(null);
 
   const empMap = useMemo(() => {
     const m: Record<string, string> = {};
@@ -129,7 +133,9 @@ export function Reports() {
     return departments.find(d => d.id === filterDept)?.name || filterDept;
   }, [filterDept, departments]);
 
-  const displayColumns = generatedColumns || selectedTemplate?.columns || [];
+  const displayColumns = isPunchAuditReport(selectedTemplate?.code)
+    ? PUNCH_AUDIT_DISPLAY_COLUMNS
+    : (generatedColumns || selectedTemplate?.columns || []);
 
   const reportDateLabel = useMemo(() => {
     const defaults = defaultMonthRangeBaghdad();
@@ -168,6 +174,7 @@ export function Reports() {
     setGeneratedData(null);
     setGeneratedColumns(null);
     setGenerateError(null);
+    setExpandedPunch(null);
 
     let rows: Record<string, any>[] = [];
     let usedBackendHistory = false;
@@ -832,6 +839,9 @@ export function Reports() {
                         <thead>
                           <tr className="bg-muted/30 border-b border-border/40">
                             <th className="p-3 text-start text-muted-foreground font-medium" style={{ fontSize: 12 }}>#</th>
+                            {isPunchAuditReport(selectedTemplate.code) && (
+                              <th className="p-3 text-start text-muted-foreground font-medium" style={{ fontSize: 12 }} />
+                            )}
                             {displayColumns.map(col => (
                               <th key={col.key} className="p-3 text-start text-muted-foreground font-medium" style={{ fontSize: 12 }}>
                                 {col.label}
@@ -841,8 +851,19 @@ export function Reports() {
                         </thead>
                         <tbody>
                           {generatedData.slice(0, 200).map((row, idx) => (
-                            <tr key={idx} className="border-b border-border/20 hover:bg-muted/10">
+                            <Fragment key={idx}>
+                            <tr
+                              className={`border-b border-border/20 hover:bg-muted/10 ${isPunchAuditReport(selectedTemplate.code) ? "cursor-pointer" : ""}`}
+                              onClick={isPunchAuditReport(selectedTemplate.code)
+                                ? () => setExpandedPunch(expandedPunch === idx ? null : idx)
+                                : undefined}
+                            >
                               <td className="p-3 text-muted-foreground" style={{ fontSize: 12 }}>{idx + 1}</td>
+                              {isPunchAuditReport(selectedTemplate.code) && (
+                                <td className="p-3 text-muted-foreground" style={{ fontSize: 12 }}>
+                                  <ChevronRight className={`w-4 h-4 transition-transform ${expandedPunch === idx ? "rotate-90" : ""}`} />
+                                </td>
+                              )}
                               {displayColumns.map(col => (
                                 <td key={col.key} className="p-3 text-foreground" style={{ fontSize: 12 }}>
                                   {selectedTemplate.code === "attendance_monthly"
@@ -851,12 +872,30 @@ export function Reports() {
                                       ? formatPayrollReportCell(col.key, row[col.key])
                                       : (selectedTemplate.code === "leave_requests" || selectedTemplate.code === "leave_monthly")
                                         ? formatLeaveReportCell(col.key, row[col.key])
-                                        : (selectedTemplate.code === "punch_audit" || selectedTemplate.code === "device_events" || selectedTemplate.code === "punch_ledger")
+                                        : isPunchAuditReport(selectedTemplate.code)
                                           ? formatPunchAuditCell(col.key, row[col.key])
                                           : (row[col.key] ?? "—")}
                                 </td>
                               ))}
                             </tr>
+                            {isPunchAuditReport(selectedTemplate.code) && expandedPunch === idx && (
+                              <tr key={`detail-${idx}`} className="bg-muted/10 border-b border-border/20">
+                                <td colSpan={displayColumns.length + 2} className="p-4">
+                                  <p className="text-xs text-muted-foreground mb-2">Details</p>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {PUNCH_AUDIT_DETAIL_COLUMNS.map((col) => (
+                                      <div key={col.key} className="text-xs">
+                                        <span className="text-muted-foreground">{col.label}: </span>
+                                        <span className="text-foreground" dir="ltr">
+                                          {formatPunchAuditCell(col.key, row[col.key])}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                            </Fragment>
                           ))}
                         </tbody>
                       </table>
