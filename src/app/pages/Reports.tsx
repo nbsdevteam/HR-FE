@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useReportTitle } from "../lib/useDocumentTitle";
-import { setReportTitle } from "../lib/documentTitle";
+import { printWithReportTitle } from "../lib/documentTitle";
 import { motion, AnimatePresence } from "motion/react";
 import {
   BarChart3, Download, FileText, Users, CalendarDays, Wallet,
@@ -139,7 +139,7 @@ export function Reports() {
   }, [dateFrom, dateTo]);
 
   const reportHeaderName = selectedTemplate
-    ? (selectedTemplate.name_en || selectedTemplate.name_ar || selectedTemplate.code)
+    ? (selectedTemplate.name_ar || selectedTemplate.name_en || selectedTemplate.code)
     : "";
 
   useReportTitle(
@@ -771,8 +771,7 @@ export function Reports() {
                       </button>
                       <button
                         onClick={() => {
-                          setReportTitle(reportHeaderName, reportDateLabel);
-                          window.print();
+                          printWithReportTitle(reportHeaderName, reportDateLabel);
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/30 transition-colors cursor-pointer"
                       >

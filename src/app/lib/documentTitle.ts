@@ -6,21 +6,33 @@
 import i18n from "../i18n";
 
 const DEFAULT_TITLE_KEY = "shared.human_resources_system";
+const REPORT_TITLE_ATTR = "data-report-title";
 let currentCustomTitle: string | null = null;
+
+function applyDocumentTitle(title: string, lock = true): void {
+  if (typeof document === "undefined") return;
+  document.title = title;
+  const tag = document.querySelector("title");
+  if (tag) tag.textContent = title;
+  if (lock) document.documentElement.setAttribute(REPORT_TITLE_ATTR, title);
+  else document.documentElement.removeAttribute(REPORT_TITLE_ATTR);
+}
+
+export function getLockedReportTitle(): string | null {
+  if (typeof document === "undefined") return currentCustomTitle;
+  return document.documentElement.getAttribute(REPORT_TITLE_ATTR) || currentCustomTitle;
+}
 
 /**
  * Set a custom document title.
  * Use this when displaying reports or specific pages that should have unique names.
- * 
- * @param title - The title to set (can be a translation key or plain text)
- * @param isTranslationKey - Whether the title is a translation key (default: false)
  */
 export function setDocumentTitle(title: string, isTranslationKey = false): void {
   if (typeof document === "undefined") return;
-  
+
   currentCustomTitle = title;
   const resolvedTitle = isTranslationKey ? i18n.t(title) : title;
-  document.title = resolvedTitle || i18n.t(DEFAULT_TITLE_KEY);
+  applyDocumentTitle(resolvedTitle || i18n.t(DEFAULT_TITLE_KEY));
 }
 
 /**
@@ -33,7 +45,17 @@ export function setReportTitle(reportName: string, date?: string): void {
 
   const title = date ? `${date} - ${reportName}` : reportName;
   currentCustomTitle = title;
-  document.title = title;
+  applyDocumentTitle(title);
+}
+
+/**
+ * Chromium snapshots document.title for "Save as PDF" on the next turn.
+ * Setting the title and calling print() in the same click often keeps the
+ * generic "Human Resources System.pdf" name.
+ */
+export function printWithReportTitle(reportName: string, date?: string): void {
+  setReportTitle(reportName, date);
+  window.setTimeout(() => window.print(), 80);
 }
 
 /**
@@ -41,9 +63,9 @@ export function setReportTitle(reportName: string, date?: string): void {
  */
 export function resetDocumentTitle(): void {
   if (typeof document === "undefined") return;
-  
+
   currentCustomTitle = null;
-  document.title = i18n.t(DEFAULT_TITLE_KEY);
+  applyDocumentTitle(i18n.t(DEFAULT_TITLE_KEY), false);
 }
 
 /**

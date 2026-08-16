@@ -8,7 +8,9 @@ import {
   setReportTitle,
   resetDocumentTitle,
   getCurrentCustomTitle,
+  printWithReportTitle,
 } from "./documentTitle";
+import { syncDocumentLocale } from "../i18n";
 import i18n from "../i18n";
 
 describe("documentTitle utilities", () => {
@@ -112,6 +114,24 @@ describe("documentTitle utilities", () => {
       setReportTitle("Employee Report: Q3", "July-September 2026");
       expect(document.title).toContain("Employee Report: Q3");
       expect(document.title).toContain("July-September 2026");
+    });
+
+    it("keeps the report title when i18n syncs the locale", () => {
+      setReportTitle("Punch Audit Report", "2026-08-01 to 2026-08-31");
+      syncDocumentLocale("en");
+      expect(document.title).toBe("2026-08-01 to 2026-08-31 - Punch Audit Report");
+    });
+
+    it("prints after the title is committed", () => {
+      vi.useFakeTimers();
+      const print = vi.spyOn(window, "print").mockImplementation(() => {});
+      printWithReportTitle("Punch Audit Report", "2026-08-01 to 2026-08-31");
+      expect(document.title).toBe("2026-08-01 to 2026-08-31 - Punch Audit Report");
+      expect(print).not.toHaveBeenCalled();
+      vi.runAllTimers();
+      expect(print).toHaveBeenCalledTimes(1);
+      print.mockRestore();
+      vi.useRealTimers();
     });
   });
 });

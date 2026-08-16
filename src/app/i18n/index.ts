@@ -39,6 +39,11 @@ export function syncDocumentLocale(language: string): void {
   const normalized = normalizeLanguage(language);
   document.documentElement.lang = normalized;
   document.documentElement.dir = getLanguageDirection(normalized);
+  const lockedTitle = document.documentElement.getAttribute("data-report-title");
+  if (lockedTitle) {
+    document.title = lockedTitle;
+    return;
+  }
   const localizedTitle = i18n.getFixedT(normalized)("shared.human_resources_system");
   if (localizedTitle !== "shared.human_resources_system") {
     document.title = localizedTitle;
