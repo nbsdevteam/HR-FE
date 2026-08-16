@@ -1,110 +1,110 @@
-@import './fonts.css';
+/* Global styles */
 @import './tailwind.css';
 @import './theme.css';
+@import './fonts.css';
 
-/* Directional navigation glyphs follow the active writing direction. */
-html[dir="rtl"] :where(
-  .lucide-chevron-left,
-  .lucide-chevron-right,
-  .lucide-arrow-left,
-  .lucide-arrow-right,
-  .lucide-log-in,
-  .lucide-log-out
-) {
-  transform: scaleX(-1);
-}
-
-/* Keep technical values predictable inside mixed-direction content. */
-[dir="ltr"] {
-  unicode-bidi: isolate;
-}
-
-/* —— Print / PDF: hide UI chrome, keep report content only —— */
+/* Print styles for reports */
 @media print {
-  @page {
-    margin: 12mm;
-  }
-
-  .no-print {
+  /* Hide UI elements that shouldn't appear in PDF */
+  .no-print,
+  .no-print * {
     display: none !important;
   }
-
-  html,
+  
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Reset body for printing */
   body {
-    background: #fff !important;
-    color: #000 !important;
-    height: auto !important;
-    overflow: visible !important;
+    margin: 0;
+    padding: 20px;
+    background: white;
   }
-
-  /* Flatten app shell so the report can flow across pages */
-  body:has(.report-print-root) .app-shell,
-  body:has(.report-print-root) .app-shell-main,
-  body:has(.report-print-root) .app-shell-content {
-    display: block !important;
-    height: auto !important;
+  
+  /* Ensure report containers fill the page */
+  .report-content,
+  .report-print-body {
+    position: static !important;
     overflow: visible !important;
-    position: static !important;
-  }
-
-  .report-print-overlay {
-    position: static !important;
-    inset: auto !important;
-    display: block !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    max-height: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-
+  
+  .report-print-overlay,
   .report-print-root {
     position: static !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    height: auto !important;
-    overflow: visible !important;
+    background: transparent !important;
+    max-width: none !important;
     box-shadow: none !important;
     border: none !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    color: #000 !important;
   }
-
-  .report-print-body {
-    overflow: visible !important;
-    max-height: none !important;
-    height: auto !important;
-    padding: 0 !important;
-  }
-
-  .report-print-root,
-  .report-print-root * {
-    color: #000 !important;
-    text-shadow: none !important;
-    box-shadow: none !important;
-  }
-
-  .report-print-root table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-  }
-
-  .report-print-root th,
-  .report-print-root td {
-    border: 1px solid #ccc !important;
-    background: #fff !important;
-    color: #000 !important;
-  }
-
-  .report-print-root thead {
-    display: table-header-group;
-  }
-
-  .report-print-root tr {
-    break-inside: avoid;
+  
+  /* Table styles for printing */
+  table {
+    border-collapse: collapse;
+    width: 100%;
     page-break-inside: avoid;
   }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+  }
+  
+  th, td {
+    border: 1px solid #000 !important;
+    padding: 8px !important;
+    color: #000 !important;
+    background: white !important;
+  }
+  
+  th {
+    background: #f3f4f6 !important;
+    font-weight: bold;
+  }
+  
+  /* Page break control */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+  
+  /* Remove interactive elements */
+  button,
+  input,
+  select,
+  textarea {
+    display: none !important;
+  }
+  
+  /* Ensure black text for readability */
+  body, p, span, div, td, th {
+    color: #000 !important;
+  }
+  
+  /* Remove shadows and borders from cards */
+  .card,
+  .modal,
+  .dialog {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* Default: hide print-only elements on screen */
+.print-only {
+  display: none;
 }
