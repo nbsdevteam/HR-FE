@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useCallback, useMemo, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import * as odooData from "@/shared/api/odooData";
 import {
   Users, CalendarDays, Wallet, ClipboardCheck, TrendingUp, TrendingDown,
   AlertTriangle, UserPlus, Clock, GraduationCap, Loader2,
   Briefcase, FileCheck, CreditCard, Bell, Shield, Award,
-  ArrowUpRight, ArrowDownRight, Minus, BarChart3, Target,
+  Target,
   Activity, Percent, Coins, FileText, UserX,
   Zap, Heart, Building2, PieChart, Gauge, Eye,
 } from "lucide-react";
@@ -24,77 +24,30 @@ import {
   useConfigurations, empDisplayName,
 } from "@/shared/hooks";
 import { useAppSettings, formatMonthOnly } from "@/app/providers";
-import { formatCurrency, formatDateTime } from "@/i18n/format";
+import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending, normalizeLeaveStatus } from "@/i18n/status";
+import { DashboardHeader } from "../components/DashboardHeader";
+import { DashboardKpiTabs } from "../components/DashboardKpiTabs";
+import { DashboardLoadingState } from "../components/DashboardLoadingState";
+import { DashboardMiniBar } from "../components/DashboardMiniBar";
+import { DashboardRiskBadge } from "../components/DashboardRiskBadge";
+import { DashboardStatGrid } from "../components/DashboardStatGrid";
+import { DashboardTrendBadge } from "../components/DashboardTrendBadge";
+import type { DashboardKpiSection, DashboardServerCards } from "../types";
+import { dashboardCardClass, formatIQD, formatK, pct, pctDec } from "../utils/dashboardFormat";
 
-const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
-const formatK = (val: number) => val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val);
-const pct = (n: number, d: number) => d > 0 ? Math.round((n / d) * 100) : 0;
-const pctDec = (n: number, d: number) => d > 0 ? Math.round((n / d) * 1000) / 10 : 0;
-
-// ═══════ Trend Indicator ═══════
-function TrendBadge({ value, suffix = "", inverse = false }: { value: number; suffix?: string; inverse?: boolean }) {
-  const isPositive = inverse ? value < 0 : value > 0;
-  const isNeutral = value === 0;
-  return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${
-      isNeutral ? "bg-muted/30 text-muted-foreground" :
-      isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
-    }`}>
-      {isNeutral ? <Minus className="w-3 h-3" /> : isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-      {Math.abs(value)}{suffix}
-    </span>
-  );
-}
-
-// ═══════ Mini Progress Bar ═══════
-function MiniBar({ value, max, color = "bg-primary" }: { value: number; max: number; color?: string }) {
-  const w = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
-  return (
-    <div className="w-full h-2 rounded-full bg-muted/30 overflow-hidden">
-      <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${w}%` }} />
-    </div>
-  );
-}
-
-// ═══════ Risk Level Badge ═══════
-function RiskBadge({ level }: { level: "low" | "medium" | "high" | "critical" }) {
-  const cfg = {
-    low: { label: arabicSource("dashboard.is_low"), cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-    medium: { label: arabicSource("common.average"), cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
-    high: { label: arabicSource("dashboard.high"), cls: "bg-orange-500/10 text-orange-400 border-orange-500/30" },
-    critical: { label: arabicSource("dashboard.critical"), cls: "bg-red-500/10 text-red-400 border-red-500/30" },
-  }[level];
-  return <span className={`text-xs px-2 py-0.5 rounded-full border ${cfg.cls}`}>{cfg.label}</span>;
-}
-
-export function Dashboard() {
+export const Dashboard = () => {
   const { colors } = useChartTheme();
   const { settings: appSettings } = useAppSettings();
-  const [kpiSection, setKpiSection] = useState<"overview" | "workforce" | "financial" | "compliance" | "recruitment">("overview");
-  const [serverCards, setServerCards] = useState<{
-    present?: number; absent?: number; on_leave?: number; late?: number; employees?: number;
-  } | null>(null);
+  const [kpiSection, setKpiSection] = useState<DashboardKpiSection>("overview");
+  const [serverCards, setServerCards] = useState<DashboardServerCards | null>(null);
 
   const { employees, loading: empLoading } = useEmployees();
   const { records: attendance, loading: attLoading } = useAttendanceRecords();
   const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
   const loading = empLoading || attLoading || mrLoading;
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await odooData.fetchHrDashboard();
-        const cards = (data as any)?.cards || data;
-        if (!cancelled && cards) setServerCards(cards);
-      } catch {
-        if (!cancelled) setServerCards(null);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
   // Live data hooks
   const { requests: leaveRequests } = useLeaveRequests();
@@ -650,74 +603,35 @@ export function Dashboard() {
     }));
   }, [warningStats]);
 
-  const cardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg";
+  const cardCls = dashboardCardClass;
+
+  const handleKpiSectionChange = useCallback((section: DashboardKpiSection) => {
+    setKpiSection(section);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await odooData.fetchHrDashboard();
+        const cards = (data as any)?.cards || data;
+        if (!cancelled && cards) setServerCards(cards);
+      } catch {
+        if (!cancelled) setServerCards(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">{arabicSource("dashboard.loading_control_panel")}</span>
-      </div>
-    );
+    return <DashboardLoadingState />;
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-gradient-gold text-xl sm:text-2xl">{arabicSource("common.control_panel")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{arabicSource("dashboard.kpis_live_data_from_the_database")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0">
-          <div className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border ${
-            riskScore.level === "critical" ? "bg-red-500/10 border-red-500/30" :
-            riskScore.level === "high" ? "bg-orange-500/10 border-orange-500/30" :
-            riskScore.level === "medium" ? "bg-amber-500/10 border-amber-500/30" :
-            "bg-emerald-500/10 border-emerald-500/30"
-          }`}>
-            <Shield className={`w-4 h-4 flex-shrink-0 ${
-              riskScore.level === "critical" ? "text-red-400" :
-              riskScore.level === "high" ? "text-orange-400" :
-              riskScore.level === "medium" ? "text-amber-400" : "text-emerald-400"
-            }`} />
-            <span className="text-sm whitespace-nowrap">{arabicSource("dashboard.risks")} <RiskBadge level={riskScore.level} /></span>
-          </div>
-          {unreadCount > 0 && (
-            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
-              <Bell className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <span className="text-amber-400 text-sm whitespace-nowrap">{unreadCount} {arabicSource("dashboard.new_notice")}</span>
-            </div>
-          )}
-        </div>
-      </div>
+      <DashboardHeader riskLevel={riskScore.level} unreadCount={unreadCount} />
 
-      {/* KPI Section Tabs — scrollable on narrow phones */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
-        {([
-          { key: "overview" as const, label: arabicSource("common.overview"), icon: BarChart3 },
-          { key: "workforce" as const, label: arabicSource("dashboard.manpower"), icon: Users },
-          { key: "financial" as const, label: arabicSource("common.finance"), icon: Wallet },
-          { key: "compliance" as const, label: arabicSource("dashboard.compliance_and_development"), icon: Shield },
-          { key: "recruitment" as const, label: arabicSource("common.recruitment"), icon: UserPlus },
-        ]).map(tab => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setKpiSection(tab.key)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                kpiSection === tab.key
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                  : "bg-card/30 border border-border/40 text-muted-foreground hover:text-foreground hover:border-primary/30"
-              }`}
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <DashboardKpiTabs activeSection={kpiSection} onSectionChange={handleKpiSectionChange} />
 
       {/* ════════════════════════════════════════════════════════════════════
            OVERVIEW SECTION
@@ -725,42 +639,17 @@ export function Dashboard() {
       {kpiSection === "overview" && (
         <>
           {/* Top-level KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
+          <DashboardStatGrid
+            hoverLift
+            compactValue
+            stats={[
               { label: arabicSource("common.total_employees"), value: totalEmployees, sub: `${activeEmployees} ${arabicSource("dashboard.active")} ${inactiveEmployees} ${arabicSource("common.is_inactive")}`, icon: Users, color: "text-primary" },
               { label: arabicSource("dashboard.attendance_7_days"), value: `${attendanceStats.rolling7Rate}%`, sub: `${arabicSource("common.today")} ${attendanceStats.attendanceRate}%`, icon: ClipboardCheck, color: "text-emerald-400", trend: attendanceStats.attendanceTrend },
               { label: arabicSource("common.total_compensation"), value: formatIQD(compensationStats.totalCompensation), sub: `${arabicSource("dashboard.cost_employee")} ${formatIQD(compensationStats.costPerEmployee)}`, icon: Wallet, color: "text-blue-400" },
               { label: arabicSource("common.turnover_rate_annual"), value: `${turnoverRate}%`, sub: `${newHireStats.last30} ${arabicSource("dashboard.new_appointment_30_days")}`, icon: Activity, color: turnoverRate > cfg.turnoverWarning ? "text-red-400" : "text-emerald-400" },
               { label: arabicSource("dashboard.risk_level"), value: `${riskScore.score}/100`, sub: `${riskScore.items.length} ${arabicSource("dashboard.risk_factors")}`, icon: Shield, color: riskScore.level === "low" ? "text-emerald-400" : riskScore.level === "medium" ? "text-amber-400" : "text-red-400" },
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07 }}
-                  whileHover={{ y: -4, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.15)" }}
-                  className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg hover:border-primary/30 transition-colors overflow-hidden"
-                >
-                  <div className="absolute top-0 end-0 w-28 h-28 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                  <div className="flex items-start justify-between relative z-10">
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className={`text-xl font-semibold ${stat.color}`} dir="ltr">{stat.value}</p>
-                        {"trend" in stat && stat.trend !== undefined && <TrendBadge value={stat.trend} suffix="%" />}
-                      </div>
-                      <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{stat.sub}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20">
-                      <Icon className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+            ]}
+          />
 
           {/* Alert Banners */}
           {(expiryStats.expiringDocs > 0 || expiryStats.expiredDocs > 0 || expiryStats.expiringContracts > 0 || probationCount > 0 || warningStats.active > 0 || warningStats.escalationRisk > 0) && (
@@ -848,7 +737,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className={cardCls}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-foreground">{arabicSource("common.net_monthly_salaries_thousand_iqd")}</h3>
-                {payrollMoM !== 0 && <TrendBadge value={payrollMoM} suffix="%" inverse />}
+                {payrollMoM !== 0 && <DashboardTrendBadge value={payrollMoM} suffix="%" inverse />}
               </div>
               {monthlyPayroll.length > 0 ? (
                 <CustomLineChart data={monthlyPayroll} color={colors.primary} height={250} valueLabel={arabicSource("common.amount")} />
@@ -898,7 +787,7 @@ export function Dashboard() {
                   riskScore.level === "medium" ? "text-amber-400" : "text-emerald-400"
                 }`}>{riskScore.score}</p>
                 <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.out_of_100")}</p>
-                <div className="mt-2"><RiskBadge level={riskScore.level} /></div>
+                <div className="mt-2"><DashboardRiskBadge level={riskScore.level} /></div>
               </div>
               <div className="space-y-2">
                 {riskScore.items.length === 0 ? (
@@ -909,7 +798,7 @@ export function Dashboard() {
                 ) : riskScore.items.slice(0, 5).map((item, i) => (
                   <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/10">
                     <span className="text-xs text-foreground">{item.label}</span>
-                    <RiskBadge level={item.level} />
+                    <DashboardRiskBadge level={item.level} />
                   </div>
                 ))}
               </div>
@@ -944,31 +833,15 @@ export function Dashboard() {
          ════════════════════════════════════════════════════════════════════ */}
       {kpiSection === "workforce" && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
+          <DashboardStatGrid
+            stats={[
               { label: arabicSource("dashboard.average_service_life"), value: `${tenureStats.avg} ${arabicSource("common.years")}`, sub: `${arabicSource("dashboard.mediator")} ${tenureStats.median} ${arabicSource("common.years")}`, icon: Clock },
               { label: arabicSource("dashboard.attendance_30_days"), value: `${attendanceStats.rolling30Rate}%`, sub: `${arabicSource("dashboard.absenteeism")} ${attendanceStats.absenteeismRate}%`, icon: ClipboardCheck },
               { label: arabicSource("dashboard.discipline_ratio"), value: `${attendanceStats.punctualityRate}%`, sub: `${attendanceStats.late} ${arabicSource("dashboard.late_today")}`, icon: Target },
               { label: arabicSource("common.active_contracts"), value: activeContracts, sub: `${probationCount} ${arabicSource("dashboard.in_the_experiment")}`, icon: Briefcase },
               { label: arabicSource("common.use_of_vacations"), value: `${leaveUtilization.rate}%`, sub: `${leaveUtilization.totalUsed} ${arabicSource("common.from")} ${leaveUtilization.totalEntitled} ${arabicSource("common.days_2")}`, icon: CalendarDays },
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                  className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg overflow-hidden">
-                  <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                  <div className="flex items-start justify-between relative z-10">
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                      <p className="text-2xl font-semibold text-primary mt-1">{stat.value}</p>
-                      <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{stat.sub}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20"><Icon className="w-5 h-5 text-primary" /></div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Tenure Distribution */}
@@ -1015,7 +888,7 @@ export function Dashboard() {
                     <span className="text-muted-foreground">{arabicSource("common.use_of_vacations")}</span>
                     <span className="text-primary font-medium">{leaveUtilization.rate}%</span>
                   </div>
-                  <MiniBar value={leaveUtilization.rate} max={100} color="bg-primary" />
+                  <DashboardMiniBar value={leaveUtilization.rate} max={100} color="bg-primary" />
                   <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.average")} {leaveUtilization.avgUsed} {arabicSource("dashboard.day_employee")}</p>
                 </div>
               </div>
@@ -1086,7 +959,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-foreground">{arabicSource("common.net_monthly_salaries_thousand_iqd")}</h3>
-                {payrollMoM !== 0 && <TrendBadge value={payrollMoM} suffix={arabicSource("dashboard.monthly")} inverse />}
+                {payrollMoM !== 0 && <DashboardTrendBadge value={payrollMoM} suffix={arabicSource("dashboard.monthly")} inverse />}
               </div>
               {monthlyPayroll.length > 0 ? (
                 <CustomLineChart data={monthlyPayroll} color={colors.primary} height={280} valueLabel={arabicSource("common.amount")} />
@@ -1164,7 +1037,7 @@ export function Dashboard() {
                       <span className="text-muted-foreground">{arabicSource("dashboard.payment_ratio")}</span>
                       <span className="text-emerald-400 font-medium">{pct(activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance, activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0))}%</span>
                     </div>
-                    <MiniBar value={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance} max={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0)} color="bg-emerald-500" />
+                    <DashboardMiniBar value={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0) - totalLoanBalance} max={activeLoans.reduce((s, l) => s + (l.loan_amount || 0), 0)} color="bg-emerald-500" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
@@ -1315,7 +1188,7 @@ export function Dashboard() {
                 <span className="text-muted-foreground">{arabicSource("dashboard.training_coverage_percentage_of_employees_participating")}</span>
                 <span className="text-primary font-medium">{trainingStats.coverageRate}%</span>
               </div>
-              <MiniBar value={trainingStats.coverageRate} max={100} color={trainingStats.coverageRate >= cfg.trainingCompletionTarget ? "bg-emerald-500" : "bg-amber-500"} />
+              <DashboardMiniBar value={trainingStats.coverageRate} max={100} color={trainingStats.coverageRate >= cfg.trainingCompletionTarget ? "bg-emerald-500" : "bg-amber-500"} />
             </div>
           </motion.div>
         </>
@@ -1443,4 +1316,4 @@ export function Dashboard() {
       )}
     </div>
   );
-}
+};
