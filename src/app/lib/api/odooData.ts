@@ -1212,6 +1212,47 @@ export async function createReportHistory(payload: Record<string, unknown>) {
   return hrCall("/api/hr/reports/history/create", params);
 }
 
+export type HrReportGenerateResult = {
+  code: string;
+  template: {
+    id: number | null;
+    code: string;
+    name_ar: string;
+    name_en: string;
+    category: string;
+  };
+  columns: { key: string; label: string }[];
+  rows: Record<string, unknown>[];
+  row_count: number;
+  filters_used: Record<string, unknown>;
+  history: Record<string, unknown> | null;
+  timezone: string;
+  generated_at: string;
+};
+
+/**
+ * Backend-authoritative report generation (P0b+).
+ * P0c uses this for attendance_monthly; other codes may still be FE-local.
+ */
+export async function generateHrReport(payload: {
+  code?: string;
+  report_template_id?: string | number;
+  filters?: Record<string, unknown>;
+  create_history?: boolean;
+  generated_by?: string;
+}): Promise<HrReportGenerateResult> {
+  const params: Record<string, unknown> = {
+    filters: payload.filters || {},
+    create_history: payload.create_history !== false,
+  };
+  if (payload.code) params.code = payload.code;
+  if (payload.report_template_id != null) {
+    params.report_template_id = eid(payload.report_template_id);
+  }
+  if (payload.generated_by) params.generated_by = payload.generated_by;
+  return hrCall("/api/hr/reports/generate", params) as Promise<HrReportGenerateResult>;
+}
+
 // ─── Slice D: Payroll catalog writes (allowances / deductions) ───────
 
 export async function createAllowanceType(payload: Record<string, unknown>) {

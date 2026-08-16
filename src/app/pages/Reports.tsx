@@ -10,7 +10,7 @@ import { SortableHeaderRow, toggleSort } from "../components/SortableHeader";
 import * as odooData from "../lib/api/odooData";
 import {
   useReportTemplates, useReportHistory, useEmployees, useHierarchyData,
-  useAttendanceRecords, useMonthlyRecords, useLeaveRequests, useLeaveTypes,
+  useMonthlyRecords, useLeaveRequests, useLeaveTypes,
   useLeaveBalances, useEmployeeContracts, useContractTypes, useEmployeeDocuments,
   useDocumentTypes, useLoans, useAllowanceTypes, useEmployeeAllowances,
   useDeductionTypes, useEmployeeDeductions,
@@ -20,6 +20,15 @@ import { formatCurrency, formatDateTime } from "../i18n/format";
 import { translateCataloguedValue } from "../i18n/legacy";
 import { arabicSource } from "../i18n/source";
 import { downloadExcelCsv } from "../lib/export";
+import {
+  ATTENDANCE_EXCUSE_FILTER_OPTIONS,
+  ATTENDANCE_STATUS_FILTER_OPTIONS,
+  buildAttendanceMonthlyFilters,
+  columnsForExport,
+  formatAttendanceReportCell,
+  resolveDepartmentId,
+  type ReportColumn,
+} from "../lib/reports/attendanceMonthly";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -54,7 +63,6 @@ export function Reports() {
   const { history, loading: historyLoading, refetch: refetchHistory } = useReportHistory();
   const { employees } = useEmployees();
   const { departments } = useHierarchyData();
-  const { records: attendanceRecords } = useAttendanceRecords();
   const { records: monthlyRecords } = useMonthlyRecords();
   const { requests: leaveRequests } = useLeaveRequests();
   const { types: leaveTypes } = useLeaveTypes();
@@ -75,7 +83,11 @@ export function Reports() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterDept, setFilterDept] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterExcuse, setFilterExcuse] = useState<"" | "excused" | "not_excused">("");
   const [generatedData, setGeneratedData] = useState<Record<string, any>[] | null>(null);
+  const [generatedColumns, setGeneratedColumns] = useState<ReportColumn[] | null>(null);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -93,6 +105,14 @@ export function Reports() {
     employees.forEach(e => { m[e.id] = e.department || ""; });
     return m;
   }, [employees]);
+
+  // Department select stores id; FE-local reports still filter by department name.
+  const filterDeptName = useMemo(() => {
+    if (!filterDept) return "";
+    return departments.find(d => d.id === filterDept)?.name || filterDept;
+  }, [filterDept, departments]);
+
+  const displayColumns = generatedColumns || selectedTemplate?.columns || [];
 
   const filteredTemplates = useMemo(() => {
     const list = templates.filter(t => {
@@ -113,184 +133,204 @@ export function Reports() {
   const generateReport = async (template: DbReportTemplate) => {
     setGenerating(true);
     setGeneratedData(null);
+    setGeneratedColumns(null);
+    setGenerateError(null);
 
     let rows: Record<string, any>[] = [];
+    let usedBackendHistory = false;
 
-    switch (template.code) {
-      case "attendance_monthly": {
-        let filtered = attendanceRecords;
-        if (dateFrom) filtered = filtered.filter(r => r.date >= dateFrom);
-        if (dateTo) filtered = filtered.filter(r => r.date <= dateTo);
-        if (filterDept) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDept);
-        rows = filtered.map(r => {
-          let statusLabel = r.status || "—";
-          if (r.status === "complete" || r.status === "missing_checkout") {
-            statusLabel = r.is_late ? arabicSource("common.late") : arabicSource("common.present");
-          } else if (r.status === "absent" || r.status === "absent_due_to_late_threshold") {
-            statusLabel = arabicSource("common.absent");
-          } else if (r.status === "leave") {
-            statusLabel = arabicSource("common.vacations_2") || "Leave";
-          } else if (r.status === "holiday") {
-            statusLabel = "Holiday";
+    try {
+      switch (template.code) {
+        case "attendance_monthly": {
+          const deptId = resolveDepartmentId(departments, filterDept);
+          const filters = buildAttendanceMonthlyFilters({
+            dateFrom,
+            dateTo,
+            departmentId: deptId,
+            status: filterStatus,
+            excuseStatus: filterExcuse,
+          });
+          // Keep UI dates aligned when defaults were applied.
+          if (!dateFrom && filters.date_from) setDateFrom(String(filters.date_from));
+          if (!dateTo && filters.date_to) setDateTo(String(filters.date_to));
+
+          const result = await odooData.generateHrReport({
+            code: "attendance_monthly",
+            report_template_id: template.id,
+            filters,
+            create_history: true,
+            generated_by: arabicSource("common.human_resources_manager"),
+          });
+          rows = result.rows || [];
+          setGeneratedColumns(result.columns || null);
+          usedBackendHistory = true;
+          break;
+        }
+        case "leave_requests":
+        case "leave_monthly": {
+          let filtered = leaveRequests;
+          if (dateFrom) filtered = filtered.filter(r => r.start_date >= dateFrom);
+          if (dateTo) filtered = filtered.filter(r => r.start_date <= dateTo);
+          if (filterDeptName) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDeptName);
+          rows = filtered.map(r => ({
+            employee_name: empMap[r.employee_id] || r.employee_id,
+            leave_type: r.leave_type || "—",
+            start_date: r.start_date,
+            end_date: r.end_date,
+            days: r.days,
+            status: r.status,
+            reason: r.reason || "—",
+          }));
+          break;
+        }
+        case "payroll_monthly": {
+          let filtered = monthlyRecords;
+          if (filterDeptName) {
+            const deptEmpIds = employees.filter(e => e.department === filterDeptName).map(e => e.id);
+            filtered = filtered.filter(r => deptEmpIds.includes(r.employee_id));
           }
-          return {
-            employee_name: empMap[r.employee_id] || r.employee_id,
-            date: r.date,
-            // check_in/out already converted to Asia/Baghdad in mapAttendance
-            check_in: r.check_in_time || "—",
-            check_out: r.check_out_time || "—",
-            status: statusLabel,
-            delay_minutes: r.late_minutes || 0,
-            overtime_hours: r.overtime_hours ? r.overtime_hours.toFixed(1) : "0",
-          };
-        });
-        break;
-      }
-      case "leave_requests":
-      case "leave_monthly": {
-        let filtered = leaveRequests;
-        if (dateFrom) filtered = filtered.filter(r => r.start_date >= dateFrom);
-        if (dateTo) filtered = filtered.filter(r => r.start_date <= dateTo);
-        if (filterDept) filtered = filtered.filter(r => empDeptMap[r.employee_id] === filterDept);
-        rows = filtered.map(r => ({
-          employee_name: empMap[r.employee_id] || r.employee_id,
-          leave_type: r.leave_type || "—",
-          start_date: r.start_date,
-          end_date: r.end_date,
-          days: r.days,
-          status: r.status,
-          reason: r.reason || "—",
-        }));
-        break;
-      }
-      case "payroll_monthly": {
-        let filtered = monthlyRecords;
-        if (filterDept) {
-          const deptEmpIds = employees.filter(e => e.department === filterDept).map(e => e.id);
-          filtered = filtered.filter(r => deptEmpIds.includes(r.employee_id));
+          rows = filtered.map(r => {
+            const calc = r.salary_calculation || {} as any;
+            return {
+              employee_name: empMap[r.employee_id] || r.employee_id,
+              department: empDeptMap[r.employee_id] || "—",
+              basic_salary: formatIQD(calc.baseSalary || 0),
+              allowances: formatIQD((calc.allowances || []).reduce((s: number, a: any) => s + (a.amount || 0), 0)),
+              deductions: formatIQD((calc.deductions || []).reduce((s: number, d: any) => s + (d.amount || 0), 0)),
+              net_salary: formatIQD(calc.netSalary || 0),
+            };
+          });
+          break;
         }
-        rows = filtered.map(r => {
-          const calc = r.salary_calculation || {} as any;
-          return {
-            employee_name: empMap[r.employee_id] || r.employee_id,
-            department: empDeptMap[r.employee_id] || "—",
-            basic_salary: formatIQD(calc.baseSalary || 0),
-            allowances: formatIQD((calc.allowances || []).reduce((s: number, a: any) => s + (a.amount || 0), 0)),
-            deductions: formatIQD((calc.deductions || []).reduce((s: number, d: any) => s + (d.amount || 0), 0)),
-            net_salary: formatIQD(calc.netSalary || 0),
-          };
-        });
-        break;
-      }
-      case "leave_balances": {
-        rows = leaveBalances.map(b => {
-          const lt = leaveTypes.find(t => t.id === b.leave_type_id);
-          return {
-            employee_name: empMap[b.employee_id] || b.employee_id,
-            leave_type: lt?.name_ar || "—",
-            entitlement: b.total_days,
-            used: b.used_days,
-            remaining: b.total_days - b.used_days,
-            carryover: b.carryover_days || 0,
-          };
-        });
-        if (filterDept) rows = rows.filter((_, i) => empDeptMap[leaveBalances[i]?.employee_id] === filterDept);
-        break;
-      }
-      case "employee_master": {
-        let filtered = employees;
-        if (filterDept) filtered = filtered.filter(e => e.department === filterDept);
-        rows = filtered.map(e => ({
-          name: e.name || "—",
-          arabic_name: e.arabic_name || "—",
-          department: e.department || "—",
-          position: e.position || "—",
-          join_date: e.join_date || "—",
-          monthly_salary: formatIQD(e.monthly_salary || 0),
-          status: e.status || arabicSource("common.is_active"),
-        }));
-        break;
-      }
-      case "contracts_status": {
-        let filtered = contracts;
-        if (filterDept) {
-          const deptEmpIds = employees.filter(e => e.department === filterDept).map(e => e.id);
-          filtered = filtered.filter(c => deptEmpIds.includes(c.employee_id));
+        case "leave_balances": {
+          rows = leaveBalances.map(b => {
+            const lt = leaveTypes.find(t => t.id === b.leave_type_id);
+            return {
+              employee_name: empMap[b.employee_id] || b.employee_id,
+              leave_type: lt?.name_ar || "—",
+              entitlement: b.total_days,
+              used: b.used_days,
+              remaining: b.total_days - b.used_days,
+              carryover: b.carryover_days || 0,
+            };
+          });
+          if (filterDeptName) rows = rows.filter((_, i) => empDeptMap[leaveBalances[i]?.employee_id] === filterDeptName);
+          break;
         }
-        rows = filtered.map(c => {
-          const ct = contractTypes.find(t => t.id === c.contract_type_id);
-          return {
-            employee_name: empMap[c.employee_id] || c.employee_id,
-            contract_type: ct?.name_ar || "—",
-            start_date: c.start_date,
-            end_date: c.end_date || arabicSource("common.not_specified"),
-            status: c.status === "active" ? arabicSource("common.is_active") : c.status === "expired" ? arabicSource("common.finished") : c.status === "terminated" ? arabicSource("common.canceled") : c.status,
-            probation_status: c.probation_status === "in_progress" ? arabicSource("reports.underway") : c.probation_status === "passed" ? arabicSource("common.successful") : c.probation_status === "failed" ? arabicSource("common.failed") : c.probation_status === "not_applicable" ? "—" : c.probation_status,
-          };
-        });
-        break;
-      }
-      case "documents_expiry": {
-        const now = new Date();
-        let filtered = empDocuments;
-        if (filterDept) {
-          const deptEmpIds = employees.filter(e => e.department === filterDept).map(e => e.id);
-          filtered = filtered.filter(d => deptEmpIds.includes(d.employee_id));
+        case "employee_master": {
+          let filtered = employees;
+          if (filterDeptName) filtered = filtered.filter(e => e.department === filterDeptName);
+          rows = filtered.map(e => ({
+            name: e.name || "—",
+            arabic_name: e.arabic_name || "—",
+            department: e.department || "—",
+            position: e.position || "—",
+            join_date: e.join_date || "—",
+            monthly_salary: formatIQD(e.monthly_salary || 0),
+            status: e.status || arabicSource("common.is_active"),
+          }));
+          break;
         }
-        rows = filtered.filter(d => d.expiry_date).map(d => {
-          const dt = documentTypes.find(t => t.id === d.document_type_id);
-          const expiry = new Date(d.expiry_date!);
-          const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          let status = arabicSource("reports.mast");
-          if (daysLeft < 0) status = arabicSource("reports.finished");
-          else if (daysLeft <= (dt?.expiry_warning_days || 30)) status = arabicSource("reports.nearly_completed");
-          return {
-            employee_name: empMap[d.employee_id] || d.employee_id,
-            document_type: dt?.name_ar || "—",
-            document_number: d.document_number || "—",
-            expiry_date: d.expiry_date,
-            status,
-          };
+        case "contracts_status": {
+          let filtered = contracts;
+          if (filterDeptName) {
+            const deptEmpIds = employees.filter(e => e.department === filterDeptName).map(e => e.id);
+            filtered = filtered.filter(c => deptEmpIds.includes(c.employee_id));
+          }
+          rows = filtered.map(c => {
+            const ct = contractTypes.find(t => t.id === c.contract_type_id);
+            return {
+              employee_name: empMap[c.employee_id] || c.employee_id,
+              contract_type: ct?.name_ar || "—",
+              start_date: c.start_date,
+              end_date: c.end_date || arabicSource("common.not_specified"),
+              status: c.status === "active" ? arabicSource("common.is_active") : c.status === "expired" ? arabicSource("common.finished") : c.status === "terminated" ? arabicSource("common.canceled") : c.status,
+              probation_status: c.probation_status === "in_progress" ? arabicSource("reports.underway") : c.probation_status === "passed" ? arabicSource("common.successful") : c.probation_status === "failed" ? arabicSource("common.failed") : c.probation_status === "not_applicable" ? "—" : c.probation_status,
+            };
+          });
+          break;
+        }
+        case "documents_expiry": {
+          const now = new Date();
+          let filtered = empDocuments;
+          if (filterDeptName) {
+            const deptEmpIds = employees.filter(e => e.department === filterDeptName).map(e => e.id);
+            filtered = filtered.filter(d => deptEmpIds.includes(d.employee_id));
+          }
+          rows = filtered.filter(d => d.expiry_date).map(d => {
+            const dt = documentTypes.find(t => t.id === d.document_type_id);
+            const expiry = new Date(d.expiry_date!);
+            const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            let status = arabicSource("reports.mast");
+            if (daysLeft < 0) status = arabicSource("reports.finished");
+            else if (daysLeft <= (dt?.expiry_warning_days || 30)) status = arabicSource("reports.nearly_completed");
+            return {
+              employee_name: empMap[d.employee_id] || d.employee_id,
+              document_type: dt?.name_ar || "—",
+              document_number: d.document_number || "—",
+              expiry_date: d.expiry_date,
+              status,
+            };
+          });
+          break;
+        }
+        default: {
+          rows = [{ info: arabicSource("reports.there_is_currently_no_data_available_for_this_report") }];
+        }
+      }
+
+      if (!usedBackendHistory) {
+        await odooData.createReportHistory({
+          report_template_id: template.id,
+          report_name: template.name_ar,
+          filters_used: { dateFrom, dateTo, department: filterDeptName || filterDept },
+          row_count: rows.length,
+          generated_by: arabicSource("common.human_resources_manager"),
         });
-        break;
       }
-      default: {
-        rows = [{ info: arabicSource("reports.there_is_currently_no_data_available_for_this_report") }];
-      }
+      await logAudit({
+        action: "export",
+        entity_type: "report",
+        entity_id: template.id,
+        entity_label: template.name_ar,
+        details: {
+          rows: rows.length,
+          filters: {
+            dateFrom,
+            dateTo,
+            department: filterDeptName || filterDept,
+            status: filterStatus || undefined,
+            excuse: filterExcuse || undefined,
+          },
+        },
+      });
+
+      refetchHistory();
+      setGeneratedData(rows);
+    } catch (e: any) {
+      const msg = e?.message || String(e) || "Report generation failed";
+      setGenerateError(msg);
+      setGeneratedData(null);
+      setGeneratedColumns(null);
+    } finally {
+      setGenerating(false);
     }
-
-    // Log to report history
-    await odooData.createReportHistory({
-      report_template_id: template.id,
-      report_name: template.name_ar,
-      filters_used: { dateFrom, dateTo, department: filterDept },
-      row_count: rows.length,
-      generated_by: arabicSource("common.human_resources_manager"),
-    });
-    await logAudit({
-      action: "export",
-      entity_type: "report",
-      entity_id: template.id,
-      entity_label: template.name_ar,
-      details: { rows: rows.length, filters: { dateFrom, dateTo, department: filterDept } },
-    });
-
-    refetchHistory();
-    setGeneratedData(rows);
-    setGenerating(false);
   };
 
   // Export to CSV / Excel-friendly UTF-8 BOM CSV
   const exportCSV = () => {
     if (!generatedData || !selectedTemplate) return;
-    const cols = selectedTemplate.columns;
-    const rows = generatedData.map((row) => {
-      const out: Record<string, unknown> = {};
-      for (const c of cols) {
-        out[translateCataloguedValue(c.label)] = translateCataloguedValue(String(row[c.key] || ""));
-      }
-      return out;
-    });
+    const cols = displayColumns;
+    const isAttendance = selectedTemplate.code === "attendance_monthly";
+    const rows = isAttendance
+      ? columnsForExport(cols, generatedData)
+      : generatedData.map((row) => {
+          const out: Record<string, unknown> = {};
+          for (const c of cols) {
+            out[translateCataloguedValue(c.label)] = translateCataloguedValue(String(row[c.key] ?? ""));
+          }
+          return out;
+        });
     downloadExcelCsv(
       `${selectedTemplate.code}_${new Date().toISOString().slice(0, 10)}`,
       rows,
@@ -415,7 +455,7 @@ export function Reports() {
           >
             <option value="">{arabicSource("reports.all_sections")}</option>
             {departments.map(d => (
-              <option key={d.id} value={d.name}>{d.name}</option>
+              <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
           <input
@@ -433,6 +473,26 @@ export function Reports() {
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
             dir="ltr"
           />
+          <select
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            title="Attendance status filter"
+          >
+            {ATTENDANCE_STATUS_FILTER_OPTIONS.map(o => (
+              <option key={o.value || "all"} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <select
+            value={filterExcuse}
+            onChange={e => setFilterExcuse(e.target.value as "" | "excused" | "not_excused")}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            title="Excuse filter"
+          >
+            {ATTENDANCE_EXCUSE_FILTER_OPTIONS.map(o => (
+              <option key={o.value || "all"} value={o.value}>{o.label}</option>
+            ))}
+          </select>
           <div className="flex items-center border border-border/50 rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode("grid")}
@@ -490,7 +550,7 @@ export function Reports() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => { setSelectedTemplate(template); setGeneratedData(null); }}
+                  onClick={() => { setSelectedTemplate(template); setGeneratedData(null); setGeneratedColumns(null); setGenerateError(null); }}
                   className="w-full flex items-center justify-center gap-2 h-9 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
@@ -538,7 +598,7 @@ export function Reports() {
                       <td className="p-3 text-muted-foreground">{template.format}</td>
                       <td className="p-3">
                         <button
-                          onClick={() => { setSelectedTemplate(template); setGeneratedData(null); }}
+                          onClick={() => { setSelectedTemplate(template); setGeneratedData(null); setGeneratedColumns(null); setGenerateError(null); }}
                           className="px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer text-xs"
                         >
                           {arabicSource("common.create")}
@@ -561,7 +621,7 @@ export function Reports() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => { setSelectedTemplate(null); setGeneratedData(null); }}
+            onClick={() => { setSelectedTemplate(null); setGeneratedData(null); setGeneratedColumns(null); setGenerateError(null); }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -607,7 +667,7 @@ export function Reports() {
                     </>
                   )}
                   <button
-                    onClick={() => { setSelectedTemplate(null); setGeneratedData(null); }}
+                    onClick={() => { setSelectedTemplate(null); setGeneratedData(null); setGeneratedColumns(null); setGenerateError(null); }}
                     className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/20 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
@@ -621,6 +681,12 @@ export function Reports() {
                   <div className="flex flex-col items-center justify-center py-16">
                     <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                     <p className="text-muted-foreground">{arabicSource("reports.collecting_report_data")}</p>
+                  </div>
+                ) : generateError ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <AlertTriangle className="w-16 h-16 text-destructive/60 mb-4" />
+                    <p className="text-destructive mb-2">{generateError}</p>
+                    <p className="text-muted-foreground/60 text-xs">{arabicSource("reports.click_generate_to_generate_the_report")}</p>
                   </div>
                 ) : !generatedData ? (
                   <div className="flex flex-col items-center justify-center py-16">
@@ -638,9 +704,11 @@ export function Reports() {
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm text-muted-foreground">
                         {generatedData.length} {arabicSource("common.record")}
-                        {filterDept && ` ${arabicSource("reports.section")} ${filterDept}`}
+                        {filterDeptName && ` ${arabicSource("reports.section")} ${filterDeptName}`}
                         {dateFrom && ` ${arabicSource("reports.from")} ${dateFrom}`}
                         {dateTo && ` ${arabicSource("reports.to")} ${dateTo}`}
+                        {filterStatus && ` · ${filterStatus}`}
+                        {filterExcuse && ` · ${filterExcuse}`}
                       </p>
                     </div>
                     <div className="overflow-x-auto border border-border/30 rounded-xl">
@@ -648,7 +716,7 @@ export function Reports() {
                         <thead>
                           <tr className="bg-muted/30 border-b border-border/40">
                             <th className="p-3 text-start text-muted-foreground font-medium" style={{ fontSize: 12 }}>#</th>
-                            {selectedTemplate.columns.map(col => (
+                            {displayColumns.map(col => (
                               <th key={col.key} className="p-3 text-start text-muted-foreground font-medium" style={{ fontSize: 12 }}>
                                 {col.label}
                               </th>
@@ -659,9 +727,11 @@ export function Reports() {
                           {generatedData.slice(0, 200).map((row, idx) => (
                             <tr key={idx} className="border-b border-border/20 hover:bg-muted/10">
                               <td className="p-3 text-muted-foreground" style={{ fontSize: 12 }}>{idx + 1}</td>
-                              {selectedTemplate.columns.map(col => (
+                              {displayColumns.map(col => (
                                 <td key={col.key} className="p-3 text-foreground" style={{ fontSize: 12 }}>
-                                  {row[col.key] ?? "—"}
+                                  {selectedTemplate.code === "attendance_monthly"
+                                    ? formatAttendanceReportCell(col.key, row[col.key], row)
+                                    : (row[col.key] ?? "—")}
                                 </td>
                               ))}
                             </tr>
