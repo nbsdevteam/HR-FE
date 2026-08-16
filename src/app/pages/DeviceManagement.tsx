@@ -533,14 +533,29 @@ function EventsTab() {
   const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [searchEmp, setSearchEmp] = useState("");
 
-  // Prefer raw punch ledger (lugal.hr.device.event). Fall back to paired
-  // attendance rows if the ledger is empty or the list call is forbidden.
+  // Merge raw punch ledger (lugal.hr.device.event) with attendance
+  // check-in/out. Do not stop at the first ledger rows — a month range
+  // can contain only smoke/test device events while real punches live
+  // on hr.attendance (today's Event Log already showed that split).
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const empFilter = searchEmp.trim();
-      let mapped: DeviceEvent[] = [];
+      const wantTest = /^SMOKE-|^TEST-/i.test(empFilter);
+      const isTestIdentity = (value: string) => {
+        const s = String(value || "").trim().toUpperCase();
+        return s.startsWith("SMOKE-") || s.startsWith("TEST-");
+      };
+      const seen = new Set<string>();
+      const mapped: DeviceEvent[] = [];
+      const pushEvent = (row: DeviceEvent) => {
+        if (!wantTest && isTestIdentity(row.employeeNo)) return;
+        const key = `${row.employeeNo}|${row.time}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        mapped.push(row);
+      };
       try {
         const ledger = await odooData.fetchDeviceEvents({
           dateFrom: startDate,
@@ -548,50 +563,55 @@ function EventsTab() {
           employeeNo: empFilter || undefined,
           limit: 2000,
         });
-        mapped = (ledger || []).map((r: any) => ({
-          employeeNo: String(r.employee_no || r.device_employee_no || "—"),
-          name: r.employee_name || "—",
-          time: String(r.event_time || "").replace(" ", "T"),
-          verifyMode: String(r.verify_mode || (r.processed ? "processed" : "pending")),
-          cardNo: String(r.card_no || ""),
-          doorNo: Number(r.door_no) || 0,
-        }));
+        for (const r of ledger || []) {
+          pushEvent({
+            employeeNo: String(r.employee_no || r.device_employee_no || "—"),
+            name: r.employee_name || "—",
+            time: String(r.event_time || "").replace(" ", "T"),
+            verifyMode: String(r.verify_mode || (r.processed ? "processed" : "pending")),
+            cardNo: String(r.card_no || ""),
+            doorNo: Number(r.door_no) || 0,
+          });
+        }
       } catch {
-        mapped = [];
+        // Ledger may be empty or forbidden; attendance merge still runs.
       }
-      if (mapped.length === 0) {
-        const rows = await odooData.fetchAttendance({
+      let rows: Awaited<ReturnType<typeof odooData.fetchAttendance>> = [];
+      try {
+        rows = await odooData.fetchAttendance({
           date_from: startDate,
           date_to: endDate,
           limit: 5000,
         });
-        for (const r of rows) {
-          const empNo = String(r.device_employee_no || "").trim();
-          if (empFilter && empNo !== empFilter && !String(r.employee_id).includes(empFilter)) {
-            continue;
-          }
-          const name = r.employee_name || "—";
-          const verify = r.verify_mode || (r.source === "device" ? "device" : r.source || "—");
-          if (r.check_in_time) {
-            mapped.push({
-              employeeNo: empNo || "—",
-              name,
-              time: `${r.date}T${r.check_in_time}`,
-              verifyMode: String(verify),
-              cardNo: "",
-              doorNo: 1,
-            });
-          }
-          if (r.check_out_time) {
-            mapped.push({
-              employeeNo: empNo || "—",
-              name,
-              time: `${r.date}T${r.check_out_time}`,
-              verifyMode: String(verify),
-              cardNo: "",
-              doorNo: 1,
-            });
-          }
+      } catch {
+        rows = [];
+      }
+      for (const r of rows) {
+        const empNo = String(r.device_employee_no || "").trim();
+        if (empFilter && empNo !== empFilter && !String(r.employee_id).includes(empFilter)) {
+          continue;
+        }
+        const name = r.employee_name || "—";
+        const verify = r.verify_mode || (r.source === "device" ? "device" : r.source || "—");
+        if (r.check_in_time) {
+          pushEvent({
+            employeeNo: empNo || "—",
+            name,
+            time: `${r.date}T${r.check_in_time}`,
+            verifyMode: String(verify),
+            cardNo: "",
+            doorNo: 1,
+          });
+        }
+        if (r.check_out_time) {
+          pushEvent({
+            employeeNo: empNo || "—",
+            name,
+            time: `${r.date}T${r.check_out_time}`,
+            verifyMode: String(verify),
+            cardNo: "",
+            doorNo: 1,
+          });
         }
       }
       mapped.sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
@@ -657,7 +677,7 @@ function EventsTab() {
           <span className="text-xs text-muted-foreground">{events.length} {arabicSource("devicemanagement.event")}</span>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          Showing attendance history from HR database (imported + device sync), not the device live buffer.
+          Showing device ledger plus attendance history from the HR database (imported + device sync), not the device live buffer. Smoke/test identities are hidden unless you search for them.
         </p>
         {error && <p className="text-xs text-destructive mt-2">{error}</p>}
       </div>

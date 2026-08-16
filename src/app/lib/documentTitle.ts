@@ -25,22 +25,13 @@ export function setDocumentTitle(title: string, isTranslationKey = false): void 
 
 /**
  * Set document title for a specific report.
- * Formats the title as: "Report Name - Human Resources System"
- * 
- * @param reportName - Name of the report (e.g., "Punch Audit Report", "Monthly Attendance")
- * @param date - Optional date range or period (e.g., "2026-08", "01/08/2026 - 31/08/2026")
+ * Formats the title as: "2026-08-01 to 2026-08-31 - Punch Audit Report"
+ * so Save as PDF uses the date range plus the report header name.
  */
 export function setReportTitle(reportName: string, date?: string): void {
   if (typeof document === "undefined") return;
-  
-  const systemName = i18n.t(DEFAULT_TITLE_KEY);
-  let title = reportName;
-  
-  if (date) {
-    title = `${reportName} - ${date}`;
-  }
-  
-  title = `${title} - ${systemName}`;
+
+  const title = date ? `${date} - ${reportName}` : reportName;
   currentCustomTitle = title;
   document.title = title;
 }
