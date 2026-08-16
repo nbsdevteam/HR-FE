@@ -7,7 +7,7 @@ import {
   Settings, ChevronRight, Shield, Briefcase, Fingerprint, X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { arabicSource } from "../i18n/source";
+import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
 
 const menuItems = [

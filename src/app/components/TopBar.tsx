@@ -4,14 +4,14 @@ import {
   CalendarDays, X, Fingerprint, RefreshCw, Loader2, Menu, LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-import { useDeviceStatus, useNotifications } from "../lib/hooks";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { arabicSource } from "../i18n/source";
+import { ThemeSwitcher } from "@/app/providers";
+import { useDeviceStatus, useNotifications } from "@/shared/hooks";
+import { LanguageSwitcher } from "@/app/providers";
+import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
-import { useAuth } from "../lib/auth";
-import { SYNC_API } from "../lib/constants";
-import * as odooData from "../lib/api/odooData";
+import { useAuth } from "@/shared/auth";
+import { SYNC_API } from "@/shared/constants";
+import * as odooData from "@/shared/api/odooData";
 
 const quotes = [
   arabicSource("shared.success_is_the_result_of_preparation_hard_work_and_learning_from"),

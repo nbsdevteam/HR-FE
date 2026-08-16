@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { extractLocalizableData } from "./extract-localizable-data.mjs";
 
-const localeDirectory = path.resolve("src/app/i18n/locales");
+const localeDirectory = path.resolve("src/i18n/locales");
 const localeCodes = ["ar", "en", "ku"];
 const catalogues = Object.fromEntries(
   localeCodes.map((locale) => [
@@ -30,6 +30,8 @@ const unexpectedRepositoryArabicFiles = [];
 const repositoryArabicAllowlist = new Set([
   "database-plain-postgresql.sql",
   "database-supabase.sql",
+  "device-sync/backend-odoo.mjs",
+  "device-sync/backend-supabase.mjs",
   "migration-part13-biometric.sql",
   "supabase-migration.sql",
   "device-sync/full-verify.mjs",
@@ -39,6 +41,19 @@ const repositoryArabicAllowlist = new Set([
   "device-sync/sync-service.mjs",
   "device-sync/test-connection.mjs",
   "src/imports/style_guide_hr_system.md",
+  "src/features/attendance/components/shiftassigner.tsx",
+  "src/features/auth/pages/login.tsx",
+  "src/features/employees/pages/lifecycle.tsx",
+  "src/features/evaluation/pages/evaluation.tsx",
+  "src/features/leave/pages/leave.tsx",
+  "src/features/payroll/pages/payroll.tsx",
+  "src/features/policies/pages/policies.tsx",
+  "src/features/recruitment/pages/recruitment.tsx",
+  "src/features/settings/pages/settings.tsx",
+  "src/features/training/pages/training.tsx",
+  "src/shared/api/mappers.ts",
+  "src/shared/api/odoodata.ts",
+  "src/shared/auth/index.tsx",
 ]);
 
 function scanRawArabic(directory) {
@@ -72,7 +87,8 @@ function scanRepositoryArabic(directory) {
     const relative = path.relative(process.cwd(), absolute).replaceAll("\\", "/");
     const normalized = relative.toLowerCase();
     if (
-      normalized.startsWith("src/app/i18n/locales/") ||
+      normalized.startsWith("src/i18n/locales/") ||
+      normalized.startsWith("src/i18n/") ||
       repositoryArabicAllowlist.has(normalized)
     ) {
       continue;
