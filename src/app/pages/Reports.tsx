@@ -38,6 +38,11 @@ import {
   buildLeaveRequestsFilters,
   formatLeaveReportCell,
 } from "../lib/reports/leaveRequests";
+import {
+  PUNCH_PROBLEM_FILTER_OPTIONS,
+  buildPunchAuditFilters,
+  formatPunchAuditCell,
+} from "../lib/reports/punchAudit";
 
 const categoryIcons: Record<string, any> = {
   attendance: Clock,
@@ -93,6 +98,7 @@ export function Reports() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterExcuse, setFilterExcuse] = useState<"" | "excused" | "not_excused">("");
   const [filterLeaveStatus, setFilterLeaveStatus] = useState("");
+  const [filterPunchProblem, setFilterPunchProblem] = useState("");
   const [generatedData, setGeneratedData] = useState<Record<string, any>[] | null>(null);
   const [generatedColumns, setGeneratedColumns] = useState<ReportColumn[] | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -207,6 +213,31 @@ export function Reports() {
 
           const result = await odooData.generateHrReport({
             code: "payroll_monthly",
+            report_template_id: template.id,
+            filters,
+            create_history: true,
+            generated_by: arabicSource("common.human_resources_manager"),
+          });
+          rows = result.rows || [];
+          setGeneratedColumns(result.columns || null);
+          usedBackendHistory = true;
+          break;
+        }
+        case "punch_audit":
+        case "device_events":
+        case "punch_ledger": {
+          const deptId = resolveDepartmentId(departments, filterDept);
+          const filters = buildPunchAuditFilters({
+            dateFrom,
+            dateTo,
+            departmentId: deptId,
+            status: filterPunchProblem,
+          });
+          if (!dateFrom && filters.date_from) setDateFrom(String(filters.date_from));
+          if (!dateTo && filters.date_to) setDateTo(String(filters.date_to));
+
+          const result = await odooData.generateHrReport({
+            code: "punch_audit",
             report_template_id: template.id,
             filters,
             create_history: true,
@@ -353,6 +384,14 @@ export function Reports() {
         const out: Record<string, unknown> = {};
         for (const c of cols) {
           out[c.label] = formatLeaveReportCell(c.key, row[c.key]);
+        }
+        return out;
+      });
+    } else if (code === "punch_audit" || code === "device_events" || code === "punch_ledger") {
+      rows = generatedData.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const c of cols) {
+          out[c.label] = formatPunchAuditCell(c.key, row[c.key]);
         }
         return out;
       });
@@ -534,6 +573,16 @@ export function Reports() {
             title="Leave status filter"
           >
             {LEAVE_STATUS_FILTER_OPTIONS.map(o => (
+              <option key={o.value || "all"} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <select
+            value={filterPunchProblem}
+            onChange={e => setFilterPunchProblem(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            title="Punch audit problem filter"
+          >
+            {PUNCH_PROBLEM_FILTER_OPTIONS.map(o => (
               <option key={o.value || "all"} value={o.value}>{o.label}</option>
             ))}
           </select>
@@ -754,6 +803,7 @@ export function Reports() {
                         {filterStatus && ` · ${filterStatus}`}
                         {filterExcuse && ` · ${filterExcuse}`}
                         {filterLeaveStatus && ` · ${filterLeaveStatus}`}
+                        {filterPunchProblem && ` · ${filterPunchProblem}`}
                       </p>
                     </div>
                     <div className="overflow-x-auto border border-border/30 rounded-xl">
@@ -780,7 +830,9 @@ export function Reports() {
                                       ? formatPayrollReportCell(col.key, row[col.key])
                                       : (selectedTemplate.code === "leave_requests" || selectedTemplate.code === "leave_monthly")
                                         ? formatLeaveReportCell(col.key, row[col.key])
-                                        : (row[col.key] ?? "—")}
+                                        : (selectedTemplate.code === "punch_audit" || selectedTemplate.code === "device_events" || selectedTemplate.code === "punch_ledger")
+                                          ? formatPunchAuditCell(col.key, row[col.key])
+                                          : (row[col.key] ?? "—")}
                                 </td>
                               ))}
                             </tr>
