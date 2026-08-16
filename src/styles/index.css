@@ -3,108 +3,156 @@
 @import './theme.css';
 @import './fonts.css';
 
-/* Print styles for reports */
+/* Directional navigation glyphs follow the active writing direction. */
+html[dir="rtl"] :where(
+  .lucide-chevron-left,
+  .lucide-chevron-right,
+  .lucide-arrow-left,
+  .lucide-arrow-right,
+  .lucide-log-in,
+  .lucide-log-out
+) {
+  transform: scaleX(-1);
+}
+
+[dir="ltr"] {
+  unicode-bidi: isolate;
+}
+
+.print-only {
+  display: none;
+}
+
 @media print {
-  /* Hide UI elements that shouldn't appear in PDF */
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
   .no-print,
   .no-print * {
     display: none !important;
   }
-  
-  /* Show print-only elements */
+
   .print-only {
     display: block !important;
   }
-  
-  /* Reset body for printing */
-  body {
-    margin: 0;
-    padding: 20px;
-    background: white;
+
+  .print-only table {
+    display: table !important;
   }
-  
-  /* Ensure report containers fill the page */
-  .report-content,
-  .report-print-body {
-    position: static !important;
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    height: auto !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Flatten the app shell so the report can flow across pages */
+  body:has(.report-print-root) .app-shell,
+  body:has(.report-print-root) .app-shell-main,
+  body:has(.report-print-root) .app-shell-content {
+    display: block !important;
+    height: auto !important;
     max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-  
-  .report-print-overlay,
+
+  .report-print-overlay {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
   .report-print-root {
     position: static !important;
-    background: transparent !important;
-    max-width: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
     box-shadow: none !important;
     border: none !important;
-  }
-  
-  /* Table styles for printing */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    page-break-inside: avoid;
-  }
-  
-  thead {
-    display: table-header-group;
-  }
-  
-  tr {
-    page-break-inside: avoid;
-  }
-  
-  th, td {
-    border: 1px solid #000 !important;
-    padding: 8px !important;
+    border-radius: 0 !important;
+    background: #fff !important;
     color: #000 !important;
-    background: white !important;
+    transform: none !important;
+    filter: none !important;
   }
-  
-  th {
+
+  .report-print-body,
+  .report-print-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  .report-print-root,
+  .report-print-root * {
+    color: #000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* The whole table MUST be allowed to break, or only the first page prints. */
+  .report-print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: auto !important;
+    font-size: 7pt !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .report-print-table thead {
+    display: table-header-group !important;
+  }
+
+  .report-print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .report-print-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .report-print-table th,
+  .report-print-table td {
+    border: 1px solid #999 !important;
+    padding: 2px 4px !important;
+    color: #000 !important;
+    background: #fff !important;
+    white-space: nowrap !important;
+    font-size: 7pt !important;
+  }
+
+  .report-print-table th {
     background: #f3f4f6 !important;
-    font-weight: bold;
+    font-weight: 700 !important;
   }
-  
-  /* Page break control */
-  .page-break-before {
-    page-break-before: always;
-  }
-  
-  .page-break-after {
-    page-break-after: always;
-  }
-  
-  .page-break-avoid {
-    page-break-inside: avoid;
-  }
-  
-  /* Remove interactive elements */
+
   button,
   input,
   select,
   textarea {
     display: none !important;
   }
-  
-  /* Ensure black text for readability */
-  body, p, span, div, td, th {
-    color: #000 !important;
-  }
-  
-  /* Remove shadows and borders from cards */
-  .card,
-  .modal,
-  .dialog {
-    box-shadow: none !important;
-    border: none !important;
-  }
-}
-
-/* Default: hide print-only elements on screen */
-.print-only {
-  display: none;
 }

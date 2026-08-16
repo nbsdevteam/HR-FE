@@ -790,7 +790,7 @@ export function Reports() {
               </div>
 
               {/* Content */}
-              <div className="report-print-body flex-1 overflow-auto p-6">
+              <div className="report-print-body report-print-scroll flex-1 overflow-auto p-6">
                 {generating ? (
                   <div className="flex flex-col items-center justify-center py-16">
                     <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -827,7 +827,7 @@ export function Reports() {
                         {filterPunchProblem && ` · ${filterPunchProblem}`}
                       </p>
                     </div>
-                    <div className="overflow-x-auto border border-border/30 rounded-xl">
+                    <div className="no-print overflow-x-auto border border-border/30 rounded-xl">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-muted/30 border-b border-border/40">
@@ -866,6 +866,36 @@ export function Reports() {
                         {arabicSource("reports.the_first_200_records_of_a_parent_are_displayed")} {generatedData.length}{arabicSource("reports.export_to_get_full_data")}
                       </p>
                     )}
+                    <table className="print-only report-print-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          {displayColumns.map(col => (
+                            <th key={col.key}>{col.label}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {generatedData.map((row, idx) => (
+                          <tr key={`print-${idx}`}>
+                            <td>{idx + 1}</td>
+                            {displayColumns.map(col => (
+                              <td key={col.key}>
+                                {selectedTemplate.code === "attendance_monthly"
+                                  ? formatAttendanceReportCell(col.key, row[col.key], row)
+                                  : selectedTemplate.code === "payroll_monthly"
+                                    ? formatPayrollReportCell(col.key, row[col.key])
+                                    : (selectedTemplate.code === "leave_requests" || selectedTemplate.code === "leave_monthly")
+                                      ? formatLeaveReportCell(col.key, row[col.key])
+                                      : (selectedTemplate.code === "punch_audit" || selectedTemplate.code === "device_events" || selectedTemplate.code === "punch_ledger")
+                                        ? formatPunchAuditCell(col.key, row[col.key])
+                                        : (row[col.key] ?? "—")}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
