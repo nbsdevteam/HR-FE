@@ -421,6 +421,7 @@ export function Reports() {
 
   return (
     <div className="space-y-6">
+      <div className="reports-page-chrome no-print space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-gradient-gold">{arabicSource("common.reports")}</h1>
@@ -705,6 +706,7 @@ export function Reports() {
           </div>
         </div>
       )}
+      </div>
 
       {/* Report Viewer Modal */}
       <AnimatePresence>
@@ -713,7 +715,7 @@ export function Reports() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="report-print-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => { setSelectedTemplate(null); setGeneratedData(null); setGeneratedColumns(null); setGenerateError(null); }}
           >
             <motion.div
@@ -721,7 +723,7 @@ export function Reports() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"
+              className="report-print-root bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"
             >
               {/* Header */}
               <div className="p-6 border-b border-border/40 flex items-center justify-between">
@@ -729,7 +731,7 @@ export function Reports() {
                   <h2 className="text-lg text-foreground">{selectedTemplate.name_ar}</h2>
                   <p className="text-muted-foreground text-sm mt-1">{selectedTemplate.description}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="no-print flex items-center gap-2">
                   {!generatedData ? (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -769,7 +771,7 @@ export function Reports() {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-auto p-6">
+              <div className="report-print-body flex-1 overflow-auto p-6">
                 {generating ? (
                   <div className="flex flex-col items-center justify-center py-16">
                     <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -841,7 +843,7 @@ export function Reports() {
                       </table>
                     </div>
                     {generatedData.length > 200 && (
-                      <p className="text-center text-muted-foreground text-xs mt-3">
+                      <p className="no-print text-center text-muted-foreground text-xs mt-3">
                         {arabicSource("reports.the_first_200_records_of_a_parent_are_displayed")} {generatedData.length}{arabicSource("reports.export_to_get_full_data")}
                       </p>
                     )}
