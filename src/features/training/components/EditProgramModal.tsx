@@ -1,6 +1,7 @@
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
+import { fieldCls } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 
 type EditProgramModalProps = {
@@ -37,7 +38,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
             type="text"
             value={program.instructor || ""}
             onChange={(e) => onFieldChange({ instructor: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
           />
         </div>
 
@@ -47,7 +48,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
             type="text"
             value={program.duration || ""}
             onChange={(e) => onFieldChange({ duration: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
           />
         </div>
 
@@ -57,7 +58,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
             <select
               value={program.status}
               onChange={(e) => onFieldChange({ status: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
             >
               {trainingStatuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -71,7 +72,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
               onChange={(e) => onFieldChange({ completion_rate: parseInt(e.target.value) || 0 })}
               min="0"
               max="100"
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
             />
           </div>
         </div>

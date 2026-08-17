@@ -1,6 +1,7 @@
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
+import { fieldCls } from "../styles";
 import type { CreateProgramForm } from "../types";
 
 type CreateProgramModalProps = {
@@ -47,7 +48,7 @@ const CreateProgramModal = ({
             type="text"
             value={form.title}
             onChange={(e) => onFieldChange({ title: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
             placeholder={arabicSource("training.program_title")}
           />
         </div>
@@ -58,7 +59,7 @@ const CreateProgramModal = ({
             <select
               value={form.category}
               onChange={(e) => onFieldChange({ category: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
             >
               {trainingCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
@@ -70,7 +71,7 @@ const CreateProgramModal = ({
               type="text"
               value={form.weight}
               onChange={(e) => onFieldChange({ weight: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
               placeholder={`${defaultWeight}%`}
             />
           </div>
@@ -83,7 +84,7 @@ const CreateProgramModal = ({
               type="text"
               value={form.instructor}
               onChange={(e) => onFieldChange({ instructor: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
               placeholder={arabicSource("training.name_of_coach")}
             />
           </div>
@@ -94,7 +95,7 @@ const CreateProgramModal = ({
               type="text"
               value={form.duration}
               onChange={(e) => onFieldChange({ duration: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
               placeholder={arabicSource("training.20_hours")}
             />
           </div>
@@ -107,7 +108,7 @@ const CreateProgramModal = ({
               type="date"
               value={form.start_date}
               onChange={(e) => onFieldChange({ start_date: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
             />
           </div>
 
@@ -117,7 +118,7 @@ const CreateProgramModal = ({
               type="date"
               value={form.end_date}
               onChange={(e) => onFieldChange({ end_date: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
             />
           </div>
         </div>
@@ -127,7 +128,7 @@ const CreateProgramModal = ({
           <select
             value={form.status}
             onChange={(e) => onFieldChange({ status: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
           >
             {trainingStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -139,7 +140,7 @@ const CreateProgramModal = ({
             type="number"
             value={form.max_participants}
             onChange={(e) => onFieldChange({ max_participants: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
             placeholder="30"
           />
         </div>
@@ -150,7 +151,7 @@ const CreateProgramModal = ({
             value={form.objectives}
             onChange={(e) => onFieldChange({ objectives: e.target.value })}
             rows={4}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60 resize-none"
+            className={`${fieldCls} resize-none`}
             placeholder={arabicSource("training.the_first_goal_the_second_goal_the_third_goal")}
           />
         </div>

@@ -3,6 +3,7 @@ import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
+import { fieldCls } from "../styles";
 import type { EnrollParticipantForm } from "../types";
 
 type EnrollParticipantModalProps = {
@@ -60,7 +61,7 @@ const EnrollParticipantModal = ({
           <select
             value={form.completion_status}
             onChange={(e) => onFieldChange({ completion_status: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+            className={fieldCls}
           >
             {participantStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -75,7 +76,7 @@ const EnrollParticipantModal = ({
               onChange={(e) => onFieldChange({ score: e.target.value })}
               min="0"
               max="100"
-              className="w-full px-4 py-2 rounded-lg bg-secondary border border-border/40 text-foreground focus:outline-none focus:border-primary/60"
+              className={fieldCls}
               placeholder="85"
             />
           </div>
