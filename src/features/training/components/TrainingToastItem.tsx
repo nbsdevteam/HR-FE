@@ -6,7 +6,7 @@ type TrainingToastItemProps = {
   toast: Toast;
 };
 
-export const TrainingToastItem = ({ toast }: TrainingToastItemProps) => (
+const TrainingToastItem = ({ toast }: TrainingToastItemProps) => (
   <motion.div
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
@@ -29,3 +29,5 @@ export const TrainingToastItem = ({ toast }: TrainingToastItemProps) => (
     <span className="text-foreground text-sm">{toast.message}</span>
   </motion.div>
 );
+
+export default TrainingToastItem;

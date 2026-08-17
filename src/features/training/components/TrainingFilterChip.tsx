@@ -4,7 +4,7 @@ type TrainingFilterChipProps = {
   onClick: () => void;
 };
 
-export const TrainingFilterChip = ({ label, isActive, onClick }: TrainingFilterChipProps) => (
+const TrainingFilterChip = ({ label, isActive, onClick }: TrainingFilterChipProps) => (
   <button
     onClick={onClick}
     className={`px-4 py-2 rounded-lg transition-colors cursor-pointer ${
@@ -16,3 +16,5 @@ export const TrainingFilterChip = ({ label, isActive, onClick }: TrainingFilterC
     {label}
   </button>
 );
+
+export default TrainingFilterChip;

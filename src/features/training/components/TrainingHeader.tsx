@@ -5,7 +5,7 @@ type TrainingHeaderProps = {
   onNewProgram: () => void;
 };
 
-export const TrainingHeader = ({ onNewProgram }: TrainingHeaderProps) => (
+const TrainingHeader = ({ onNewProgram }: TrainingHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.training_and_development")}</h1>
@@ -20,3 +20,5 @@ export const TrainingHeader = ({ onNewProgram }: TrainingHeaderProps) => (
     </button>
   </div>
 );
+
+export default TrainingHeader;

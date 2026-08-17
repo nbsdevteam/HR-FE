@@ -8,7 +8,7 @@ type TrainingStatCardProps = {
   index: number;
 };
 
-export const TrainingStatCard = ({ label, value, icon: Icon, index }: TrainingStatCardProps) => (
+const TrainingStatCard = ({ label, value, icon: Icon, index }: TrainingStatCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -32,3 +32,5 @@ export const TrainingStatCard = ({ label, value, icon: Icon, index }: TrainingSt
     </div>
   </motion.div>
 );
+
+export default TrainingStatCard;

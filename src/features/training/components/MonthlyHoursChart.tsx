@@ -7,7 +7,7 @@ type MonthlyHoursChartProps = {
   monthlyHours: { month: string; hours: number }[];
 };
 
-export const MonthlyHoursChart = ({ monthlyHours }: MonthlyHoursChartProps) => (
+const MonthlyHoursChart = ({ monthlyHours }: MonthlyHoursChartProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -22,3 +22,5 @@ export const MonthlyHoursChart = ({ monthlyHours }: MonthlyHoursChartProps) => (
     />
   </motion.div>
 );
+
+export default MonthlyHoursChart;

@@ -3,8 +3,8 @@ import { Clock, Edit2, GraduationCap, Plus, Trash2, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
 import { statusColorPalette } from "../constants/training";
-import { ProgramObjectiveItem } from "./ProgramObjectiveItem";
-import { ProgramParticipantRow } from "./ProgramParticipantRow";
+import ProgramObjectiveItem from "./ProgramObjectiveItem";
+import ProgramParticipantRow from "./ProgramParticipantRow";
 
 type TrainingProgramCardProps = {
   program: DbTrainingProgram;
@@ -22,7 +22,7 @@ type TrainingProgramCardProps = {
   onDeleteParticipant: (participantId: string) => void;
 };
 
-export const TrainingProgramCard = ({
+const TrainingProgramCard = ({
   program,
   index,
   participants,
@@ -156,3 +156,5 @@ export const TrainingProgramCard = ({
     </motion.div>
   );
 };
+
+export default TrainingProgramCard;

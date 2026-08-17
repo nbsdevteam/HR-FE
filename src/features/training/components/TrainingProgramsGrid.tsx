@@ -1,7 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
 import { getProgramParticipants } from "../utils/trainingDisplay";
-import { TrainingProgramCard } from "./TrainingProgramCard";
+import TrainingProgramCard from "./TrainingProgramCard";
 
 type TrainingProgramsGridProps = {
   programs: DbTrainingProgram[];
@@ -18,7 +18,7 @@ type TrainingProgramsGridProps = {
   onDeleteParticipant: (participantId: string) => void;
 };
 
-export const TrainingProgramsGrid = ({
+const TrainingProgramsGrid = ({
   programs,
   participants,
   trainingCategories,
@@ -55,3 +55,5 @@ export const TrainingProgramsGrid = ({
     </AnimatePresence>
   </div>
 );
+
+export default TrainingProgramsGrid;

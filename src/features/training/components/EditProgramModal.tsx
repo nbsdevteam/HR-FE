@@ -11,7 +11,7 @@ type EditProgramModalProps = {
   onClose: () => void;
 };
 
-export const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, onClose }: EditProgramModalProps) => (
+const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, onClose }: EditProgramModalProps) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -96,3 +96,5 @@ export const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onS
     </motion.div>
   </motion.div>
 );
+
+export default EditProgramModal;

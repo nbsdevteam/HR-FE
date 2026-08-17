@@ -10,7 +10,7 @@ type ProgramParticipantRowProps = {
   onDelete: () => void;
 };
 
-export const ProgramParticipantRow = ({ participant, employeeName, statusColor, onMarkCompleted, onDelete }: ProgramParticipantRowProps) => (
+const ProgramParticipantRow = ({ participant, employeeName, statusColor, onMarkCompleted, onDelete }: ProgramParticipantRowProps) => (
   <div className="flex items-center justify-between p-2 rounded bg-card/50 border border-border/20">
     <div className="flex-1">
       <p className="text-xs text-foreground">{employeeName}</p>
@@ -38,3 +38,5 @@ export const ProgramParticipantRow = ({ participant, employeeName, statusColor, 
     </button>
   </div>
 );
+
+export default ProgramParticipantRow;

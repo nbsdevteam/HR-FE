@@ -3,7 +3,7 @@ import { DonutChart } from "@/shared/components/donut-chart";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingProgram } from "@/shared/hooks";
 import { cardCls } from "../styles";
-import { TrainingCategoryStatCard } from "./TrainingCategoryStatCard";
+import TrainingCategoryStatCard from "./TrainingCategoryStatCard";
 
 type WeightDistributionCardProps = {
   programs: DbTrainingProgram[];
@@ -11,7 +11,7 @@ type WeightDistributionCardProps = {
   categoryDistribution: { name: string; value: number; color: string }[];
 };
 
-export const WeightDistributionCard = ({ programs, trainingCategories, categoryDistribution }: WeightDistributionCardProps) => (
+const WeightDistributionCard = ({ programs, trainingCategories, categoryDistribution }: WeightDistributionCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -35,3 +35,5 @@ export const WeightDistributionCard = ({ programs, trainingCategories, categoryD
     </div>
   </motion.div>
 );
+
+export default WeightDistributionCard;

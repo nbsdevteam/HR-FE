@@ -15,7 +15,7 @@ type EnrollParticipantModalProps = {
   onClose: () => void;
 };
 
-export const EnrollParticipantModal = ({
+const EnrollParticipantModal = ({
   form,
   employees,
   participantStatuses,
@@ -101,3 +101,5 @@ export const EnrollParticipantModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default EnrollParticipantModal;

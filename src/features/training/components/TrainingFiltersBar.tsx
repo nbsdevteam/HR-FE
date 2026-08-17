@@ -1,6 +1,6 @@
 import { Filter, Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { TrainingFilterChip } from "./TrainingFilterChip";
+import TrainingFilterChip from "./TrainingFilterChip";
 
 type TrainingFiltersBarProps = {
   searchTerm: string;
@@ -10,7 +10,7 @@ type TrainingFiltersBarProps = {
   onFilterChange: (value: string) => void;
 };
 
-export const TrainingFiltersBar = ({ searchTerm, onSearchTermChange, filters, filter, onFilterChange }: TrainingFiltersBarProps) => (
+const TrainingFiltersBar = ({ searchTerm, onSearchTermChange, filters, filter, onFilterChange }: TrainingFiltersBarProps) => (
   <div className="flex items-center gap-4 flex-wrap">
     <div className="flex-1 min-w-64 relative">
       <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -30,3 +30,5 @@ export const TrainingFiltersBar = ({ searchTerm, onSearchTermChange, filters, fi
     </div>
   </div>
 );
+
+export default TrainingFiltersBar;

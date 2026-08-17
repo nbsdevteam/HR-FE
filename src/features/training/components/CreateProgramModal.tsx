@@ -13,7 +13,7 @@ type CreateProgramModalProps = {
   onClose: () => void;
 };
 
-export const CreateProgramModal = ({
+const CreateProgramModal = ({
   form,
   trainingCategories,
   trainingStatuses,
@@ -175,3 +175,5 @@ export const CreateProgramModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default CreateProgramModal;

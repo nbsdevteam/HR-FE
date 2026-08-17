@@ -1,13 +1,13 @@
 import { Award, BookOpen, CheckCircle, Play, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { TrainingStats } from "../utils/trainingStats";
-import { TrainingStatCard } from "./TrainingStatCard";
+import TrainingStatCard from "./TrainingStatCard";
 
 type TrainingStatsGridProps = {
   stats: TrainingStats;
 };
 
-export const TrainingStatsGrid = ({ stats }: TrainingStatsGridProps) => {
+const TrainingStatsGrid = ({ stats }: TrainingStatsGridProps) => {
   const items = [
     { label: arabicSource("common.total_programs"), value: stats.totalPrograms, icon: BookOpen },
     { label: arabicSource("training.ongoing_programs"), value: stats.ongoingPrograms, icon: Play },
@@ -24,3 +24,5 @@ export const TrainingStatsGrid = ({ stats }: TrainingStatsGridProps) => {
     </div>
   );
 };
+
+export default TrainingStatsGrid;

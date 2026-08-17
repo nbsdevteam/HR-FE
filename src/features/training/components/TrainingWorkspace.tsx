@@ -8,18 +8,18 @@ import { useTrainingConfig } from "../hooks/useTrainingConfig";
 import { useTrainingToasts } from "../hooks/useTrainingToasts";
 import { getEmployeeName, getProgramParticipants, filterPrograms, mapParticipantsToDisplay, mapProgramsToDisplay } from "../utils/trainingDisplay";
 import { computeCategoryDistribution, computeMonthlyHours, computeStats } from "../utils/trainingStats";
-import { CreateProgramModal } from "./CreateProgramModal";
-import { EditProgramModal } from "./EditProgramModal";
-import { EnrollParticipantModal } from "./EnrollParticipantModal";
-import { MonthlyHoursChart } from "./MonthlyHoursChart";
-import { TrainingFiltersBar } from "./TrainingFiltersBar";
-import { TrainingHeader } from "./TrainingHeader";
-import { TrainingProgramsGrid } from "./TrainingProgramsGrid";
-import { TrainingStatsGrid } from "./TrainingStatsGrid";
-import { TrainingToastList } from "./TrainingToastList";
-import { WeightDistributionCard } from "./WeightDistributionCard";
+import CreateProgramModal from "./CreateProgramModal";
+import EditProgramModal from "./EditProgramModal";
+import EnrollParticipantModal from "./EnrollParticipantModal";
+import MonthlyHoursChart from "./MonthlyHoursChart";
+import TrainingFiltersBar from "./TrainingFiltersBar";
+import TrainingHeader from "./TrainingHeader";
+import TrainingProgramsGrid from "./TrainingProgramsGrid";
+import TrainingStatsGrid from "./TrainingStatsGrid";
+import TrainingToastList from "./TrainingToastList";
+import WeightDistributionCard from "./WeightDistributionCard";
 
-export const TrainingWorkspace = () => {
+const TrainingWorkspace = () => {
   const [filter, setFilter] = useState(arabicSource("common.all"));
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -144,3 +144,5 @@ export const TrainingWorkspace = () => {
     </div>
   );
 };
+
+export default TrainingWorkspace;

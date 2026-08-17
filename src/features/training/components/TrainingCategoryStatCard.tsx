@@ -7,7 +7,7 @@ type TrainingCategoryStatCardProps = {
   count: number;
 };
 
-export const TrainingCategoryStatCard = ({ category, index, count }: TrainingCategoryStatCardProps) => {
+const TrainingCategoryStatCard = ({ category, index, count }: TrainingCategoryStatCardProps) => {
   const CatIcon = categoryCardIcons[index % categoryCardIcons.length];
   return (
     <div className={`p-4 rounded-xl ${categoryCardBgColors[index % categoryCardBgColors.length]}`}>
@@ -24,3 +24,5 @@ export const TrainingCategoryStatCard = ({ category, index, count }: TrainingCat
     </div>
   );
 };
+
+export default TrainingCategoryStatCard;
