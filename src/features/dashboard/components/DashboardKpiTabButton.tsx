@@ -9,7 +9,7 @@ type DashboardKpiTabButtonProps = {
   onSectionChange: (section: DashboardKpiSection) => void;
 };
 
-export const DashboardKpiTabButton = ({
+const DashboardKpiTabButton = ({
   tabKey,
   label,
   icon: Icon,
@@ -28,3 +28,5 @@ export const DashboardKpiTabButton = ({
     <span className="text-sm">{label}</span>
   </button>
 );
+
+export default DashboardKpiTabButton;

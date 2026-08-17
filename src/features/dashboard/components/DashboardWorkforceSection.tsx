@@ -10,17 +10,17 @@ import { CustomLineChart } from "@/shared/components/custom-line-chart";
 import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
-import { DashboardMiniBar } from "./DashboardMiniBar";
-import { DashboardRiskBadge } from "./DashboardRiskBadge";
-import { DashboardStatGrid } from "./DashboardStatGrid";
-import { DashboardTrendBadge } from "./DashboardTrendBadge";
+import DashboardMiniBar from "./DashboardMiniBar";
+import DashboardRiskBadge from "./DashboardRiskBadge";
+import DashboardStatGrid from "./DashboardStatGrid";
+import DashboardTrendBadge from "./DashboardTrendBadge";
 import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
 
 type DashboardWorkforceSectionProps = {
   data: any;
 };
 
-export const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionProps) => {
+const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionProps) => {
   const {
     activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
     expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
@@ -122,3 +122,5 @@ export const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionPro
         </>
   );
 };
+
+export default DashboardWorkforceSection;

@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from "react";
 import { motion } from "motion/react";
-import { DashboardTrendBadge } from "./DashboardTrendBadge";
+import DashboardTrendBadge from "./DashboardTrendBadge";
 
 export type DashboardStatCardItem = {
   label: string;
@@ -18,7 +18,7 @@ type DashboardStatCardProps = {
   hoverLift?: boolean;
 };
 
-export const DashboardStatCard = ({
+const DashboardStatCard = ({
   stat,
   index,
   compactValue = false,
@@ -62,3 +62,5 @@ export const DashboardStatCard = ({
     </motion.div>
   );
 };
+
+export default DashboardStatCard;

@@ -1,14 +1,14 @@
 import { Bell, Shield } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DashboardRiskLevel } from "../types";
-import { DashboardRiskBadge } from "./DashboardRiskBadge";
+import DashboardRiskBadge from "./DashboardRiskBadge";
 
 type DashboardHeaderProps = {
   riskLevel: DashboardRiskLevel;
   unreadCount: number;
 };
 
-export const DashboardHeader = ({ riskLevel, unreadCount }: DashboardHeaderProps) => (
+const DashboardHeader = ({ riskLevel, unreadCount }: DashboardHeaderProps) => (
   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
     <div className="min-w-0">
       <h1 className="text-gradient-gold text-xl sm:text-2xl">{arabicSource("common.control_panel")}</h1>
@@ -39,3 +39,5 @@ export const DashboardHeader = ({ riskLevel, unreadCount }: DashboardHeaderProps
     </div>
   </div>
 );
+
+export default DashboardHeader;

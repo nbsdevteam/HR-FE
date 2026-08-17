@@ -1,5 +1,5 @@
 import type { DashboardStatCardItem } from "./DashboardStatCard";
-import { DashboardStatCard } from "./DashboardStatCard";
+import DashboardStatCard from "./DashboardStatCard";
 
 type DashboardStatGridProps = {
   stats: DashboardStatCardItem[];
@@ -7,7 +7,7 @@ type DashboardStatGridProps = {
   hoverLift?: boolean;
 };
 
-export const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardStatGridProps) => (
+const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardStatGridProps) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
     {stats.map((stat, index) => (
       <DashboardStatCard
@@ -20,3 +20,5 @@ export const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardS
     ))}
   </div>
 );
+
+export default DashboardStatGrid;

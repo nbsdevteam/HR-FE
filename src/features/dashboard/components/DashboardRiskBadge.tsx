@@ -1,7 +1,7 @@
 import { arabicSource } from "@/i18n/source";
 import type { DashboardRiskLevel } from "../types";
 
-export const DashboardRiskBadge = ({ level }: { level: DashboardRiskLevel }) => {
+const DashboardRiskBadge = ({ level }: { level: DashboardRiskLevel }) => {
   const config = {
     low: { label: arabicSource("dashboard.is_low"), cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
     medium: { label: arabicSource("common.average"), cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
@@ -11,3 +11,5 @@ export const DashboardRiskBadge = ({ level }: { level: DashboardRiskLevel }) => 
 
   return <span className={`text-xs px-2 py-0.5 rounded-full border ${config.cls}`}>{config.label}</span>;
 };
+
+export default DashboardRiskBadge;

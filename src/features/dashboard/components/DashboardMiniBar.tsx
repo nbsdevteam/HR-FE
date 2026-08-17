@@ -4,7 +4,7 @@ type DashboardMiniBarProps = {
   color?: string;
 };
 
-export const DashboardMiniBar = ({ value, max, color = "bg-primary" }: DashboardMiniBarProps) => {
+const DashboardMiniBar = ({ value, max, color = "bg-primary" }: DashboardMiniBarProps) => {
   const width = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
 
   return (
@@ -13,3 +13,5 @@ export const DashboardMiniBar = ({ value, max, color = "bg-primary" }: Dashboard
     </div>
   );
 };
+
+export default DashboardMiniBar;

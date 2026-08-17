@@ -1,11 +1,11 @@
-import { DashboardHeader } from "../components/DashboardHeader";
-import { DashboardKpiTabs } from "../components/DashboardKpiTabs";
-import { DashboardOverviewSection } from "../components/DashboardOverviewSection";
-import { DashboardWorkforceSection } from "../components/DashboardWorkforceSection";
-import { DashboardFinancialSection } from "../components/DashboardFinancialSection";
-import { DashboardComplianceSection } from "../components/DashboardComplianceSection";
-import { DashboardRecruitmentSection } from "../components/DashboardRecruitmentSection";
-import { DashboardLoadingState } from "../components/DashboardLoadingState";
+import DashboardHeader from "../components/DashboardHeader";
+import DashboardKpiTabs from "../components/DashboardKpiTabs";
+import DashboardOverviewSection from "../components/DashboardOverviewSection";
+import DashboardWorkforceSection from "../components/DashboardWorkforceSection";
+import DashboardFinancialSection from "../components/DashboardFinancialSection";
+import DashboardComplianceSection from "../components/DashboardComplianceSection";
+import DashboardRecruitmentSection from "../components/DashboardRecruitmentSection";
+import DashboardLoadingState from "../components/DashboardLoadingState";
 import { useDashboardData } from "../hooks/useDashboardData";
 
 export const Dashboard = () => {

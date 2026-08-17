@@ -6,7 +6,7 @@ type DashboardTrendBadgeProps = {
   inverse?: boolean;
 };
 
-export const DashboardTrendBadge = ({ value, suffix = "", inverse = false }: DashboardTrendBadgeProps) => {
+const DashboardTrendBadge = ({ value, suffix = "", inverse = false }: DashboardTrendBadgeProps) => {
   const isPositive = inverse ? value < 0 : value > 0;
   const isNeutral = value === 0;
 
@@ -20,3 +20,5 @@ export const DashboardTrendBadge = ({ value, suffix = "", inverse = false }: Das
     </span>
   );
 };
+
+export default DashboardTrendBadge;
