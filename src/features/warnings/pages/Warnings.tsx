@@ -1,3 +1,5 @@
 import WarningsWorkspace from "../components/WarningsWorkspace";
 
-export const Warnings = () => <WarningsWorkspace />;
+const Warnings = () => <WarningsWorkspace />;
+
+export default Warnings;

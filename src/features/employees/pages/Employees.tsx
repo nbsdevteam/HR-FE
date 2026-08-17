@@ -11,7 +11,7 @@ import EmployeesListView from "../components/EmployeesListView";
 import EmployeesStats from "../components/EmployeesStats";
 import { useEmployeesPage } from "../hooks/useEmployeesPage";
 
-export const Employees = () => {
+const Employees = () => {
   const {
     addError,
     addForm,
@@ -156,3 +156,5 @@ export const Employees = () => {
     </div>
   );
 };
+
+export default Employees;

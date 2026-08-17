@@ -16,7 +16,7 @@ import UnlinkedPanel from "../components/UnlinkedPanel";
 import PositionsView from "../components/PositionsView";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
-export const Hierarchy = () => {
+const Hierarchy = () => {
   const {
     dbEmployees,
     dbDepartments,
@@ -259,3 +259,5 @@ export const Hierarchy = () => {
     </div>
   );
 };
+
+export default Hierarchy;

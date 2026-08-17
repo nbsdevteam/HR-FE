@@ -1,3 +1,5 @@
 import SettingsWorkspace from "../components/SettingsWorkspace";
 
-export const SettingsPage = () => <SettingsWorkspace />;
+const SettingsPage = () => <SettingsWorkspace />;
+
+export default SettingsPage;

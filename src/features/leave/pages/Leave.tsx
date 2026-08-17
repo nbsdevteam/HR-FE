@@ -8,7 +8,7 @@ import LeaveTabs from "../components/LeaveTabs";
 import { useLeavePage } from "../hooks/useLeavePage";
 import type { LeaveTabId, LeaveViewMode } from "../types";
 
-export const Leave = () => {
+const Leave = () => {
   const page = useLeavePage();
   const { setActiveTab, setShowForm, setShowPermForm, setViewMode } = page;
 
@@ -56,3 +56,5 @@ export const Leave = () => {
     </div>
   );
 };
+
+export default Leave;

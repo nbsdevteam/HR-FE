@@ -1,3 +1,5 @@
 import TrainingWorkspace from "../components/TrainingWorkspace";
 
-export const Training = () => <TrainingWorkspace />;
+const Training = () => <TrainingWorkspace />;
+
+export default Training;

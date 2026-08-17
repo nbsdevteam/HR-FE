@@ -1,3 +1,5 @@
 import RecruitmentWorkspace from "../components/RecruitmentWorkspace";
 
-export const Recruitment = () => <RecruitmentWorkspace />;
+const Recruitment = () => <RecruitmentWorkspace />;
+
+export default Recruitment;

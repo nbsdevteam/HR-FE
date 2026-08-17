@@ -5,7 +5,7 @@ import AuditTrailTab from "../components/AuditTrailTab";
 import NotificationsTab from "../components/NotificationsTab";
 import type { AuditTabId } from "../types";
 
-export function AuditCenter() {
+const AuditCenter = () => {
   const [activeTab, setActiveTab] = useState<AuditTabId>("notifications");
 
   return (
@@ -20,4 +20,6 @@ export function AuditCenter() {
       {activeTab === "notifications" ? <NotificationsTab /> : <AuditTrailTab />}
     </div>
   );
-}
+};
+
+export default AuditCenter;

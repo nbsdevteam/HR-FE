@@ -1,3 +1,5 @@
 import ReportsWorkspace from "../components/ReportsWorkspace";
 
-export const Reports = () => <ReportsWorkspace />;
+const Reports = () => <ReportsWorkspace />;
+
+export default Reports;

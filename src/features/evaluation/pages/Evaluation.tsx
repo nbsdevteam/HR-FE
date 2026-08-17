@@ -13,7 +13,7 @@ import NewEvalPanel from "../components/NewEvalPanel";
 import { useEvaluationPage } from "../hooks/useEvaluationPage";
 import { evaluationCardClass } from "../styles";
 
-export const EvaluationPage = () => {
+const EvaluationPage = () => {
   const {
     avgRating,
     completedCount,
@@ -132,3 +132,5 @@ export const EvaluationPage = () => {
     </div>
   );
 };
+
+export default EvaluationPage;

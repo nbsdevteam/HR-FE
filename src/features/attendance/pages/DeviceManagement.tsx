@@ -13,7 +13,7 @@ import DeviceManagementTabs from "../components/DeviceManagementTabs";
 import DeviceOverviewTab from "../components/DeviceOverviewTab";
 import DevicePersonsTab from "../components/DevicePersonsTab";
 
-export const DeviceManagement = () => {
+const DeviceManagement = () => {
   const [tab, setTab] = useState<DeviceManagementTab>("overview");
   const [devices, setDevices] = useState<BiometricDevice[]>([]);
   const [selectedDevice, setSelectedDevice] = useState("");
@@ -72,3 +72,5 @@ export const DeviceManagement = () => {
     </div>
   );
 };
+
+export default DeviceManagement;

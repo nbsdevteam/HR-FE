@@ -21,7 +21,7 @@ import AttendanceFilters from "../components/AttendanceFilters";
 import  AttendanceRecordsView  from "../components/AttendanceRecordsView";
 import ExcuseModal from "../components/ExcuseModal";
 
-export const Attendance = () => {
+const Attendance = () => {
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -280,3 +280,5 @@ export const Attendance = () => {
     </div>
   );
 };
+
+export default Attendance;

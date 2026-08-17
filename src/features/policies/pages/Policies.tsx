@@ -9,7 +9,7 @@ import PolicyToast from "../components/PolicyToast";
 import { usePoliciesPage } from "../hooks/usePoliciesPage";
 import type { CreatePolicyForm, EditPolicyForm, PolicySortKey } from "../types";
 
-export const Policies = () => {
+const Policies = () => {
   const page = usePoliciesPage();
   const {
     setCreateForm,
@@ -96,3 +96,5 @@ export const Policies = () => {
     </div>
   );
 };
+
+export default Policies;

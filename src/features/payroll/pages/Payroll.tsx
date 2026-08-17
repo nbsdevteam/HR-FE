@@ -7,7 +7,7 @@ import PayrollTabs from "../components/PayrollTabs";
 import { usePayrollPage } from "../hooks/usePayrollPage";
 import type { PayrollTabId } from "../types";
 
-export const Payroll = () => {
+const Payroll = () => {
   const page = usePayrollPage();
   const { setActiveTab, setSelectedMonth } = page;
 
@@ -45,3 +45,5 @@ export const Payroll = () => {
     </div>
   );
 };
+
+export default Payroll;

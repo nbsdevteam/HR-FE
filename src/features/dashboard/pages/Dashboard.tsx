@@ -8,7 +8,7 @@ import DashboardRecruitmentSection from "../components/DashboardRecruitmentSecti
 import DashboardLoadingState from "../components/DashboardLoadingState";
 import { useDashboardData } from "../hooks/useDashboardData";
 
-export const Dashboard = () => {
+const Dashboard = () => {
   const {
     dashboardSectionData,
     handleKpiSectionChange,
@@ -40,3 +40,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+export default Dashboard;

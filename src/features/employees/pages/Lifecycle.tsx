@@ -10,7 +10,7 @@ import LifecycleTabs from "../components/LifecycleTabs";
 import ProbationAlerts from "../components/ProbationAlerts";
 import { useLifecyclePage } from "../hooks/useLifecyclePage";
 
-export const Lifecycle = () => {
+const Lifecycle = () => {
   const {
     activeContracts,
     activeExits,
@@ -114,3 +114,5 @@ export const Lifecycle = () => {
     </div>
   );
 };
+
+export default Lifecycle;
