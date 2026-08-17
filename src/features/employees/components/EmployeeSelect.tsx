@@ -51,7 +51,7 @@ function findEmployee(employees: DbEmployee[], valueKey: string): DbEmployee | n
  * Searchable employee dropdown. Display name is derived from value + employees
  * (and optional parent labels map) — not from ephemeral local-only state.
  */
-export function EmployeeSelect({
+const EmployeeSelect = ({
   employees,
   value,
   onChange,
@@ -62,7 +62,7 @@ export function EmployeeSelect({
   showDepartment = true,
   excludeIds,
   labels,
-}: Props) {
+}: Props) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -264,4 +264,6 @@ export function EmployeeSelect({
       )}
     </div>
   );
-}
+};
+
+export default EmployeeSelect;

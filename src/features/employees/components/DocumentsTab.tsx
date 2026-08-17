@@ -1,25 +1,19 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  FileText, Plus, Check, X, Clock, Loader2, Search, Eye,
-  ChevronRight, AlertCircle, Briefcase, Shield, UserX, Save,
-  Trash2, Calendar, FileCheck, CheckCircle,
-  ClipboardList, DollarSign, RefreshCw,
+  FileText, Plus, Loader2, Save, Trash2,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { EmployeeSelect } from "@/features/employees";
 import {
-  empDisplayName, useExitChecklist,
-  type DbContractType, type DbEmployeeContract, type DbDocumentType,
-  type DbEmployeeDocument, type DbExitProcess, type DbExitChecklistItem,
+  empDisplayName,
+  type DbDocumentType, type DbEmployeeDocument,
 } from "@/shared/hooks";
-import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll";
-import { formatDate, formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 
-export const DocumentsTab = function DocumentsTab({
+const DocumentsTab = ({
   documents, docTypes, empMap, employees, employeeLabels, refetch,
   statusLabels, statusColors,
 }: {
@@ -31,7 +25,7 @@ export const DocumentsTab = function DocumentsTab({
   refetch: () => void;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
-}) {
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     employee_id: "", document_type_id: "", document_number: "",
@@ -194,7 +188,9 @@ export const DocumentsTab = function DocumentsTab({
       </div>
     </div>
   );
-}
+};
+
+export default DocumentsTab;
 
 // ══════════════════════════ Exit Process Tab ══════════════════════════
 

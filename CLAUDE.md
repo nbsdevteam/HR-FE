@@ -13,3 +13,5 @@
 6. When writing or rewriting a file and you come across a `.map()` that renders some TSX inline, always extract that TSX into a dedicated component inside the `components` folder in the same directory as the main component, then call it inside the `.map()`.
 
 7. Declare every component as `const ComponentName = (...) => { ... };` (arrow function, no inline `export`), and add `export default ComponentName;` as the last line of the file. Non-component named exports (types, constants, helpers) keep their normal `export`/`export const`.
+
+8. Whenever you write or touch a file, remove any unused imports in it.

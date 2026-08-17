@@ -9,7 +9,7 @@ type LifecycleStatsProps = {
   activeExits: number;
 };
 
-export const LifecycleStats = ({
+const LifecycleStats = ({
   activeContracts,
   expiringDocs,
   probationAlertsCount,
@@ -49,3 +49,5 @@ export const LifecycleStats = ({
     </div>
   );
 };
+
+export default LifecycleStats;

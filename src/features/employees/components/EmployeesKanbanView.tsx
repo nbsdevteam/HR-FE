@@ -15,7 +15,7 @@ type EmployeesKanbanViewProps = {
   onSelectEmployee: (employee: Employee) => void;
 };
 
-export const EmployeesKanbanView = ({
+const EmployeesKanbanView = ({
   departments,
   employees,
   dbEmployees,
@@ -121,3 +121,5 @@ export const EmployeesKanbanView = ({
     })}
   </motion.div>
 );
+
+export default EmployeesKanbanView;

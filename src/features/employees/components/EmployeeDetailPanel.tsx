@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Mail, Phone, MapPin, Building, Edit, Trash2, X, Wallet, Calendar,
   Save, Hash, Briefcase, User, PhoneCall, Smartphone, FileText, ClipboardList,
-  CalendarCheck, CalendarX, Laptop, Paperclip, PlusCircle, Check, Loader2, Users, Plus,
+  CalendarCheck, CalendarX, Laptop, Paperclip, PlusCircle, Check, Loader2, Users,
   Fingerprint, ScanFace, AlertTriangle, ShieldOff
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
@@ -133,7 +133,7 @@ function FieldRow({
 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
-export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = [] }: Props) {
+const EmployeeDetailPanel = ({ employee, onClose, onSave, allEmployees = [] }: Props) => {
   const [modalTab, setModalTab] = useState<ModalTab>("info");
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Employee>({ ...employee });
@@ -1096,4 +1096,6 @@ export function EmployeeDetailPanel({ employee, onClose, onSave, allEmployees = 
       </AnimatePresence>
     </motion.div>
   );
-}
+};
+
+export default EmployeeDetailPanel;

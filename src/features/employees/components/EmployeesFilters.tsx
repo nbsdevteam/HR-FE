@@ -9,7 +9,7 @@ type EmployeesFiltersProps = {
   onDepartmentChange: (department: string) => void;
 };
 
-export const EmployeesFilters = ({
+const EmployeesFilters = ({
   search,
   selectedDept,
   departments,
@@ -46,3 +46,5 @@ export const EmployeesFilters = ({
     </div>
   </div>
 );
+
+export default EmployeesFilters;

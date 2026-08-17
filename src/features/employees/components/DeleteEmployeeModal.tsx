@@ -10,7 +10,7 @@ type DeleteEmployeeModalProps = {
   onClose: () => void;
 };
 
-export const DeleteEmployeeModal = ({ deleteConfirm, deleting, onDelete, onClose }: DeleteEmployeeModalProps) => (
+const DeleteEmployeeModal = ({ deleteConfirm, deleting, onDelete, onClose }: DeleteEmployeeModalProps) => (
   <motion.div
     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
@@ -52,3 +52,5 @@ export const DeleteEmployeeModal = ({ deleteConfirm, deleting, onDelete, onClose
     </motion.div>
   </motion.div>
 );
+
+export default DeleteEmployeeModal;

@@ -1,3 +1,3 @@
-export { EmployeeDetailPanel } from "./components/EmployeeDetailPanel";
+export { default as EmployeeDetailPanel } from "./components/EmployeeDetailPanel";
 export type { Employee, EmployeeOption } from "./components/EmployeeDetailPanel";
-export { EmployeeSelect } from "./components/EmployeeSelect";
+export { default as EmployeeSelect } from "./components/EmployeeSelect";

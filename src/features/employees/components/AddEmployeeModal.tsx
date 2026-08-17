@@ -21,7 +21,7 @@ type AddEmployeeModalProps = {
   onClose: () => void;
 };
 
-export const AddEmployeeModal = ({
+const AddEmployeeModal = ({
   addForm,
   addSaving,
   addError,
@@ -191,3 +191,5 @@ export const AddEmployeeModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default AddEmployeeModal;

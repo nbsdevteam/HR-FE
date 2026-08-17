@@ -1,25 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  FileText, Plus, Check, X, Clock, Loader2, Search, Eye,
-  ChevronRight, AlertCircle, Briefcase, Shield, UserX, Save,
-  Trash2, Calendar, FileCheck, CheckCircle,
-  ClipboardList, DollarSign, RefreshCw,
+  Plus, Check, X, Loader2, Search,
+  Briefcase, UserX, Save,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { EmployeeSelect } from "@/features/employees";
 import {
-  empDisplayName, useExitChecklist,
-  type DbContractType, type DbEmployeeContract, type DbDocumentType,
-  type DbEmployeeDocument, type DbExitProcess, type DbExitChecklistItem,
+  empDisplayName,
+  type DbContractType, type DbEmployeeContract,
 } from "@/shared/hooks";
-import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll";
-import { formatDate, formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 
-export const ContractsTab = function ContractsTab({
+const ContractsTab = ({
   contracts, contractTypes, empMap, employees, employeeLabels, refetch, search, onSearchChange,
   statusLabels, statusColors,
 }: {
@@ -33,7 +28,7 @@ export const ContractsTab = function ContractsTab({
   onSearchChange: (s: string) => void;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
-}) {
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     employee_id: "", contract_type_id: "", start_date: "", end_date: "",
@@ -236,7 +231,9 @@ export const ContractsTab = function ContractsTab({
       </div>
     </div>
   );
-}
+};
+
+export default ContractsTab;
 
 // ══════════════════════════ Documents Tab ══════════════════════════
 

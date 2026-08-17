@@ -2,13 +2,13 @@ import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { EmployeeDetailPanel } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { AddEmployeeModal } from "../components/AddEmployeeModal";
-import { DeleteEmployeeModal } from "../components/DeleteEmployeeModal";
-import { EmployeesFilters } from "../components/EmployeesFilters";
-import { EmployeesHeader } from "../components/EmployeesHeader";
-import { EmployeesKanbanView } from "../components/EmployeesKanbanView";
-import { EmployeesListView } from "../components/EmployeesListView";
-import { EmployeesStats } from "../components/EmployeesStats";
+import AddEmployeeModal from "../components/AddEmployeeModal";
+import DeleteEmployeeModal from "../components/DeleteEmployeeModal";
+import EmployeesFilters from "../components/EmployeesFilters";
+import EmployeesHeader from "../components/EmployeesHeader";
+import EmployeesKanbanView from "../components/EmployeesKanbanView";
+import EmployeesListView from "../components/EmployeesListView";
+import EmployeesStats from "../components/EmployeesStats";
 import { useEmployeesPage } from "../hooks/useEmployeesPage";
 
 export const Employees = () => {

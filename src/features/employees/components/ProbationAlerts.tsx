@@ -8,7 +8,7 @@ type ProbationAlertsProps = {
   empMap: EmployeeMap;
 };
 
-export const ProbationAlerts = ({ probationAlerts, empMap }: ProbationAlertsProps) => {
+const ProbationAlerts = ({ probationAlerts, empMap }: ProbationAlertsProps) => {
   if (probationAlerts.length === 0) return null;
 
   return (
@@ -31,3 +31,5 @@ export const ProbationAlerts = ({ probationAlerts, empMap }: ProbationAlertsProp
     </div>
   );
 };
+
+export default ProbationAlerts;

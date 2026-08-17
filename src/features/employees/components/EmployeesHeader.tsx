@@ -10,7 +10,7 @@ type EmployeesHeaderProps = {
   onAddEmployee: () => void;
 };
 
-export const EmployeesHeader = ({ viewMode, onViewModeChange, onAddEmployee }: EmployeesHeaderProps) => (
+const EmployeesHeader = ({ viewMode, onViewModeChange, onAddEmployee }: EmployeesHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.employees")}</h1>
@@ -30,3 +30,5 @@ export const EmployeesHeader = ({ viewMode, onViewModeChange, onAddEmployee }: E
     </div>
   </div>
 );
+
+export default EmployeesHeader;

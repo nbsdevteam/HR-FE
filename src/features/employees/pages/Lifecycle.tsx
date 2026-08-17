@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ContractsTab } from "../components/ContractsTab";
-import { DocumentsTab } from "../components/DocumentsTab";
-import { ExitTab } from "../components/ExitTab";
-import { LifecycleHeader } from "../components/LifecycleHeader";
-import { LifecycleStats } from "../components/LifecycleStats";
-import { LifecycleTabs } from "../components/LifecycleTabs";
-import { ProbationAlerts } from "../components/ProbationAlerts";
+import ContractsTab from "../components/ContractsTab";
+import DocumentsTab from "../components/DocumentsTab";
+import ExitTab from "../components/ExitTab";
+import LifecycleHeader from "../components/LifecycleHeader";
+import LifecycleStats from "../components/LifecycleStats";
+import LifecycleTabs from "../components/LifecycleTabs";
+import ProbationAlerts from "../components/ProbationAlerts";
 import { useLifecyclePage } from "../hooks/useLifecyclePage";
 
 export const Lifecycle = () => {

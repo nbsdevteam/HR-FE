@@ -5,7 +5,7 @@ type LifecycleTabsProps = {
   onTabChange: (tab: LifecycleTabId) => void;
 };
 
-export const LifecycleTabs = ({ activeTab, onTabChange }: LifecycleTabsProps) => (
+const LifecycleTabs = ({ activeTab, onTabChange }: LifecycleTabsProps) => (
   <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
     {lifecycleTabs.map(tab => {
       const Icon = tab.icon;
@@ -25,3 +25,5 @@ export const LifecycleTabs = ({ activeTab, onTabChange }: LifecycleTabsProps) =>
     })}
   </div>
 );
+
+export default LifecycleTabs;

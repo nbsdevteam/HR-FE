@@ -1,25 +1,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  FileText, Plus, Check, X, Clock, Loader2, Search, Eye,
-  ChevronRight, AlertCircle, Briefcase, Shield, UserX, Save,
-  Trash2, Calendar, FileCheck, CheckCircle,
-  ClipboardList, LogOut, DollarSign, RefreshCw,
+  Plus, Check, Loader2, Eye,
+  ChevronRight, UserX, Save,
+  ClipboardList, LogOut,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { EmployeeSelect } from "@/features/employees";
 import {
   empDisplayName, useExitChecklist,
-  type DbContractType, type DbEmployeeContract, type DbDocumentType,
-  type DbEmployeeDocument, type DbExitProcess, type DbExitChecklistItem,
+  type DbExitProcess, type DbExitChecklistItem,
 } from "@/shared/hooks";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 
-export const ExitTab = function ExitTab({
+const ExitTab = ({
   processes, exitItems, empMap, employees, employeeLabels, refetch,
   exitTypeLabels, statusLabels, statusColors, checklistCategoryLabels,
 }: {
@@ -33,7 +31,7 @@ export const ExitTab = function ExitTab({
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
   checklistCategoryLabels: Record<string, string>;
-}) {
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -354,4 +352,6 @@ export const ExitTab = function ExitTab({
       </div>
     </div>
   );
-}
+};
+
+export default ExitTab;

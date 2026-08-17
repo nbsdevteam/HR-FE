@@ -8,7 +8,7 @@ type EmployeesStatsProps = {
   deviceSyncedCount: number;
 };
 
-export const EmployeesStats = ({ employees, deviceSyncedCount }: EmployeesStatsProps) => {
+const EmployeesStats = ({ employees, deviceSyncedCount }: EmployeesStatsProps) => {
   const stats = [
     { label: arabicSource("common.total_employees"), value: employees.length, icon: Users },
     { label: arabicSource("employees.are_active"), value: employees.filter(e => e.status === arabicSource("common.is_active")).length, icon: CheckCircle2 },
@@ -45,3 +45,5 @@ export const EmployeesStats = ({ employees, deviceSyncedCount }: EmployeesStatsP
     </div>
   );
 };
+
+export default EmployeesStats;

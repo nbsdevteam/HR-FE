@@ -22,7 +22,7 @@ type EmployeesListViewProps = {
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
 };
 
-export const EmployeesListView = ({
+const EmployeesListView = ({
   employees,
   dbEmployees,
   deviceSyncedSet,
@@ -149,3 +149,5 @@ export const EmployeesListView = ({
     </div>
   </motion.div>
 );
+
+export default EmployeesListView;
