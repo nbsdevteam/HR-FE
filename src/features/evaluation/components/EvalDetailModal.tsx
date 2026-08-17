@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "motion/react";
 import {
   Star, X, Loader2, Save, Pencil,
   CheckCircle, Trash2,
@@ -8,6 +7,7 @@ import { localizedConfirm } from "@/i18n/native";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
+import { ModalOverlay } from "@/shared/components";
 import { CustomRadarChart } from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
 import {
@@ -97,20 +97,10 @@ const EvalDetailModal = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+    <ModalOverlay
+      onClose={onClose}
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-2xl shadow-lg max-h-[85vh] overflow-y-auto"
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-2xl shadow-lg max-h-[85vh] overflow-y-auto"
-      >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -264,8 +254,7 @@ const EvalDetailModal = ({
             {arabicSource("evaluation.edit_rating")}
           </button>
         )}
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

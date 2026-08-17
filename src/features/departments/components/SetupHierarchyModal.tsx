@@ -1,5 +1,5 @@
-import { motion } from "motion/react";
 import { Briefcase, Crown, Loader2, X } from "lucide-react";
+import { ModalOverlay } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 
@@ -14,12 +14,17 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
   const rootEmployeeCount = dbEmployees.filter(e => !e.manager_id).length;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 20 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
-        onClick={e => e.stopPropagation()}>
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
+      contentMotionProps={{
+        initial: { opacity: 0, scale: 0.92, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.92, y: 20 },
+        transition: { type: "spring", stiffness: 400, damping: 30 },
+      }}
+    >
         <div className="px-6 py-4 flex items-center justify-between" style={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}>
@@ -99,8 +104,7 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
             {saving ? arabicSource("hierarchy.initializing") : arabicSource("common.chassis_initialization")}
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

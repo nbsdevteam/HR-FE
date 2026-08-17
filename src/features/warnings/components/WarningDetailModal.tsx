@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { CheckCircle, Trash2, X, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 
 type WarningDetailModalProps = {
@@ -24,20 +25,7 @@ const WarningDetailModal = ({
   onEnd,
   onDelete,
 }: WarningDetailModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-    onClick={onClose}
-  >
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.9, opacity: 0 }}
-      onClick={(e) => e.stopPropagation()}
-      className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
-    >
+  <ModalOverlay onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-foreground">{arabicSource("warnings.alarm_details")}</h2>
         <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
@@ -132,8 +120,7 @@ const WarningDetailModal = ({
           {arabicSource("common.delete")}
         </motion.button>
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default WarningDetailModal;

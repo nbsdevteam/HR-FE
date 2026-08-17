@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { BarChart3, Download, FileText, Loader2, Printer, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
 import ReportResultsTable from "./ReportResultsTable";
@@ -30,20 +31,16 @@ const ReportViewerModal = ({
   onExportCSV,
   onPrint,
 }: ReportViewerModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    onClick={onClose}
+  <ModalOverlay
+    onClose={onClose}
+    overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    contentClassName="bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"
+    contentMotionProps={{
+      initial: { scale: 0.95, opacity: 0 },
+      animate: { scale: 1, opacity: 1 },
+      exit: { scale: 0.95, opacity: 0 },
+    }}
   >
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.95, opacity: 0 }}
-      onClick={e => e.stopPropagation()}
-      className="bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"
-    >
       <div className="p-6 border-b border-border/40 flex items-center justify-between">
         <div>
           <h2 className="text-lg text-foreground">{template.name_ar}</h2>
@@ -109,8 +106,7 @@ const ReportViewerModal = ({
           <ReportResultsTable data={generatedData} template={template} filterDept={filterDept} dateFrom={dateFrom} dateTo={dateTo} />
         )}
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default ReportViewerModal;

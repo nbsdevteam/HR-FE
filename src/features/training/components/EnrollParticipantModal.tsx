@@ -1,7 +1,7 @@
-import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { EnrollParticipantForm } from "../types";
 
@@ -24,18 +24,17 @@ const EnrollParticipantModal = ({
   onSave,
   onClose,
 }: EnrollParticipantModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  <ModalOverlay
+    onClose={onClose}
+    closeOnBackdropClick={false}
+    overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    contentClassName="bg-card border border-border/40 rounded-xl p-6 max-w-md w-full"
+    contentMotionProps={{
+      initial: { scale: 0.95, opacity: 0 },
+      animate: { scale: 1, opacity: 1 },
+      exit: { scale: 0.95, opacity: 0 },
+    }}
   >
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.95, opacity: 0 }}
-      className="bg-card border border-border/40 rounded-xl p-6 max-w-md w-full"
-    >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl text-foreground">{arabicSource("training.register_a_new_employee")}</h2>
         <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
@@ -98,8 +97,7 @@ const EnrollParticipantModal = ({
           </button>
         </div>
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default EnrollParticipantModal;

@@ -8,6 +8,7 @@ import {
   Sparkles, RefreshCw,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
+import { ModalOverlay } from "@/shared/components";
 import { type DbApplicant } from "@/shared/hooks";
 import { formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
@@ -47,12 +48,14 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto"
-      onClick={onClose}>
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto"
+      contentClassName="bg-card border border-border rounded-xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+      contentMotionProps={{
+        initial: { scale: 0.95, opacity: 0 }, animate: { scale: 1, opacity: 1 }, exit: { scale: 0.95, opacity: 0 },
+      }}
+    >
         {/* Header */}
         <div className="p-6 border-b border-border/40">
           <div className="flex items-start justify-between">
@@ -242,8 +245,7 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
             </motion.button>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { motion } from "motion/react";
 import {
   X, Loader2, AlertCircle, Link2, Copy, RefreshCw, Check, MessageCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
+import { ModalOverlay } from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -55,11 +55,10 @@ const ApplyLinkModal = ({ job, onClose }: { job: DbJobOpening; onClose: () => vo
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg">
+    <ModalOverlay
+      onClose={onClose}
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg"
+    >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-foreground flex items-center gap-2">
             <Link2 className="w-5 h-5 text-primary" />{arabicSource("recruitment.apply_link")}
@@ -130,8 +129,7 @@ const ApplyLinkModal = ({ job, onClose }: { job: DbJobOpening; onClose: () => vo
             </p>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

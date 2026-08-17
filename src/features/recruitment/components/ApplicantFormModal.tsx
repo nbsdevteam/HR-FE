@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { motion } from "motion/react";
 import {
   UserPlus, X, Users, FileCheck,
   Upload,
@@ -7,6 +6,7 @@ import {
   Trophy, Loader2, AlertCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
+import { ModalOverlay } from "@/shared/components";
 import {
   type DbJobOpening, type DbApplicant,
 } from "@/shared/hooks";
@@ -111,14 +111,15 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
   const openJobs = jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === arabicSource("common.is_under_review"));
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" onClick={onClose}>
-      <motion.div
-        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        onClick={e => e.stopPropagation()}
-        className="fixed inset-y-0 end-0 w-full max-w-2xl bg-card border-s border-border shadow-2xl flex flex-col"
-      >
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+      contentClassName="fixed inset-y-0 end-0 w-full max-w-2xl bg-card border-s border-border shadow-2xl flex flex-col"
+      contentMotionProps={{
+        initial: { x: "100%" }, animate: { x: 0 }, exit: { x: "100%" },
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      }}
+    >
         {/* ── Sticky Header ── */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-card/95 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -335,8 +336,7 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
               style={{ fontSize: 14 }}>{arabicSource("common.cancel")}</button>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

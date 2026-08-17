@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { motion } from "motion/react";
 import { X, Sparkles } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
+import { ModalOverlay } from "@/shared/components";
 import {
   type DbJobOpening, type DbDepartment, type JobSkillRequirement,
 } from "@/shared/hooks";
@@ -84,11 +84,10 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto">
+    <ModalOverlay
+      onClose={onClose}
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto"
+    >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-foreground">{isEdit ? arabicSource("recruitment.edit_vacancy") : arabicSource("common.new_vacancy")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer"><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -204,8 +203,7 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
             <button onClick={onClose} className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer">{arabicSource("common.cancel")}</button>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

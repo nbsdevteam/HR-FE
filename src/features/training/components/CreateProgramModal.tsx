@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import type { CreateProgramForm } from "../types";
 
 type CreateProgramModalProps = {
@@ -22,18 +22,17 @@ const CreateProgramModal = ({
   onSave,
   onClose,
 }: CreateProgramModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  <ModalOverlay
+    onClose={onClose}
+    closeOnBackdropClick={false}
+    overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    contentClassName="bg-card border border-border/40 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+    contentMotionProps={{
+      initial: { scale: 0.95, opacity: 0 },
+      animate: { scale: 1, opacity: 1 },
+      exit: { scale: 0.95, opacity: 0 },
+    }}
   >
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.95, opacity: 0 }}
-      className="bg-card border border-border/40 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-    >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl text-foreground">{arabicSource("training.new_training_program")}</h2>
         <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
@@ -172,8 +171,7 @@ const CreateProgramModal = ({
           </button>
         </div>
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default CreateProgramModal;

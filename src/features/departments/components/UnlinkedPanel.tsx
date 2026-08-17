@@ -1,27 +1,10 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Users, ChevronDown, Minus, Plus, Maximize2, Search, Printer, Download,
-  Move, X, UserPlus, Trash2, Building2, UserCheck, Briefcase, ChevronLeft,
-  Loader2, AlertTriangle, Link2, Crown, Edit2, Network, GripVertical, Save, ChevronRight as ChevronRightIcon, GitBranch
-} from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Link2, X } from "lucide-react";
+import { ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
-import * as odooData from "@/shared/api/odooData";
-import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
-import { formatDate } from "@/i18n/format";
-import { translateArabicSource } from "@/i18n/legacy";
-import { localizedConfirm } from "@/i18n/native";
+import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, CLEVEL_COLOR, defaultDeptColorMap, OWNER_COLOR } from "../styles";
-import {
-  buildPositionTree,
-  countDescendants,
-  findParentOf,
-  flattenTree,
-  pickUniqueColor,
-} from "../utils/hierarchyTree";
+import type { OrgNode } from "../types";
 
 const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
   employees: DbEmployee[];
@@ -32,11 +15,15 @@ const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
   const [selectedManager, setSelectedManager] = useState<Record<string, string>>({});
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg mx-4 max-h-[80vh] flex flex-col"
-        onClick={e => e.stopPropagation()}>
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg mx-4 max-h-[80vh] flex flex-col"
+      contentMotionProps={{
+        initial: { opacity: 0, scale: 0.92, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+      }}
+    >
         <div className="bg-amber-500/10 px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
@@ -96,8 +83,7 @@ const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
             );
           })}
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 
 };

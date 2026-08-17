@@ -1,7 +1,7 @@
-import { motion } from "motion/react";
 import { AlertCircle, CheckCircle2, Fingerprint, Loader2, Plus, Upload, X } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 
 type AddEmployeeModalProps = {
@@ -37,20 +37,10 @@ const AddEmployeeModal = ({
   onAddEmployee,
   onClose,
 }: AddEmployeeModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-    onClick={() => { if (!addSaving) onClose(); }}
+  <ModalOverlay
+    onClose={() => { if (!addSaving) onClose(); }}
+    contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[80vh] overflow-y-auto"
   >
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.9, opacity: 0 }}
-      onClick={(e) => e.stopPropagation()}
-      className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[80vh] overflow-y-auto"
-    >
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-foreground">{arabicSource("common.add_a_new_employee")}</h2>
         <button onClick={() => { if (!addSaving) onClose(); }} className="p-1 rounded hover:bg-secondary cursor-pointer">
@@ -188,8 +178,7 @@ const AddEmployeeModal = ({
           </button>
         </div>
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default AddEmployeeModal;

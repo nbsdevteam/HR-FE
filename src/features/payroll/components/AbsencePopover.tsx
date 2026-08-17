@@ -1,7 +1,7 @@
-import { motion } from "motion/react";
 import { X, XCircle } from "lucide-react";
 import type { ProcessedAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import { dayNamesAr } from "../styles";
 
 const AbsencePopover = ({
@@ -20,16 +20,15 @@ const AbsencePopover = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+    <ModalOverlay
+      onClose={onClose}
+      contentClassName="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
+      contentMotionProps={{
+        initial: { scale: 0.95 },
+        animate: { scale: 1 },
+        exit: { scale: 0.95 },
+      }}
     >
-      <motion.div
-        initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
-      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-destructive/10">
@@ -86,8 +85,7 @@ const AbsencePopover = ({
             {arabicSource("common.excused")} {records.filter((r) => r.excusedAbsence).length}
           </span>
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

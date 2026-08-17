@@ -1,6 +1,7 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import { policyStatusColors } from "../constants/policies";
 import type { CreatePolicyForm, DisplayPolicy, EditPolicyForm } from "../types";
 import PolicyFormFields from "./PolicyFormFields";
@@ -43,20 +44,16 @@ const PolicyModals = ({
   <>
     <AnimatePresence>
       {showCreateModal && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => onShowCreateModalChange(false)}
+        <ModalOverlay
+          onClose={() => onShowCreateModalChange(false)}
+          overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          contentMotionProps={{
+            initial: { scale: 0.95, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.95, opacity: 0 },
+          }}
         >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(event) => event.stopPropagation()}
-            className="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-foreground">{arabicSource("policies.add_a_new_policy")}</h2>
               <button onClick={() => onShowCreateModalChange(false)} className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer">
@@ -76,27 +73,22 @@ const PolicyModals = ({
                 </button>
               </div>
             </form>
-          </motion.div>
-        </motion.div>
+        </ModalOverlay>
       )}
     </AnimatePresence>
 
     <AnimatePresence>
       {showEditModal && editingPolicy && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => onShowEditModalChange(false)}
+        <ModalOverlay
+          onClose={() => onShowEditModalChange(false)}
+          overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          contentMotionProps={{
+            initial: { scale: 0.95, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.95, opacity: 0 },
+          }}
         >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(event) => event.stopPropagation()}
-            className="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-foreground">{arabicSource("policies.modify_the_policy")}</h2>
               <button onClick={() => onShowEditModalChange(false)} className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer">
@@ -124,27 +116,22 @@ const PolicyModals = ({
                 </button>
               </div>
             </form>
-          </motion.div>
-        </motion.div>
+        </ModalOverlay>
       )}
     </AnimatePresence>
 
     <AnimatePresence>
       {showViewModal && viewingPolicy && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => onShowViewModalChange(false)}
+        <ModalOverlay
+          onClose={() => onShowViewModalChange(false)}
+          overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+          contentMotionProps={{
+            initial: { scale: 0.95, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.95, opacity: 0 },
+          }}
         >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(event) => event.stopPropagation()}
-            className="bg-card border border-border/40 rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
-          >
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">{localizePolicyText(viewingPolicy.title)}</h2>
@@ -188,8 +175,7 @@ const PolicyModals = ({
                 {arabicSource("common.close")}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+        </ModalOverlay>
       )}
     </AnimatePresence>
   </>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "motion/react";
 import { AlertCircle, CalendarDays, FileText, Loader2, Send, X } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
+import { ModalOverlay } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   empDisplayName,
@@ -118,16 +118,10 @@ const LeaveRequestModal = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+    <ModalOverlay
+      onClose={onClose}
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
-      >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-foreground">{arabicSource("leave.new_leave_request")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
@@ -298,8 +292,7 @@ const LeaveRequestModal = ({
             </button>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

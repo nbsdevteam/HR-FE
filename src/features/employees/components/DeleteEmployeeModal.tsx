@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
 import { Loader2, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import type { DeleteEmployeeTarget } from "../types";
 
 type DeleteEmployeeModalProps = {
@@ -11,16 +11,16 @@ type DeleteEmployeeModalProps = {
 };
 
 const DeleteEmployeeModal = ({ deleteConfirm, deleting, onDelete, onClose }: DeleteEmployeeModalProps) => (
-  <motion.div
-    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-    onClick={() => !deleting && onClose()}
+  <ModalOverlay
+    onClose={() => !deleting && onClose()}
+    overlayClassName="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    contentClassName="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
+    contentMotionProps={{
+      initial: { scale: 0.95, opacity: 0 },
+      animate: { scale: 1, opacity: 1 },
+      exit: { scale: 0.95, opacity: 0 },
+    }}
   >
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-      className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
-      onClick={e => e.stopPropagation()}
-    >
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-xl bg-destructive/10">
           <Trash2 className="w-5 h-5 text-destructive" />
@@ -49,8 +49,7 @@ const DeleteEmployeeModal = ({ deleteConfirm, deleting, onDelete, onClose }: Del
           {deleting ? arabicSource("employees.deleting") : arabicSource("employees.delete_employee")}
         </button>
       </div>
-    </motion.div>
-  </motion.div>
+  </ModalOverlay>
 );
 
 export default DeleteEmployeeModal;

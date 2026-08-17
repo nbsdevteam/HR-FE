@@ -1,4 +1,5 @@
 export * from "./EmptyState";
+export { default as ModalOverlay } from "./ModalOverlay";
 export * from "./SortableHeader";
 export * from "./ViewToggle";
 export * from "./chart-utils";

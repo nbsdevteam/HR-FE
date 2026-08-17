@@ -1,27 +1,9 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Users, ChevronDown, Minus, Plus, Maximize2, Search, Printer, Download,
-  Move, X, UserPlus, Trash2, Building2, UserCheck, Briefcase, ChevronLeft,
-  Loader2, AlertTriangle, Link2, Crown, Edit2, Network, GripVertical, Save, ChevronRight as ChevronRightIcon, GitBranch
-} from "lucide-react";
-import { empDisplayName } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
-import * as odooData from "@/shared/api/odooData";
-import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
-import { formatDate } from "@/i18n/format";
-import { translateArabicSource } from "@/i18n/legacy";
-import { localizedConfirm } from "@/i18n/native";
+import { Trash2, Users } from "lucide-react";
+import { ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, CLEVEL_COLOR, defaultDeptColorMap, OWNER_COLOR } from "../styles";
-import {
-  buildPositionTree,
-  countDescendants,
-  findParentOf,
-  flattenTree,
-  pickUniqueColor,
-} from "../utils/hierarchyTree";
+import type { OrgNode } from "../types";
+import { defaultDeptColorMap } from "../styles";
+import { countDescendants, findParentOf } from "../utils/hierarchyTree";
 
 const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   node: OrgNode; orgTree: OrgNode; onDelete: (node: OrgNode, reparent: boolean) => void; onClose: () => void;
@@ -31,10 +13,16 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   const topColor = defaultDeptColorMap[node.department] || node.color;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
-        className="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm mx-4"
+      contentMotionProps={{
+        initial: { opacity: 0, scale: 0.92 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.92 },
+      }}
+    >
         <div className="h-1.5" style={{ background: topColor }} />
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -88,8 +76,7 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
             </div>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 
 };

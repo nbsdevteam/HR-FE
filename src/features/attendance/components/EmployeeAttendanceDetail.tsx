@@ -5,6 +5,7 @@ import * as odooData from "@/shared/api/odooData";
 import { resolveEmployeeShift, shiftToSchedule, type DbAttendanceRecord, type DbEmployee } from "@/shared/hooks";
 import type { EmployeeSchedule } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
+import { ModalOverlay } from "@/shared/components";
 import  AttendanceCalendarView  from "./AttendanceCalendarView";
 import AttendanceDetailTabButton from "./AttendanceDetailTabButton";
 import MonthlySummaryView from "./MonthlySummaryView";
@@ -164,19 +165,16 @@ const EmployeeAttendanceDetail = ({
   }, [allRecords]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      contentClassName="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+      contentMotionProps={{
+        initial: { opacity: 0, scale: 0.95, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.95, y: 20 },
+      }}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/30 bg-card/50">
           <div className="flex items-center gap-4">
@@ -257,8 +255,7 @@ const EmployeeAttendanceDetail = ({
             </AnimatePresence>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 

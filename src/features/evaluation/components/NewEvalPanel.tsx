@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "motion/react";
 import {
   Star, X, ChevronDown, Loader2, UserCheck, Save,
   CheckCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { EmployeeSelect } from "@/features/employees";
+import { ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -95,20 +95,16 @@ const NewEvalPanel = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto"
-      onClick={onClose}
+    <ModalOverlay
+      onClose={onClose}
+      overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto"
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg my-8"
+      contentMotionProps={{
+        initial: { scale: 0.9, opacity: 0, y: 30 },
+        animate: { scale: 1, opacity: 1, y: 0 },
+        exit: { scale: 0.9, opacity: 0, y: 30 },
+      }}
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 30 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 30 }}
-        onClick={e => e.stopPropagation()}
-        className="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg my-8"
-      >
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-foreground">{arabicSource("evaluation.new_performance_evaluation")}</h2>
@@ -344,8 +340,7 @@ const NewEvalPanel = ({
             </button>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+    </ModalOverlay>
   );
 };
 
