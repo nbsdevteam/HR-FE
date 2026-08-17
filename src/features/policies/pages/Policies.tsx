@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { PoliciesFilters } from "../components/PoliciesFilters";
-import { PoliciesHeader } from "../components/PoliciesHeader";
-import { PoliciesList } from "../components/PoliciesList";
-import { PoliciesLoadingState } from "../components/PoliciesLoadingState";
-import { PoliciesStats } from "../components/PoliciesStats";
-import { PolicyModals } from "../components/PolicyModals";
-import { PolicyToast } from "../components/PolicyToast";
+import PoliciesFilters from "../components/PoliciesFilters";
+import PoliciesHeader from "../components/PoliciesHeader";
+import PoliciesList from "../components/PoliciesList";
+import PoliciesLoadingState from "../components/PoliciesLoadingState";
+import PoliciesStats from "../components/PoliciesStats";
+import PolicyModals from "../components/PolicyModals";
+import PolicyToast from "../components/PolicyToast";
 import { usePoliciesPage } from "../hooks/usePoliciesPage";
 import type { CreatePolicyForm, EditPolicyForm, PolicySortKey } from "../types";
 

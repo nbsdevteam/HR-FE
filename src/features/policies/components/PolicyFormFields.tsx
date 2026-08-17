@@ -8,7 +8,7 @@ type PolicyFormFieldsProps = {
   onFormChange: (form: any) => void;
 };
 
-export const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsProps) => (
+const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsProps) => (
   <>
     <div>
       <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.address")}</label>
@@ -72,3 +72,5 @@ export const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsP
     </div>
   </>
 );
+
+export default PolicyFormFields;

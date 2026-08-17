@@ -5,7 +5,7 @@ type PolicyToastProps = {
   message: string | null;
 };
 
-export const PolicyToast = ({ message }: PolicyToastProps) => {
+const PolicyToast = ({ message }: PolicyToastProps) => {
   if (!message) return null;
 
   return (
@@ -22,3 +22,5 @@ export const PolicyToast = ({ message }: PolicyToastProps) => {
     </motion.div>
   );
 };
+
+export default PolicyToast;

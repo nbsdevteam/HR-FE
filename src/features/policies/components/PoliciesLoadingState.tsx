@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 
-export const PoliciesLoadingState = () => (
+const PoliciesLoadingState = () => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
       <div>
@@ -11,3 +11,5 @@ export const PoliciesLoadingState = () => (
     <div className="text-center py-8 text-muted-foreground">{arabicSource("common.loading")}</div>
   </div>
 );
+
+export default PoliciesLoadingState;

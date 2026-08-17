@@ -14,7 +14,7 @@ type PoliciesFiltersProps = {
   onStatusFilterChange: (status: string) => void;
 };
 
-export const PoliciesFilters = ({
+const PoliciesFilters = ({
   search,
   selectedCategory,
   sortBy,
@@ -77,3 +77,5 @@ export const PoliciesFilters = ({
     </div>
   </div>
 );
+
+export default PoliciesFilters;

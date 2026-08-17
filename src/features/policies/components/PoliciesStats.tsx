@@ -11,7 +11,7 @@ type PoliciesStatsProps = {
   };
 };
 
-export const PoliciesStats = ({ stats }: PoliciesStatsProps) => {
+const PoliciesStats = ({ stats }: PoliciesStatsProps) => {
   const items = [
     { label: arabicSource("policies.total_policies"), value: stats.total, icon: FileText, iconBg: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
     { label: arabicSource("policies.is_active"), value: stats.active, icon: CheckCircle, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
@@ -48,3 +48,5 @@ export const PoliciesStats = ({ stats }: PoliciesStatsProps) => {
     </div>
   );
 };
+
+export default PoliciesStats;

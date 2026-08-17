@@ -6,7 +6,7 @@ type PoliciesHeaderProps = {
   onCreateClick: () => void;
 };
 
-export const PoliciesHeader = ({ onCreateClick }: PoliciesHeaderProps) => (
+const PoliciesHeader = ({ onCreateClick }: PoliciesHeaderProps) => (
   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
     <div className="min-w-0">
       <h1 className="text-gradient-gold text-xl sm:text-2xl">{arabicSource("common.policies_and_procedures")}</h1>
@@ -22,3 +22,5 @@ export const PoliciesHeader = ({ onCreateClick }: PoliciesHeaderProps) => (
     </motion.button>
   </div>
 );
+
+export default PoliciesHeader;

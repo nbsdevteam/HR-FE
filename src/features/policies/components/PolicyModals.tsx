@@ -3,7 +3,7 @@ import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { policyStatusColors } from "../constants/policies";
 import type { CreatePolicyForm, DisplayPolicy, EditPolicyForm } from "../types";
-import { PolicyFormFields } from "./PolicyFormFields";
+import PolicyFormFields from "./PolicyFormFields";
 
 type PolicyModalsProps = {
   createForm: CreatePolicyForm;
@@ -23,7 +23,7 @@ type PolicyModalsProps = {
   onShowViewModalChange: (show: boolean) => void;
 };
 
-export const PolicyModals = ({
+const PolicyModals = ({
   createForm,
   editingPolicy,
   isSubmitting,
@@ -194,3 +194,5 @@ export const PolicyModals = ({
     </AnimatePresence>
   </>
 );
+
+export default PolicyModals;

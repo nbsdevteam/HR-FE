@@ -21,7 +21,7 @@ type PoliciesListProps = {
   onViewPolicy: (policy: DisplayPolicy) => void;
 };
 
-export const PoliciesList = ({
+const PoliciesList = ({
   currentPage,
   expandedPolicy,
   filteredCount,
@@ -187,3 +187,5 @@ export const PoliciesList = ({
     )}
   </div>
 );
+
+export default PoliciesList;
