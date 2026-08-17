@@ -10,7 +10,7 @@ type AttendanceDetailTabButtonProps<T extends string> = {
   onClick: (id: T) => void;
 };
 
-export function AttendanceDetailTabButton<T extends string>({ tab, active, onClick }: AttendanceDetailTabButtonProps<T>) {
+export const  AttendanceDetailTabButton = <T extends string>({ tab, active, onClick }: AttendanceDetailTabButtonProps<T>) => {
   const Icon = tab.icon;
 
   return (

@@ -16,7 +16,14 @@ interface CustomBarChartProps {
 export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const maxValue = Math.max(...data.map(d => d.value));
+  const safeData = data
+    .filter((item) => item.label)
+    .map((item) => ({
+      ...item,
+      value: Number.isFinite(item.value) ? Math.max(0, item.value) : 0,
+    }));
+  const hasData = safeData.length > 0;
+  const maxValue = hasData ? Math.max(...safeData.map((item) => item.value)) : 0;
   const paddingTop = 30;
   const paddingBottom = 60;
   const paddingLeft = 50;
@@ -26,10 +33,11 @@ export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel
   const plotHeight = chartHeight - paddingTop - paddingBottom;
   const plotWidth = chartWidth - paddingLeft - paddingRight;
   const barGap = 8;
-  const barWidth = Math.min(40, (plotWidth / data.length) - barGap);
+  const slotWidth = hasData ? plotWidth / safeData.length : plotWidth;
+  const barWidth = Math.max(1, Math.min(40, slotWidth - barGap));
 
   // Y-axis ticks
-  const niceMax = Math.ceil(maxValue / 10) * 10;
+  const niceMax = Math.max(1, Math.ceil(maxValue / 10) * 10);
   const tickCount = 5;
   const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => Math.round((niceMax / tickCount) * i));
 
@@ -42,10 +50,10 @@ export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel
         className="overflow-visible"
       >
         {/* Grid lines */}
-        {yTicks.map((tick) => {
+        {yTicks.map((tick, index) => {
           const y = paddingTop + plotHeight - (tick / niceMax) * plotHeight;
           return (
-            <g key={`grid-${tick}`}>
+            <g key={`grid-${index}`}>
               <line
                 x1={paddingLeft}
                 y1={y}
@@ -69,9 +77,9 @@ export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel
         })}
 
         {/* Bars */}
-        {data.map((item, i) => {
+        {safeData.map((item, i) => {
           const barH = (item.value / niceMax) * plotHeight;
-          const x = paddingLeft + (plotWidth / data.length) * i + ((plotWidth / data.length) - barWidth) / 2;
+          const x = paddingLeft + slotWidth * i + (slotWidth - barWidth) / 2;
           const y = paddingTop + plotHeight - barH;
           const isHovered = hoveredIndex === i;
 
@@ -109,8 +117,9 @@ export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel
 
       {/* Tooltip */}
       {hoveredIndex !== null && (() => {
-        const item = data[hoveredIndex];
-        const x = paddingLeft + (plotWidth / data.length) * hoveredIndex + ((plotWidth / data.length) - barWidth) / 2 + barWidth / 2;
+        const item = safeData[hoveredIndex];
+        if (!item) return null;
+        const x = paddingLeft + slotWidth * hoveredIndex + (slotWidth - barWidth) / 2 + barWidth / 2;
         const barH = (item.value / niceMax) * plotHeight;
         const y = paddingTop + plotHeight - barH;
         // Convert SVG coords to percentage for absolute positioning

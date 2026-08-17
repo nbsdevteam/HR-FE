@@ -99,27 +99,6 @@ export const PayrollDetailPanel = function PayrollDetailPanel({
   const [ledgerPenalty, setLedgerPenalty] = useState(0);
   const [ledgerCurrency, setLedgerCurrency] = useState<"IQD" | "USD">("IQD");
 
-  // Reset ledger currency to employee's default when employee changes
-  useEffect(() => {
-    if (!empId) return;
-    const empFound = employees.find((e) => e.id === empId);
-    setLedgerCurrency((empFound?.currency as "IQD" | "USD") || "IQD");
-    setShowShortfall(false);
-    setShowAbsence(false);
-    setShowCalendar(false);
-  }, [empId, employees]);
-
-  // Sync ledger values when employee/month/ledgers/currency change
-  useEffect(() => {
-    if (!empId) return;
-    const cl = ledgers.find((l) => l.employee_id === empId && l.month_year === selectedMonth);
-    const c = ledgerCurrency;
-    setLedgerLoan(cl?.loan_by_currency?.[c] || 0);
-    setLedgerTip(cl?.tip_by_currency?.[c] || 0);
-    setLedgerPenalty(cl?.penalty_by_currency?.[c] || 0);
-    setEditingLedger(false);
-  }, [empId, selectedMonth, ledgers, ledgerCurrency]);
-
   // Must be declared before any early return (Rules of Hooks)
   const [excuseVersion, bumpExcuseVersion] = useReducer((x: number) => x + 1, 0);
 
@@ -232,6 +211,27 @@ export const PayrollDetailPanel = function PayrollDetailPanel({
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
+
+    // Reset ledger currency to employee's default when employee changes
+  useEffect(() => {
+    if (!empId) return;
+    const empFound = employees.find((e) => e.id === empId);
+    setLedgerCurrency((empFound?.currency as "IQD" | "USD") || "IQD");
+    setShowShortfall(false);
+    setShowAbsence(false);
+    setShowCalendar(false);
+  }, [empId, employees]);
+
+  // Sync ledger values when employee/month/ledgers/currency change
+  useEffect(() => {
+    if (!empId) return;
+    const cl = ledgers.find((l) => l.employee_id === empId && l.month_year === selectedMonth);
+    const c = ledgerCurrency;
+    setLedgerLoan(cl?.loan_by_currency?.[c] || 0);
+    setLedgerTip(cl?.tip_by_currency?.[c] || 0);
+    setLedgerPenalty(cl?.penalty_by_currency?.[c] || 0);
+    setEditingLedger(false);
+  }, [empId, selectedMonth, ledgers, ledgerCurrency]);
 
   return (
     <AnimatePresence>

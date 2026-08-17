@@ -13,7 +13,7 @@ type AttendanceFiltersProps = {
   onSortByChange: (value: AttendanceSortKey) => void;
 };
 
-export function AttendanceFilters({ searchTerm, statusFilter, sortBy, onSearchTermChange, onStatusFilterChange, onSortByChange }: AttendanceFiltersProps) {
+export const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChange, onStatusFilterChange, onSortByChange }: AttendanceFiltersProps) => {
   return (
     <>
     {/* Search & Filters Bar */}

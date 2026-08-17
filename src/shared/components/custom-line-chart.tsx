@@ -16,8 +16,15 @@ interface CustomLineChartProps {
 export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const maxValue = Math.max(...data.map(d => d.value));
-  const minValue = Math.min(...data.map(d => d.value));
+  const safeData = data
+    .filter((item) => item.label)
+    .map((item) => ({
+      ...item,
+      value: Number.isFinite(item.value) ? item.value : 0,
+    }));
+  const hasData = safeData.length > 0;
+  const maxValue = hasData ? Math.max(...safeData.map((item) => item.value)) : 0;
+  const minValue = hasData ? Math.min(...safeData.map((item) => item.value)) : 0;
   const paddingTop = 30;
   const paddingBottom = 50;
   const paddingLeft = 50;
@@ -31,23 +38,23 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
   const range = maxValue - minValue;
   const niceMin = Math.floor(minValue / 10) * 10 - Math.max(10, Math.ceil(range * 0.1));
   const niceMax = Math.ceil(maxValue / 10) * 10 + Math.max(10, Math.ceil(range * 0.1));
-  const span = niceMax - niceMin;
+  const span = Math.max(1, niceMax - niceMin);
 
   const tickCount = 5;
   const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => Math.round(niceMin + (span / tickCount) * i));
 
-  const getX = (i: number) => paddingLeft + (plotWidth / (data.length - 1)) * i;
+  const getX = (i: number) => safeData.length <= 1 ? paddingLeft + plotWidth / 2 : paddingLeft + (plotWidth / (safeData.length - 1)) * i;
   const getY = (val: number) => paddingTop + plotHeight - ((val - niceMin) / span) * plotHeight;
 
   // Build path
-  const pathD = data.map((item, i) => {
+  const pathD = safeData.map((item, i) => {
     const x = getX(i);
     const y = getY(item.value);
     return `${i === 0 ? "M" : "L"} ${x} ${y}`;
   }).join(" ");
 
   // Area path
-  const areaD = `${pathD} L ${getX(data.length - 1)} ${paddingTop + plotHeight} L ${getX(0)} ${paddingTop + plotHeight} Z`;
+  const areaD = hasData ? `${pathD} L ${getX(safeData.length - 1)} ${paddingTop + plotHeight} L ${getX(0)} ${paddingTop + plotHeight} Z` : "";
 
   return (
     <div className="relative w-full" style={{ direction: "ltr" }}>
@@ -65,10 +72,10 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
         </defs>
 
         {/* Grid lines */}
-        {yTicks.map((tick) => {
+        {yTicks.map((tick, index) => {
           const y = getY(tick);
           return (
-            <g key={`grid-${tick}`}>
+            <g key={`grid-${index}`}>
               <line
                 x1={paddingLeft}
                 y1={y}
@@ -92,13 +99,13 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
         })}
 
         {/* Area fill */}
-        <path d={areaD} fill="url(#lineAreaGrad)" />
+        {hasData && <path d={areaD} fill="url(#lineAreaGrad)" />}
 
         {/* Line */}
-        <path d={pathD} fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        {hasData && <path d={pathD} fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />}
 
         {/* X labels + dots + hover zones */}
-        {data.map((item, i) => {
+        {safeData.map((item, i) => {
           const x = getX(i);
           const y = getY(item.value);
           const isHovered = hoveredIndex === i;
@@ -107,9 +114,9 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
             <g key={`pt-${i}`}>
               {/* Hover zone */}
               <rect
-                x={x - (plotWidth / data.length) / 2}
+                x={x - (plotWidth / Math.max(1, safeData.length)) / 2}
                 y={paddingTop}
-                width={plotWidth / data.length}
+                width={plotWidth / Math.max(1, safeData.length)}
                 height={plotHeight}
                 fill="transparent"
                 onMouseEnter={() => setHoveredIndex(i)}
@@ -155,7 +162,8 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
 
       {/* Tooltip */}
       {hoveredIndex !== null && (() => {
-        const item = data[hoveredIndex];
+        const item = safeData[hoveredIndex];
+        if (!item) return null;
         const x = getX(hoveredIndex);
         const y = getY(item.value);
         const leftPct = (x / chartWidth) * 100;

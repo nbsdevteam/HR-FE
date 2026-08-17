@@ -10,15 +10,21 @@ interface DonutChartProps {
 
 export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 95 }: DonutChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const total = data.reduce((sum, d) => sum + d.value, 0);
+  const safeData = data
+    .filter((item) => item.name)
+    .map((item) => ({
+      ...item,
+      value: Number.isFinite(item.value) ? Math.max(0, item.value) : 0,
+    }));
+  const total = safeData.reduce((sum, item) => sum + item.value, 0);
   const cx = size / 2;
   const cy = size / 2;
   const gap = 0.05;
 
   let currentAngle = -Math.PI / 2;
 
-  const segments = data.map((item, index) => {
-    const sweepAngle = (item.value / total) * (2 * Math.PI) - gap;
+  const segments = total > 0 ? safeData.map((item, index) => {
+    const sweepAngle = Math.max(0, (item.value / total) * (2 * Math.PI) - gap);
     const startAngle = currentAngle + gap / 2;
     const endAngle = startAngle + sweepAngle;
     currentAngle = startAngle + sweepAngle + gap / 2;
@@ -49,10 +55,10 @@ export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 9
     const tooltipY = cy + ((oR + innerRadius) / 2) * Math.sin(midAngle);
 
     return { ...item, path: d, index, tooltipX, tooltipY };
-  });
+  }) : [];
 
   const percentage = hoveredIndex !== null
-    ? ((data[hoveredIndex].value / total) * 100).toFixed(1)
+    ? (((safeData[hoveredIndex]?.value || 0) / Math.max(1, total)) * 100).toFixed(1)
     : null;
 
   return (
@@ -74,12 +80,12 @@ export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 9
           ))}
         </svg>
         {/* Center text */}
-        {hoveredIndex !== null && (
+        {hoveredIndex !== null && safeData[hoveredIndex] && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
           >
             <span className="text-foreground" style={{ fontSize: 20 }}>{percentage}%</span>
-            <span className="text-muted-foreground" style={{ fontSize: 11 }}>{data[hoveredIndex].name}</span>
+            <span className="text-muted-foreground" style={{ fontSize: 11 }}>{safeData[hoveredIndex].name}</span>
           </div>
         )}
         {hoveredIndex === null && (
@@ -90,7 +96,7 @@ export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 9
         )}
       </div>
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-        {data.map((item) => (
+        {safeData.map((item) => (
           <div key={item.name} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: item.color }} />
             <span className="text-muted-foreground" style={{ fontSize: 12 }}>
