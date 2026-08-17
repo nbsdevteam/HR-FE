@@ -4,16 +4,16 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName, type DbLeavePermission } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { leaveCardClass as cardCls, leaveInputClass as inputCls, leaveStatusColors as statusColors } from "../styles";
+import { leaveCardClass as cardCls, leaveStatusColors as statusColors } from "../styles";
 
-export const PermissionsTab = function PermissionsTab({
+const PermissionsTab = ({
   permissions, empMap, loading, refetch,
 }: {
   permissions: DbLeavePermission[];
   empMap: Record<string, any>;
   loading: boolean;
   refetch: () => void;
-}) {
+}) => {
   const handleApprove = async (id: string) => {
     await odooData.updateLeavePermission(id, "approved");
     refetch();
@@ -87,7 +87,7 @@ export const PermissionsTab = function PermissionsTab({
       </div>
     </div>
   );
-}
+};
 
-// ══════════════════════════ Leave Request Modal ══════════════════════════
+export default PermissionsTab;
 

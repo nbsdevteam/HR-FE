@@ -21,7 +21,7 @@ type LeaveRequestsListViewProps = {
   onDelete: (id: string) => void;
 };
 
-export const LeaveRequestsListView = ({
+const LeaveRequestsListView = ({
   requests,
   empMap,
   leaveTypes,
@@ -131,3 +131,5 @@ export const LeaveRequestsListView = ({
     </div>
   </div>
 );
+
+export default LeaveRequestsListView;

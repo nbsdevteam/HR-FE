@@ -8,7 +8,7 @@ type LeaveStatsProps = {
   rejectedCount: number;
 };
 
-export const LeaveStats = ({ pendingCount, approvedCount, rejectedCount }: LeaveStatsProps) => {
+const LeaveStats = ({ pendingCount, approvedCount, rejectedCount }: LeaveStatsProps) => {
   const stats = [
     { label: arabicSource("leave.pending_requests"), value: pendingCount, icon: Clock },
     { label: arabicSource("leave.requests_accepted"), value: approvedCount, icon: Check },
@@ -44,3 +44,5 @@ export const LeaveStats = ({ pendingCount, approvedCount, rejectedCount }: Leave
     </div>
   );
 };
+
+export default LeaveStats;

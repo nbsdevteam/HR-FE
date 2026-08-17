@@ -1,16 +1,16 @@
 import { AnimatePresence, motion } from "motion/react";
-import { BalancesTab } from "./BalancesTab";
-import { LeaveRequestFilters } from "./LeaveRequestFilters";
-import { LeaveRequestsKanbanView } from "./LeaveRequestsKanbanView";
-import { LeaveRequestsListView } from "./LeaveRequestsListView";
-import { PermissionsTab } from "./PermissionsTab";
+import BalancesTab from "./BalancesTab";
+import LeaveRequestFilters from "./LeaveRequestFilters";
+import LeaveRequestsKanbanView from "./LeaveRequestsKanbanView";
+import LeaveRequestsListView from "./LeaveRequestsListView";
+import PermissionsTab from "./PermissionsTab";
 import type { useLeavePage } from "../hooks/useLeavePage";
 
 type LeaveTabContentProps = {
   page: ReturnType<typeof useLeavePage>;
 };
 
-export const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
+const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
   <AnimatePresence mode="wait">
     {page.activeTab === "requests" && (
       <motion.div key="requests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -70,3 +70,5 @@ export const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
     )}
   </AnimatePresence>
 );
+
+export default LeaveTabContent;

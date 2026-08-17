@@ -4,13 +4,13 @@ import { AlertCircle, CalendarDays, FileText, Loader2, Send, X } from "lucide-re
 import { EmployeeSelect } from "@/features/employees";
 import * as odooData from "@/shared/api/odooData";
 import {
-  empDisplayName, resolveLeaveEntitlement,
+  empDisplayName,
   type DbLeaveType, type DbLeaveBalance,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 
-export const LeaveRequestModal = function LeaveRequestModal({
+const LeaveRequestModal = ({
   employees, leaveTypes, balances, selfOnly, linkError, employeesLoading,
   onClose, onSubmit,
 }: {
@@ -22,7 +22,7 @@ export const LeaveRequestModal = function LeaveRequestModal({
   employeesLoading: boolean;
   onClose: () => void;
   onSubmit: () => Promise<void>;
-}) {
+}) => {
   const selfEmployee = selfOnly ? employees[0] || null : null;
   const selfEmployeeId = selfEmployee ? String(selfEmployee.id) : "";
   const [employeeId, setEmployeeId] = useState(selfEmployeeId);
@@ -301,7 +301,7 @@ export const LeaveRequestModal = function LeaveRequestModal({
       </motion.div>
     </motion.div>
   );
-}
+};
 
-// ══════════════════════════ Permission Modal ══════════════════════════
+export default LeaveRequestModal;
 

@@ -12,7 +12,7 @@ type LeaveHeaderProps = {
   onShowPermissionForm: () => void;
 };
 
-export const LeaveHeader = ({
+const LeaveHeader = ({
   activeTab,
   viewMode,
   onViewModeChange,
@@ -49,3 +49,5 @@ export const LeaveHeader = ({
     </div>
   </div>
 );
+
+export default LeaveHeader;

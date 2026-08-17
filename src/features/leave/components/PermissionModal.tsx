@@ -7,13 +7,13 @@ import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 
-export const PermissionModal = function PermissionModal({
+const PermissionModal = ({
   employees, onClose, onSubmit,
 }: {
   employees: any[];
   onClose: () => void;
   onSubmit: () => Promise<void>;
-}) {
+}) => {
   const [employeeId, setEmployeeId] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -143,4 +143,6 @@ export const PermissionModal = function PermissionModal({
       </motion.div>
     </motion.div>
   );
-}
+};
+
+export default PermissionModal;

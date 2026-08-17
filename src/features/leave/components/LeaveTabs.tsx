@@ -5,7 +5,7 @@ type LeaveTabsProps = {
   onTabChange: (tabId: LeaveTabId) => void;
 };
 
-export const LeaveTabs = ({ activeTab, onTabChange }: LeaveTabsProps) => (
+const LeaveTabs = ({ activeTab, onTabChange }: LeaveTabsProps) => (
   <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
     {leaveTabs.map((tab) => {
       const Icon = tab.icon;
@@ -28,3 +28,5 @@ export const LeaveTabs = ({ activeTab, onTabChange }: LeaveTabsProps) => (
     })}
   </div>
 );
+
+export default LeaveTabs;

@@ -8,7 +8,7 @@ import {
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 
-export const BalancesTab = function BalancesTab({
+const BalancesTab = ({
   employees, leaveTypes, balances, policies, loading, year,
 }: {
   employees: any[];
@@ -17,7 +17,7 @@ export const BalancesTab = function BalancesTab({
   policies: any[];
   loading: boolean;
   year: number;
-}) {
+}) => {
   const [selectedEmp, setSelectedEmp] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -141,7 +141,7 @@ export const BalancesTab = function BalancesTab({
       </div>
     </div>
   );
-}
+};
 
-// ══════════════════════════ Permissions Tab ══════════════════════════
+export default BalancesTab;
 

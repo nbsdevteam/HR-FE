@@ -9,7 +9,7 @@ type LeaveRequestFiltersProps = {
   onSearchChange: (search: string) => void;
 };
 
-export const LeaveRequestFilters = ({
+const LeaveRequestFilters = ({
   filter,
   search,
   onFilterChange,
@@ -50,3 +50,5 @@ export const LeaveRequestFilters = ({
     </div>
   );
 };
+
+export default LeaveRequestFilters;

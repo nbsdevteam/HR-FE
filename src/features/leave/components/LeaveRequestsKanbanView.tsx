@@ -13,7 +13,7 @@ type LeaveRequestsKanbanViewProps = {
   onReject: (id: string) => void;
 };
 
-export const LeaveRequestsKanbanView = ({
+const LeaveRequestsKanbanView = ({
   requests,
   empMap,
   onApprove,
@@ -90,3 +90,5 @@ export const LeaveRequestsKanbanView = ({
     })}
   </div>
 );
+
+export default LeaveRequestsKanbanView;

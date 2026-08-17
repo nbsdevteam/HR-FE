@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import { LeaveHeader } from "../components/LeaveHeader";
-import { LeaveLoadingState } from "../components/LeaveLoadingState";
-import { LeaveModals } from "../components/LeaveModals";
-import { LeaveStats } from "../components/LeaveStats";
-import { LeaveTabContent } from "../components/LeaveTabContent";
-import { LeaveTabs } from "../components/LeaveTabs";
+import LeaveHeader from "../components/LeaveHeader";
+import LeaveLoadingState from "../components/LeaveLoadingState";
+import LeaveModals from "../components/LeaveModals";
+import LeaveStats from "../components/LeaveStats";
+import LeaveTabContent from "../components/LeaveTabContent";
+import LeaveTabs from "../components/LeaveTabs";
 import { useLeavePage } from "../hooks/useLeavePage";
 import type { LeaveTabId, LeaveViewMode } from "../types";
 

@@ -1,14 +1,14 @@
 import { useCallback } from "react";
 import { AnimatePresence } from "motion/react";
-import { LeaveRequestModal } from "./LeaveRequestModal";
-import { PermissionModal } from "./PermissionModal";
+import LeaveRequestModal from "./LeaveRequestModal";
+import PermissionModal from "./PermissionModal";
 import type { useLeavePage } from "../hooks/useLeavePage";
 
 type LeaveModalsProps = {
   page: ReturnType<typeof useLeavePage>;
 };
 
-export const LeaveModals = ({ page }: LeaveModalsProps) => {
+const LeaveModals = ({ page }: LeaveModalsProps) => {
   const { setShowForm, setShowPermForm } = page;
 
   const handleCloseLeaveForm = useCallback(() => {
@@ -48,3 +48,5 @@ export const LeaveModals = ({ page }: LeaveModalsProps) => {
     </>
   );
 };
+
+export default LeaveModals;
