@@ -5,6 +5,7 @@ import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm } from "@/features/attendance/types";
 import { AttendanceKanbanCard } from "./AttendanceKanbanCard";
 import { AttendanceTableRow } from "./AttendanceTableRow";
+import { memo } from "react";
 
 type AttendanceRecordsViewProps = {
   viewMode: AttendanceViewMode;
@@ -25,7 +26,7 @@ const kanbanColumns = [
   { key: arabicSource("common.leave"), label: arabicSource("common.leave"), accent: "border-blue-500/40", textColor: "text-blue-500", icon: Calendar },
 ];
 
-export function AttendanceRecordsView({
+const AttendanceRecordsView = ({
   viewMode,
   attendanceRows,
   sortBy,
@@ -35,7 +36,7 @@ export function AttendanceRecordsView({
   setSelectedEmployeeId,
   setExcuseForm,
   setExcuseModal,
-}: AttendanceRecordsViewProps) {
+}: AttendanceRecordsViewProps) => {
   const openExcuse = (record: AttendanceRow, form: ExcuseForm) => {
     setExcuseForm(form);
     setExcuseModal({ record });
@@ -141,3 +142,5 @@ export function AttendanceRecordsView({
     </motion.div>
   );
 }
+
+export default memo(AttendanceRecordsView);
