@@ -70,7 +70,7 @@ const EmployeesListView = ({
 
             return (
               <motion.tr
-                key={emp.id}
+                key={emp.dbId}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.05 }}

@@ -58,7 +58,7 @@ const EmployeesKanbanView = ({
 
               return (
                 <motion.div
-                  key={emp.id}
+                  key={emp.dbId}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
