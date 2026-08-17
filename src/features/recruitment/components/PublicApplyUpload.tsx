@@ -12,7 +12,7 @@ type PublicApplyUploadProps = {
   onFileChange: (file: File | null) => void;
 };
 
-export const PublicApplyUpload = ({
+const PublicApplyUpload = ({
   dragging,
   file,
   fileInputRef,
@@ -71,3 +71,5 @@ export const PublicApplyUpload = ({
     />
   </div>
 );
+
+export default PublicApplyUpload;

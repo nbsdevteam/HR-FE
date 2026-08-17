@@ -2,7 +2,7 @@ import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
 import { ALL_STAGES } from "../constants/recruitment";
-import { ApplicantsTable } from "./ApplicantsTable";
+import ApplicantsTable from "./ApplicantsTable";
 
 type RecruitmentApplicantsViewProps = {
   applicants: DbApplicant[];
@@ -19,7 +19,7 @@ type RecruitmentApplicantsViewProps = {
   onUpdateStage: (id: string, stage: string) => void;
 };
 
-export const RecruitmentApplicantsView = ({
+const RecruitmentApplicantsView = ({
   applicants,
   filterJob,
   filterStage,
@@ -65,3 +65,5 @@ export const RecruitmentApplicantsView = ({
     />
   </>
 );
+
+export default RecruitmentApplicantsView;

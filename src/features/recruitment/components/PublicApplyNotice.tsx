@@ -6,7 +6,7 @@ type PublicApplyNoticeProps = {
   body: string;
 };
 
-export const PublicApplyNotice = ({ tone, title, body }: PublicApplyNoticeProps) => {
+const PublicApplyNotice = ({ tone, title, body }: PublicApplyNoticeProps) => {
   const color = tone === "error" ? "text-destructive" : "text-primary";
 
   return (
@@ -17,3 +17,5 @@ export const PublicApplyNotice = ({ tone, title, body }: PublicApplyNoticeProps)
     </div>
   );
 };
+
+export default PublicApplyNotice;

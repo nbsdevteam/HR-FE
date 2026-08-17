@@ -1,9 +1,9 @@
 import { arabicSource } from "@/i18n/source";
-import { PublicApplyForm } from "../components/PublicApplyForm";
-import { PublicApplyLoadingState } from "../components/PublicApplyLoadingState";
-import { PublicApplyNotice } from "../components/PublicApplyNotice";
-import { PublicApplyShell } from "../components/PublicApplyShell";
-import { PublicApplySuccess } from "../components/PublicApplySuccess";
+import PublicApplyForm from "../components/PublicApplyForm";
+import PublicApplyLoadingState from "../components/PublicApplyLoadingState";
+import PublicApplyNotice from "../components/PublicApplyNotice";
+import PublicApplyShell from "../components/PublicApplyShell";
+import PublicApplySuccess from "../components/PublicApplySuccess";
 import { usePublicApplyPage } from "../hooks/usePublicApplyPage";
 
 /**

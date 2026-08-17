@@ -341,12 +341,3 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
 };
 
 export default ApplicantFormModal;
-
-/* ════════════════════════════════════════════════════════════
-   AI SCREENING — Initial Rating (IR)
-   ════════════════════════════════════════════════════════════ */
-
-/**
- * Compact score chip. A real IR carries the sparkle mark; the client-side
- * estimate is rendered muted so HR never mistakes one for the other.
- */

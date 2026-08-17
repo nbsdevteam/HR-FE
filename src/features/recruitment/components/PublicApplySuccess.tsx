@@ -8,7 +8,7 @@ type PublicApplySuccessProps = {
   onApplyAnother: () => void;
 };
 
-export const PublicApplySuccess = ({ result, onApplyAnother }: PublicApplySuccessProps) => (
+const PublicApplySuccess = ({ result, onApplyAnother }: PublicApplySuccessProps) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.96 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -42,3 +42,5 @@ export const PublicApplySuccess = ({ result, onApplyAnother }: PublicApplySucces
     </div>
   </motion.div>
 );
+
+export default PublicApplySuccess;

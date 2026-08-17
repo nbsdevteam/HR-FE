@@ -4,7 +4,7 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { DbJobOpening } from "@/shared/hooks";
 import { JOB_STATUSES, statusColors } from "../constants/recruitment";
-import { RequirementOverflowBadge } from "./RequirementOverflowBadge";
+import RequirementOverflowBadge from "./RequirementOverflowBadge";
 
 type RecruitmentJobsViewProps = {
   jobs: DbJobOpening[];
@@ -15,7 +15,7 @@ type RecruitmentJobsViewProps = {
   onLinkJob: (job: DbJobOpening) => void;
 };
 
-export const RecruitmentJobsView = ({
+const RecruitmentJobsView = ({
   jobs,
   onAiScreeningOpen,
   onDeleteJob,
@@ -98,3 +98,5 @@ export const RecruitmentJobsView = ({
     ))}
   </div>
 );
+
+export default RecruitmentJobsView;

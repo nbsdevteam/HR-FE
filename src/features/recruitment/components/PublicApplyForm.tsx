@@ -3,10 +3,10 @@ import { AlertCircle, Loader2, Send } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { ApplyLinkInfo } from "@/features/recruitment/api/publicApi";
 import type { PublicApplyForm as PublicApplyFormState } from "../types";
-import { PublicApplyField } from "./PublicApplyField";
-import { PublicApplyInput } from "./PublicApplyInput";
-import { PublicApplyJobSummary } from "./PublicApplyJobSummary";
-import { PublicApplyUpload } from "./PublicApplyUpload";
+import PublicApplyField from "./PublicApplyField";
+import PublicApplyInput from "./PublicApplyInput";
+import PublicApplyJobSummary from "./PublicApplyJobSummary";
+import PublicApplyUpload from "./PublicApplyUpload";
 
 type PublicApplyFormProps = {
   acceptFile: (file: File | null) => void;
@@ -26,7 +26,7 @@ type PublicApplyFormProps = {
   onUpdateForm: (patch: Partial<PublicApplyFormState>) => void;
 };
 
-export const PublicApplyForm = ({
+const PublicApplyForm = ({
   acceptFile,
   canSubmit,
   dragging,
@@ -142,3 +142,5 @@ export const PublicApplyForm = ({
     </button>
   </motion.div>
 );
+
+export default PublicApplyForm;

@@ -6,7 +6,7 @@ type PublicApplyJobSummaryProps = {
   job: NonNullable<ApplyLinkInfo["job"]>;
 };
 
-export const PublicApplyJobSummary = ({ job }: PublicApplyJobSummaryProps) => (
+const PublicApplyJobSummary = ({ job }: PublicApplyJobSummaryProps) => (
   <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
     <div className="flex items-start gap-2">
       <Briefcase className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
@@ -49,3 +49,5 @@ export const PublicApplyJobSummary = ({ job }: PublicApplyJobSummaryProps) => (
     )}
   </div>
 );
+
+export default PublicApplyJobSummary;

@@ -5,7 +5,7 @@ type PublicApplyInputProps = {
   dir?: string;
 };
 
-export const PublicApplyInput = ({ value, onChange, type = "text", dir }: PublicApplyInputProps) => (
+const PublicApplyInput = ({ value, onChange, type = "text", dir }: PublicApplyInputProps) => (
   <input
     type={type}
     value={value}
@@ -15,3 +15,5 @@ export const PublicApplyInput = ({ value, onChange, type = "text", dir }: Public
     style={{ fontSize: 14 }}
   />
 );
+
+export default PublicApplyInput;

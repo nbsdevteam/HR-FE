@@ -2,7 +2,7 @@ type RequirementOverflowBadgeProps = {
   hiddenCount: number;
 };
 
-export const RequirementOverflowBadge = ({ hiddenCount }: RequirementOverflowBadgeProps) => {
+const RequirementOverflowBadge = ({ hiddenCount }: RequirementOverflowBadgeProps) => {
   if (hiddenCount <= 0) return null;
 
   return (
@@ -11,3 +11,5 @@ export const RequirementOverflowBadge = ({ hiddenCount }: RequirementOverflowBad
     </span>
   );
 };
+
+export default RequirementOverflowBadge;

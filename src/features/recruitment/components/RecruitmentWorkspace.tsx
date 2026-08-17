@@ -11,18 +11,18 @@ import {
   ODOO_TO_JOB_STATUS, ODOO_TO_JOB_TYPE, ODOO_TO_STAGE, STAGE_TO_ODOO,
 } from "../constants/recruitment";
 import { effectiveScore } from "../utils/recruitmentRanking";
-import { AiScreeningView } from "../components/AiScreeningView";
-import { RecruitmentApplicantsView } from "./RecruitmentApplicantsView";
-import { RecruitmentCandidateBankView } from "./RecruitmentCandidateBankView";
-import { RecruitmentHeader } from "./RecruitmentHeader";
-import { RecruitmentJobsView } from "./RecruitmentJobsView";
-import { RecruitmentLoadingState } from "./RecruitmentLoadingState";
-import { RecruitmentModals } from "./RecruitmentModals";
-import { RecruitmentPipelineView } from "./RecruitmentPipelineView";
-import { RecruitmentStats } from "./RecruitmentStats";
-import { RecruitmentTabs } from "./RecruitmentTabs";
+import AiScreeningView from "../components/AiScreeningView";
+import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
+import RecruitmentCandidateBankView from "./RecruitmentCandidateBankView";
+import RecruitmentHeader from "./RecruitmentHeader";
+import RecruitmentJobsView from "./RecruitmentJobsView";
+import RecruitmentLoadingState from "./RecruitmentLoadingState";
+import RecruitmentModals from "./RecruitmentModals";
+import RecruitmentPipelineView from "./RecruitmentPipelineView";
+import RecruitmentStats from "./RecruitmentStats";
+import RecruitmentTabs from "./RecruitmentTabs";
 
-export const RecruitmentWorkspace = () => {
+const RecruitmentWorkspace = () => {
   const { jobs: rawJobs, loading: jobsLoading, refetch: refetchJobs } = useJobOpenings();
   const { applicants: rawApplicants, loading: appsLoading, refetch: refetchApps } = useApplicants();
 
@@ -291,4 +291,6 @@ export const RecruitmentWorkspace = () => {
       />
     </div>
   );
-}
+};
+
+export default RecruitmentWorkspace;

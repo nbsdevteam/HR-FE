@@ -1,45 +1,25 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  UserPlus, Plus, X, Briefcase, MapPin, Clock, Users, FileCheck, Search,
-  Star, Upload, Download, Bookmark, BookmarkCheck, Eye,
-  GraduationCap, Building2, Phone, Mail, FileText, Trash2, Edit3,
-  Trophy, TrendingUp, Loader2, AlertCircle,
-  Sparkles, Link2, Copy, RefreshCw, ShieldAlert, Check, MessageCircle,
-} from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
-import { ViewToggle } from "@/shared/components/ViewToggle";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import { X, Sparkles } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
-  useJobOpenings, useApplicants, useJobRanking,
-  type DbJobOpening, type DbApplicant, type DbDepartment,
-  type ApplicationLink, type IrBand, type JobSkillRequirement,
+  type DbJobOpening, type DbDepartment, type JobSkillRequirement,
 } from "@/shared/hooks";
 import { DEPARTMENTS } from "@/shared/constants";
-import { formatNumber } from "@/i18n/format";
-import { localizedAlert, localizedConfirm } from "@/i18n/native";
+import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLanguage } from "@/i18n";
 import {
-  ALL_STAGES, EDUCATION_LEVELS, GENDER_TO_ODOO, IR_COMPONENT_LABELS,
-  IR_STATUS_LABELS, JOB_STATUSES, JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO,
-  MISSING_INFO_LABELS, ODOO_TO_GENDER, STAGES, STAGE_TO_ODOO,
-  sourceOptions, stageColors, statusColors,
+  EDUCATION_LEVELS, JOB_STATUSES, JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO,
 } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
-import { bandFromScore, calcRankScore, effectiveScore, hasIr, rankLabel } from "../utils/recruitmentRanking";
-import { fileToBase64 } from "../utils/fileToBase64";
-import { handleDownloadResume } from "../utils/resumeDownload";
-import { SkillTagInput } from "./SkillTagInput";
+import SkillTagInput from "./SkillTagInput";
 
-export const JobFormModal = function JobFormModal({ jobs, editingJob, onClose, onSaved }: {
+const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
   jobs: DbJobOpening[];
   editingJob: DbJobOpening | null;
   onClose: () => void;
   onSaved: () => void;
-}) {
+}) => {
   const isEdit = !!editingJob;
   const [form, setForm] = useState({
     title: editingJob?.title || "",
@@ -227,6 +207,6 @@ export const JobFormModal = function JobFormModal({ jobs, editingJob, onClose, o
       </motion.div>
     </motion.div>
   );
-}
+};
 
-/* ──── Applicant Form Modal ──── */
+export default JobFormModal;

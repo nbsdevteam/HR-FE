@@ -10,7 +10,7 @@ type RecruitmentHeaderProps = {
   onViewModeChange: (viewMode: "list" | "kanban") => void;
 };
 
-export const RecruitmentHeader = ({
+const RecruitmentHeader = ({
   viewMode,
   onApplicantFormOpen,
   onJobFormOpen,
@@ -44,3 +44,5 @@ export const RecruitmentHeader = ({
     </div>
   </div>
 );
+
+export default RecruitmentHeader;

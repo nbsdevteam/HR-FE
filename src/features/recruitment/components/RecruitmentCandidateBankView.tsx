@@ -1,5 +1,5 @@
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
-import { CandidateBank } from "./CandidateBank";
+import CandidateBank from "./CandidateBank";
 
 type RecruitmentCandidateBankViewProps = {
   applicants: DbApplicant[];
@@ -11,7 +11,7 @@ type RecruitmentCandidateBankViewProps = {
   onUpdateRating: (id: string, rating: number) => void;
 };
 
-export const RecruitmentCandidateBankView = ({
+const RecruitmentCandidateBankView = ({
   applicants,
   jobs,
   sortBy,
@@ -30,3 +30,5 @@ export const RecruitmentCandidateBankView = ({
     setSortBy={onSortChange}
   />
 );
+
+export default RecruitmentCandidateBankView;

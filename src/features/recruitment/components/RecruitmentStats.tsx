@@ -12,7 +12,7 @@ type RecruitmentStatsProps = {
   };
 };
 
-export const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
+const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
   const items = [
     { label: arabicSource("recruitment.vacancies_2"), value: stats.openJobs, icon: Briefcase },
     { label: arabicSource("common.total_applicants"), value: stats.totalApplicants, icon: Users },
@@ -48,3 +48,5 @@ export const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
     </div>
   );
 };
+
+export default RecruitmentStats;

@@ -8,7 +8,7 @@ type RecruitmentTabsProps = {
   onViewChange: (view: RecruitmentView) => void;
 };
 
-export const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) => {
+const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) => {
   const tabs = [
     { id: "jobs" as const, label: arabicSource("recruitment.vacancies") },
     { id: "applicants" as const, label: arabicSource("recruitment.applicants") },
@@ -33,3 +33,5 @@ export const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) =>
     </div>
   );
 };
+
+export default RecruitmentTabs;
