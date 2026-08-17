@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type DependencyList } from "react";
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
 
@@ -546,27 +546,45 @@ export interface DbApprovalRequest {
 
 // ——— Hooks ———
 
-export function useEmployees() {
-  const [employees, setEmployees] = useState<DbEmployee[]>([]);
+/**
+ * Shared fetch-a-list-on-mount shape used across the app's Odoo-backed hooks:
+ * loads `fetcher()` on mount/dep-change, tracks loading/error, exposes `refetch`.
+ */
+function useAsyncList<T>(
+  fetcher: () => Promise<T[]>,
+  deps: DependencyList = [],
+  errorFallback = "Failed to load data"
+) {
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEmployees = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      setEmployees(await odooData.fetchEmployees());
+      setData(await fetcher());
       setError(null);
     } catch (e: any) {
-      setError(e?.message || "Failed to load employees");
+      console.error(e);
+      setError(e?.message || errorFallback);
+      setData([]);
     }
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(); }, deps);
 
-  return { employees, loading, error, refetch: fetchEmployees };
+  return { data, loading, error, refetch: fetchData };
+}
+
+export function useEmployees() {
+  const { data: employees, loading, error, refetch } = useAsyncList(
+    () => odooData.fetchEmployees(),
+    [],
+    "Failed to load employees"
+  );
+  return { employees, loading, error, refetch };
 }
 
 /**
@@ -650,74 +668,34 @@ export function useAttendanceRecords(dateOrFilter?: string | AttendanceRecordsFi
     typeof dateOrFilter === "string" || dateOrFilter === undefined
       ? { date: dateOrFilter }
       : dateOrFilter;
-  const [records, setRecords] = useState<DbAttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setRecords(await odooData.fetchAttendance({
-        date: filter.date,
-        date_from: filter.date_from,
-        date_to: filter.date_to,
-        employee_id: filter.employeeId,
-      }));
-    } catch (e) {
-      console.error(e);
-      setRecords([]);
-    }
-    setLoading(false);
-  };
+  const { data: records, loading, refetch } = useAsyncList(
+    () => odooData.fetchAttendance({
+      date: filter.date,
+      date_from: filter.date_from,
+      date_to: filter.date_to,
+      employee_id: filter.employeeId,
+    }),
+    [filter.date, filter.date_from, filter.date_to, filter.employeeId]
+  );
 
-  useEffect(() => {
-    fetch();
-  }, [filter.date, filter.date_from, filter.date_to, filter.employeeId]);
-
-  return { records, loading, refetch: fetch };
+  return { records, loading, refetch };
 }
 
 export function useMonthlyRecords(monthYear?: string) {
-  const [records, setRecords] = useState<DbMonthlyRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setRecords(await odooData.fetchMonthlyRecords(monthYear));
-    } catch (e) {
-      console.error(e);
-      setRecords([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetch();
-  }, [monthYear]);
-
-  return { records, loading, refetch: fetch };
+  const { data: records, loading, refetch } = useAsyncList(
+    () => odooData.fetchMonthlyRecords(monthYear),
+    [monthYear]
+  );
+  return { records, loading, refetch };
 }
 
 export function useMonthlyLedgers(monthYear?: string) {
-  const [ledgers, setLedgers] = useState<DbMonthlyLedger[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setLedgers(await odooData.fetchMonthlyLedgers(monthYear));
-    } catch (e) {
-      console.error(e);
-      setLedgers([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetch();
-  }, [monthYear]);
-
-  return { ledgers, loading, refetch: fetch };
+  const { data: ledgers, loading, refetch } = useAsyncList(
+    () => odooData.fetchMonthlyLedgers(monthYear),
+    [monthYear]
+  );
+  return { ledgers, loading, refetch };
 }
 
 // ── Mock shifts for local testing ──
@@ -776,24 +754,16 @@ const _mockShifts: DbShift[] = [
 ];
 
 export function useShifts() {
-  const [shifts, setShifts] = useState<DbShift[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchShifts = async () => {
-    setLoading(true);
+  const { data: shifts, loading, refetch } = useAsyncList(async () => {
     try {
       const data = await odooData.fetchShifts();
-      setShifts(data.length > 0 ? data : _mockShifts);
+      return data.length > 0 ? data : _mockShifts;
     } catch (e) {
       console.error(e);
-      setShifts(_mockShifts);
+      return _mockShifts;
     }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchShifts(); }, []);
-
-  return { shifts, loading, refetch: fetchShifts };
+  });
+  return { shifts, loading, refetch };
 }
 
 // ── Mock positions for local testing ──
@@ -809,87 +779,38 @@ const _mockPositions: DbPosition[] = [
 ];
 
 export function usePositions() {
-  const [positions, setPositions] = useState<DbPosition[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchPositions = async () => {
-    setLoading(true);
+  const { data: positions, loading, refetch } = useAsyncList(async () => {
     try {
       const data = await odooData.fetchPositions();
-      setPositions(data.length > 0 ? data : _mockPositions);
+      return data.length > 0 ? data : _mockPositions;
     } catch (e) {
       console.error(e);
-      setPositions(_mockPositions);
+      return _mockPositions;
     }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchPositions(); }, []);
-
-  return { positions, loading, refetch: fetchPositions };
+  });
+  return { positions, loading, refetch };
 }
 
 export function useEmployeeShiftAssignments() {
-  const [assignments, setAssignments] = useState<DbEmployeeShiftAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchAssignments = async () => {
-    setLoading(true);
-    try {
-      setAssignments(await odooData.fetchShiftAssignments());
-    } catch (e) {
-      console.error(e);
-      setAssignments([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchAssignments(); }, []);
-
-  return { assignments, loading, refetch: fetchAssignments };
+  const { data: assignments, loading, refetch } = useAsyncList(
+    () => odooData.fetchShiftAssignments()
+  );
+  return { assignments, loading, refetch };
 }
 
 export function useSystemModules() {
-  const [modules, setModules] = useState<DbSystemModule[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchModules = async () => {
-    setLoading(true);
-    try {
-      setModules(await odooData.fetchModules());
-    } catch (e) {
-      console.error(e);
-      setModules([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchModules(); }, []);
+  const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules());
 
   const isEnabled = (moduleKey: string): boolean => {
     const m = modules.find(mod => mod.module_key === moduleKey);
     return m?.is_enabled ?? false;
   };
 
-  return { modules, loading, refetch: fetchModules, isEnabled };
+  return { modules, loading, refetch, isEnabled };
 }
 
 export function useConfigurations() {
-  const [configs, setConfigs] = useState<DbConfiguration[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchConfigs = async () => {
-    setLoading(true);
-    try {
-      setConfigs(await odooData.fetchConfigs());
-    } catch (e) {
-      console.error(e);
-      setConfigs([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchConfigs(); }, []);
+  const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs());
 
   const getValue = (key: string, fallback: string = ""): string => {
     const c = configs.find(cfg => cfg.config_key === key);
@@ -907,25 +828,14 @@ export function useConfigurations() {
     return val === "true" || val === "1";
   };
 
-  return { configs, loading, refetch: fetchConfigs, getValue, getNumber, getBool };
+  return { configs, loading, refetch, getValue, getNumber, getBool };
 }
 
 export function usePublicHolidays(year?: number) {
-  const [holidays, setHolidays] = useState<DbPublicHoliday[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchHolidays = async () => {
-    setLoading(true);
-    try {
-      setHolidays(await odooData.fetchHolidays(year));
-    } catch (e) {
-      console.error(e);
-      setHolidays([]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchHolidays(); }, [year]);
+  const { data: holidays, loading, refetch } = useAsyncList(
+    () => odooData.fetchHolidays(year),
+    [year]
+  );
 
   const isHoliday = (dateStr: string): boolean => {
     return holidays.some(h => h.date === dateStr);
@@ -936,149 +846,77 @@ export function usePublicHolidays(year?: number) {
     return h?.name_ar ?? null;
   };
 
-  return { holidays, loading, refetch: fetchHolidays, isHoliday, getHolidayName };
+  return { holidays, loading, refetch, isHoliday, getHolidayName };
 }
 
 export function useAllowanceTypes() {
-  const [types, setTypes] = useState<DbAllowanceType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTypes(await odooData.fetchAllowanceTypes());
-    } catch (e) { console.error(e); setTypes([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { types, loading, refetch: fetch };
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchAllowanceTypes());
+  return { types, loading, refetch };
 }
 
 export function useEmployeeAllowances(employeeId?: string) {
-  const [allowances, setAllowances] = useState<DbEmployeeAllowance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setAllowances(await odooData.fetchEmployeeAllowances(employeeId));
-    } catch (e) { console.error(e); setAllowances([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { allowances, loading, refetch: fetch };
+  const { data: allowances, loading, refetch } = useAsyncList(
+    () => odooData.fetchEmployeeAllowances(employeeId),
+    [employeeId]
+  );
+  return { allowances, loading, refetch };
 }
 
 export function useDeductionTypes() {
-  const [types, setTypes] = useState<DbDeductionType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTypes(await odooData.fetchDeductionTypes());
-    } catch (e) { console.error(e); setTypes([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { types, loading, refetch: fetch };
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDeductionTypes());
+  return { types, loading, refetch };
 }
 
 export function useEmployeeDeductions(employeeId?: string) {
-  const [deductions, setDeductions] = useState<DbEmployeeDeduction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setDeductions(await odooData.fetchEmployeeDeductions(employeeId));
-    } catch (e) { console.error(e); setDeductions([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { deductions, loading, refetch: fetch };
+  const { data: deductions, loading, refetch } = useAsyncList(
+    () => odooData.fetchEmployeeDeductions(employeeId),
+    [employeeId]
+  );
+  return { deductions, loading, refetch };
 }
 
 export function useLoans(employeeId?: string) {
-  const [loans, setLoans] = useState<DbLoan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setLoans(await odooData.fetchLoans(employeeId));
-    } catch (e) { console.error(e); setLoans([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { loans, loading, refetch: fetch };
+  const { data: loans, loading, refetch } = useAsyncList(
+    () => odooData.fetchLoans(employeeId),
+    [employeeId]
+  );
+  return { loans, loading, refetch };
 }
 
 // ——— Phase 3: Leave Management Hooks ———
 
 export function useLeaveTypes() {
-  const [types, setTypes] = useState<DbLeaveType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTypes(await odooData.fetchLeaveTypes());
-    } catch (e) { console.error(e); setTypes([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { types, loading, refetch: fetch };
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchLeaveTypes());
+  return { types, loading, refetch };
 }
 
 export function useLeavePolicies() {
-  const [policies, setPolicies] = useState<DbLeavePolicy[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setPolicies(await odooData.fetchLeavePolicies());
-    } catch (e) { console.error(e); setPolicies([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { policies, loading, refetch: fetch };
+  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchLeavePolicies());
+  return { policies, loading, refetch };
 }
 
 export function useLeaveRequests(filters?: { employeeId?: string; status?: string; month?: string }) {
-  const [requests, setRequests] = useState<DbLeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setRequests(await odooData.fetchLeaveRequests(filters));
-    } catch (e) { console.error(e); setRequests([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.employeeId, filters?.status, filters?.month]);
-  return { requests, loading, refetch: fetch };
+  const { data: requests, loading, refetch } = useAsyncList(
+    () => odooData.fetchLeaveRequests(filters),
+    [filters?.employeeId, filters?.status, filters?.month]
+  );
+  return { requests, loading, refetch };
 }
 
 export function useLeaveBalances(year?: number) {
-  const [balances, setBalances] = useState<DbLeaveBalance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setBalances(await odooData.fetchLeaveBalances(year));
-    } catch (e) { console.error(e); setBalances([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [year]);
-  return { balances, loading, refetch: fetch };
+  const { data: balances, loading, refetch } = useAsyncList(
+    () => odooData.fetchLeaveBalances(year),
+    [year]
+  );
+  return { balances, loading, refetch };
 }
 
 export function useLeavePermissions(employeeId?: string) {
-  const [permissions, setPermissions] = useState<DbLeavePermission[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setPermissions(await odooData.fetchLeavePermissions(employeeId));
-    } catch (e) { console.error(e); setPermissions([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { permissions, loading, refetch: fetch };
+  const { data: permissions, loading, refetch } = useAsyncList(
+    () => odooData.fetchLeavePermissions(employeeId),
+    [employeeId]
+  );
+  return { permissions, loading, refetch };
 }
 
 /** Resolve effective leave days for an employee considering policies (department/contract overrides) */
@@ -1101,179 +939,97 @@ export function resolveLeaveEntitlement(
 // ——— Phase 4: Employee Lifecycle Hooks ———
 
 export function useContractTypes() {
-  const [types, setTypes] = useState<DbContractType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTypes(await odooData.fetchContractTypes());
-    } catch (e) { console.error(e); setTypes([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { types, loading, refetch: fetch };
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchContractTypes());
+  return { types, loading, refetch };
 }
 
 export function useEmployeeContracts(employeeId?: string) {
-  const [contracts, setContracts] = useState<DbEmployeeContract[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setContracts(await odooData.fetchContracts(employeeId));
-    } catch (e) { console.error(e); setContracts([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { contracts, loading, refetch: fetch };
+  const { data: contracts, loading, refetch } = useAsyncList(
+    () => odooData.fetchContracts(employeeId),
+    [employeeId]
+  );
+  return { contracts, loading, refetch };
 }
 
 export function useDocumentTypes() {
-  const [types, setTypes] = useState<DbDocumentType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTypes(await odooData.fetchDocumentTypes());
-    } catch (e) { console.error(e); setTypes([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { types, loading, refetch: fetch };
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDocumentTypes());
+  return { types, loading, refetch };
 }
 
 export function useEmployeeDocuments(employeeId?: string) {
-  const [documents, setDocuments] = useState<DbEmployeeDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setDocuments(await odooData.fetchDocuments(employeeId));
-    } catch (e) { console.error(e); setDocuments([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { documents, loading, refetch: fetch };
+  const { data: documents, loading, refetch } = useAsyncList(
+    () => odooData.fetchDocuments(employeeId),
+    [employeeId]
+  );
+  return { documents, loading, refetch };
 }
 
 export function useApprovalWorkflows() {
-  const [workflows, setWorkflows] = useState<DbApprovalWorkflow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setWorkflows(await odooData.fetchApprovalWorkflows());
-    } catch (e) { console.error(e); setWorkflows([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { workflows, loading, refetch: fetch };
+  const { data: workflows, loading, refetch } = useAsyncList(() => odooData.fetchApprovalWorkflows());
+  return { workflows, loading, refetch };
 }
 
 export function useApprovalWorkflowSteps(workflowId?: string) {
-  const [steps, setSteps] = useState<DbApprovalWorkflowStep[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      const workflows = await odooData.fetchApprovalWorkflows();
-      const wf = workflows.find((w: any) => String(w.id) === String(workflowId));
-      const mapped = ((wf as any)?.steps || []).map((s: any) => ({
-        id: String(s.id),
-        workflow_id: String(workflowId || ""),
-        step_order: s.sequence || 0,
-        approver_type: s.approver_type || "",
-        approver_id: s.approver_employee_id ? String(s.approver_employee_id) : null,
-        approver_role: s.approver_permission || null,
-        can_skip: Boolean(s.can_skip),
-        auto_approve_after_days: s.auto_approve_after_days || null,
-        created_at: "",
-      }));
-      setSteps(mapped);
-    } catch (e) { console.error(e); setSteps([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [workflowId]);
-  return { steps, loading, refetch: fetch };
+  const { data: steps, loading, refetch } = useAsyncList(async () => {
+    const workflows = await odooData.fetchApprovalWorkflows();
+    const wf = workflows.find((w: any) => String(w.id) === String(workflowId));
+    return ((wf as any)?.steps || []).map((s: any) => ({
+      id: String(s.id),
+      workflow_id: String(workflowId || ""),
+      step_order: s.sequence || 0,
+      approver_type: s.approver_type || "",
+      approver_id: s.approver_employee_id ? String(s.approver_employee_id) : null,
+      approver_role: s.approver_permission || null,
+      can_skip: Boolean(s.can_skip),
+      auto_approve_after_days: s.auto_approve_after_days || null,
+      created_at: "",
+    }));
+  }, [workflowId]);
+  return { steps, loading, refetch };
 }
 
 export function useApprovalRequests(filters?: { entityType?: string; status?: string }) {
-  const [requests, setRequests] = useState<DbApprovalRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setRequests(await odooData.fetchApprovalRequests({
-        entityType: filters?.entityType,
-        status: filters?.status,
-      }));
-    } catch (e) { console.error(e); setRequests([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.entityType, filters?.status]);
-  return { requests, loading, refetch: fetch };
+  const { data: requests, loading, refetch } = useAsyncList(
+    () => odooData.fetchApprovalRequests({
+      entityType: filters?.entityType,
+      status: filters?.status,
+    }),
+    [filters?.entityType, filters?.status]
+  );
+  return { requests, loading, refetch };
 }
 
 export function useIssues(filters?: { employeeId?: string; state?: string }) {
-  const [issues, setIssues] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setIssues(await odooData.fetchIssues({
-        employeeId: filters?.employeeId,
-        state: filters?.state,
-      }));
-    } catch (e) { console.error(e); setIssues([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.employeeId, filters?.state]);
-  return { issues, loading, refetch: fetch };
+  const { data: issues, loading, refetch } = useAsyncList(
+    () => odooData.fetchIssues({
+      employeeId: filters?.employeeId,
+      state: filters?.state,
+    }),
+    [filters?.employeeId, filters?.state]
+  );
+  return { issues, loading, refetch };
 }
 
 export function useExitChecklistItems() {
-  const [items, setItems] = useState<DbExitChecklistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setItems(await odooData.fetchExitChecklistItems());
-    } catch (e) { console.error(e); setItems([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { items, loading, refetch: fetch };
+  const { data: items, loading, refetch } = useAsyncList(() => odooData.fetchExitChecklistItems());
+  return { items, loading, refetch };
 }
 
 export function useExitProcesses(employeeId?: string) {
-  const [processes, setProcesses] = useState<DbExitProcess[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      const { processes: rows } = await odooData.fetchExitProcesses(employeeId);
-      setProcesses(rows);
-    } catch (e) { console.error(e); setProcesses([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
-  return { processes, loading, refetch: fetch };
+  const { data: processes, loading, refetch } = useAsyncList(
+    async () => (await odooData.fetchExitProcesses(employeeId)).processes,
+    [employeeId]
+  );
+  return { processes, loading, refetch };
 }
 
 export function useExitChecklist(exitProcessId?: string) {
-  const [checklist, setChecklist] = useState<DbExitChecklist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      // Checklist lines are embedded in the exit processes payload.
-      const { checklist: rows } = await odooData.fetchExitProcesses();
-      setChecklist(exitProcessId ? rows.filter(c => c.exit_process_id === exitProcessId) : rows);
-    } catch (e) { console.error(e); setChecklist([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [exitProcessId]);
-  return { checklist, loading, refetch: fetch };
+  // Checklist lines are embedded in the exit processes payload.
+  const { data: checklist, loading, refetch } = useAsyncList(async () => {
+    const { checklist: rows } = await odooData.fetchExitProcesses();
+    return exitProcessId ? rows.filter(c => c.exit_process_id === exitProcessId) : rows;
+  }, [exitProcessId]);
+  return { checklist, loading, refetch };
 }
 
 // ——— Recruitment Hooks ———
@@ -1422,35 +1178,13 @@ export interface ApplicationLink {
 }
 
 export function useJobOpenings() {
-  const [jobs, setJobs] = useState<DbJobOpening[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchJobs = async () => {
-    setLoading(true);
-    try {
-      setJobs(await odooData.fetchJobOpenings());
-    } catch (e) { console.error(e); setJobs([]); }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchJobs(); }, []);
-  return { jobs, loading, refetch: fetchJobs };
+  const { data: jobs, loading, refetch } = useAsyncList(() => odooData.fetchJobOpenings());
+  return { jobs, loading, refetch };
 }
 
 export function useApplicants() {
-  const [applicants, setApplicants] = useState<DbApplicant[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchApplicants = async () => {
-    setLoading(true);
-    try {
-      setApplicants(await odooData.fetchApplicants());
-    } catch (e) { console.error(e); setApplicants([]); }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchApplicants(); }, []);
-  return { applicants, loading, refetch: fetchApplicants };
+  const { data: applicants, loading, refetch } = useAsyncList(() => odooData.fetchApplicants());
+  return { applicants, loading, refetch };
 }
 
 /**
@@ -1569,73 +1303,37 @@ export interface DbPolicy {
 }
 
 export function useEvaluations(filters?: { employeeId?: string; period?: string }) {
-  const [evaluations, setEvaluations] = useState<DbEvaluation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setEvaluations(await odooData.fetchEvaluations(filters?.employeeId));
-    } catch (e) { console.error(e); setEvaluations([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.employeeId, filters?.period]);
-  return { evaluations, loading, refetch: fetch };
+  const { data: evaluations, loading, refetch } = useAsyncList(
+    () => odooData.fetchEvaluations(filters?.employeeId),
+    [filters?.employeeId, filters?.period]
+  );
+  return { evaluations, loading, refetch };
 }
 
 export function useWarnings(filters?: { employeeId?: string; status?: string }) {
-  const [warnings, setWarnings] = useState<DbWarning[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setWarnings(await odooData.fetchWarnings(filters?.employeeId));
-    } catch (e) { console.error(e); setWarnings([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.employeeId, filters?.status]);
-  return { warnings, loading, refetch: fetch };
+  const { data: warnings, loading, refetch } = useAsyncList(
+    () => odooData.fetchWarnings(filters?.employeeId),
+    [filters?.employeeId, filters?.status]
+  );
+  return { warnings, loading, refetch };
 }
 
 export function useTrainingPrograms() {
-  const [programs, setPrograms] = useState<DbTrainingProgram[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setPrograms(await odooData.fetchTrainingPrograms());
-    } catch (e) { console.error(e); setPrograms([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { programs, loading, refetch: fetch };
+  const { data: programs, loading, refetch } = useAsyncList(() => odooData.fetchTrainingPrograms());
+  return { programs, loading, refetch };
 }
 
 export function useTrainingParticipants(programId?: string) {
-  const [participants, setParticipants] = useState<DbTrainingParticipant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setParticipants(await odooData.fetchTrainingParticipants(programId));
-    } catch (e) { console.error(e); setParticipants([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [programId]);
-  return { participants, loading, refetch: fetch };
+  const { data: participants, loading, refetch } = useAsyncList(
+    () => odooData.fetchTrainingParticipants(programId),
+    [programId]
+  );
+  return { participants, loading, refetch };
 }
 
 export function usePolicies() {
-  const [policies, setPolicies] = useState<DbPolicy[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setPolicies(await odooData.fetchPolicies());
-    } catch (e) { console.error(e); setPolicies([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { policies, loading, refetch: fetch };
+  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchPolicies());
+  return { policies, loading, refetch };
 }
 
 // ——— Phase 5: Notifications, Audit Trail & Reports ———
@@ -1697,60 +1395,30 @@ export interface DbReportHistory {
 }
 
 export function useNotifications(employeeId?: string) {
-  const [notifications, setNotifications] = useState<DbNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setNotifications(await odooData.fetchNotifications());
-    } catch (e) { console.error(e); setNotifications([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [employeeId]);
+  const { data: notifications, loading, refetch } = useAsyncList(
+    () => odooData.fetchNotifications(),
+    [employeeId]
+  );
   const unreadCount = notifications.filter(n => !n.is_read).length;
-  return { notifications, unreadCount, loading, refetch: fetch };
+  return { notifications, unreadCount, loading, refetch };
 }
 
 export function useAuditLog(filters?: { entityType?: string; action?: string; limit?: number }) {
-  const [logs, setLogs] = useState<DbAuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setLogs(await odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }));
-    } catch (e) { console.error(e); setLogs([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, [filters?.entityType, filters?.action, filters?.limit]);
-  return { logs, loading, refetch: fetch };
+  const { data: logs, loading, refetch } = useAsyncList(
+    () => odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }),
+    [filters?.entityType, filters?.action, filters?.limit]
+  );
+  return { logs, loading, refetch };
 }
 
 export function useReportTemplates() {
-  const [templates, setTemplates] = useState<DbReportTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setTemplates(await odooData.fetchReportTemplates());
-    } catch (e) { console.error(e); setTemplates([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { templates, loading, refetch: fetch };
+  const { data: templates, loading, refetch } = useAsyncList(() => odooData.fetchReportTemplates());
+  return { templates, loading, refetch };
 }
 
 export function useReportHistory() {
-  const [history, setHistory] = useState<DbReportHistory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      setHistory(await odooData.fetchReportHistory());
-    } catch (e) { console.error(e); setHistory([]); }
-    setLoading(false);
-  };
-  useEffect(() => { fetch(); }, []);
-  return { history, loading, refetch: fetch };
+  const { data: history, loading, refetch } = useAsyncList(() => odooData.fetchReportHistory());
+  return { history, loading, refetch };
 }
 
 /** Log an audit entry */
