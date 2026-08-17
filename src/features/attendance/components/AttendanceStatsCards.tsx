@@ -1,7 +1,7 @@
 import { Calendar, CheckCircle, Clock, Timer, XCircle } from "lucide-react";
+import StatCard from "@/shared/components/StatCard";
 import { arabicSource } from "@/i18n/source";
 import type { TodayAttendanceStats } from "../types";
-import AttendanceStatCard from "./AttendanceStatCard";
 
 const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendanceStats }) => {
   const stats = [
@@ -15,15 +15,21 @@ const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendanceStats
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       {stats.map((stat, index) => (
-        <AttendanceStatCard
+        <StatCard
           key={stat.label}
           label={stat.label}
           value={stat.value}
           icon={stat.icon}
-          color={stat.color}
-          accent={stat.accent}
           suffix={stat.suffix}
           index={index}
+          delayStep={0.08}
+          decoration="blob"
+          decorationClassName={stat.accent}
+          hoverLift
+          valueSize={26}
+          valueMarginClassName="mt-1.5"
+          labelSize={12}
+          iconClassName={`w-4.5 h-4.5 ${stat.color}`}
         />
       ))}
     </div>

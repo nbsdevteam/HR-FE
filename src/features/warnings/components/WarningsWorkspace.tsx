@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useEmployees, useWarnings } from "@/shared/hooks";
 import { useWarningConfig } from "../hooks/useWarningConfig";
@@ -16,9 +17,9 @@ import WarningsFiltersBar from "./WarningsFiltersBar";
 import WarningsHeader from "./WarningsHeader";
 import WarningsKanbanView from "./WarningsKanbanView";
 import WarningsListView from "./WarningsListView";
-import WarningsLoadingState from "./WarningsLoadingState";
+import LoadingState from "@/shared/components/LoadingState";
 import WarningsStats from "./WarningsStats";
-import WarningToast from "./WarningToast";
+import Toast from "@/shared/components/Toast";
 
 const WarningsWorkspace = () => {
   const [viewMode, setViewMode] = useState<WarningViewMode>("list");
@@ -89,7 +90,7 @@ const WarningsWorkspace = () => {
 
       <WarningEscalationPath warningTypes={config.warningTypes} />
 
-      {loading && <WarningsLoadingState />}
+      {loading && <LoadingState message={arabicSource("warnings.loading_alarms")} variant="stacked" icon={Clock} />}
 
       {!loading && (
         <AnimatePresence mode="wait">
@@ -145,7 +146,18 @@ const WarningsWorkspace = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {toast && <WarningToast message={toast} />}
+        {toast && (
+          <Toast
+            message={toast}
+            shape="card"
+            position="bottom-end"
+            toneClassName="bg-card border-border"
+            textClassName="text-foreground text-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

@@ -16,7 +16,7 @@ import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
 import RecruitmentCandidateBankView from "./RecruitmentCandidateBankView";
 import RecruitmentHeader from "./RecruitmentHeader";
 import RecruitmentJobsView from "./RecruitmentJobsView";
-import RecruitmentLoadingState from "./RecruitmentLoadingState";
+import LoadingState from "@/shared/components/LoadingState";
 import RecruitmentModals from "./RecruitmentModals";
 import RecruitmentPipelineView from "./RecruitmentPipelineView";
 import RecruitmentStats from "./RecruitmentStats";
@@ -175,7 +175,7 @@ const RecruitmentWorkspace = () => {
 
   /* ──── Loading State ──── */
   if (loading) {
-    return <RecruitmentLoadingState />;
+    return <LoadingState message={arabicSource("recruitment.loading_employment_data")} />;
   }
 
   return (

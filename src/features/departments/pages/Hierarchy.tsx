@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, UserCheck } from "lucide-react";
+import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
 import AddEmployeeModal from "../components/AddEmployeeModal";
 import CleanupDuplicatesModal from "../components/CleanupDuplicatesModal";
@@ -7,7 +8,6 @@ import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import EditEmployeeModal from "../components/EditEmployeeModal";
 import DetailPanel from "../components/DetailPanel";
 import HierarchyHeader from "../components/HierarchyHeader";
-import HierarchyToast from "../components/HierarchyToast";
 import HierarchyTreeSection from "../components/HierarchyTreeSection";
 import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
 import SearchCountToast from "../components/SearchCountToast";
@@ -166,7 +166,23 @@ const Hierarchy = () => {
       )}
 
       <SearchCountToast searchQuery={searchQuery} matchCount={searchMatchIds.size} onClearSearch={clearSearch} />
-      <HierarchyToast toast={toast} />
+      <AnimatePresence>
+        {toast && (
+          <Toast
+            message={toast}
+            icon={toast.startsWith(arabicSource("common.error")) ? AlertTriangle : UserCheck}
+            position="bottom-center"
+            toneClassName={toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}
+            iconBoxClassName={toast.startsWith(arabicSource("common.error")) ? "bg-red-500/20" : "bg-green-500/20"}
+            iconClassName={toast.startsWith(arabicSource("common.error")) ? "w-3 h-3 text-red-400" : "w-3 h-3 text-green-400"}
+            textClassName="text-foreground"
+            textSize={12}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedNode && !deleteTarget && (

@@ -5,7 +5,8 @@ import DashboardWorkforceSection from "../components/DashboardWorkforceSection";
 import DashboardFinancialSection from "../components/DashboardFinancialSection";
 import DashboardComplianceSection from "../components/DashboardComplianceSection";
 import DashboardRecruitmentSection from "../components/DashboardRecruitmentSection";
-import DashboardLoadingState from "../components/DashboardLoadingState";
+import LoadingState from "@/shared/components/LoadingState";
+import { arabicSource } from "@/i18n/source";
 import { useDashboardData } from "../hooks/useDashboardData";
 
 const Dashboard = () => {
@@ -19,7 +20,7 @@ const Dashboard = () => {
   } = useDashboardData();
 
   if (loading) {
-    return <DashboardLoadingState />;
+    return <LoadingState message={arabicSource("dashboard.loading_control_panel")} />;
   }
 
   return (

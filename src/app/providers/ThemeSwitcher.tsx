@@ -5,8 +5,8 @@ import { useTheme, themes } from "./ThemeContext";
 import { arabicSource } from "@/i18n/source";
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

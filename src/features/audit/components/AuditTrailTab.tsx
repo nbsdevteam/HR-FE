@@ -2,10 +2,10 @@
 import { CheckCircle, Clock, Loader2, Search, Shield, Trash2 } from "lucide-react";
 import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import StatCard from "@/shared/components/StatCard";
 import { actionLabels, entityLabels } from "../data/auditMeta";
 import { auditCardCls } from "../styles";
 import AuditLogRow from "./AuditLogRow";
-import AuditStatCard from "./AuditStatCard";
 
 const AuditTrailTab = () => {
   const [filterAction, setFilterAction] = useState<string>("");
@@ -55,7 +55,17 @@ const AuditTrailTab = () => {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <AuditStatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} index={index} />
+          <StatCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            index={index}
+            iconBox={false}
+            valueSize={20}
+            valueMarginClassName=""
+            labelSize={12}
+          />
         ))}
       </div>
 

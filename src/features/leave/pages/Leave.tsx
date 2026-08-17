@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import LeaveHeader from "../components/LeaveHeader";
-import LeaveLoadingState from "../components/LeaveLoadingState";
 import LeaveModals from "../components/LeaveModals";
 import LeaveStats from "../components/LeaveStats";
 import LeaveTabContent from "../components/LeaveTabContent";
 import LeaveTabs from "../components/LeaveTabs";
+import LoadingState from "@/shared/components/LoadingState";
+import { arabicSource } from "@/i18n/source";
 import { useLeavePage } from "../hooks/useLeavePage";
 import type { LeaveTabId, LeaveViewMode } from "../types";
 
@@ -29,7 +30,7 @@ const Leave = () => {
   }, [setShowPermForm]);
 
   if (page.loading) {
-    return <LeaveLoadingState />;
+    return <LoadingState message={arabicSource("leave.loading_vacation_data")} />;
   }
 
   return (

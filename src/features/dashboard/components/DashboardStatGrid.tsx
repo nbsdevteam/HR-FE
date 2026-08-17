@@ -1,5 +1,15 @@
-import type { DashboardStatCardItem } from "./DashboardStatCard";
-import DashboardStatCard from "./DashboardStatCard";
+import type { ComponentType, ReactNode } from "react";
+import StatCard from "@/shared/components/StatCard";
+import DashboardTrendBadge from "./DashboardTrendBadge";
+
+export type DashboardStatCardItem = {
+  label: string;
+  value: ReactNode;
+  sub: ReactNode;
+  icon: ComponentType<{ className?: string }>;
+  color?: string;
+  trend?: number;
+};
 
 type DashboardStatGridProps = {
   stats: DashboardStatCardItem[];
@@ -10,12 +20,22 @@ type DashboardStatGridProps = {
 const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardStatGridProps) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
     {stats.map((stat, index) => (
-      <DashboardStatCard
+      <StatCard
         key={stat.label}
-        stat={stat}
+        label={stat.label}
+        value={stat.value}
+        icon={stat.icon}
         index={index}
-        compactValue={compactValue}
+        delayStep={0.07}
+        decoration="blob"
+        decorationSizeClassName="w-32 h-32"
         hoverLift={hoverLift}
+        padding="p-5"
+        valueSize={compactValue ? 20 : 24}
+        valueClassName={`font-semibold ${stat.color ?? "text-primary"}`}
+        dir="ltr"
+        sub={stat.sub}
+        trailing={stat.trend !== undefined ? <DashboardTrendBadge value={stat.trend} suffix="%" /> : undefined}
       />
     ))}
   </div>

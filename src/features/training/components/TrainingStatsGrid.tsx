@@ -1,7 +1,7 @@
 import { Award, BookOpen, CheckCircle, Play, Users } from "lucide-react";
+import StatCard from "@/shared/components/StatCard";
 import { arabicSource } from "@/i18n/source";
 import type { TrainingStats } from "../utils/trainingStats";
-import TrainingStatCard from "./TrainingStatCard";
 
 type TrainingStatsGridProps = {
   stats: TrainingStats;
@@ -19,7 +19,7 @@ const TrainingStatsGrid = ({ stats }: TrainingStatsGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {items.map((stat, i) => (
-        <TrainingStatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} index={i} />
+        <StatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} index={i} decoration="blob" hoverLift valueMarginClassName="mt-2" />
       ))}
     </div>
   );

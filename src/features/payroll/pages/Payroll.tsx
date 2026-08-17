@@ -1,9 +1,10 @@
 import { useCallback } from "react";
 import PayrollDetailPanelContainer from "../components/PayrollDetailPanelContainer";
 import PayrollHeader from "../components/PayrollHeader";
-import PayrollLoadingState from "../components/PayrollLoadingState";
 import PayrollTabContent from "../components/PayrollTabContent";
 import PayrollTabs from "../components/PayrollTabs";
+import LoadingState from "@/shared/components/LoadingState";
+import { arabicSource } from "@/i18n/source";
 import { usePayrollPage } from "../hooks/usePayrollPage";
 import type { PayrollTabId } from "../types";
 
@@ -20,7 +21,7 @@ const Payroll = () => {
   }, [setSelectedMonth]);
 
   if (page.loading) {
-    return <PayrollLoadingState />;
+    return <LoadingState message={arabicSource("payroll.loading_salary_data")} />;
   }
 
   return (

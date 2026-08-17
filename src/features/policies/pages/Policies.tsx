@@ -1,11 +1,12 @@
 import { useCallback } from "react";
+import { CheckCircle } from "lucide-react";
+import Toast from "@/shared/components/Toast";
 import PoliciesFilters from "../components/PoliciesFilters";
 import PoliciesHeader from "../components/PoliciesHeader";
 import PoliciesList from "../components/PoliciesList";
 import PoliciesLoadingState from "../components/PoliciesLoadingState";
 import PoliciesStats from "../components/PoliciesStats";
 import PolicyModals from "../components/PolicyModals";
-import PolicyToast from "../components/PolicyToast";
 import { usePoliciesPage } from "../hooks/usePoliciesPage";
 import type { CreatePolicyForm, EditPolicyForm, PolicySortKey } from "../types";
 
@@ -92,7 +93,20 @@ const Policies = () => {
         onShowViewModalChange={setShowViewModal}
       />
 
-      <PolicyToast message={page.toastMessage} />
+      {page.toastMessage && (
+        <Toast
+          message={page.toastMessage}
+          icon={CheckCircle}
+          position="bottom-start"
+          toneClassName="bg-card border-green-500/40"
+          iconBoxClassName="bg-green-500/20"
+          iconClassName="w-3 h-3 text-green-400"
+          textClassName="text-foreground text-sm"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        />
+      )}
     </div>
   );
 };

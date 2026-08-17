@@ -10,8 +10,8 @@ import {
 } from "@/i18n";
 
 export function LanguageSwitcher() {
-  const { i18n, t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const { i18n, t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const current = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);

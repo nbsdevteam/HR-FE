@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { CheckCircle } from "lucide-react";
+import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
 import { useEmployees, useTrainingParticipants, useTrainingPrograms } from "@/shared/hooks";
 import { useParticipantEnrollment } from "../hooks/useParticipantEnrollment";
@@ -8,6 +10,7 @@ import { useTrainingConfig } from "../hooks/useTrainingConfig";
 import { useTrainingToasts } from "../hooks/useTrainingToasts";
 import { getEmployeeName, getProgramParticipants, filterPrograms, mapParticipantsToDisplay, mapProgramsToDisplay } from "../utils/trainingDisplay";
 import { computeCategoryDistribution, computeMonthlyHours, computeStats } from "../utils/trainingStats";
+import type { ToastType } from "../types";
 import CreateProgramModal from "./CreateProgramModal";
 import EditProgramModal from "./EditProgramModal";
 import EnrollParticipantModal from "./EnrollParticipantModal";
@@ -16,8 +19,25 @@ import TrainingFiltersBar from "./TrainingFiltersBar";
 import TrainingHeader from "./TrainingHeader";
 import TrainingProgramsGrid from "./TrainingProgramsGrid";
 import TrainingStatsGrid from "./TrainingStatsGrid";
-import TrainingToastList from "./TrainingToastList";
 import WeightDistributionCard from "./WeightDistributionCard";
+
+const TOAST_TONE_BORDER: Record<ToastType, string> = {
+  success: "border-green-500/40",
+  error: "border-red-500/40",
+  info: "border-blue-500/40",
+};
+
+const TOAST_TONE_ICON_BG: Record<ToastType, string> = {
+  success: "bg-green-500/20",
+  error: "bg-red-500/20",
+  info: "bg-blue-500/20",
+};
+
+const TOAST_TONE_ICON_COLOR: Record<ToastType, string> = {
+  success: "text-green-400",
+  error: "text-red-400",
+  info: "text-blue-400",
+};
 
 const TrainingWorkspace = () => {
   const [filter, setFilter] = useState(arabicSource("common.all"));
@@ -59,7 +79,23 @@ const TrainingWorkspace = () => {
 
   return (
     <div className="space-y-6">
-      <TrainingToastList toasts={toasts} />
+      <AnimatePresence>
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            icon={CheckCircle}
+            position="bottom-start"
+            toneClassName={`bg-card ${TOAST_TONE_BORDER[toast.type]}`}
+            iconBoxClassName={TOAST_TONE_ICON_BG[toast.type]}
+            iconClassName={`w-3 h-3 ${TOAST_TONE_ICON_COLOR[toast.type]}`}
+            textClassName="text-foreground text-sm"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          />
+        ))}
+      </AnimatePresence>
 
       <TrainingHeader onNewProgram={programForm.openCreateModal} />
 

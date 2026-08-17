@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import PublicApplyForm from "../components/PublicApplyForm";
-import PublicApplyLoadingState from "../components/PublicApplyLoadingState";
+import LoadingState from "@/shared/components/LoadingState";
 import PublicApplyNotice from "../components/PublicApplyNotice";
 import PublicApplyShell from "../components/PublicApplyShell";
 import PublicApplySuccess from "../components/PublicApplySuccess";
@@ -17,7 +17,7 @@ export const PublicApply = () => {
   if (page.loading) {
     return (
       <PublicApplyShell>
-        <PublicApplyLoadingState />
+        <LoadingState message={arabicSource("apply.loading")} variant="compact" />
       </PublicApplyShell>
     );
   }
