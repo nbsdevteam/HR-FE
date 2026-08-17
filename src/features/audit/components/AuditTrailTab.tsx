@@ -4,10 +4,10 @@ import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { actionLabels, entityLabels } from "../data/auditMeta";
 import { auditCardCls } from "../styles";
-import { AuditLogRow } from "./AuditLogRow";
-import { AuditStatCard } from "./AuditStatCard";
+import AuditLogRow from "./AuditLogRow";
+import AuditStatCard from "./AuditStatCard";
 
-export function AuditTrailTab() {
+const AuditTrailTab = () => {
   const [filterAction, setFilterAction] = useState<string>("");
   const [filterEntity, setFilterEntity] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,4 +113,6 @@ export function AuditTrailTab() {
       )}
     </div>
   );
-}
+};
+
+export default AuditTrailTab;

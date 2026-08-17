@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { arabicSource } from "@/i18n/source";
-import { AuditCenterTabs } from "../components/AuditCenterTabs";
-import { AuditTrailTab } from "../components/AuditTrailTab";
-import { NotificationsTab } from "../components/NotificationsTab";
+import AuditCenterTabs from "../components/AuditCenterTabs";
+import AuditTrailTab from "../components/AuditTrailTab";
+import NotificationsTab from "../components/NotificationsTab";
 import type { AuditTabId } from "../types";
 
 export function AuditCenter() {

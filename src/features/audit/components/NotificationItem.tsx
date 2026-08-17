@@ -13,12 +13,12 @@ type NotificationItemProps = {
   onDismiss: (id: string) => void;
 };
 
-export function NotificationItem({
+const NotificationItem = ({
   notification,
   index,
   onMarkRead,
   onDismiss,
-}: NotificationItemProps) {
+}: NotificationItemProps) => {
   const TypeIcon = notifTypeIcons[notification.type] || Bell;
 
   return (
@@ -81,4 +81,6 @@ export function NotificationItem({
       </div>
     </motion.div>
   );
-}
+};
+
+export default NotificationItem;

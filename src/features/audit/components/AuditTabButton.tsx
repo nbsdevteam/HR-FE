@@ -11,7 +11,7 @@ type AuditTabButtonProps = {
   onClick: (tab: AuditTabId) => void;
 };
 
-export function AuditTabButton({ tab, isActive, onClick }: AuditTabButtonProps) {
+const AuditTabButton = ({ tab, isActive, onClick }: AuditTabButtonProps) => {
   const Icon = tab.icon;
 
   return (
@@ -27,4 +27,6 @@ export function AuditTabButton({ tab, isActive, onClick }: AuditTabButtonProps) 
       {tab.label}
     </button>
   );
-}
+};
+
+export default AuditTabButton;

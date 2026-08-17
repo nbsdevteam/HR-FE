@@ -8,7 +8,7 @@ type AuditStatCardProps = {
   index: number;
 };
 
-export function AuditStatCard({ label, value, icon: Icon, index }: AuditStatCardProps) {
+const AuditStatCard = ({ label, value, icon: Icon, index }: AuditStatCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -25,4 +25,6 @@ export function AuditStatCard({ label, value, icon: Icon, index }: AuditStatCard
       </div>
     </motion.div>
   );
-}
+};
+
+export default AuditStatCard;

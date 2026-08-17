@@ -4,9 +4,9 @@ import * as odooData from "@/shared/api/odooData";
 import { useNotifications } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { auditCardCls } from "../styles";
-import { NotificationItem } from "./NotificationItem";
+import NotificationItem from "./NotificationItem";
 
-export function NotificationsTab() {
+const NotificationsTab = () => {
   const { notifications, unreadCount, loading, refetch } = useNotifications();
   const [filterType, setFilterType] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -92,4 +92,6 @@ export function NotificationsTab() {
       )}
     </div>
   );
-}
+};
+
+export default NotificationsTab;

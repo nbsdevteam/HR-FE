@@ -11,7 +11,7 @@ type AuditLogRowProps = {
   onToggleExpanded: (id: string) => void;
 };
 
-export function AuditLogRow({ log, isExpanded, onToggleExpanded }: AuditLogRowProps) {
+const AuditLogRow = ({ log, isExpanded, onToggleExpanded }: AuditLogRowProps) => {
   const ActionIcon = actionIcons[log.action] || FileText;
   const colorCls = actionColors[log.action] || "text-muted-foreground";
   const hasDetails = log.details && Object.keys(log.details).length > 0;
@@ -57,4 +57,6 @@ export function AuditLogRow({ log, isExpanded, onToggleExpanded }: AuditLogRowPr
       )}
     </Fragment>
   );
-}
+};
+
+export default AuditLogRow;
