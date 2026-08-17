@@ -1,12 +1,12 @@
 import { useCallback } from "react";
-import { PayrollDetailPanel } from "./PayrollDetailPanel";
+import PayrollDetailPanel from "./PayrollDetailPanel";
 import type { usePayrollPage } from "../hooks/usePayrollPage";
 
 type PayrollDetailPanelContainerProps = {
   page: ReturnType<typeof usePayrollPage>;
 };
 
-export const PayrollDetailPanelContainer = ({ page }: PayrollDetailPanelContainerProps) => {
+const PayrollDetailPanelContainer = ({ page }: PayrollDetailPanelContainerProps) => {
   const { refetchLedgers, setSelectedEmpId } = page;
 
   const handleClose = useCallback(() => {
@@ -39,3 +39,5 @@ export const PayrollDetailPanelContainer = ({ page }: PayrollDetailPanelContaine
     />
   );
 };
+
+export default PayrollDetailPanelContainer;

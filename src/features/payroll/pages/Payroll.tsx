@@ -1,9 +1,9 @@
 import { useCallback } from "react";
-import { PayrollDetailPanelContainer } from "../components/PayrollDetailPanelContainer";
-import { PayrollHeader } from "../components/PayrollHeader";
-import { PayrollLoadingState } from "../components/PayrollLoadingState";
-import { PayrollTabContent } from "../components/PayrollTabContent";
-import { PayrollTabs } from "../components/PayrollTabs";
+import PayrollDetailPanelContainer from "../components/PayrollDetailPanelContainer";
+import PayrollHeader from "../components/PayrollHeader";
+import PayrollLoadingState from "../components/PayrollLoadingState";
+import PayrollTabContent from "../components/PayrollTabContent";
+import PayrollTabs from "../components/PayrollTabs";
 import { usePayrollPage } from "../hooks/usePayrollPage";
 import type { PayrollTabId } from "../types";
 

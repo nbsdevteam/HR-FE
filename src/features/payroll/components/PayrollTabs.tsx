@@ -5,7 +5,7 @@ type PayrollTabsProps = {
   onTabChange: (tabId: PayrollTabId) => void;
 };
 
-export const PayrollTabs = ({ activeTab, onTabChange }: PayrollTabsProps) => (
+const PayrollTabs = ({ activeTab, onTabChange }: PayrollTabsProps) => (
   <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
     {payrollTabs.map((tab) => {
       const Icon = tab.icon;
@@ -28,3 +28,5 @@ export const PayrollTabs = ({ activeTab, onTabChange }: PayrollTabsProps) => (
     })}
   </div>
 );
+
+export default PayrollTabs;

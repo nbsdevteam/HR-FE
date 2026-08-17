@@ -1,54 +1,10 @@
-import { useState, useEffect, useMemo, useRef, useCallback, useReducer } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Wallet, Download, TrendingUp, Calculator, Users, FileText, Loader2,
-  Upload, FileSpreadsheet, AlertCircle, CheckCircle, X, ChevronDown,
-  Clock, CalendarDays, ArrowUpRight, ArrowDownRight, Star, XCircle,
-  ShieldCheck, ShieldAlert, DollarSign, BadgeCheck, TriangleAlert,
-  ChevronLeft, ChevronRight, Banknote, Receipt, CreditCard, UserCheck,
-  FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
-} from "lucide-react";
-import * as odooData from "@/shared/api/odooData";
-import {
-  useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
-  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
-  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
-  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
-  useLeaveTypes,
-  type DbShift,
-} from "@/shared/hooks";
+import { useMemo } from "react";
+import { CalendarDays, ArrowUpRight, XCircle, ShieldCheck, TriangleAlert, TreePalm } from "lucide-react";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
-import { localizedAlert } from "@/i18n/native";
-import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "@/shared/hooks";
-import {
-  parseAttendanceFile,
-  processAttendanceRecords,
-  calculateSalary,
-  formatCurrency,
-  formatHoursMinutes,
-  getShortfallRecords,
-  getAbsenceRecords,
-  getLeaveRecords,
-  buildLeaveDateMap,
-  applyLeaveToRecords,
-  buildSettingsFromShift,
-  DEFAULT_SETTINGS,
-  DEFAULT_SCHEDULE,
-  type RawAttendanceRecord,
-  type ProcessedAttendanceRecord,
-  type SalaryCalculation,
-  type EmployeePayConfig,
-  type MonthlyLedgerEntry,
-  type PayslipSettings,
-  type LeaveRequest,
-} from "@/features/payroll";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import type { ProcessedAttendanceRecord, PayslipSettings } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
-import { dayNamesAr, payrollCardClass as cardCls, payrollInputClass as inputCls, payrollSelectClass as selectCls } from "../styles";
-import { formatIQD } from "../utils/payrollFormat";
 
-export const CalendarView = function CalendarView({
+const CalendarView = ({
   records,
   settings,
   monthYear,
@@ -60,7 +16,7 @@ export const CalendarView = function CalendarView({
   monthYear: string;
   onExcuseAbsence?: (id: string) => void;
   onExcuseShortfall?: (id: string) => void;
-}) {
+}) => {
   const { settings: appSettings } = useAppSettings();
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [y, m] = monthYear.split("-").map(Number);
@@ -298,6 +254,6 @@ export const CalendarView = function CalendarView({
       </div>
     </div>
   );
-}
+};
 
-// ══════════════════════════ Shortfall Popover ══════════════════════════
+export default CalendarView;

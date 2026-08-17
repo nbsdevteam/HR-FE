@@ -1,54 +1,10 @@
-import { useState, useEffect, useMemo, useRef, useCallback, useReducer } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Wallet, Download, TrendingUp, Calculator, Users, FileText, Loader2,
-  Upload, FileSpreadsheet, AlertCircle, CheckCircle, X, ChevronDown,
-  Clock, CalendarDays, ArrowUpRight, ArrowDownRight, Star, XCircle,
-  ShieldCheck, ShieldAlert, DollarSign, BadgeCheck, TriangleAlert,
-  ChevronLeft, ChevronRight, Banknote, Receipt, CreditCard, UserCheck,
-  FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
-} from "lucide-react";
-import * as odooData from "@/shared/api/odooData";
-import {
-  useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
-  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
-  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
-  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
-  useLeaveTypes,
-  type DbShift,
-} from "@/shared/hooks";
-import { useAppSettings, formatMonthYear } from "@/app/providers";
-import { localizedAlert } from "@/i18n/native";
-import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "@/shared/hooks";
-import {
-  parseAttendanceFile,
-  processAttendanceRecords,
-  calculateSalary,
-  formatCurrency,
-  formatHoursMinutes,
-  getShortfallRecords,
-  getAbsenceRecords,
-  getLeaveRecords,
-  buildLeaveDateMap,
-  applyLeaveToRecords,
-  buildSettingsFromShift,
-  DEFAULT_SETTINGS,
-  DEFAULT_SCHEDULE,
-  type RawAttendanceRecord,
-  type ProcessedAttendanceRecord,
-  type SalaryCalculation,
-  type EmployeePayConfig,
-  type MonthlyLedgerEntry,
-  type PayslipSettings,
-  type LeaveRequest,
-} from "@/features/payroll";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import { motion } from "motion/react";
+import { X, ArrowDownRight } from "lucide-react";
+import { formatHoursMinutes, type ProcessedAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
-import { dayNamesAr, payrollCardClass as cardCls, payrollInputClass as inputCls, payrollSelectClass as selectCls } from "../styles";
-import { formatIQD } from "../utils/payrollFormat";
+import { dayNamesAr } from "../styles";
 
-export const ShortfallPopover = function ShortfallPopover({
+const ShortfallPopover = ({
   records,
   targetHours,
   onClose,
@@ -58,7 +14,7 @@ export const ShortfallPopover = function ShortfallPopover({
   targetHours: number;
   onClose: () => void;
   onExcuse: (id: string) => void;
-}) {
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -136,6 +92,6 @@ export const ShortfallPopover = function ShortfallPopover({
       </motion.div>
     </motion.div>
   );
-}
+};
 
-// ══════════════════════════ Absence Popover ══════════════════════════
+export default ShortfallPopover;

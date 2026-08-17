@@ -14,7 +14,7 @@ type PayrollHeaderProps = {
   onServerComputePayslips: () => void;
 };
 
-export const PayrollHeader = ({
+const PayrollHeader = ({
   availableMonths,
   displayMonth,
   payrollCount,
@@ -58,3 +58,5 @@ export const PayrollHeader = ({
     </div>
   </div>
 );
+
+export default PayrollHeader;

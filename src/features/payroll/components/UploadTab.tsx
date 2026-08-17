@@ -1,54 +1,21 @@
-import { useState, useEffect, useMemo, useRef, useCallback, useReducer } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useMemo, useRef } from "react";
 import {
-  Wallet, Download, TrendingUp, Calculator, Users, FileText, Loader2,
-  Upload, FileSpreadsheet, AlertCircle, CheckCircle, X, ChevronDown,
-  Clock, CalendarDays, ArrowUpRight, ArrowDownRight, Star, XCircle,
-  ShieldCheck, ShieldAlert, DollarSign, BadgeCheck, TriangleAlert,
-  ChevronLeft, ChevronRight, Banknote, Receipt, CreditCard, UserCheck,
-  FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
+  Download, Users, FileText, Loader2,
+  Upload, FileSpreadsheet, AlertCircle, CheckCircle,
+  CalendarDays,
+  TriangleAlert,
+  UserCheck,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import {
-  useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
-  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
-  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
-  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
-  useLeaveTypes,
-  type DbShift,
-} from "@/shared/hooks";
-import { useAppSettings, formatMonthYear } from "@/app/providers";
-import { localizedAlert } from "@/i18n/native";
-import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "@/shared/hooks";
+import type { DbEmployee } from "@/shared/hooks";
 import {
   parseAttendanceFile,
-  processAttendanceRecords,
-  calculateSalary,
-  formatCurrency,
-  formatHoursMinutes,
-  getShortfallRecords,
-  getAbsenceRecords,
-  getLeaveRecords,
-  buildLeaveDateMap,
-  applyLeaveToRecords,
-  buildSettingsFromShift,
-  DEFAULT_SETTINGS,
-  DEFAULT_SCHEDULE,
   type RawAttendanceRecord,
-  type ProcessedAttendanceRecord,
-  type SalaryCalculation,
-  type EmployeePayConfig,
-  type MonthlyLedgerEntry,
-  type PayslipSettings,
-  type LeaveRequest,
 } from "@/features/payroll";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import { dayNamesAr, payrollCardClass as cardCls, payrollInputClass as inputCls, payrollSelectClass as selectCls } from "../styles";
-import { formatIQD } from "../utils/payrollFormat";
+import { payrollCardClass as cardCls } from "../styles";
 
-export const UploadTab = function UploadTab({
+const UploadTab = ({
   employees,
   selectedMonth,
   onComplete,
@@ -56,7 +23,7 @@ export const UploadTab = function UploadTab({
   employees: DbEmployee[];
   selectedMonth: string;
   onComplete: () => void;
-}) {
+}) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<{
@@ -372,6 +339,8 @@ export const UploadTab = function UploadTab({
       )}
     </div>
   );
-}
+};
+
+export default UploadTab;
 
 // ══════════════════════════ Payroll Detail Panel ══════════════════════════

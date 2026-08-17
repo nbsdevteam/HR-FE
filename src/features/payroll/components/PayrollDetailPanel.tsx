@@ -1,57 +1,39 @@
-import { useState, useEffect, useMemo, useRef, useCallback, useReducer } from "react";
+import { useState, useEffect, useMemo, useReducer } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Wallet, Download, TrendingUp, Calculator, Users, FileText, Loader2,
-  Upload, FileSpreadsheet, AlertCircle, CheckCircle, X, ChevronDown,
-  Clock, CalendarDays, ArrowUpRight, ArrowDownRight, Star, XCircle,
-  ShieldCheck, ShieldAlert, DollarSign, BadgeCheck, TriangleAlert,
-  ChevronLeft, ChevronRight, Banknote, Receipt, CreditCard, UserCheck,
-  FileCheck, Filter, Search, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
+  Loader2, X, Clock, CalendarDays, ArrowUpRight, ArrowDownRight, XCircle,
+  Banknote, CreditCard, BarChart3, TreePalm, Pencil, Save, Plus, Minus,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
-  useEmployees, empDisplayName, useShifts, resolveEmployeeShift, shiftToSchedule,
-  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
-  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
-  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
-  useLeaveTypes,
+  empDisplayName, resolveEmployeeShift, shiftToSchedule,
   type DbShift,
 } from "@/shared/hooks";
-import { useAppSettings, formatMonthYear } from "@/app/providers";
+import { formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
-import type { DbEmployee, DbAttendanceRecord, DbMonthlyRecord, DbMonthlyLedger } from "@/shared/hooks";
+import type { DbEmployee, DbMonthlyLedger } from "@/shared/hooks";
 import {
-  parseAttendanceFile,
-  processAttendanceRecords,
   calculateSalary,
   formatCurrency,
   formatHoursMinutes,
   getShortfallRecords,
   getAbsenceRecords,
   getLeaveRecords,
-  buildLeaveDateMap,
-  applyLeaveToRecords,
   buildSettingsFromShift,
   DEFAULT_SETTINGS,
   DEFAULT_SCHEDULE,
-  type RawAttendanceRecord,
   type ProcessedAttendanceRecord,
   type SalaryCalculation,
   type EmployeePayConfig,
   type MonthlyLedgerEntry,
-  type PayslipSettings,
-  type LeaveRequest,
 } from "@/features/payroll";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import { dayNamesAr, payrollCardClass as cardCls, payrollInputClass as inputCls, payrollSelectClass as selectCls } from "../styles";
-import { formatIQD } from "../utils/payrollFormat";
-import { AbsencePopover } from "./AbsencePopover";
-import { CalendarView } from "./CalendarView";
-import { ShortfallPopover } from "./ShortfallPopover";
+import { dayNamesAr, payrollCardClass as cardCls } from "../styles";
+import AbsencePopover from "./AbsencePopover";
+import CalendarView from "./CalendarView";
+import ShortfallPopover from "./ShortfallPopover";
 
-export const PayrollDetailPanel = function PayrollDetailPanel({
+const PayrollDetailPanel = ({
   empId,
   onClose,
   payrollData,
@@ -87,7 +69,7 @@ export const PayrollDetailPanel = function PayrollDetailPanel({
   allEmployeeDeductions: any[];
   allLoans: any[];
   appSettings: any;
-}) {
+}) => {
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [showShortfall, setShowShortfall] = useState(false);
   const [showAbsence, setShowAbsence] = useState(false);
@@ -743,6 +725,8 @@ export const PayrollDetailPanel = function PayrollDetailPanel({
       )}
     </AnimatePresence>
   );
-}
+};
 
 // ══════════════════════════ Calendar View ══════════════════════════
+
+export default PayrollDetailPanel;

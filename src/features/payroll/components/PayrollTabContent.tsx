@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from "motion/react";
-import { OverviewTab } from "./OverviewTab";
-import { UploadTab } from "./UploadTab";
+import OverviewTab from "./OverviewTab";
+import UploadTab from "./UploadTab";
 import type { usePayrollPage } from "../hooks/usePayrollPage";
 
 type PayrollTabContentProps = {
   page: ReturnType<typeof usePayrollPage>;
 };
 
-export const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
+const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
   <AnimatePresence mode="wait">
     {page.activeTab === "overview" && (
       <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -33,3 +33,5 @@ export const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
     )}
   </AnimatePresence>
 );
+
+export default PayrollTabContent;
