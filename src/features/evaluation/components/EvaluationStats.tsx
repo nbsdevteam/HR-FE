@@ -9,7 +9,7 @@ type EvaluationStatsProps = {
   avgRating: string;
 };
 
-export const EvaluationStats = ({ totalEvals, completedCount, inProgressCount, avgRating }: EvaluationStatsProps) => {
+const EvaluationStats = ({ totalEvals, completedCount, inProgressCount, avgRating }: EvaluationStatsProps) => {
   const stats = [
     { label: arabicSource("evaluation.total_ratings"), value: totalEvals, icon: ClipboardCheck },
     { label: arabicSource("common.complete_2"), value: completedCount, icon: Award },
@@ -46,3 +46,5 @@ export const EvaluationStats = ({ totalEvals, completedCount, inProgressCount, a
     </div>
   );
 };
+
+export default EvaluationStats;

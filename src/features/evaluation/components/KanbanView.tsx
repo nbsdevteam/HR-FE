@@ -1,30 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  ClipboardCheck, Star, X, Eye, ChevronDown, Loader2, UserCheck, Save, Pencil,
-  CheckCircle, Trash2,
-} from "lucide-react";
-import { localizedConfirm } from "@/i18n/native";
-import * as odooData from "@/shared/api/odooData";
-import { EmployeeSelect } from "@/features/employees";
+import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
-import { CustomRadarChart } from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
-import {
-  defaultCriteria as DEFAULT_CRITERIA,
-  evaluationCycles as EVAL_CYCLES,
-  evaluationStatusColors as STATUS_COLORS,
-  evaluationStatusToOdoo as EVAL_STATUS_TO_ODOO,
-  type DbEvalCriteria,
-  type DbEvaluation,
-  type EvalCycleType,
-} from "../types";
-import { evaluationInputClass as inputCls } from "../styles";
-import { getPeriodOptions, getRatingInfo, renderStars } from "../utils/evaluationHelpers";
+import { type DbEvalCriteria, type DbEvaluation } from "../types";
+import { getRatingInfo, renderStars } from "../utils/evaluationHelpers";
 
-export const KanbanView = function KanbanView({
+const KanbanView = ({
   evaluations,
   empMap,
   criteria,
@@ -34,7 +17,7 @@ export const KanbanView = function KanbanView({
   empMap: Record<string, DbEmployee>;
   criteria: DbEvalCriteria[];
   onSelect: (ev: DbEvaluation) => void;
-}) {
+}) => {
   const columns = [
     { key: arabicSource("common.complete"), label: arabicSource("common.complete"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
     { key: arabicSource("common.under_evaluation"), label: arabicSource("common.under_evaluation"), accent: "border-primary/40", dotColor: "bg-primary" },
@@ -121,7 +104,7 @@ export const KanbanView = function KanbanView({
       })}
     </motion.div>
   );
-}
+};
 
-// ══════════════════════════ Detail Modal ══════════════════════════
+export default KanbanView;
 

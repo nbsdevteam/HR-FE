@@ -1,29 +1,24 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import {
-  Star, X, Eye, ChevronDown, Loader2, UserCheck, Save, Pencil,
-  CheckCircle, Trash2,
+  Star, X, ChevronDown, Loader2, UserCheck, Save,
+  CheckCircle,
 } from "lucide-react";
-import { localizedConfirm } from "@/i18n/native";
 import * as odooData from "@/shared/api/odooData";
 import { EmployeeSelect } from "@/features/employees";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
-import { CustomRadarChart } from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
 import {
   defaultCriteria as DEFAULT_CRITERIA,
   evaluationCycles as EVAL_CYCLES,
-  evaluationStatusColors as STATUS_COLORS,
   evaluationStatusToOdoo as EVAL_STATUS_TO_ODOO,
-  type DbEvalCriteria,
-  type DbEvaluation,
   type EvalCycleType,
 } from "../types";
 import { evaluationInputClass as inputCls } from "../styles";
 import { getPeriodOptions, getRatingInfo, renderStars } from "../utils/evaluationHelpers";
 
-export const NewEvalPanel = function NewEvalPanel({
+const NewEvalPanel = ({
   employees,
   empMap,
   onClose,
@@ -33,7 +28,7 @@ export const NewEvalPanel = function NewEvalPanel({
   empMap: Record<string, DbEmployee>;
   onClose: () => void;
   onCreated: () => void;
-}) {
+}) => {
   const activeEmployees = employees.filter(e => !e.status || e.status === arabicSource("common.is_active"));
   const [selectedEmpId, setSelectedEmpId] = useState("");
   const [evaluatorId, setEvaluatorId] = useState("");
@@ -352,4 +347,6 @@ export const NewEvalPanel = function NewEvalPanel({
       </motion.div>
     </motion.div>
   );
-}
+};
+
+export default NewEvalPanel;

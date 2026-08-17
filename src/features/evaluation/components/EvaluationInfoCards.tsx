@@ -4,7 +4,7 @@ import { evaluationCardClass } from "../styles";
 import { renderStars } from "../utils/evaluationHelpers";
 import { arabicSource } from "@/i18n/source";
 
-export const EvaluationInfoCards = () => (
+const EvaluationInfoCards = () => (
   <>
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`${evaluationCardClass} p-6`}>
       <h3 className="text-foreground mb-2">{arabicSource("evaluation.how_does_the_evaluation_system_work")}</h3>
@@ -43,3 +43,5 @@ export const EvaluationInfoCards = () => (
     </motion.div>
   </>
 );
+
+export default EvaluationInfoCards;

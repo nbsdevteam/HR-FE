@@ -10,7 +10,7 @@ type EvaluationHeaderProps = {
   onNewEvaluation: () => void;
 };
 
-export const EvaluationHeader = ({ viewMode, onViewModeChange, onNewEvaluation }: EvaluationHeaderProps) => (
+const EvaluationHeader = ({ viewMode, onViewModeChange, onNewEvaluation }: EvaluationHeaderProps) => (
   <div className="flex items-center justify-between flex-wrap gap-4">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.performance_evaluation")}</h1>
@@ -30,3 +30,5 @@ export const EvaluationHeader = ({ viewMode, onViewModeChange, onNewEvaluation }
     </div>
   </div>
 );
+
+export default EvaluationHeader;

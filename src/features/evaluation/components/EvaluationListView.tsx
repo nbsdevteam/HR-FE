@@ -20,7 +20,7 @@ type EvaluationListViewProps = {
   onSelectEvaluation: (evaluation: DbEvaluation) => void;
 };
 
-export const EvaluationListView = ({
+const EvaluationListView = ({
   evaluations,
   allEvaluationsCount,
   empMap,
@@ -133,3 +133,5 @@ export const EvaluationListView = ({
     </div>
   </motion.div>
 );
+
+export default EvaluationListView;

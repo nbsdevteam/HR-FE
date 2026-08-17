@@ -9,7 +9,7 @@ type EvaluationFiltersProps = {
   onFilterStatusChange: (filterStatus: string) => void;
 };
 
-export const EvaluationFilters = ({
+const EvaluationFilters = ({
   searchText,
   filterStatus,
   onSearchTextChange,
@@ -40,3 +40,5 @@ export const EvaluationFilters = ({
     </select>
   </div>
 );
+
+export default EvaluationFilters;
