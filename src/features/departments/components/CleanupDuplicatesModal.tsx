@@ -10,7 +10,7 @@ type CleanupDuplicatesModalProps = {
   onCleanup: () => void;
 };
 
-export const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: CleanupDuplicatesModalProps) => {
+const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: CleanupDuplicatesModalProps) => {
   const ownerCount = dbEmployees.filter(e => e.department === arabicSource("common.owner") || e.position === arabicSource("common.owner")).length;
   const ceoCount = dbEmployees.filter(e => e.position === "CEO" && e.department === arabicSource("common.senior_management")).length;
   const cooCount = dbEmployees.filter(e => e.position === "COO" && e.department === arabicSource("common.senior_management")).length;
@@ -85,3 +85,5 @@ export const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup
     </motion.div>
   );
 };
+
+export default CleanupDuplicatesModal;

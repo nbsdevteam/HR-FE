@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, Crown, Download, Printer, Search, Trash2, UserPlus, X } from "lucide-react";
 import type { Ref } from "react";
 import type { OrgNode } from "../types";
-import { SearchResults } from "./SearchResults";
+import SearchResults from "./SearchResults";
 import { arabicSource } from "@/i18n/source";
 
 type HierarchyHeaderProps = {
@@ -24,7 +24,7 @@ type HierarchyHeaderProps = {
   onExportPNG: () => void;
 };
 
-export const HierarchyHeader = ({
+const HierarchyHeader = ({
   unlinkedCount,
   searchInputRef,
   searchQuery,
@@ -105,3 +105,5 @@ export const HierarchyHeader = ({
     </div>
   </div>
 );
+
+export default HierarchyHeader;

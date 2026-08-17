@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColors: Record<string, string> }) => {
+const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColors: Record<string, string> }) => {
   const [dragging, setDragging] = useState(false);
   const name = empDisplayName(emp);
   const color = deptColors[emp.department] || "#8B5CF6";
@@ -53,3 +53,5 @@ export const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; de
   );
 
 };
+
+export default DraggableEmployeeCard;

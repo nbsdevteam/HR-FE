@@ -6,7 +6,7 @@ type HierarchyToastProps = {
   toast: string | null;
 };
 
-export const HierarchyToast = ({ toast }: HierarchyToastProps) => (
+const HierarchyToast = ({ toast }: HierarchyToastProps) => (
   <AnimatePresence>
     {toast && (
       <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -21,3 +21,5 @@ export const HierarchyToast = ({ toast }: HierarchyToastProps) => (
     )}
   </AnimatePresence>
 );
+
+export default HierarchyToast;

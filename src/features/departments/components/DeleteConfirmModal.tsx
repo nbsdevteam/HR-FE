@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
+const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   node: OrgNode; orgTree: OrgNode; onDelete: (node: OrgNode, reparent: boolean) => void; onClose: () => void;
 }) => {
   const parentNode = findParentOf(orgTree, node.id);
@@ -93,3 +93,5 @@ export const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   );
 
 };
+
+export default DeleteConfirmModal;

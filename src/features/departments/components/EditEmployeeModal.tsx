@@ -24,7 +24,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
+const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
   node: OrgNode;
   allNodes: OrgNode[];
   departments: string[];
@@ -182,3 +182,5 @@ export const EditEmployeeModal = ({ node, allNodes, departments, departmentColor
   );
 
 };
+
+export default EditEmployeeModal;

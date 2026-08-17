@@ -4,7 +4,7 @@ import type { MouseEventHandler, Ref } from "react";
 import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
-import { OrgCard } from "./OrgCard";
+import OrgCard from "./OrgCard";
 
 type DepartmentStat = {
   name: string;
@@ -40,7 +40,7 @@ type HierarchyTreeSectionProps = {
   onSelectNode: (node: OrgNode) => void;
 };
 
-export const HierarchyTreeSection = ({
+const HierarchyTreeSection = ({
   dbEmployees,
   dbPositions,
   departmentStats,
@@ -163,3 +163,5 @@ export const HierarchyTreeSection = ({
     </motion.div>
   </>
 );
+
+export default HierarchyTreeSection;

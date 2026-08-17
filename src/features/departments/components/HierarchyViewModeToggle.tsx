@@ -8,7 +8,7 @@ type HierarchyViewModeToggleProps = {
   onViewModeChange: (viewMode: ViewMode) => void;
 };
 
-export const HierarchyViewModeToggle = ({ viewMode, onViewModeChange }: HierarchyViewModeToggleProps) => (
+const HierarchyViewModeToggle = ({ viewMode, onViewModeChange }: HierarchyViewModeToggleProps) => (
   <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
     <button onClick={() => onViewModeChange("tree")}
       className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all cursor-pointer ${
@@ -24,3 +24,5 @@ export const HierarchyViewModeToggle = ({ viewMode, onViewModeChange }: Hierarch
     </button>
   </div>
 );
+
+export default HierarchyViewModeToggle;

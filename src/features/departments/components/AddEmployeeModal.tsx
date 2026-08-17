@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const AddEmployeeModal = ({
+const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
 }: {
   allNodes: OrgNode[]; departments: string[]; departmentColors: Record<string, string>;
@@ -184,3 +184,5 @@ export const AddEmployeeModal = ({
   );
 
 };
+
+export default AddEmployeeModal;

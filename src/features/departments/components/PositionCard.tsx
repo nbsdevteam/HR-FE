@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const PositionCard = ({
+const PositionCard = ({
   node, depth, departments, employees, deptColors, onDrop, onAddPosition, onDeletePosition, onEditPosition, expandedPositions, togglePositionExpand,
 }: {
   node: PositionNode; depth: number; departments: DbDepartment[];
@@ -151,3 +151,5 @@ export const PositionCard = ({
   );
 
 };
+
+export default PositionCard;

@@ -22,10 +22,10 @@ import {
   flattenTree,
   pickUniqueColor,
 } from "../utils/hierarchyTree";
-import { PositionCard } from "./PositionCard";
-import { DraggableEmployeeCard } from "./DraggableEmployeeCard";
+import PositionCard from "./PositionCard";
+import DraggableEmployeeCard from "./DraggableEmployeeCard";
 
-export const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch }: {
+const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch }: {
   dbEmployees: DbEmployee[];
   dbDepartments: DbDepartment[];
   deptColors: Record<string, string>;
@@ -366,3 +366,5 @@ export const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch 
   );
 
 };
+
+export default PositionsView;

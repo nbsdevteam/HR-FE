@@ -1,19 +1,19 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { AddEmployeeModal } from "../components/AddEmployeeModal";
-import { CleanupDuplicatesModal } from "../components/CleanupDuplicatesModal";
-import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
-import { EditEmployeeModal } from "../components/EditEmployeeModal";
-import { DetailPanel } from "../components/DetailPanel";
-import { HierarchyHeader } from "../components/HierarchyHeader";
-import { HierarchyToast } from "../components/HierarchyToast";
-import { HierarchyTreeSection } from "../components/HierarchyTreeSection";
-import { HierarchyViewModeToggle } from "../components/HierarchyViewModeToggle";
-import { SearchCountToast } from "../components/SearchCountToast";
-import { SetupHierarchyModal } from "../components/SetupHierarchyModal";
-import { UnlinkedPanel } from "../components/UnlinkedPanel";
-import { PositionsView } from "../components/PositionsView";
+import AddEmployeeModal from "../components/AddEmployeeModal";
+import CleanupDuplicatesModal from "../components/CleanupDuplicatesModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import EditEmployeeModal from "../components/EditEmployeeModal";
+import DetailPanel from "../components/DetailPanel";
+import HierarchyHeader from "../components/HierarchyHeader";
+import HierarchyToast from "../components/HierarchyToast";
+import HierarchyTreeSection from "../components/HierarchyTreeSection";
+import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
+import SearchCountToast from "../components/SearchCountToast";
+import SetupHierarchyModal from "../components/SetupHierarchyModal";
+import UnlinkedPanel from "../components/UnlinkedPanel";
+import PositionsView from "../components/PositionsView";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
 export const Hierarchy = () => {

@@ -22,9 +22,9 @@ import {
   flattenTree,
   pickUniqueColor,
 } from "../utils/hierarchyTree";
-import { TreeConnectors } from "./TreeConnectors";
+import TreeConnectors from "./TreeConnectors";
 
-export const OrgCard = ({
+const OrgCard = ({
   node, depth = 0, expandedMap, toggleExpand, onSelect, selectedId, highlightedIds, searchMatchIds, deptColors,
 }: {
   node: OrgNode; depth?: number; expandedMap: Record<number, boolean>; toggleExpand: (id: number) => void;
@@ -166,3 +166,5 @@ export const OrgCard = ({
   );
 
 };
+
+export default OrgCard;

@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const TreeConnectors = ({ parentRef, childRefs, color }: {
+const TreeConnectors = ({ parentRef, childRefs, color }: {
   parentRef: React.RefObject<HTMLDivElement | null>;
   childRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
   color: string;
@@ -82,3 +82,5 @@ export const TreeConnectors = ({ parentRef, childRefs, color }: {
   );
 
 };
+
+export default TreeConnectors;

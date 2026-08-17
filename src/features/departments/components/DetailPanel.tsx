@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
+const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   node: OrgNode; orgTree: OrgNode; onClose: () => void;
   onAddChild: (parentId: number) => void; onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
@@ -152,3 +152,5 @@ export const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEd
   );
 
 };
+
+export default DetailPanel;

@@ -10,7 +10,7 @@ type SetupHierarchyModalProps = {
   onSetup: () => void;
 };
 
-export const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHierarchyModalProps) => {
+const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHierarchyModalProps) => {
   const rootEmployeeCount = dbEmployees.filter(e => !e.manager_id).length;
 
   return (
@@ -103,3 +103,5 @@ export const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: S
     </motion.div>
   );
 };
+
+export default SetupHierarchyModal;

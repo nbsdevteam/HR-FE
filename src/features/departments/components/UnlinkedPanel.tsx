@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
+const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
   employees: DbEmployee[];
   allNodes: OrgNode[];
   onLink: (empDbId: string, managerDbId: string) => void;
@@ -101,3 +101,5 @@ export const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
   );
 
 };
+
+export default UnlinkedPanel;

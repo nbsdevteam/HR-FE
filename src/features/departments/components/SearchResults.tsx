@@ -23,7 +23,7 @@ import {
   pickUniqueColor,
 } from "../utils/hierarchyTree";
 
-export const SearchResults = ({ results, onSelect, onClose }: {
+const SearchResults = ({ results, onSelect, onClose }: {
   results: OrgNode[]; onSelect: (node: OrgNode) => void; onClose: () => void;
 }) => {
   if (results.length === 0) return null;
@@ -50,3 +50,5 @@ export const SearchResults = ({ results, onSelect, onClose }: {
   );
 
 };
+
+export default SearchResults;
