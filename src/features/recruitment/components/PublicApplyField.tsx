@@ -4,7 +4,7 @@ type PublicApplyFieldProps = {
   children: React.ReactNode;
 };
 
-export const PublicApplyField = ({ label, required, children }: PublicApplyFieldProps) => (
+const PublicApplyField = ({ label, required, children }: PublicApplyFieldProps) => (
   <div>
     <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
       {label}{required && <span className="text-destructive"> *</span>}
@@ -12,3 +12,5 @@ export const PublicApplyField = ({ label, required, children }: PublicApplyField
     {children}
   </div>
 );
+
+export default PublicApplyField;

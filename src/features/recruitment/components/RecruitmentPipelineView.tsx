@@ -3,14 +3,14 @@ import { BookmarkCheck } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbApplicant } from "@/shared/hooks";
 import { STAGES, stageColors } from "../constants/recruitment";
-import { StarRating } from "./StarRating";
+import StarRating from "./StarRating";
 
 type RecruitmentPipelineViewProps = {
   applicants: DbApplicant[];
   onSelectApplicant: (applicant: DbApplicant) => void;
 };
 
-export const RecruitmentPipelineView = ({ applicants, onSelectApplicant }: RecruitmentPipelineViewProps) => (
+const RecruitmentPipelineView = ({ applicants, onSelectApplicant }: RecruitmentPipelineViewProps) => (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
     {STAGES.map((stage, stageIndex) => {
       const stageApps = applicants.filter((applicant) => applicant.stage === stage);
@@ -54,3 +54,5 @@ export const RecruitmentPipelineView = ({ applicants, onSelectApplicant }: Recru
     })}
   </div>
 );
+
+export default RecruitmentPipelineView;

@@ -7,7 +7,7 @@ type PublicApplyShellProps = {
   companyName?: string;
 };
 
-export const PublicApplyShell = ({ children, companyName }: PublicApplyShellProps) => {
+const PublicApplyShell = ({ children, companyName }: PublicApplyShellProps) => {
   const { i18n } = useTranslation();
 
   const direction = getLanguageDirection(
@@ -26,3 +26,5 @@ export const PublicApplyShell = ({ children, companyName }: PublicApplyShellProp
     </div>
   );
 };
+
+export default PublicApplyShell;

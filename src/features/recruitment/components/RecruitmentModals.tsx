@@ -1,9 +1,9 @@
 import { AnimatePresence } from "motion/react";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
-import { ApplicantDetailPanel } from "./ApplicantDetailPanel";
-import { ApplicantFormModal } from "./ApplicantFormModal";
-import { ApplyLinkModal } from "./ApplyLinkModal";
-import { JobFormModal } from "./JobFormModal";
+import ApplicantDetailPanel from "./ApplicantDetailPanel";
+import ApplicantFormModal from "./ApplicantFormModal";
+import ApplyLinkModal from "./ApplyLinkModal";
+import JobFormModal from "./JobFormModal";
 
 type RecruitmentModalsProps = {
   editingApplicant: DbApplicant | null;
@@ -29,7 +29,7 @@ type RecruitmentModalsProps = {
   onLinkJobClose: () => void;
 };
 
-export const RecruitmentModals = ({
+const RecruitmentModals = ({
   editingApplicant,
   editingJob,
   jobs,
@@ -89,3 +89,5 @@ export const RecruitmentModals = ({
     )}
   </AnimatePresence>
 );
+
+export default RecruitmentModals;
