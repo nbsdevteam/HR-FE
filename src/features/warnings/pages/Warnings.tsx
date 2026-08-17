@@ -1,3 +1,3 @@
-import { WarningsWorkspace } from "../components/WarningsWorkspace";
+import WarningsWorkspace from "../components/WarningsWorkspace";
 
 export const Warnings = () => <WarningsWorkspace />;

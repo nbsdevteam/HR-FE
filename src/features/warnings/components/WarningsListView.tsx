@@ -3,7 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { WarningWithEmployee } from "../types";
-import { WarningTableRow } from "./WarningTableRow";
+import WarningTableRow from "./WarningTableRow";
 
 type WarningsListViewProps = {
   warnings: WarningWithEmployee[];
@@ -20,7 +20,7 @@ const TABLE_HEADERS = [
   arabicSource("common.status"), arabicSource("common.procedures"),
 ];
 
-export const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, warningsByEmployee, onSelectWarning }: WarningsListViewProps) => (
+const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, warningsByEmployee, onSelectWarning }: WarningsListViewProps) => (
   <motion.div
     key="list"
     initial={{ opacity: 0, y: 10 }}
@@ -62,3 +62,5 @@ export const WarningsListView = ({ warnings, typeColors, statusColors, typeSever
     </div>
   </motion.div>
 );
+
+export default WarningsListView;

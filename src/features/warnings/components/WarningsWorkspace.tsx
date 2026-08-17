@@ -9,18 +9,18 @@ import { useWarningToast } from "../hooks/useWarningToast";
 import type { WarningViewMode, WarningWithEmployee } from "../types";
 import { computeWarningsByEmployee, enrichWarnings, filterWarnings } from "../utils/warningsDisplay";
 import { computeWarningStats } from "../utils/warningsStats";
-import { WarningDetailModal } from "./WarningDetailModal";
-import { WarningEscalationPath } from "./WarningEscalationPath";
-import { WarningFormModal } from "./WarningFormModal";
-import { WarningsFiltersBar } from "./WarningsFiltersBar";
-import { WarningsHeader } from "./WarningsHeader";
-import { WarningsKanbanView } from "./WarningsKanbanView";
-import { WarningsListView } from "./WarningsListView";
-import { WarningsLoadingState } from "./WarningsLoadingState";
-import { WarningsStats } from "./WarningsStats";
-import { WarningToast } from "./WarningToast";
+import WarningDetailModal from "./WarningDetailModal";
+import WarningEscalationPath from "./WarningEscalationPath";
+import WarningFormModal from "./WarningFormModal";
+import WarningsFiltersBar from "./WarningsFiltersBar";
+import WarningsHeader from "./WarningsHeader";
+import WarningsKanbanView from "./WarningsKanbanView";
+import WarningsListView from "./WarningsListView";
+import WarningsLoadingState from "./WarningsLoadingState";
+import WarningsStats from "./WarningsStats";
+import WarningToast from "./WarningToast";
 
-export const WarningsWorkspace = () => {
+const WarningsWorkspace = () => {
   const [viewMode, setViewMode] = useState<WarningViewMode>("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -150,3 +150,5 @@ export const WarningsWorkspace = () => {
     </div>
   );
 };
+
+export default WarningsWorkspace;

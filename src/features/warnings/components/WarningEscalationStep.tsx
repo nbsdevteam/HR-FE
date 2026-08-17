@@ -4,7 +4,7 @@ type WarningEscalationStepProps = {
   isLast: boolean;
 };
 
-export const WarningEscalationStep = ({ type, index, isLast }: WarningEscalationStepProps) => (
+const WarningEscalationStep = ({ type, index, isLast }: WarningEscalationStepProps) => (
   <div className="flex items-center gap-2">
     <div className="flex flex-col items-center">
       <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
@@ -21,3 +21,5 @@ export const WarningEscalationStep = ({ type, index, isLast }: WarningEscalation
     )}
   </div>
 );
+
+export default WarningEscalationStep;

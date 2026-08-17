@@ -8,7 +8,7 @@ type WarningTypeStatCardProps = {
   colorClass: string;
 };
 
-export const WarningTypeStatCard = ({ type, count, index, colorClass }: WarningTypeStatCardProps) => (
+const WarningTypeStatCard = ({ type, count, index, colorClass }: WarningTypeStatCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -26,3 +26,5 @@ export const WarningTypeStatCard = ({ type, count, index, colorClass }: WarningT
     <span className="text-gradient-gold block mt-1 relative z-10" style={{ fontSize: 24 }}>{count}</span>
   </motion.div>
 );
+
+export default WarningTypeStatCard;

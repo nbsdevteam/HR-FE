@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
 import { arabicSource } from "@/i18n/source";
-import { WarningEscalationStep } from "./WarningEscalationStep";
+import WarningEscalationStep from "./WarningEscalationStep";
 
 type WarningEscalationPathProps = {
   warningTypes: string[];
 };
 
-export const WarningEscalationPath = ({ warningTypes }: WarningEscalationPathProps) => (
+const WarningEscalationPath = ({ warningTypes }: WarningEscalationPathProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -21,3 +21,5 @@ export const WarningEscalationPath = ({ warningTypes }: WarningEscalationPathPro
     </div>
   </motion.div>
 );
+
+export default WarningEscalationPath;

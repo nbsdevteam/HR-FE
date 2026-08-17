@@ -2,14 +2,14 @@ import { motion } from "motion/react";
 import { FileWarning } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { WarningStats } from "../utils/warningsStats";
-import { WarningTypeStatCard } from "./WarningTypeStatCard";
+import WarningTypeStatCard from "./WarningTypeStatCard";
 
 type WarningsStatsProps = {
   stats: WarningStats;
   typeColors: Record<string, string>;
 };
 
-export const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
+const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,3 +33,5 @@ export const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
     ))}
   </div>
 );
+
+export default WarningsStats;

@@ -14,7 +14,7 @@ type WarningDetailModalProps = {
   onDelete: () => void;
 };
 
-export const WarningDetailModal = ({
+const WarningDetailModal = ({
   warning,
   typeColors,
   statusColors,
@@ -135,3 +135,5 @@ export const WarningDetailModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default WarningDetailModal;

@@ -13,7 +13,7 @@ type WarningsFiltersBarProps = {
   warningStatuses: string[];
 };
 
-export const WarningsFiltersBar = ({
+const WarningsFiltersBar = ({
   searchQuery,
   onSearchQueryChange,
   filterType,
@@ -65,3 +65,5 @@ export const WarningsFiltersBar = ({
     </div>
   </motion.div>
 );
+
+export default WarningsFiltersBar;

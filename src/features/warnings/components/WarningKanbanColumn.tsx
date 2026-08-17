@@ -3,7 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
 import type { KanbanStatusCol, WarningWithEmployee } from "../types";
 import { arabicSource } from "@/i18n/source";
-import { WarningKanbanCard } from "./WarningKanbanCard";
+import WarningKanbanCard from "./WarningKanbanCard";
 
 type WarningKanbanColumnProps = {
   column: KanbanStatusCol;
@@ -14,7 +14,7 @@ type WarningKanbanColumnProps = {
   onSelectWarning: (warning: WarningWithEmployee) => void;
 };
 
-export const WarningKanbanColumn = ({ column, index, items, typeColors, typeSeverity, onSelectWarning }: WarningKanbanColumnProps) => (
+const WarningKanbanColumn = ({ column, index, items, typeColors, typeSeverity, onSelectWarning }: WarningKanbanColumnProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -46,3 +46,5 @@ export const WarningKanbanColumn = ({ column, index, items, typeColors, typeSeve
     </div>
   </motion.div>
 );
+
+export default WarningKanbanColumn;

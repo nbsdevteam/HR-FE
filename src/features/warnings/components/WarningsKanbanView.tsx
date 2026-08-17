@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import type { KanbanStatusCol, WarningWithEmployee } from "../types";
-import { WarningKanbanColumn } from "./WarningKanbanColumn";
+import WarningKanbanColumn from "./WarningKanbanColumn";
 
 type WarningsKanbanViewProps = {
   columns: KanbanStatusCol[];
@@ -10,7 +10,7 @@ type WarningsKanbanViewProps = {
   onSelectWarning: (warning: WarningWithEmployee) => void;
 };
 
-export const WarningsKanbanView = ({ columns, warnings, typeColors, typeSeverity, onSelectWarning }: WarningsKanbanViewProps) => (
+const WarningsKanbanView = ({ columns, warnings, typeColors, typeSeverity, onSelectWarning }: WarningsKanbanViewProps) => (
   <motion.div
     key="kanban"
     initial={{ opacity: 0, y: 10 }}
@@ -32,3 +32,5 @@ export const WarningsKanbanView = ({ columns, warnings, typeColors, typeSeverity
     ))}
   </motion.div>
 );
+
+export default WarningsKanbanView;

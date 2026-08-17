@@ -11,7 +11,7 @@ type WarningKanbanCardProps = {
   onSelect: () => void;
 };
 
-export const WarningKanbanCard = ({ warning, index, typeColors, typeSeverity, onSelect }: WarningKanbanCardProps) => (
+const WarningKanbanCard = ({ warning, index, typeColors, typeSeverity, onSelect }: WarningKanbanCardProps) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -48,3 +48,5 @@ export const WarningKanbanCard = ({ warning, index, typeColors, typeSeverity, on
     </div>
   </motion.div>
 );
+
+export default WarningKanbanCard;

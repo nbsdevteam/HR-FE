@@ -4,7 +4,7 @@ type WarningToastProps = {
   message: string;
 };
 
-export const WarningToast = ({ message }: WarningToastProps) => (
+const WarningToast = ({ message }: WarningToastProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -14,3 +14,5 @@ export const WarningToast = ({ message }: WarningToastProps) => (
     <p className="text-foreground text-sm">{message}</p>
   </motion.div>
 );
+
+export default WarningToast;

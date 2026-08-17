@@ -14,7 +14,7 @@ type WarningTableRowProps = {
   onSelect: () => void;
 };
 
-export const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverity, duplicateCount, onSelect }: WarningTableRowProps) => (
+const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverity, duplicateCount, onSelect }: WarningTableRowProps) => (
   <motion.tr
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -61,3 +61,5 @@ export const WarningTableRow = ({ warning, index, typeColors, statusColors, type
     </td>
   </motion.tr>
 );
+
+export default WarningTableRow;

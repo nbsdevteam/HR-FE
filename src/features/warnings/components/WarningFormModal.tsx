@@ -16,7 +16,7 @@ type WarningFormModalProps = {
   onClose: () => void;
 };
 
-export const WarningFormModal = ({
+const WarningFormModal = ({
   form,
   employees,
   warningTypes,
@@ -127,3 +127,5 @@ export const WarningFormModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default WarningFormModal;

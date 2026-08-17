@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-export const WarningsLoadingState = () => (
+const WarningsLoadingState = () => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -16,3 +16,5 @@ export const WarningsLoadingState = () => (
     </div>
   </motion.div>
 );
+
+export default WarningsLoadingState;

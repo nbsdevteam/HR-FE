@@ -10,7 +10,7 @@ type WarningsHeaderProps = {
   onNewWarning: () => void;
 };
 
-export const WarningsHeader = ({ viewMode, onViewModeChange, onNewWarning }: WarningsHeaderProps) => (
+const WarningsHeader = ({ viewMode, onViewModeChange, onNewWarning }: WarningsHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.alarms")}</h1>
@@ -30,3 +30,5 @@ export const WarningsHeader = ({ viewMode, onViewModeChange, onNewWarning }: War
     </div>
   </div>
 );
+
+export default WarningsHeader;
