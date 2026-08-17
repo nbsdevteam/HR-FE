@@ -8,7 +8,7 @@ type DepartmentColorChipProps = {
   onClick: () => void;
 };
 
-export const DepartmentColorChip = ({ department, currentColor, isOpen, isEdited, onClick }: DepartmentColorChipProps) => (
+const DepartmentColorChip = ({ department, currentColor, isOpen, isEdited, onClick }: DepartmentColorChipProps) => (
   <button
     type="button"
     onClick={onClick}
@@ -25,3 +25,5 @@ export const DepartmentColorChip = ({ department, currentColor, isOpen, isEdited
     )}
   </button>
 );
+
+export default DepartmentColorChip;

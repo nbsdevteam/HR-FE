@@ -4,14 +4,14 @@ import { arabicSource } from "@/i18n/source";
 import { useDocumentTypes } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useDocumentTypeManagement } from "../hooks/useDocumentTypeManagement";
-import { DocumentTypeList } from "./DocumentTypeList";
-import { NewDocTypeForm } from "./NewDocTypeForm";
+import DocumentTypeList from "./DocumentTypeList";
+import NewDocTypeForm from "./NewDocTypeForm";
 
 type DocumentTypesCardProps = {
   showToast: (message: string) => void;
 };
 
-export const DocumentTypesCard = ({ showToast }: DocumentTypesCardProps) => {
+const DocumentTypesCard = ({ showToast }: DocumentTypesCardProps) => {
   const { types: documentTypes, loading: documentTypesLoading, refetch: refetchDocumentTypes } = useDocumentTypes();
   const {
     showNewDocTypeForm, setShowNewDocTypeForm,
@@ -57,3 +57,5 @@ export const DocumentTypesCard = ({ showToast }: DocumentTypesCardProps) => {
     </motion.div>
   );
 };
+
+export default DocumentTypesCard;

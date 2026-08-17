@@ -7,7 +7,7 @@ type ShiftDayEditorRowProps = {
   onChange: (patch: Partial<ShiftDaySchedule>) => void;
 };
 
-export const ShiftDayEditorRow = ({ label, value, onChange }: ShiftDayEditorRowProps) => (
+const ShiftDayEditorRow = ({ label, value, onChange }: ShiftDayEditorRowProps) => (
   <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
     <input
       type="checkbox"
@@ -35,3 +35,5 @@ export const ShiftDayEditorRow = ({ label, value, onChange }: ShiftDayEditorRowP
     )}
   </div>
 );
+
+export default ShiftDayEditorRow;

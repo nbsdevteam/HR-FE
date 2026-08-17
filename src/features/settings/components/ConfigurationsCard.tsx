@@ -6,13 +6,13 @@ import { useConfigurations } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useConfigEdits } from "../hooks/useConfigEdits";
 import { groupByCategory } from "../utils/groupByCategory";
-import { ConfigCategoryGroup } from "./ConfigCategoryGroup";
+import ConfigCategoryGroup from "./ConfigCategoryGroup";
 
 type ConfigurationsCardProps = {
   showToast: (message: string) => void;
 };
 
-export const ConfigurationsCard = ({ showToast }: ConfigurationsCardProps) => {
+const ConfigurationsCard = ({ showToast }: ConfigurationsCardProps) => {
   const { configs, loading: configsLoading, refetch: refetchConfigs } = useConfigurations();
   const { configEdits, setConfigEdit, saveConfigValue } = useConfigEdits(refetchConfigs, showToast);
 
@@ -58,3 +58,5 @@ export const ConfigurationsCard = ({ showToast }: ConfigurationsCardProps) => {
     </motion.div>
   );
 };
+
+export default ConfigurationsCard;

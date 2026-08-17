@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbContractType } from "@/shared/hooks";
-import { ContractTypeListItem } from "./ContractTypeListItem";
+import ContractTypeListItem from "./ContractTypeListItem";
 
 type ContractTypeListProps = {
   contractTypes: DbContractType[];
@@ -9,7 +9,7 @@ type ContractTypeListProps = {
   onDelete: (contractTypeId: string) => void;
 };
 
-export const ContractTypeList = ({ contractTypes, loading, onToggleActive, onDelete }: ContractTypeListProps) => {
+const ContractTypeList = ({ contractTypes, loading, onToggleActive, onDelete }: ContractTypeListProps) => {
   if (loading) {
     return <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("common.loading")}</p>;
   }
@@ -26,3 +26,5 @@ export const ContractTypeList = ({ contractTypes, loading, onToggleActive, onDel
     </div>
   );
 };
+
+export default ContractTypeList;

@@ -1,21 +1,21 @@
 import { useHierarchyData } from "@/shared/hooks";
 import { useToast } from "../hooks/useToast";
-import { ConfigurationsCard } from "./ConfigurationsCard";
-import { ContractTypesCard } from "./ContractTypesCard";
-import { DepartmentColorsCard } from "./DepartmentColorsCard";
-import { DocumentTypesCard } from "./DocumentTypesCard";
-import { LeaveTypesCard } from "./LeaveTypesCard";
-import { NotificationsCard } from "./NotificationsCard";
-import { PersonalAccountCard } from "./PersonalAccountCard";
-import { PublicHolidaysCard } from "./PublicHolidaysCard";
-import { SecurityCard } from "./SecurityCard";
-import { SettingsPageHeader } from "./SettingsPageHeader";
-import { SettingsToast } from "./SettingsToast";
-import { ShiftsScheduleCard } from "./ShiftsScheduleCard";
-import { SystemDisplayCard } from "./SystemDisplayCard";
-import { SystemModulesCard } from "./SystemModulesCard";
+import ConfigurationsCard from "./ConfigurationsCard";
+import ContractTypesCard from "./ContractTypesCard";
+import DepartmentColorsCard from "./DepartmentColorsCard";
+import DocumentTypesCard from "./DocumentTypesCard";
+import LeaveTypesCard from "./LeaveTypesCard";
+import NotificationsCard from "./NotificationsCard";
+import PersonalAccountCard from "./PersonalAccountCard";
+import PublicHolidaysCard from "./PublicHolidaysCard";
+import SecurityCard from "./SecurityCard";
+import SettingsPageHeader from "./SettingsPageHeader";
+import SettingsToast from "./SettingsToast";
+import ShiftsScheduleCard from "./ShiftsScheduleCard";
+import SystemDisplayCard from "./SystemDisplayCard";
+import SystemModulesCard from "./SystemModulesCard";
 
-export const SettingsWorkspace = () => {
+const SettingsWorkspace = () => {
   const { toastMessage, showToast } = useToast();
   const { departments, loading: deptLoading } = useHierarchyData();
 
@@ -42,3 +42,5 @@ export const SettingsWorkspace = () => {
     </div>
   );
 };
+
+export default SettingsWorkspace;

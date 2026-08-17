@@ -3,9 +3,9 @@ import { User } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
 import { PERSONAL_ACCOUNT_ITEMS } from "../constants/settings";
-import { AccountInfoRow } from "./AccountInfoRow";
+import AccountInfoRow from "./AccountInfoRow";
 
-export const PersonalAccountCard = () => (
+const PersonalAccountCard = () => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -25,3 +25,5 @@ export const PersonalAccountCard = () => (
     </div>
   </motion.div>
 );
+
+export default PersonalAccountCard;

@@ -1,7 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbLeaveType } from "@/shared/hooks";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type LeaveTypeListItemProps = {
   leaveType: DbLeaveType;
@@ -9,7 +9,7 @@ type LeaveTypeListItemProps = {
   onDelete: () => void;
 };
 
-export const LeaveTypeListItem = ({ leaveType, onToggleActive, onDelete }: LeaveTypeListItemProps) => (
+const LeaveTypeListItem = ({ leaveType, onToggleActive, onDelete }: LeaveTypeListItemProps) => (
   <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
     <div className="flex items-center gap-3 flex-1 min-w-0">
       <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: leaveType.color }} />
@@ -42,3 +42,5 @@ export const LeaveTypeListItem = ({ leaveType, onToggleActive, onDelete }: Leave
     </div>
   </div>
 );
+
+export default LeaveTypeListItem;

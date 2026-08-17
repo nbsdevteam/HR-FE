@@ -1,7 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbContractType } from "@/shared/hooks";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type ContractTypeListItemProps = {
   contractType: DbContractType;
@@ -9,7 +9,7 @@ type ContractTypeListItemProps = {
   onDelete: () => void;
 };
 
-export const ContractTypeListItem = ({ contractType, onToggleActive, onDelete }: ContractTypeListItemProps) => (
+const ContractTypeListItem = ({ contractType, onToggleActive, onDelete }: ContractTypeListItemProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
     <div className="flex items-center gap-3">
       <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">{contractType.code}</span>
@@ -32,3 +32,5 @@ export const ContractTypeListItem = ({ contractType, onToggleActive, onDelete }:
     </div>
   </div>
 );
+
+export default ContractTypeListItem;

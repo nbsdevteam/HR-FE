@@ -9,7 +9,7 @@ type MonthFormatOptionProps = {
   onSelect: () => void;
 };
 
-export const MonthFormatOption = ({ label, example, isActive, onSelect }: MonthFormatOptionProps) => (
+const MonthFormatOption = ({ label, example, isActive, onSelect }: MonthFormatOptionProps) => (
   <button
     onClick={onSelect}
     className={`relative p-3 rounded-lg border-2 transition-all cursor-pointer text-start ${
@@ -29,3 +29,5 @@ export const MonthFormatOption = ({ label, example, isActive, onSelect }: MonthF
     </span>
   </button>
 );
+
+export default MonthFormatOption;

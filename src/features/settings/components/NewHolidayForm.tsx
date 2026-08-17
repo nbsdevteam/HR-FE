@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { NewHolidayForm as NewHolidayFormState } from "../types";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type NewHolidayFormProps = {
   form: NewHolidayFormState;
@@ -11,7 +11,7 @@ type NewHolidayFormProps = {
   onCancel: () => void;
 };
 
-export const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFormProps) => (
+const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFormProps) => (
   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-muted/20 rounded-lg border border-border/20 space-y-4">
     <h4 className="text-foreground">{arabicSource("settings.new_holiday")}</h4>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -67,3 +67,5 @@ export const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHol
     </div>
   </motion.div>
 );
+
+export default NewHolidayForm;

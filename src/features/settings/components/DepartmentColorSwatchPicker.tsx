@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { DEPT_COLOR_PALETTE } from "../constants/settings";
-import { DepartmentColorSwatch } from "./DepartmentColorSwatch";
+import DepartmentColorSwatch from "./DepartmentColorSwatch";
 
 type DepartmentColorSwatchPickerProps = {
   activeColor: string;
@@ -12,7 +12,7 @@ type DepartmentColorSwatchPickerProps = {
   onClose: () => void;
 };
 
-export const DepartmentColorSwatchPicker = ({
+const DepartmentColorSwatchPicker = ({
   activeColor,
   activeDeptName,
   usedDeptColors,
@@ -54,3 +54,5 @@ export const DepartmentColorSwatchPicker = ({
     </div>
   </div>
 );
+
+export default DepartmentColorSwatchPicker;

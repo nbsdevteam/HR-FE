@@ -7,7 +7,7 @@ type DepartmentColorSwatchProps = {
   onClick: () => void;
 };
 
-export const DepartmentColorSwatch = ({ color, isUsed, isSelected, onClick }: DepartmentColorSwatchProps) => (
+const DepartmentColorSwatch = ({ color, isUsed, isSelected, onClick }: DepartmentColorSwatchProps) => (
   <button
     type="button"
     onClick={onClick}
@@ -21,3 +21,5 @@ export const DepartmentColorSwatch = ({ color, isUsed, isSelected, onClick }: De
     title={isUsed ? arabicSource("settings.is_already_in_use") : isSelected ? arabicSource("settings.current_color") : ""}
   />
 );
+
+export default DepartmentColorSwatch;

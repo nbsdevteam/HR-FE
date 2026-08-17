@@ -1,7 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDocumentType } from "@/shared/hooks";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type DocumentTypeListItemProps = {
   documentType: DbDocumentType;
@@ -9,7 +9,7 @@ type DocumentTypeListItemProps = {
   onDelete: () => void;
 };
 
-export const DocumentTypeListItem = ({ documentType, onToggleActive, onDelete }: DocumentTypeListItemProps) => (
+const DocumentTypeListItem = ({ documentType, onToggleActive, onDelete }: DocumentTypeListItemProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
     <div className="flex items-center gap-3">
       <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">{documentType.code}</span>
@@ -32,3 +32,5 @@ export const DocumentTypeListItem = ({ documentType, onToggleActive, onDelete }:
     </div>
   </div>
 );
+
+export default DocumentTypeListItem;

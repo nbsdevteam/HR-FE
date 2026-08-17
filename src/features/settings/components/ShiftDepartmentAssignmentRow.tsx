@@ -8,7 +8,7 @@ type ShiftDepartmentAssignmentRowProps = {
   onChange: (shiftId: string) => void;
 };
 
-export const ShiftDepartmentAssignmentRow = ({ department, shifts, value, onChange }: ShiftDepartmentAssignmentRowProps) => (
+const ShiftDepartmentAssignmentRow = ({ department, shifts, value, onChange }: ShiftDepartmentAssignmentRowProps) => (
   <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: department.color }} />
     <span className="text-foreground flex-1">{department.name}</span>
@@ -26,3 +26,5 @@ export const ShiftDepartmentAssignmentRow = ({ department, shifts, value, onChan
     </select>
   </div>
 );
+
+export default ShiftDepartmentAssignmentRow;

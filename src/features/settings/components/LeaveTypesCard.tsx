@@ -4,14 +4,14 @@ import { arabicSource } from "@/i18n/source";
 import { useLeaveTypes } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useLeaveTypeManagement } from "../hooks/useLeaveTypeManagement";
-import { LeaveTypeList } from "./LeaveTypeList";
-import { NewLeaveTypeForm } from "./NewLeaveTypeForm";
+import LeaveTypeList from "./LeaveTypeList";
+import NewLeaveTypeForm from "./NewLeaveTypeForm";
 
 type LeaveTypesCardProps = {
   showToast: (message: string) => void;
 };
 
-export const LeaveTypesCard = ({ showToast }: LeaveTypesCardProps) => {
+const LeaveTypesCard = ({ showToast }: LeaveTypesCardProps) => {
   const { types: leaveTypes, loading: leaveTypesLoading, refetch: refetchLeaveTypes } = useLeaveTypes();
   const {
     showNewLeaveTypeForm, setShowNewLeaveTypeForm,
@@ -63,3 +63,5 @@ export const LeaveTypesCard = ({ showToast }: LeaveTypesCardProps) => {
     </motion.div>
   );
 };
+
+export default LeaveTypesCard;

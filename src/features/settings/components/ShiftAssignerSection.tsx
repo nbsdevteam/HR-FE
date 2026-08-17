@@ -3,7 +3,7 @@ import { ChevronDown, Users } from "lucide-react";
 import ShiftAssigner from "@/features/attendance/components/ShiftAssigner";
 import { arabicSource } from "@/i18n/source";
 
-export const ShiftAssignerSection = () => {
+const ShiftAssignerSection = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -27,3 +27,5 @@ export const ShiftAssignerSection = () => {
     </div>
   );
 };
+
+export default ShiftAssignerSection;

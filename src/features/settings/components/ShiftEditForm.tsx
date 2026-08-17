@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
-import { ShiftFormFields } from "./ShiftFormFields";
+import ShiftFormFields from "./ShiftFormFields";
 
 type ShiftEditFormProps = {
   form: ShiftEditState;
@@ -12,7 +12,7 @@ type ShiftEditFormProps = {
   onCancel: () => void;
 };
 
-export const ShiftEditForm = ({ form, onFieldChange, onDayChange, onSave, onCancel }: ShiftEditFormProps) => (
+const ShiftEditForm = ({ form, onFieldChange, onDayChange, onSave, onCancel }: ShiftEditFormProps) => (
   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-t border-border/20 p-4 bg-muted/5 space-y-4">
     <ShiftFormFields form={form} onFieldChange={onFieldChange} onDayChange={onDayChange} />
 
@@ -34,3 +34,5 @@ export const ShiftEditForm = ({ form, onFieldChange, onDayChange, onSave, onCanc
     </div>
   </motion.div>
 );
+
+export default ShiftEditForm;

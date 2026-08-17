@@ -4,7 +4,7 @@ type SettingsToastProps = {
   message: string;
 };
 
-export const SettingsToast = ({ message }: SettingsToastProps) => (
+const SettingsToast = ({ message }: SettingsToastProps) => (
   <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -14,3 +14,5 @@ export const SettingsToast = ({ message }: SettingsToastProps) => (
     {message}
   </motion.div>
 );
+
+export default SettingsToast;

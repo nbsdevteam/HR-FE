@@ -3,9 +3,9 @@ import { motion } from "motion/react";
 import { Shield } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
-export const SecurityCard = () => {
+const SecurityCard = () => {
   const [twoFactor, setTwoFactor] = useState(false);
 
   return (
@@ -54,3 +54,5 @@ export const SecurityCard = () => {
     </motion.div>
   );
 };
+
+export default SecurityCard;

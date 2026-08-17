@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbDocumentType } from "@/shared/hooks";
-import { DocumentTypeListItem } from "./DocumentTypeListItem";
+import DocumentTypeListItem from "./DocumentTypeListItem";
 
 type DocumentTypeListProps = {
   documentTypes: DbDocumentType[];
@@ -9,7 +9,7 @@ type DocumentTypeListProps = {
   onDelete: (documentTypeId: string) => void;
 };
 
-export const DocumentTypeList = ({ documentTypes, loading, onToggleActive, onDelete }: DocumentTypeListProps) => {
+const DocumentTypeList = ({ documentTypes, loading, onToggleActive, onDelete }: DocumentTypeListProps) => {
   if (loading) {
     return <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("common.loading")}</p>;
   }
@@ -26,3 +26,5 @@ export const DocumentTypeList = ({ documentTypes, loading, onToggleActive, onDel
     </div>
   );
 };
+
+export default DocumentTypeList;

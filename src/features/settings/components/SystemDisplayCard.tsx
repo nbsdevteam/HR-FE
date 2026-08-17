@@ -4,9 +4,9 @@ import { useAppSettings } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
 import { MONTH_FORMATS } from "../constants/settings";
-import { MonthFormatOption } from "./MonthFormatOption";
+import MonthFormatOption from "./MonthFormatOption";
 
-export const SystemDisplayCard = () => {
+const SystemDisplayCard = () => {
   const { settings, updateSettings } = useAppSettings();
 
   return (
@@ -64,3 +64,5 @@ export const SystemDisplayCard = () => {
     </motion.div>
   );
 };
+
+export default SystemDisplayCard;

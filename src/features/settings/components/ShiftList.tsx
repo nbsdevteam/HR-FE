@@ -1,7 +1,7 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbShift } from "@/shared/hooks";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
-import { ShiftListItem } from "./ShiftListItem";
+import ShiftListItem from "./ShiftListItem";
 
 type ShiftListProps = {
   shifts: DbShift[];
@@ -18,7 +18,7 @@ type ShiftListProps = {
   onEditDayChange: (dayKey: string, patch: Partial<ShiftDaySchedule>) => void;
 };
 
-export const ShiftList = ({
+const ShiftList = ({
   shifts,
   loading,
   expandedShift,
@@ -59,3 +59,5 @@ export const ShiftList = ({
     </>
   );
 };
+
+export default ShiftList;

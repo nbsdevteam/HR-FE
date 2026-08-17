@@ -7,7 +7,7 @@ type NewDocTypeFormProps = {
   onSave: () => void;
 };
 
-export const NewDocTypeForm = ({ form, onFieldChange, onSave }: NewDocTypeFormProps) => (
+const NewDocTypeForm = ({ form, onFieldChange, onSave }: NewDocTypeFormProps) => (
   <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
     <div className="grid grid-cols-2 gap-3">
       <input
@@ -66,3 +66,5 @@ export const NewDocTypeForm = ({ form, onFieldChange, onSave }: NewDocTypeFormPr
     </button>
   </div>
 );
+
+export default NewDocTypeForm;

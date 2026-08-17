@@ -4,14 +4,14 @@ import { arabicSource } from "@/i18n/source";
 import { useContractTypes } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
-import { ContractTypeList } from "./ContractTypeList";
-import { NewContractTypeForm } from "./NewContractTypeForm";
+import ContractTypeList from "./ContractTypeList";
+import NewContractTypeForm from "./NewContractTypeForm";
 
 type ContractTypesCardProps = {
   showToast: (message: string) => void;
 };
 
-export const ContractTypesCard = ({ showToast }: ContractTypesCardProps) => {
+const ContractTypesCard = ({ showToast }: ContractTypesCardProps) => {
   const { types: contractTypes, loading: contractTypesLoading, refetch: refetchContractTypes } = useContractTypes();
   const {
     showNewContractTypeForm, setShowNewContractTypeForm,
@@ -57,3 +57,5 @@ export const ContractTypesCard = ({ showToast }: ContractTypesCardProps) => {
     </motion.div>
   );
 };
+
+export default ContractTypesCard;

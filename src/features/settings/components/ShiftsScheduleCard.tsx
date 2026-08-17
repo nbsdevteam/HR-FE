@@ -5,10 +5,10 @@ import { useShifts, type DbDepartment } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useDepartmentShiftAssignments } from "../hooks/useDepartmentShiftAssignments";
 import { useShiftManagement } from "../hooks/useShiftManagement";
-import { NewShiftForm } from "./NewShiftForm";
-import { ShiftAssignerSection } from "./ShiftAssignerSection";
-import { ShiftDepartmentAssignments } from "./ShiftDepartmentAssignments";
-import { ShiftList } from "./ShiftList";
+import NewShiftForm from "./NewShiftForm";
+import ShiftAssignerSection from "./ShiftAssignerSection";
+import ShiftDepartmentAssignments from "./ShiftDepartmentAssignments";
+import ShiftList from "./ShiftList";
 
 type ShiftsScheduleCardProps = {
   departments: DbDepartment[];
@@ -16,7 +16,7 @@ type ShiftsScheduleCardProps = {
   showToast: (message: string) => void;
 };
 
-export const ShiftsScheduleCard = ({ departments, deptLoading, showToast }: ShiftsScheduleCardProps) => {
+const ShiftsScheduleCard = ({ departments, deptLoading, showToast }: ShiftsScheduleCardProps) => {
   const { shifts, loading: shiftsLoading, refetch: refetchShifts } = useShifts();
   const {
     expandedShift, toggleExpandedShift,
@@ -95,3 +95,5 @@ export const ShiftsScheduleCard = ({ departments, deptLoading, showToast }: Shif
     </motion.div>
   );
 };
+
+export default ShiftsScheduleCard;

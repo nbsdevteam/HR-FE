@@ -1,13 +1,13 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbShift } from "@/shared/hooks";
 import { DAYS_OF_WEEK } from "../constants/settings";
-import { ShiftScheduleTableRow } from "./ShiftScheduleTableRow";
+import ShiftScheduleTableRow from "./ShiftScheduleTableRow";
 
 type ShiftScheduleTableProps = {
   shift: DbShift;
 };
 
-export const ShiftScheduleTable = ({ shift }: ShiftScheduleTableProps) => (
+const ShiftScheduleTable = ({ shift }: ShiftScheduleTableProps) => (
   <div className="overflow-x-auto">
     <table className="w-full" style={{ fontSize: 12 }}>
       <thead>
@@ -31,3 +31,5 @@ export const ShiftScheduleTable = ({ shift }: ShiftScheduleTableProps) => (
     </table>
   </div>
 );
+
+export default ShiftScheduleTable;

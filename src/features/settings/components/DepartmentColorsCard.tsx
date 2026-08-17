@@ -4,8 +4,8 @@ import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useDepartmentColors } from "../hooks/useDepartmentColors";
-import { DepartmentColorChip } from "./DepartmentColorChip";
-import { DepartmentColorSwatchPicker } from "./DepartmentColorSwatchPicker";
+import DepartmentColorChip from "./DepartmentColorChip";
+import DepartmentColorSwatchPicker from "./DepartmentColorSwatchPicker";
 
 type DepartmentColorsCardProps = {
   departments: DbDepartment[];
@@ -13,7 +13,7 @@ type DepartmentColorsCardProps = {
   showToast: (message: string) => void;
 };
 
-export const DepartmentColorsCard = ({ departments, deptLoading, showToast }: DepartmentColorsCardProps) => {
+const DepartmentColorsCard = ({ departments, deptLoading, showToast }: DepartmentColorsCardProps) => {
   const {
     deptColorEdits, savingDeptColors, openColorPicker,
     usedDeptColors, getDeptColor, setDeptColor, toggleColorPicker, closeColorPicker, saveDeptColors,
@@ -84,3 +84,5 @@ export const DepartmentColorsCard = ({ departments, deptLoading, showToast }: De
     </motion.div>
   );
 };
+
+export default DepartmentColorsCard;

@@ -1,12 +1,12 @@
 import type { DbSystemModule } from "@/shared/hooks";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type ModuleToggleRowProps = {
   module: DbSystemModule;
   onToggle: () => void;
 };
 
-export const ModuleToggleRow = ({ module, onToggle }: ModuleToggleRowProps) => (
+const ModuleToggleRow = ({ module, onToggle }: ModuleToggleRowProps) => (
   <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
     <div className="flex-1">
       <p className="text-foreground text-sm">{module.name_ar}</p>
@@ -17,3 +17,5 @@ export const ModuleToggleRow = ({ module, onToggle }: ModuleToggleRowProps) => (
     <SettingsToggle on={module.is_enabled} onClick={onToggle} />
   </div>
 );
+
+export default ModuleToggleRow;

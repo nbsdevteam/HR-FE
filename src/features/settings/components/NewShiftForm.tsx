@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
-import { ShiftFormFields } from "./ShiftFormFields";
+import ShiftFormFields from "./ShiftFormFields";
 
 type NewShiftFormProps = {
   form: ShiftEditState;
@@ -12,7 +12,7 @@ type NewShiftFormProps = {
   onCancel: () => void;
 };
 
-export const NewShiftForm = ({ form, onFieldChange, onDayChange, onSave, onCancel }: NewShiftFormProps) => (
+const NewShiftForm = ({ form, onFieldChange, onDayChange, onSave, onCancel }: NewShiftFormProps) => (
   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-muted/20 rounded-lg border border-border/20">
     <h4 className="text-foreground mb-4">{arabicSource("settings.new_shift")}</h4>
     <div className="space-y-4">
@@ -37,3 +37,5 @@ export const NewShiftForm = ({ form, onFieldChange, onDayChange, onSave, onCance
     </div>
   </motion.div>
 );
+
+export default NewShiftForm;

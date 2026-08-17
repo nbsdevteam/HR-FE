@@ -10,7 +10,7 @@ type NewLeaveTypeFormProps = {
   onCancel: () => void;
 };
 
-export const NewLeaveTypeForm = ({ form, onFieldChange, onSave, onCancel }: NewLeaveTypeFormProps) => (
+const NewLeaveTypeForm = ({ form, onFieldChange, onSave, onCancel }: NewLeaveTypeFormProps) => (
   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-4 p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-3">
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <input value={form.name_ar} onChange={e => onFieldChange({ name_ar: e.target.value })} placeholder={arabicSource("settings.name_in_arabic")} className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none" />
@@ -52,3 +52,5 @@ export const NewLeaveTypeForm = ({ form, onFieldChange, onSave, onCancel }: NewL
     </div>
   </motion.div>
 );
+
+export default NewLeaveTypeForm;

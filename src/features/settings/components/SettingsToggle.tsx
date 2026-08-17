@@ -3,7 +3,7 @@ type SettingsToggleProps = {
   onClick: () => void;
 };
 
-export const SettingsToggle = ({ on, onClick }: SettingsToggleProps) => (
+const SettingsToggle = ({ on, onClick }: SettingsToggleProps) => (
   <div
     onClick={onClick}
     className={`w-11 h-6 rounded-full cursor-pointer transition-colors relative ${
@@ -17,3 +17,5 @@ export const SettingsToggle = ({ on, onClick }: SettingsToggleProps) => (
     />
   </div>
 );
+
+export default SettingsToggle;

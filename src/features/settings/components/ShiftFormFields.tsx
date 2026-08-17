@@ -1,7 +1,7 @@
 import { arabicSource } from "@/i18n/source";
 import { DAYS_OF_WEEK } from "../constants/settings";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
-import { ShiftDayEditorRow } from "./ShiftDayEditorRow";
+import ShiftDayEditorRow from "./ShiftDayEditorRow";
 
 type ShiftFormFieldsProps = {
   form: ShiftEditState;
@@ -9,7 +9,7 @@ type ShiftFormFieldsProps = {
   onDayChange: (dayKey: string, patch: Partial<ShiftDaySchedule>) => void;
 };
 
-export const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsProps) => (
+const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsProps) => (
   <>
     <div>
       <label className="block text-foreground text-sm mb-2">{arabicSource("common.name")}</label>
@@ -80,3 +80,5 @@ export const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormF
     </div>
   </>
 );
+
+export default ShiftFormFields;

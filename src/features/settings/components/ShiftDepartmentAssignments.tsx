@@ -1,7 +1,7 @@
 import { Building2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment, DbShift } from "@/shared/hooks";
-import { ShiftDepartmentAssignmentRow } from "./ShiftDepartmentAssignmentRow";
+import ShiftDepartmentAssignmentRow from "./ShiftDepartmentAssignmentRow";
 
 type ShiftDepartmentAssignmentsProps = {
   departments: DbDepartment[];
@@ -13,7 +13,7 @@ type ShiftDepartmentAssignmentsProps = {
   onSave: () => void;
 };
 
-export const ShiftDepartmentAssignments = ({
+const ShiftDepartmentAssignments = ({
   departments,
   deptLoading,
   shifts,
@@ -53,3 +53,5 @@ export const ShiftDepartmentAssignments = ({
     </button>
   </div>
 );
+
+export default ShiftDepartmentAssignments;

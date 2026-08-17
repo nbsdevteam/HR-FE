@@ -7,7 +7,7 @@ type NewContractTypeFormProps = {
   onSave: () => void;
 };
 
-export const NewContractTypeForm = ({ form, onFieldChange, onSave }: NewContractTypeFormProps) => (
+const NewContractTypeForm = ({ form, onFieldChange, onSave }: NewContractTypeFormProps) => (
   <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
     <div className="grid grid-cols-2 gap-3">
       <input
@@ -79,3 +79,5 @@ export const NewContractTypeForm = ({ form, onFieldChange, onSave }: NewContract
     </button>
   </div>
 );
+
+export default NewContractTypeForm;

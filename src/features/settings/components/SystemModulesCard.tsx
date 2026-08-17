@@ -6,13 +6,13 @@ import { useSystemModules } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useSystemModuleToggle } from "../hooks/useSystemModuleToggle";
 import { groupByCategory } from "../utils/groupByCategory";
-import { ModuleCategoryGroup } from "./ModuleCategoryGroup";
+import ModuleCategoryGroup from "./ModuleCategoryGroup";
 
 type SystemModulesCardProps = {
   showToast: (message: string) => void;
 };
 
-export const SystemModulesCard = ({ showToast }: SystemModulesCardProps) => {
+const SystemModulesCard = ({ showToast }: SystemModulesCardProps) => {
   const { modules: sysModules, loading: modulesLoading, refetch: refetchModules } = useSystemModules();
   const { toggleModule } = useSystemModuleToggle(refetchModules, showToast);
 
@@ -51,3 +51,5 @@ export const SystemModulesCard = ({ showToast }: SystemModulesCardProps) => {
     </motion.div>
   );
 };
+
+export default SystemModulesCard;

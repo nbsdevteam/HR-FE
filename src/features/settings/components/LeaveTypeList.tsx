@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbLeaveType } from "@/shared/hooks";
-import { LeaveTypeListItem } from "./LeaveTypeListItem";
+import LeaveTypeListItem from "./LeaveTypeListItem";
 
 type LeaveTypeListProps = {
   leaveTypes: DbLeaveType[];
@@ -9,7 +9,7 @@ type LeaveTypeListProps = {
   onDelete: (leaveTypeId: string) => void;
 };
 
-export const LeaveTypeList = ({ leaveTypes, loading, onToggleActive, onDelete }: LeaveTypeListProps) => {
+const LeaveTypeList = ({ leaveTypes, loading, onToggleActive, onDelete }: LeaveTypeListProps) => {
   if (loading) {
     return <div className="text-muted-foreground text-center py-6 text-sm">{arabicSource("common.loading")}</div>;
   }
@@ -29,3 +29,5 @@ export const LeaveTypeList = ({ leaveTypes, loading, onToggleActive, onDelete }:
     </div>
   );
 };
+
+export default LeaveTypeList;

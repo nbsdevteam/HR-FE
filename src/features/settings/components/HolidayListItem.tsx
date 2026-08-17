@@ -8,7 +8,7 @@ type HolidayListItemProps = {
   onDelete: () => void;
 };
 
-export const HolidayListItem = ({ holiday, onDelete }: HolidayListItemProps) => (
+const HolidayListItem = ({ holiday, onDelete }: HolidayListItemProps) => (
   <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
     <div className="flex-1">
       <p className="text-foreground text-sm">{holiday.name_ar}</p>
@@ -26,3 +26,5 @@ export const HolidayListItem = ({ holiday, onDelete }: HolidayListItemProps) => 
     </button>
   </div>
 );
+
+export default HolidayListItem;

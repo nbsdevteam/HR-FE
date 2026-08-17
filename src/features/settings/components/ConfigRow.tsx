@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbConfiguration } from "@/shared/hooks";
-import { SettingsToggle } from "./SettingsToggle";
+import SettingsToggle from "./SettingsToggle";
 
 type ConfigRowProps = {
   config: DbConfiguration;
@@ -10,7 +10,7 @@ type ConfigRowProps = {
   onSave: (value: any) => void;
 };
 
-export const ConfigRow = ({ config, currentValue, hasChanged, onEdit, onSave }: ConfigRowProps) => (
+const ConfigRow = ({ config, currentValue, hasChanged, onEdit, onSave }: ConfigRowProps) => (
   <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
     <div className="flex-1">
       <p className="text-foreground text-sm">{config.label_ar}</p>
@@ -89,3 +89,5 @@ export const ConfigRow = ({ config, currentValue, hasChanged, onEdit, onSave }: 
     </div>
   </div>
 );
+
+export default ConfigRow;

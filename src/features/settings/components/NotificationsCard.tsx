@@ -4,9 +4,9 @@ import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
 import { NOTIFICATION_ITEMS } from "../constants/settings";
 import { useNotificationToggles } from "../hooks/useNotificationToggles";
-import { NotificationToggleRow } from "./NotificationToggleRow";
+import NotificationToggleRow from "./NotificationToggleRow";
 
-export const NotificationsCard = () => {
+const NotificationsCard = () => {
   const { notifToggles, toggleNotif } = useNotificationToggles();
 
   return (
@@ -35,3 +35,5 @@ export const NotificationsCard = () => {
     </motion.div>
   );
 };
+
+export default NotificationsCard;

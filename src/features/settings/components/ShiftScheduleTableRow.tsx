@@ -7,7 +7,7 @@ type ShiftScheduleTableRowProps = {
   end: string;
 };
 
-export const ShiftScheduleTableRow = ({ label, isWorking, start, end }: ShiftScheduleTableRowProps) => (
+const ShiftScheduleTableRow = ({ label, isWorking, start, end }: ShiftScheduleTableRowProps) => (
   <tr className="border-b border-border/10">
     <td className="py-2 text-foreground">{label}</td>
     <td className="py-2">
@@ -18,3 +18,5 @@ export const ShiftScheduleTableRow = ({ label, isWorking, start, end }: ShiftSch
     <td className="py-2 text-muted-foreground">{isWorking ? `${start} - ${end}` : "—"}</td>
   </tr>
 );
+
+export default ShiftScheduleTableRow;

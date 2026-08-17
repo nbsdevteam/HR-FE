@@ -5,14 +5,14 @@ import { usePublicHolidays } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { HOLIDAY_YEAR_OPTIONS } from "../constants/settings";
 import { usePublicHolidayManagement } from "../hooks/usePublicHolidayManagement";
-import { HolidayList } from "./HolidayList";
-import { NewHolidayForm } from "./NewHolidayForm";
+import HolidayList from "./HolidayList";
+import NewHolidayForm from "./NewHolidayForm";
 
 type PublicHolidaysCardProps = {
   showToast: (message: string) => void;
 };
 
-export const PublicHolidaysCard = ({ showToast }: PublicHolidaysCardProps) => {
+const PublicHolidaysCard = ({ showToast }: PublicHolidaysCardProps) => {
   const { holidays, loading: holidaysLoading, refetch: refetchHolidays } = usePublicHolidays();
   const {
     holidayYear, setHolidayYear,
@@ -83,3 +83,5 @@ export const PublicHolidaysCard = ({ showToast }: PublicHolidaysCardProps) => {
     </motion.div>
   );
 };
+
+export default PublicHolidaysCard;
