@@ -3,9 +3,9 @@ import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Timer, T
 import { formatTime, formatWorkHours, mapAttendanceStatus, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { cardCls, statusColors } from "@/features/attendance/styles";
-import { AttendanceSummaryCard } from "./AttendanceSummaryCard";
+import AttendanceSummaryCard from "./AttendanceSummaryCard";
 
-export function MonthlySummaryView({
+const MonthlySummaryView = ({
   stats,
   monthLabel,
   records,
@@ -19,7 +19,7 @@ export function MonthlySummaryView({
   calMonth: string;
   onPrev: () => void;
   onNext: () => void;
-}) {
+}) => {
   // Per-day breakdown table
   const sortedRecords = useMemo(() =>
     [...records].sort((a, b) => a.date.localeCompare(b.date)),
@@ -115,4 +115,6 @@ export function MonthlySummaryView({
       </div>
     </div>
   );
-}
+};
+
+export default MonthlySummaryView;

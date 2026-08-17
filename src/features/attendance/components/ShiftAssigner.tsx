@@ -7,12 +7,12 @@ import {
   type DbEmployee,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { DragEmpCard } from "./DragEmpCard";
-import { ShiftDropZone } from "./ShiftDropZone";
+import DragEmpCard from "./DragEmpCard";
+import ShiftDropZone from "./ShiftDropZone";
 
 // ── Draggable Employee Card ──
 
-export function ShiftAssigner() {
+const ShiftAssigner = () => {
   const { employees, refetch: refetchEmployees } = useEmployees();
   const { shifts, loading: shiftsLoading } = useShifts();
   const { assignments, loading: assignLoading, refetch: refetchAssignments } = useEmployeeShiftAssignments();
@@ -170,4 +170,6 @@ export function ShiftAssigner() {
       </AnimatePresence>
     </div>
   );
-}
+};
+
+export default ShiftAssigner;

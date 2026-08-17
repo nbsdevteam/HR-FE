@@ -1,13 +1,13 @@
 import type { DeviceManagementTab } from "../types";
 import { getDeviceManagementTabs } from "../utils/deviceManagement";
-import { DeviceManagementTabButton } from "./DeviceManagementTabButton";
+import DeviceManagementTabButton from "./DeviceManagementTabButton";
 
 type DeviceManagementTabsProps = {
   activeTab: DeviceManagementTab;
   onTabChange: (tab: DeviceManagementTab) => void;
 };
 
-export const DeviceManagementTabs = ({ activeTab, onTabChange }: DeviceManagementTabsProps) => (
+const DeviceManagementTabs = ({ activeTab, onTabChange }: DeviceManagementTabsProps) => (
   <div className="flex gap-1 p-1 bg-card/30 backdrop-blur-md rounded-xl border border-border/20 w-fit">
     {getDeviceManagementTabs().map((tab) => (
       <DeviceManagementTabButton
@@ -21,3 +21,5 @@ export const DeviceManagementTabs = ({ activeTab, onTabChange }: DeviceManagemen
     ))}
   </div>
 );
+
+export default DeviceManagementTabs;

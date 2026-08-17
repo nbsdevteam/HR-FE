@@ -9,7 +9,7 @@ type DeviceEventsTableProps = {
   loading: boolean;
 };
 
-export const DeviceEventsTable = ({ events, loading }: DeviceEventsTableProps) => (
+const DeviceEventsTable = ({ events, loading }: DeviceEventsTableProps) => (
   <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 overflow-hidden">
     <div className="max-h-[500px] overflow-y-auto">
       <table className="w-full">
@@ -61,3 +61,5 @@ export const DeviceEventsTable = ({ events, loading }: DeviceEventsTableProps) =
     </div>
   </div>
 );
+
+export default DeviceEventsTable;

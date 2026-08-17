@@ -9,7 +9,7 @@ type CalendarStatChipProps = {
   index: number;
 };
 
-export function CalendarStatChip({ label, value, icon: Icon, color, index }: CalendarStatChipProps) {
+const CalendarStatChip = ({ label, value, icon: Icon, color, index }: CalendarStatChipProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -22,4 +22,6 @@ export function CalendarStatChip({ label, value, icon: Icon, color, index }: Cal
       <div className="text-muted-foreground" style={{ fontSize: 10 }}>{label}</div>
     </motion.div>
   );
-}
+};
+
+export default CalendarStatChip;

@@ -1,7 +1,7 @@
 import { HardDrive, RefreshCw } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceInfo } from "../types";
-import { DeviceStatusBadge } from "./DeviceStatusBadge";
+import DeviceStatusBadge from "./DeviceStatusBadge";
 
 type DeviceInfoCardProps = {
   info: DeviceInfo | null;
@@ -11,7 +11,7 @@ type DeviceInfoCardProps = {
   onRefresh: () => void;
 };
 
-export const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: DeviceInfoCardProps) => (
+const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: DeviceInfoCardProps) => (
   <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-6">
     <div className="flex items-center justify-between mb-4">
       <h3 className="text-foreground flex items-center gap-2">
@@ -49,3 +49,5 @@ export const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: Dev
     )}
   </div>
 );
+
+export default DeviceInfoCard;

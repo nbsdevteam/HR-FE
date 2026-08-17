@@ -11,7 +11,7 @@ type AttendanceKanbanCardProps = {
   onSelectEmployee: (employeeId: string) => void;
 };
 
-export function AttendanceKanbanCard({ record, index, onSelectEmployee }: AttendanceKanbanCardProps) {
+const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKanbanCardProps) => {
   return (
     <motion.div
       key={record.id}
@@ -57,3 +57,5 @@ export function AttendanceKanbanCard({ record, index, onSelectEmployee }: Attend
     </motion.div>
   );
 }
+
+export default AttendanceKanbanCard;

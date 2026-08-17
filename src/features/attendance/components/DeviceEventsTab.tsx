@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import type { DeviceEvent } from "../types";
-import { DeviceEventsFilters } from "./DeviceEventsFilters";
-import { DeviceEventsTable } from "./DeviceEventsTable";
+import DeviceEventsFilters from "./DeviceEventsFilters";
+import DeviceEventsTable from "./DeviceEventsTable";
 
-export const DeviceEventsTab = () => {
+const DeviceEventsTab = () => {
   const [events, setEvents] = useState<DeviceEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,3 +119,5 @@ export const DeviceEventsTab = () => {
     </div>
   );
 };
+
+export default DeviceEventsTab;

@@ -12,7 +12,7 @@ type AttendanceSummaryCardProps = {
   animated?: boolean;
 };
 
-export function AttendanceSummaryCard({
+const AttendanceSummaryCard = ({
   label,
   value,
   icon: Icon,
@@ -20,7 +20,7 @@ export function AttendanceSummaryCard({
   index = 0,
   compact = false,
   animated = false,
-}: AttendanceSummaryCardProps) {
+}: AttendanceSummaryCardProps) => {
   const content = (
     <>
       {Icon && <Icon className={`${compact ? "w-4 h-4" : "w-5 h-5"} mx-auto mb-1 ${color}`} />}
@@ -44,4 +44,6 @@ export function AttendanceSummaryCard({
       {content}
     </motion.div>
   );
-}
+};
+
+export default AttendanceSummaryCard;

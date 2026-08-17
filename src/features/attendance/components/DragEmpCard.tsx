@@ -7,7 +7,7 @@ type DragEmpCardProps = {
   color: string;
 };
 
-export function DragEmpCard({ emp, color }: DragEmpCardProps) {
+const DragEmpCard = ({ emp, color }: DragEmpCardProps) => {
   const [dragging, setDragging] = useState(false);
   const name = empDisplayName(emp);
 
@@ -38,4 +38,6 @@ export function DragEmpCard({ emp, color }: DragEmpCardProps) {
       </div>
     </div>
   );
-}
+};
+
+export default DragEmpCard;

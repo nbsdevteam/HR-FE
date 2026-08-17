@@ -9,7 +9,7 @@ type DeviceFaceModalProps = {
   onDelete: (employeeNumber: string) => void;
 };
 
-export const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => (
+const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -54,3 +54,5 @@ export const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProp
     </motion.div>
   </motion.div>
 );
+
+export default DeviceFaceModal;

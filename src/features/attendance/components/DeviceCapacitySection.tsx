@@ -1,9 +1,9 @@
 import { Activity, CreditCard, Fingerprint, ScanFace, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceCapacity } from "../types";
-import { DeviceCapacityBar } from "./DeviceCapacityBar";
+import DeviceCapacityBar from "./DeviceCapacityBar";
 
-export const DeviceCapacitySection = ({ capacity }: { capacity: DeviceCapacity }) => (
+const DeviceCapacitySection = ({ capacity }: { capacity: DeviceCapacity }) => (
   <div>
     <h3 className="text-foreground mb-3 flex items-center gap-2">
       <Activity className="w-5 h-5 text-primary" />
@@ -18,3 +18,5 @@ export const DeviceCapacitySection = ({ capacity }: { capacity: DeviceCapacity }
     </div>
   </div>
 );
+
+export default DeviceCapacitySection;

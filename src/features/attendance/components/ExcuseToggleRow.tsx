@@ -10,7 +10,7 @@ type ExcuseToggleRowProps = {
   onToggle: (key: keyof Omit<ExcuseForm, "note">) => void;
 };
 
-export function ExcuseToggleRow({ item, checked, onToggle }: ExcuseToggleRowProps) {
+const ExcuseToggleRow = ({ item, checked, onToggle }: ExcuseToggleRowProps) => {
   return (
     <label className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:border-primary/30 transition-colors cursor-pointer">
       <div>
@@ -25,4 +25,6 @@ export function ExcuseToggleRow({ item, checked, onToggle }: ExcuseToggleRowProp
       </div>
     </label>
   );
-}
+};
+
+export default ExcuseToggleRow;

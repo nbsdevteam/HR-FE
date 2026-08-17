@@ -12,7 +12,7 @@ type ShiftDropZoneProps = {
 
 const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-export function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneProps) {
+const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneProps) => {
   const [dragOver, setDragOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -101,4 +101,6 @@ export function ShiftDropZone({ shift, assignedEmps, onDrop, onRemove }: ShiftDr
       </div>
     </div>
   );
-}
+};
+
+export default ShiftDropZone;

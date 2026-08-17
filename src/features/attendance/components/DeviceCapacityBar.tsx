@@ -8,7 +8,7 @@ type DeviceCapacityBarProps = {
   color: string;
 };
 
-export const DeviceCapacityBar = ({ label, icon: Icon, used, total, color }: DeviceCapacityBarProps) => {
+const DeviceCapacityBar = ({ label, icon: Icon, used, total, color }: DeviceCapacityBarProps) => {
   const pct = total > 0 ? Math.round((used / total) * 100) : 0;
 
   return (
@@ -31,3 +31,5 @@ export const DeviceCapacityBar = ({ label, icon: Icon, used, total, color }: Dev
     </div>
   );
 };
+
+export default DeviceCapacityBar;

@@ -3,11 +3,11 @@ import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceCapacity, DeviceInfo } from "../types";
 import { DEVICE_SYNC_API } from "../utils/deviceManagement";
-import { DeviceCapacitySection } from "./DeviceCapacitySection";
-import { DeviceDoorControl } from "./DeviceDoorControl";
-import { DeviceInfoCard } from "./DeviceInfoCard";
+import DeviceCapacitySection from "./DeviceCapacitySection";
+import DeviceDoorControl from "./DeviceDoorControl";
+import DeviceInfoCard from "./DeviceInfoCard";
 
-export const DeviceOverviewTab = () => {
+const DeviceOverviewTab = () => {
   const [info, setInfo] = useState<DeviceInfo | null>(null);
   const [capacity, setCapacity] = useState<DeviceCapacity | null>(null);
   const [network, setNetwork] = useState<any>(null);
@@ -65,3 +65,5 @@ export const DeviceOverviewTab = () => {
     </div>
   );
 };
+
+export default DeviceOverviewTab;

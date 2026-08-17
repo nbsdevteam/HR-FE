@@ -11,7 +11,7 @@ type AttendanceStatCardProps = {
   suffix?: string;
 };
 
-export function AttendanceStatCard({ label, value, icon: Icon, color, accent, index, suffix }: AttendanceStatCardProps) {
+const AttendanceStatCard = ({ label, value, icon: Icon, color, accent, index, suffix }: AttendanceStatCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,4 +35,6 @@ export function AttendanceStatCard({ label, value, icon: Icon, color, accent, in
       </div>
     </motion.div>
   );
-}
+};
+
+export default AttendanceStatCard;

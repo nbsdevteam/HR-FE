@@ -1,7 +1,7 @@
 import { Eye, Loader2, ScanFace, Upload } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
-import { DeviceCredentialIcons } from "./DeviceCredentialIcons";
+import DeviceCredentialIcons from "./DeviceCredentialIcons";
 
 type DeviceFacePersonCardProps = {
   person: DevicePerson;
@@ -10,7 +10,7 @@ type DeviceFacePersonCardProps = {
   onUploadFace: (employeeNumber: string, file: File) => void;
 };
 
-export const DeviceFacePersonCard = ({
+const DeviceFacePersonCard = ({
   person,
   uploading,
   onViewFace,
@@ -66,3 +66,5 @@ export const DeviceFacePersonCard = ({
     </div>
   </div>
 );
+
+export default DeviceFacePersonCard;

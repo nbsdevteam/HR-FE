@@ -7,7 +7,7 @@ type DeviceCredentialIconsProps = {
   card: number;
 };
 
-export const DeviceCredentialIcons = ({ fp, face, card }: DeviceCredentialIconsProps) => (
+const DeviceCredentialIcons = ({ fp, face, card }: DeviceCredentialIconsProps) => (
   <div className="flex items-center gap-2">
     {fp > 0 && (
       <div className="flex items-center gap-0.5 text-emerald-400" title={`${fp} ${arabicSource("common.fingerprint")}`}>
@@ -29,3 +29,5 @@ export const DeviceCredentialIcons = ({ fp, face, card }: DeviceCredentialIconsP
     )}
   </div>
 );
+
+export default DeviceCredentialIcons;

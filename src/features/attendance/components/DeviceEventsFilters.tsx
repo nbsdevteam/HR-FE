@@ -14,7 +14,7 @@ type DeviceEventsFiltersProps = {
   onSearch: () => void;
 };
 
-export const DeviceEventsFilters = ({
+const DeviceEventsFilters = ({
   startDate,
   endDate,
   searchEmp,
@@ -73,3 +73,5 @@ export const DeviceEventsFilters = ({
     {error && <p className="text-xs text-destructive mt-2">{error}</p>}
   </div>
 );
+
+export default DeviceEventsFilters;

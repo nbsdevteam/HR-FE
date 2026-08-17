@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, Users } from "lucide-react";
-import { ShiftAssigner } from "@/features/attendance/components/ShiftAssigner";
+import ShiftAssigner from "@/features/attendance/components/ShiftAssigner";
 import { arabicSource } from "@/i18n/source";
 
 export const ShiftAssignerSection = () => {

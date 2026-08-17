@@ -3,11 +3,11 @@ import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import type { DeviceFacePreview, DevicePerson } from "../types";
 import { DEVICE_SYNC_API, fileToBase64, filterDevicePersons } from "../utils/deviceManagement";
-import { DeviceFaceModal } from "./DeviceFaceModal";
-import { DeviceFacePersonCard } from "./DeviceFacePersonCard";
-import { DeviceFaceToolbar } from "./DeviceFaceToolbar";
+import DeviceFaceModal from "./DeviceFaceModal";
+import DeviceFacePersonCard from "./DeviceFacePersonCard";
+import DeviceFaceToolbar from "./DeviceFaceToolbar";
 
-export const DeviceFaceTab = () => {
+const DeviceFaceTab = () => {
   const [persons, setPersons] = useState<DevicePerson[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -118,3 +118,5 @@ export const DeviceFaceTab = () => {
     </div>
   );
 };
+
+export default DeviceFaceTab;

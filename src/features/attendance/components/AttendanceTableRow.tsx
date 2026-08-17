@@ -13,7 +13,7 @@ type AttendanceTableRowProps = {
   onOpenExcuse: (record: AttendanceRow, form: ExcuseForm) => void;
 };
 
-export function AttendanceTableRow({ record, index, onSelectEmployee, onOpenExcuse }: AttendanceTableRowProps) {
+const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: AttendanceTableRowProps) => {
   return (
     <motion.tr
       key={record.id}
@@ -123,4 +123,6 @@ export function AttendanceTableRow({ record, index, onSelectEmployee, onOpenExcu
       </td>
     </motion.tr>
   );
-}
+};
+
+export default AttendanceTableRow;

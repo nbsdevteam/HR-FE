@@ -13,7 +13,7 @@ type CalendarDayCellProps = {
   isFuture: boolean;
 };
 
-export const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }: CalendarDayCellProps) => {
+const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }: CalendarDayCellProps) => {
   const weekBg = weekIndex % 2 === 1 ? "bg-muted/[0.03]" : "";
   const hasData = Boolean(record?.check_in_time);
 
@@ -112,3 +112,5 @@ export const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFu
     </div>
   );
 };
+
+export default CalendarDayCell;

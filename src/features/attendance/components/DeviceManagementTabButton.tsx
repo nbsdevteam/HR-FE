@@ -9,7 +9,7 @@ type DeviceManagementTabButtonProps = {
   onTabChange: (tab: DeviceManagementTab) => void;
 };
 
-export const DeviceManagementTabButton = ({
+const DeviceManagementTabButton = ({
   tabKey,
   label,
   icon: Icon,
@@ -28,3 +28,5 @@ export const DeviceManagementTabButton = ({
     {label}
   </button>
 );
+
+export default DeviceManagementTabButton;

@@ -4,10 +4,10 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
 import { DEVICE_SYNC_API, filterDevicePersons } from "../utils/deviceManagement";
-import { DevicePersonCard } from "./DevicePersonCard";
-import { DevicePersonsToolbar } from "./DevicePersonsToolbar";
+import DevicePersonCard from "./DevicePersonCard";
+import DevicePersonsToolbar from "./DevicePersonsToolbar";
 
-export const DevicePersonsTab = () => {
+const DevicePersonsTab = () => {
   const [persons, setPersons] = useState<DevicePerson[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -99,3 +99,5 @@ export const DevicePersonsTab = () => {
     </div>
   );
 };
+
+export default DevicePersonsTab;

@@ -6,11 +6,11 @@ import { arabicSource } from "@/i18n/source";
 import {
   buildCalendarCells, buildRecordMap, buildRestDowSet, CALENDAR_DAY_HEADERS, isFutureDate,
 } from "../utils/calendarHelpers";
-import { CalendarDayCell } from "./CalendarDayCell";
-import { CalendarDayHeaderCell } from "./CalendarDayHeaderCell";
-import { CalendarEmptyCell } from "./CalendarEmptyCell";
-import { CalendarLegendItem } from "./CalendarLegendItem";
-import { CalendarStatChip } from "./CalendarStatChip";
+import CalendarDayCell from "./CalendarDayCell";
+import CalendarDayHeaderCell from "./CalendarDayHeaderCell";
+import CalendarEmptyCell from "./CalendarEmptyCell";
+import CalendarLegendItem from "./CalendarLegendItem";
+import CalendarStatChip from "./CalendarStatChip";
 
 type AttendanceCalendarViewProps = {
   records: DbAttendanceRecord[];
@@ -22,7 +22,7 @@ type AttendanceCalendarViewProps = {
   schedule: EmployeeSchedule | null;
 };
 
-export const AttendanceCalendarView = ({
+const AttendanceCalendarView = ({
   records,
   calMonth,
   monthLabel,
@@ -115,3 +115,4 @@ export const AttendanceCalendarView = ({
   );
 };
 
+export default AttendanceCalendarView

@@ -8,7 +8,7 @@ type DeviceFaceToolbarProps = {
   onRefresh: () => void;
 };
 
-export const DeviceFaceToolbar = ({ search, loading, onSearchChange, onRefresh }: DeviceFaceToolbarProps) => (
+const DeviceFaceToolbar = ({ search, loading, onSearchChange, onRefresh }: DeviceFaceToolbarProps) => (
   <div className="flex items-center gap-3">
     <div className="relative flex-1 min-w-[200px]">
       <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -25,3 +25,5 @@ export const DeviceFaceToolbar = ({ search, loading, onSearchChange, onRefresh }
     </button>
   </div>
 );
+
+export default DeviceFaceToolbar;

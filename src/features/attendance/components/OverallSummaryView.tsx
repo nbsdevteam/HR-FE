@@ -2,9 +2,9 @@ import { Calendar, CalendarDays, Clock, Award } from "lucide-react";
 import { formatWorkHours } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "@/features/attendance/styles";
-import { AttendanceSummaryCard } from "./AttendanceSummaryCard";
+import AttendanceSummaryCard from "./AttendanceSummaryCard";
 
-export function OverallSummaryView({
+const OverallSummaryView = ({
   stats,
   breakdown,
 }: {
@@ -14,7 +14,7 @@ export function OverallSummaryView({
     monthsCount: number; firstDate: string; lastDate: string; presentDays: number; attendanceRate: number;
   };
   breakdown: Array<{ month: string; days: number; hours: number; overtime: number; late: number; absent: number }>;
-}) {
+}) => {
   const monthNames: Record<string, string> = {
     "01": arabicSource("common.january"), "02": arabicSource("common.february"), "03": arabicSource("common.march"), "04": arabicSource("common.april"),
     "05": arabicSource("common.may"), "06": arabicSource("common.jun"), "07": arabicSource("common.july"), "08": arabicSource("common.august"),
@@ -98,4 +98,6 @@ export function OverallSummaryView({
       </div>
     </div>
   );
-}
+};
+
+export default OverallSummaryView;

@@ -1,8 +1,8 @@
 import { ArrowUpDown, Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceSortKey } from "../types";
-import { AttendanceFilterButton } from "./AttendanceFilterButton";
-import { AttendanceSortButton } from "./AttendanceSortButton";
+import AttendanceFilterButton from "./AttendanceFilterButton";
+import AttendanceSortButton from "./AttendanceSortButton";
 
 type AttendanceFiltersProps = {
   searchTerm: string;
@@ -13,7 +13,7 @@ type AttendanceFiltersProps = {
   onSortByChange: (value: AttendanceSortKey) => void;
 };
 
-export const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChange, onStatusFilterChange, onSortByChange }: AttendanceFiltersProps) => {
+const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChange, onStatusFilterChange, onSortByChange }: AttendanceFiltersProps) => {
   return (
     <>
     {/* Search & Filters Bar */}
@@ -61,3 +61,5 @@ export const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTe
     </>
   );
 }
+
+export default AttendanceFilters;

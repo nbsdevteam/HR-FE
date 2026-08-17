@@ -5,10 +5,10 @@ import * as odooData from "@/shared/api/odooData";
 import { resolveEmployeeShift, shiftToSchedule, type DbAttendanceRecord, type DbEmployee } from "@/shared/hooks";
 import type { EmployeeSchedule } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
-import { AttendanceCalendarView } from "./AttendanceCalendarView";
-import { AttendanceDetailTabButton } from "./AttendanceDetailTabButton";
-import { MonthlySummaryView } from "./MonthlySummaryView";
-import { OverallSummaryView } from "./OverallSummaryView";
+import  AttendanceCalendarView  from "./AttendanceCalendarView";
+import AttendanceDetailTabButton from "./AttendanceDetailTabButton";
+import MonthlySummaryView from "./MonthlySummaryView";
+import OverallSummaryView from "./OverallSummaryView";
 
 export const DETAIL_TABS = [
   { id: "calendar" as const, label: arabicSource("common.calendar"), icon: CalendarDays },
@@ -17,7 +17,7 @@ export const DETAIL_TABS = [
 ];
 type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
 
-export function EmployeeAttendanceDetail({
+const EmployeeAttendanceDetail = ({
   employeeId,
   employees,
   empMap,
@@ -31,7 +31,7 @@ export function EmployeeAttendanceDetail({
   dbShifts: any[];
   dbDepartments: any[];
   onClose: () => void;
-}) {
+}) => {
   const emp = employees.find(e => e.id === employeeId);
   // Resolve the employee's shift → schedule (determines rest days)
   const empShift = emp ? resolveEmployeeShift(emp, dbDepartments, dbShifts) : null;
@@ -260,6 +260,8 @@ export function EmployeeAttendanceDetail({
       </motion.div>
     </motion.div>
   );
-}
+};
+
+export default EmployeeAttendanceDetail;
 
 // ══════════════════════════ Calendar View ══════════════════════════

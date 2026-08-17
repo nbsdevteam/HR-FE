@@ -3,7 +3,7 @@ type CalendarDayHeaderCellProps = {
   isRestDow: boolean;
 };
 
-export const CalendarDayHeaderCell = ({ label, isRestDow }: CalendarDayHeaderCellProps) => (
+const CalendarDayHeaderCell = ({ label, isRestDow }: CalendarDayHeaderCellProps) => (
   <div
     className={`text-center py-3 font-semibold ${isRestDow ? "text-muted-foreground/50 bg-muted/10" : "text-foreground/60"}`}
     style={{ fontSize: 13 }}
@@ -11,3 +11,5 @@ export const CalendarDayHeaderCell = ({ label, isRestDow }: CalendarDayHeaderCel
     {label}
   </div>
 );
+
+export default CalendarDayHeaderCell;

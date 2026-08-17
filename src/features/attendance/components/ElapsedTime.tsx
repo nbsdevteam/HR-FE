@@ -2,7 +2,7 @@ import { arabicSource } from "@/i18n/source";
 import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function ElapsedTime({ checkIn }: { checkIn: string }) {
+const ElapsedTime = ({ checkIn }: { checkIn: string }) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 60_000);
@@ -26,4 +26,6 @@ export default function ElapsedTime({ checkIn }: { checkIn: string }) {
       <TrendingUp className="w-3 h-3 text-emerald-400" />
     </div>
   );
-}
+};
+
+export default ElapsedTime;

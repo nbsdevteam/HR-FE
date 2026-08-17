@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Loader2, ShieldCheck, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, ExcuseForm } from "@/features/attendance/types";
-import { ExcuseToggleRow } from "./ExcuseToggleRow";
+import ExcuseToggleRow from "./ExcuseToggleRow";
 
 type ExcuseModalProps = {
   excuseModal: { record: AttendanceRow } | null;
@@ -13,7 +13,7 @@ type ExcuseModalProps = {
   onSave: () => void;
 };
 
-export function ExcuseModal({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseFormChange, onSave }: ExcuseModalProps) {
+const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseFormChange, onSave }: ExcuseModalProps) => {
   const setExcuseModal = (value: null) => { if (value === null) onClose(); };
   const setExcuseForm = onExcuseFormChange;
   const handleSaveExcuse = onSave;
@@ -126,4 +126,6 @@ export function ExcuseModal({ excuseModal, excuseForm, excuseSaving, onClose, on
     </AnimatePresence>
     </>
   );
-}
+};
+
+export default ExcuseModal;

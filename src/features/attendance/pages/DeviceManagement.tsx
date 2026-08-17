@@ -6,12 +6,12 @@ import {
   getDefaultBiometricDevice,
   mapBiometricDevices,
 } from "@/features/attendance/utils/deviceManagement";
-import { DeviceEventsTab } from "../components/DeviceEventsTab";
-import { DeviceFaceTab } from "../components/DeviceFaceTab";
-import { DeviceManagementHeader } from "../components/DeviceManagementHeader";
-import { DeviceManagementTabs } from "../components/DeviceManagementTabs";
-import { DeviceOverviewTab } from "../components/DeviceOverviewTab";
-import { DevicePersonsTab } from "../components/DevicePersonsTab";
+import DeviceEventsTab from "../components/DeviceEventsTab";
+import DeviceFaceTab from "../components/DeviceFaceTab";
+import DeviceManagementHeader from "../components/DeviceManagementHeader";
+import DeviceManagementTabs from "../components/DeviceManagementTabs";
+import DeviceOverviewTab from "../components/DeviceOverviewTab";
+import DevicePersonsTab from "../components/DevicePersonsTab";
 
 export const DeviceManagement = () => {
   const [tab, setTab] = useState<DeviceManagementTab>("overview");

@@ -7,7 +7,7 @@ type AttendanceSortButtonProps = {
   onClick: (key: AttendanceSortKey) => void;
 };
 
-export function AttendanceSortButton({ sortKey, label, active, onClick }: AttendanceSortButtonProps) {
+const AttendanceSortButton = ({ sortKey, label, active, onClick }: AttendanceSortButtonProps) => {
   return (
     <button
       onClick={() => onClick(sortKey)}
@@ -19,4 +19,6 @@ export function AttendanceSortButton({ sortKey, label, active, onClick }: Attend
       {label}
     </button>
   );
-}
+};
+
+export default AttendanceSortButton;

@@ -1,9 +1,9 @@
 import { Calendar, CheckCircle, Clock, Timer, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { TodayAttendanceStats } from "../types";
-import { AttendanceStatCard } from "./AttendanceStatCard";
+import AttendanceStatCard from "./AttendanceStatCard";
 
-export const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendanceStats }) => {
+const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendanceStats }) => {
   const stats = [
     { label: arabicSource("attendance.are_present"), value: todayStats.present, icon: CheckCircle, color: "text-emerald-400", accent: "from-emerald-500/10" },
     { label: arabicSource("attendance.are_late"), value: todayStats.late, icon: Clock, color: "text-primary", accent: "from-primary/10" },
@@ -29,3 +29,5 @@ export const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendan
     </div>
   );
 };
+
+export default AttendanceStatsCards;

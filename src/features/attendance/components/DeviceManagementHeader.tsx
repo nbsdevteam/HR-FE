@@ -7,7 +7,7 @@ type DeviceManagementHeaderProps = {
   onSelectedDeviceChange: (deviceId: string) => void;
 };
 
-export const DeviceManagementHeader = ({
+const DeviceManagementHeader = ({
   devices,
   selectedDevice,
   onSelectedDeviceChange,
@@ -32,3 +32,5 @@ export const DeviceManagementHeader = ({
     )}
   </div>
 );
+
+export default DeviceManagementHeader;

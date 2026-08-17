@@ -3,7 +3,7 @@ import type { DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { TodayAttendanceStats } from "../types";
 
-export const AttendanceSourceIndicators = ({ todayStats, rawRecords, selectedDate }: { todayStats: TodayAttendanceStats; rawRecords: DbAttendanceRecord[]; selectedDate: string }) => {
+const AttendanceSourceIndicators = ({ todayStats, rawRecords, selectedDate }: { todayStats: TodayAttendanceStats; rawRecords: DbAttendanceRecord[]; selectedDate: string }) => {
   return (
     <div className="flex items-center gap-4 px-1 flex-wrap">
       {todayStats.total > 0 && (
@@ -23,3 +23,5 @@ export const AttendanceSourceIndicators = ({ todayStats, rawRecords, selectedDat
     </div>
   );
 };
+
+export default AttendanceSourceIndicators;

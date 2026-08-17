@@ -6,7 +6,7 @@ type DeviceDoorControlProps = {
   onDoorAction: (action: "open" | "close") => void;
 };
 
-export const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) => (
+const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) => (
   <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-6">
     <h3 className="text-foreground mb-4 flex items-center gap-2">
       <Shield className="w-5 h-5 text-primary" />
@@ -32,3 +32,5 @@ export const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlPr
     </div>
   </div>
 );
+
+export default DeviceDoorControl;

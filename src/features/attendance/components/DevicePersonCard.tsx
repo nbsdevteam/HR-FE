@@ -10,7 +10,7 @@ type DevicePersonCardProps = {
   facePhoto?: string;
 };
 
-export const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardProps) => (
+const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardProps) => (
   <motion.div
     key={person.employeeNo}
     initial={{ opacity: 0, scale: 0.95 }}
@@ -63,3 +63,5 @@ export const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardP
     </div>
   </motion.div>
 );
+
+export default DevicePersonCard;

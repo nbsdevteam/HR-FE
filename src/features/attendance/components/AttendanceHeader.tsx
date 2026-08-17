@@ -8,7 +8,7 @@ type AttendanceHeaderProps = {
   onSelectedDateChange: (date: string) => void;
 };
 
-export function AttendanceHeader({ viewMode, selectedDate, onViewModeChange, onSelectedDateChange }: AttendanceHeaderProps) {
+const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelectedDateChange }: AttendanceHeaderProps) => {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -28,3 +28,5 @@ export function AttendanceHeader({ viewMode, selectedDate, onViewModeChange, onS
     </div>
   );
 }
+
+export default AttendanceHeader;

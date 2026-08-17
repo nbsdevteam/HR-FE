@@ -3,8 +3,8 @@ import { Calendar, Clock, UserCheck, UserX } from "lucide-react";
 import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm } from "@/features/attendance/types";
-import { AttendanceKanbanCard } from "./AttendanceKanbanCard";
-import { AttendanceTableRow } from "./AttendanceTableRow";
+import AttendanceKanbanCard from "./AttendanceKanbanCard";
+import AttendanceTableRow from "./AttendanceTableRow";
 import { memo } from "react";
 
 type AttendanceRecordsViewProps = {

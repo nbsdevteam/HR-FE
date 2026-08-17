@@ -10,7 +10,7 @@ type DevicePersonsToolbarProps = {
   onRefresh: () => void;
 };
 
-export const DevicePersonsToolbar = ({
+const DevicePersonsToolbar = ({
   search,
   loading,
   loadingFaces,
@@ -44,3 +44,5 @@ export const DevicePersonsToolbar = ({
     </span>
   </div>
 );
+
+export default DevicePersonsToolbar;

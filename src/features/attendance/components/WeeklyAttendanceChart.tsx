@@ -6,7 +6,7 @@ import { attendanceSeries } from "@/features/attendance/styles";
 
 type WeeklyRow = { day: string; present: number; late: number; absent: number; leave: number };
 
-export function WeeklyAttendanceChart({ chartExpanded, weeklyAttendance, onToggle }: { chartExpanded: boolean; weeklyAttendance: WeeklyRow[]; onToggle: () => void }) {
+const WeeklyAttendanceChart = ({ chartExpanded, weeklyAttendance, onToggle }: { chartExpanded: boolean; weeklyAttendance: WeeklyRow[]; onToggle: () => void }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,4 +30,6 @@ export function WeeklyAttendanceChart({ chartExpanded, weeklyAttendance, onToggl
       </AnimatePresence>
     </motion.div>
   );
-}
+};
+
+export default WeeklyAttendanceChart;

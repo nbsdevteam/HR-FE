@@ -4,7 +4,7 @@ type AttendanceFilterButtonProps = {
   onClick: () => void;
 };
 
-export function AttendanceFilterButton({ label, active, onClick }: AttendanceFilterButtonProps) {
+const AttendanceFilterButton = ({ label, active, onClick }: AttendanceFilterButtonProps) => {
   return (
     <button
       onClick={onClick}
@@ -17,3 +17,5 @@ export function AttendanceFilterButton({ label, active, onClick }: AttendanceFil
     </button>
   );
 }
+
+export default AttendanceFilterButton;

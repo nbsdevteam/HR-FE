@@ -12,14 +12,14 @@ import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { AttendanceRow, dayNames } from "@/features/attendance/types";
 import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
-import { EmployeeAttendanceDetail } from "../components/EmployeeAttendanceDetail";
-import { AttendanceHeader } from "../components/AttendanceHeader";
-import { AttendanceStatsCards } from "../components/AttendanceStatsCards";
-import { AttendanceSourceIndicators } from "../components/AttendanceSourceIndicators";
-import { WeeklyAttendanceChart } from "../components/WeeklyAttendanceChart";
-import { AttendanceFilters } from "../components/AttendanceFilters";
-import { AttendanceRecordsView } from "../components/AttendanceRecordsView";
-import { ExcuseModal } from "../components/ExcuseModal";
+import EmployeeAttendanceDetail from "../components/EmployeeAttendanceDetail";
+import AttendanceHeader from "../components/AttendanceHeader";
+import AttendanceStatsCards from "../components/AttendanceStatsCards";
+import AttendanceSourceIndicators from "../components/AttendanceSourceIndicators";
+import WeeklyAttendanceChart from "../components/WeeklyAttendanceChart";
+import AttendanceFilters from "../components/AttendanceFilters";
+import  AttendanceRecordsView  from "../components/AttendanceRecordsView";
+import ExcuseModal from "../components/ExcuseModal";
 
 export const Attendance = () => {
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
