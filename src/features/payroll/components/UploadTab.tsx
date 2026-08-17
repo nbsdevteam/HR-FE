@@ -342,5 +342,3 @@ const UploadTab = ({
 };
 
 export default UploadTab;
-
-// ══════════════════════════ Payroll Detail Panel ══════════════════════════

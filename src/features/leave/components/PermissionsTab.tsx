@@ -15,6 +15,7 @@ const PermissionsTab = ({
   refetch: () => void;
 }) => {
   const handleApprove = async (id: string) => {
+    // do the below in try catch
     await odooData.updateLeavePermission(id, "approved");
     refetch();
   };

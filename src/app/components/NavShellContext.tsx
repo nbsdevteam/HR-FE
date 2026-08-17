@@ -28,7 +28,16 @@ export function NavShellProvider({ children }: { children: ReactNode }) {
     typeof window !== "undefined" ? window.matchMedia(DESKTOP_MQ).matches : true,
   );
 
-  useEffect(() => {
+  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
+  const toggleMobileNav = useCallback(() => setMobileNavOpen((v) => !v), []);
+
+  const value = useMemo(
+    () => ({ mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop }),
+    [mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop],
+  );
+
+    useEffect(() => {
     const mq = window.matchMedia(DESKTOP_MQ);
     const onChange = () => {
       setIsDesktop(mq.matches);
@@ -47,15 +56,6 @@ export function NavShellProvider({ children }: { children: ReactNode }) {
       document.body.style.overflow = prev;
     };
   }, [mobileNavOpen]);
-
-  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
-  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
-  const toggleMobileNav = useCallback(() => setMobileNavOpen((v) => !v), []);
-
-  const value = useMemo(
-    () => ({ mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop }),
-    [mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop],
-  );
 
   return <NavShellContext.Provider value={value}>{children}</NavShellContext.Provider>;
 }
