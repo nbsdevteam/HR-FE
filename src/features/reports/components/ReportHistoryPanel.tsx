@@ -3,14 +3,14 @@ import { History, Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbReportHistory } from "@/shared/hooks";
 import { cardCls } from "../styles";
-import { ReportHistoryItem } from "./ReportHistoryItem";
+import ReportHistoryItem from "./ReportHistoryItem";
 
 type ReportHistoryPanelProps = {
   history: DbReportHistory[];
   loading: boolean;
 };
 
-export const ReportHistoryPanel = ({ history, loading }: ReportHistoryPanelProps) => (
+const ReportHistoryPanel = ({ history, loading }: ReportHistoryPanelProps) => (
   <motion.div
     initial={{ opacity: 0, height: 0 }}
     animate={{ opacity: 1, height: "auto" }}
@@ -36,3 +36,5 @@ export const ReportHistoryPanel = ({ history, loading }: ReportHistoryPanelProps
     )}
   </motion.div>
 );
+
+export default ReportHistoryPanel;

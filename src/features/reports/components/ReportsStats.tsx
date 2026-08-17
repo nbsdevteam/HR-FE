@@ -9,7 +9,7 @@ type ReportsStatsProps = {
   employeeCount: number;
 };
 
-export const ReportsStats = ({ templateCount, historyCount, departmentCount, employeeCount }: ReportsStatsProps) => {
+const ReportsStats = ({ templateCount, historyCount, departmentCount, employeeCount }: ReportsStatsProps) => {
   const items = [
     { label: arabicSource("reports.report_templates"), value: templateCount, icon: BarChart3 },
     { label: arabicSource("reports.reports_generated"), value: historyCount, icon: FileText },
@@ -44,3 +44,5 @@ export const ReportsStats = ({ templateCount, historyCount, departmentCount, emp
     </div>
   );
 };
+
+export default ReportsStats;

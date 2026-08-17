@@ -3,7 +3,7 @@ import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import type { ReportSortBy, ReportSortDir } from "../types";
-import { ReportTemplateRow } from "./ReportTemplateRow";
+import ReportTemplateRow from "./ReportTemplateRow";
 
 type ReportTemplatesTableProps = {
   templates: DbReportTemplate[];
@@ -14,7 +14,7 @@ type ReportTemplatesTableProps = {
   onSelect: (template: DbReportTemplate) => void;
 };
 
-export const ReportTemplatesTable = ({
+const ReportTemplatesTable = ({
   templates,
   sortBy,
   sortDir,
@@ -48,3 +48,5 @@ export const ReportTemplatesTable = ({
     </div>
   </div>
 );
+
+export default ReportTemplatesTable;

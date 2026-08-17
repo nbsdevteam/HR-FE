@@ -8,7 +8,7 @@ type ReportTemplateRowProps = {
   onSelect: (template: DbReportTemplate) => void;
 };
 
-export const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
+const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
   const Icon = categoryIcons[template.category] || FileText;
   return (
     <tr className="border-b border-border/20 hover:bg-muted/10">
@@ -36,3 +36,5 @@ export const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps
     </tr>
   );
 };
+
+export default ReportTemplateRow;

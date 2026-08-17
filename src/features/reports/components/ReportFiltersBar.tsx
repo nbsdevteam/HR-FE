@@ -21,7 +21,7 @@ type ReportFiltersBarProps = {
   onViewModeChange: (mode: ReportViewMode) => void;
 };
 
-export const ReportFiltersBar = ({
+const ReportFiltersBar = ({
   searchQuery,
   filterCategory,
   filterDept,
@@ -99,3 +99,5 @@ export const ReportFiltersBar = ({
     </div>
   </div>
 );
+
+export default ReportFiltersBar;

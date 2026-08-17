@@ -6,7 +6,7 @@ type ReportsHeaderProps = {
   onToggleHistory: () => void;
 };
 
-export const ReportsHeader = ({ showHistory, onToggleHistory }: ReportsHeaderProps) => (
+const ReportsHeader = ({ showHistory, onToggleHistory }: ReportsHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.reports")}</h1>
@@ -23,3 +23,5 @@ export const ReportsHeader = ({ showHistory, onToggleHistory }: ReportsHeaderPro
     </div>
   </div>
 );
+
+export default ReportsHeader;

@@ -3,7 +3,7 @@ import { BarChart3, Download, FileText, Loader2, Printer, X } from "lucide-react
 import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
-import { ReportResultsTable } from "./ReportResultsTable";
+import ReportResultsTable from "./ReportResultsTable";
 
 type ReportViewerModalProps = {
   template: DbReportTemplate;
@@ -18,7 +18,7 @@ type ReportViewerModalProps = {
   onPrint: () => void;
 };
 
-export const ReportViewerModal = ({
+const ReportViewerModal = ({
   template,
   generating,
   generatedData,
@@ -112,3 +112,5 @@ export const ReportViewerModal = ({
     </motion.div>
   </motion.div>
 );
+
+export default ReportViewerModal;

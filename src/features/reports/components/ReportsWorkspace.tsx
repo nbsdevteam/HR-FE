@@ -12,15 +12,15 @@ import {
 import type { ReportSortBy, ReportSortDir, ReportViewMode } from "../types";
 import { useEmployeeLookups } from "../hooks/useEmployeeLookups";
 import { useReportGeneration } from "../hooks/useReportGeneration";
-import { ReportFiltersBar } from "./ReportFiltersBar";
-import { ReportHistoryPanel } from "./ReportHistoryPanel";
-import { ReportsHeader } from "./ReportsHeader";
-import { ReportsStats } from "./ReportsStats";
-import { ReportTemplatesGrid } from "./ReportTemplatesGrid";
-import { ReportTemplatesTable } from "./ReportTemplatesTable";
-import { ReportViewerModal } from "./ReportViewerModal";
+import ReportFiltersBar from "./ReportFiltersBar";
+import ReportHistoryPanel from "./ReportHistoryPanel";
+import ReportsHeader from "./ReportsHeader";
+import ReportsStats from "./ReportsStats";
+import ReportTemplatesGrid from "./ReportTemplatesGrid";
+import ReportTemplatesTable from "./ReportTemplatesTable";
+import ReportViewerModal from "./ReportViewerModal";
 
-export const ReportsWorkspace = () => {
+const ReportsWorkspace = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<DbReportTemplate | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,3 +154,5 @@ export const ReportsWorkspace = () => {
     </div>
   );
 };
+
+export default ReportsWorkspace;

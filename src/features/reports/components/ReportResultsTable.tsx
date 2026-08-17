@@ -1,7 +1,7 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
-import { ReportResultRow } from "./ReportResultRow";
+import ReportResultRow from "./ReportResultRow";
 
 type ReportResultsTableProps = {
   data: ReportRow[];
@@ -11,7 +11,7 @@ type ReportResultsTableProps = {
   dateTo: string;
 };
 
-export const ReportResultsTable = ({ data, template, filterDept, dateFrom, dateTo }: ReportResultsTableProps) => (
+const ReportResultsTable = ({ data, template, filterDept, dateFrom, dateTo }: ReportResultsTableProps) => (
   <div>
     <div className="flex items-center justify-between mb-4">
       <p className="text-sm text-muted-foreground">
@@ -47,3 +47,5 @@ export const ReportResultsTable = ({ data, template, filterDept, dateFrom, dateT
     )}
   </div>
 );
+
+export default ReportResultsTable;

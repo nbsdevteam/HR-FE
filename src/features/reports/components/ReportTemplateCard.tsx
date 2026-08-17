@@ -10,7 +10,7 @@ type ReportTemplateCardProps = {
   onSelect: (template: DbReportTemplate) => void;
 };
 
-export const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplateCardProps) => {
+const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplateCardProps) => {
   const Icon = categoryIcons[template.category] || FileText;
   return (
     <motion.div
@@ -51,3 +51,5 @@ export const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplate
     </motion.div>
   );
 };
+
+export default ReportTemplateCard;

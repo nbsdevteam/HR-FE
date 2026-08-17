@@ -6,7 +6,7 @@ type ReportHistoryItemProps = {
   entry: DbReportHistory;
 };
 
-export const ReportHistoryItem = ({ entry }: ReportHistoryItemProps) => (
+const ReportHistoryItem = ({ entry }: ReportHistoryItemProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
     <div>
       <p className="text-sm text-foreground">{entry.report_name}</p>
@@ -15,3 +15,5 @@ export const ReportHistoryItem = ({ entry }: ReportHistoryItemProps) => (
     <span className="text-xs text-muted-foreground" dir="ltr">{formatDateTime(entry.generated_at)}</span>
   </div>
 );
+
+export default ReportHistoryItem;
