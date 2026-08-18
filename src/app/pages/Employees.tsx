@@ -121,11 +121,21 @@ export function Employees() {
   const fetchNextId = async () => {
     setLoadingNextId(true);
     try {
+      const data = await odooData.fetchNextEmployeeCode();
+      const n = Number(data?.next_id ?? data?.next_code);
+      if (Number.isFinite(n) && n > 0) {
+        setNextEmployeeId(n);
+        setLoadingNextId(false);
+        return;
+      }
+    } catch {
+      /* fall through to device / local fallback */
+    }
+    try {
       const res = await fetch(`${SYNC_API}/device/next-employee-id`);
       const data = await res.json();
       if (data.success) setNextEmployeeId(data.nextId);
       else {
-        // Fallback: use local max + 1
         const maxPerson = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0);
         setNextEmployeeId(maxPerson + 1);
       }
@@ -156,7 +166,7 @@ export function Employees() {
     try {
       const newPersonId = nextEmployeeId;
 
-      await odooData.createEmployee({
+      const created: any = await odooData.createEmployee({
         name: addForm.name,
         email: addForm.email || null,
         personal_phone: addForm.personalPhone || null,
@@ -172,6 +182,10 @@ export function Employees() {
         department_id: addForm.departmentId || null,
         designation_id: addForm.designationId || null,
       });
+      const assignedId =
+        Number(created?.person_id) ||
+        Number(created?.employee_code) ||
+        newPersonId;
 
       // Auto-push to biometric device
       setDeviceSyncStatus("syncing");
@@ -180,7 +194,7 @@ export function Employees() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            employeeNo: String(newPersonId),
+            employeeNo: String(assignedId),
             name: addForm.name,
             gender: addForm.gender,
             facePhoto: facePhotoBase64 || undefined,

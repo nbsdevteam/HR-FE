@@ -411,6 +411,13 @@ export function timeToFloat(t: string | number | null | undefined): number {
   return (h || 0) + ((m || 0) / 60);
 }
 
+export async function fetchNextEmployeeCode(): Promise<{
+  next_code?: string;
+  next_id?: number | false;
+}> {
+  return hrCall("/api/hr/employees/next_code", {});
+}
+
 export async function createEmployee(payload: Record<string, unknown>) {
   return hrCall("/api/hr/employees/create", payload);
 }
