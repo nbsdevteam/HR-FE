@@ -62,7 +62,11 @@ const ODOO_TO_STAGE: Record<string, string> = {
   applied: "تقديم", screening: "فرز أولي", interview_1: "مقابلة", interview_2: "مقابلة",
   assessment: "اختبار", offer: "عرض", hired: "مقبول", rejected: "مرفوض",
 };
-const GENDER_TO_ODOO: Record<string, string> = { "ذكر": "male", "أنثى": "female" };
+const GENDER_TO_ODOO: Record<string, string> = {
+  ذكر: "male", أنثى: "female", انثى: "female",
+  Male: "male", Female: "female", male: "male", female: "female",
+  نێر: "male", مێ: "female",
+};
 const ODOO_TO_GENDER: Record<string, string> = { male: "ذكر", female: "أنثى" };
 
 function fileToBase64(file: File): Promise<string> {
@@ -1453,7 +1457,9 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
     education: editingApplicant?.education || "",
     current_company: editingApplicant?.current_company || "",
     city: editingApplicant?.city || arabicSource("common.baghdad"),
-    gender: editingApplicant?.gender || "",
+    gender: editingApplicant?.gender
+      ? (GENDER_TO_ODOO[editingApplicant.gender] || editingApplicant.gender)
+      : "",
     source: editingApplicant?.source || arabicSource("common.live"),
     expected_salary: editingApplicant?.expected_salary || "",
     salary_currency: editingApplicant?.salary_currency || "IQD",
@@ -1568,8 +1574,8 @@ function ApplicantFormModal({ jobs, editingApplicant, onClose, onSaved }: {
                 <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.sex")}</label>
                 <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className={selectCls}>
                   <option value="">{arabicSource("common.select")}</option>
-                  <option>{arabicSource("common.male")}</option>
-                  <option>{arabicSource("common.female")}</option>
+                  <option value="male">{arabicSource("common.male")}</option>
+                  <option value="female">{arabicSource("common.female")}</option>
                 </select>
               </div>
               <div>
