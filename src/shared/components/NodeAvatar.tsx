@@ -9,6 +9,9 @@ type NodeAvatarProps = {
   fontSize: number;
   extraClassName?: string;
   imgStyle?: CSSProperties;
+  fallbackClassName?: string;
+  fallbackStyle?: CSSProperties;
+  textClassName?: string;
 };
 
 const NodeAvatar = ({
@@ -20,12 +23,18 @@ const NodeAvatar = ({
   fontSize,
   extraClassName = "",
   imgStyle,
+  fallbackClassName = "",
+  fallbackStyle,
+  textClassName = "text-white",
 }: NodeAvatarProps) =>
   photo ? (
     <img src={photo} alt={name} className={`${sizeClassName} rounded-full object-cover ${extraClassName}`} style={imgStyle} />
   ) : (
-    <div className={`${sizeClassName} rounded-full flex items-center justify-center ${extraClassName}`} style={{ background: color }}>
-      <span className="text-white" style={{ fontSize }}>{initials}</span>
+    <div
+      className={`${sizeClassName} rounded-full flex items-center justify-center ${extraClassName} ${fallbackClassName}`}
+      style={{ background: color, ...fallbackStyle }}
+    >
+      <span className={textClassName} style={{ fontSize }}>{initials}</span>
     </div>
   );
 

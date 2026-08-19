@@ -1,8 +1,8 @@
 import { ArrowUpDown, Search } from "lucide-react";
+import { FilterChip } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceSortKey } from "../types";
 import { attendanceStatusFilterOptions, attendanceSortOptions } from "../data";
-import AttendanceFilterButton from "./AttendanceFilterButton";
 import AttendanceSortButton from "./AttendanceSortButton";
 
 type AttendanceFiltersProps = {
@@ -32,7 +32,7 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
       </div>
       <div className="flex items-center gap-1.5">
         {attendanceStatusFilterOptions.map(f => (
-          <AttendanceFilterButton
+          <FilterChip
             key={f}
             label={f}
             active={statusFilter === f}

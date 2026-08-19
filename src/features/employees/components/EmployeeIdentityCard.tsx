@@ -1,5 +1,8 @@
+import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { Employee } from "../types";
+
+const avatarStyle = { border: "3px solid var(--primary)", boxShadow: "0 4px 20px rgba(var(--primary-rgb, 212,175,55), 0.25)" };
 
 const statusColors: Record<string, string> = {
   [arabicSource("common.is_active")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
@@ -14,21 +17,18 @@ type EmployeeIdentityCardProps = {
 const EmployeeIdentityCard = ({ editData }: EmployeeIdentityCardProps) => (
   <div className="flex items-center gap-4 bg-muted/10 rounded-xl p-4 border border-border/30">
     <div className="relative shrink-0">
-      {editData.photo ? (
-        <img
-          src={editData.photo}
-          alt={editData.name}
-          className="w-20 h-20 rounded-full object-cover shadow-lg"
-          style={{ border: "3px solid var(--primary)", boxShadow: "0 4px 20px rgba(var(--primary-rgb, 212,175,55), 0.25)" }}
-        />
-      ) : (
-        <div
-          className="w-20 h-20 rounded-full flex items-center justify-center bg-primary/20 shadow-lg"
-          style={{ border: "3px solid var(--primary)", boxShadow: "0 4px 20px rgba(var(--primary-rgb, 212,175,55), 0.25)" }}
-        >
-          <span className="text-primary" style={{ fontSize: 28 }}>{editData.name.charAt(0)}</span>
-        </div>
-      )}
+      <NodeAvatar
+        photo={editData.photo}
+        name={editData.name}
+        initials={editData.name.charAt(0)}
+        sizeClassName="w-20 h-20"
+        extraClassName="shadow-lg"
+        imgStyle={avatarStyle}
+        fallbackClassName="bg-primary/20"
+        fallbackStyle={avatarStyle}
+        textClassName="text-primary"
+        fontSize={28}
+      />
       <div className={`absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full border-[2.5px] border-card ${
         editData.status === arabicSource("common.is_active") ? "bg-emerald-500" : editData.status === arabicSource("common.leave") ? "bg-primary" : editData.status === arabicSource("common.pending") ? "bg-amber-500" : "bg-destructive"
       }`} />

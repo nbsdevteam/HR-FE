@@ -3,6 +3,7 @@ import { CalendarCheck } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { LeaveRecord } from "../types";
 import EmployeeLeaveCard from "./EmployeeLeaveCard";
+import TabShellEmptyState from "./shared/TabShellEmptyState";
 
 type EmployeeLeavesTabProps = {
   leaves: LeaveRecord[];
@@ -45,10 +46,7 @@ const EmployeeLeavesTab = ({ leaves }: EmployeeLeavesTabProps) => (
         </div>
       </>
     ) : (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <CalendarCheck className="w-10 h-10 mb-3 opacity-30" />
-        <p style={{ fontSize: 14 }}>{arabicSource("shared.no_vacations_recorded")}</p>
-      </div>
+      <TabShellEmptyState icon={CalendarCheck} message={arabicSource("shared.no_vacations_recorded")} />
     )}
   </motion.div>
 );

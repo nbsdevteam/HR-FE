@@ -2,7 +2,7 @@ import { useState } from "react";
 import { GripVertical } from "lucide-react";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
-import NodeAvatar from "./NodeAvatar";
+import { NodeAvatar } from "@/shared/components";
 
 const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColors: Record<string, string> }) => {
   const [dragging, setDragging] = useState(false);

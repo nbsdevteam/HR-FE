@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Check, UserX, X } from "lucide-react";
+import { StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbContractType, type DbEmployeeContract } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 
@@ -45,9 +46,7 @@ const ContractTableRow = ({
         )}
       </td>
       <td className="px-4 py-3">
-        <span className={`px-2 py-0.5 rounded-md border ${statusColors[c.status] || ""}`} style={{ fontSize: 12 }}>
-          {statusLabels[c.status] || c.status}
-        </span>
+        <StatusBadge colorClassName={statusColors[c.status] || ""}>{statusLabels[c.status] || c.status}</StatusBadge>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">

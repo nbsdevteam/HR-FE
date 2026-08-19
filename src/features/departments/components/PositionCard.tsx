@@ -5,7 +5,7 @@ import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode } from "../types";
-import NodeAvatar from "./NodeAvatar";
+import { NodeAvatar } from "@/shared/components";
 
 const PositionCard = ({
   node, depth, departments, employees, deptColors, onDrop, onAddPosition, onDeletePosition, onEditPosition, expandedPositions, togglePositionExpand,

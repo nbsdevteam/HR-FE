@@ -6,7 +6,7 @@ import type { OrgNode } from "../types";
 import { CLEVEL_COLOR } from "../styles";
 import { countDescendants } from "../utils/hierarchyTree";
 import TreeConnectors from "./TreeConnectors";
-import NodeAvatar from "./NodeAvatar";
+import { NodeAvatar } from "@/shared/components";
 
 const OrgCard = ({
   node, depth = 0, expandedMap, toggleExpand, onSelect, selectedId, highlightedIds, searchMatchIds, deptColors,

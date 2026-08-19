@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Briefcase, Building2, Edit2, UserCheck, Users } from "lucide-react";
-import { ModalOverlay } from "@/shared/components";
+import { ModalOverlay, NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { getDescendantIds } from "../utils/hierarchyTree";
@@ -8,7 +8,6 @@ import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
-import NodeAvatar from "./NodeAvatar";
 
 const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
   node: OrgNode;

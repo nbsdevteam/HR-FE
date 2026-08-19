@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { CalendarCheck } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { LeaveRecord } from "../types";
+import RecordIconBadge from "./shared/RecordIconBadge";
 
 const leaveStatusColors: Record<string, string> = {
   [arabicSource("common.agreed")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
@@ -21,9 +22,7 @@ const EmployeeLeaveCard = ({ leave }: EmployeeLeaveCardProps) => (
   >
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <CalendarCheck className="w-4 h-4 text-primary" />
-        </div>
+        <RecordIconBadge icon={CalendarCheck} wrapperClassName="p-2 rounded-lg bg-primary/10" iconClassName="w-4 h-4 text-primary" />
         <span className="text-foreground" style={{ fontSize: 14 }}>{leave.type}</span>
       </div>
       <span className={`px-2.5 py-1 rounded-md border ${leaveStatusColors[leave.status]}`} style={{ fontSize: 12 }}>

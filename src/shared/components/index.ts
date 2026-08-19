@@ -1,6 +1,9 @@
 export * from "./EmptyState";
+export { default as FilterChip } from "./FilterChip";
 export { default as ModalOverlay } from "./ModalOverlay";
+export { default as NodeAvatar } from "./NodeAvatar";
 export * from "./SortableHeader";
+export { default as StatusBadge } from "./StatusBadge";
 export { default as TableHeaderRow } from "./TableHeaderRow";
 export * from "./ViewToggle";
 export * from "./chart-utils";

@@ -1,10 +1,9 @@
 import { Trash2, Users } from "lucide-react";
-import { ModalOverlay } from "@/shared/components";
+import { ModalOverlay, NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
-import NodeAvatar from "./NodeAvatar";
 
 const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   node: OrgNode; orgTree: OrgNode; onDelete: (node: OrgNode, reparent: boolean) => void; onClose: () => void;

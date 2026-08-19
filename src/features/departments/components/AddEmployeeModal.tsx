@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ModalOverlay } from "@/shared/components";
+import { ModalOverlay, NodeAvatar } from "@/shared/components";
 import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -9,7 +9,6 @@ import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
-import NodeAvatar from "./NodeAvatar";
 
 const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,

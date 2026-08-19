@@ -4,7 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
-import NodeAvatar from "./NodeAvatar";
+import { NodeAvatar } from "@/shared/components";
 import InfoRow from "./InfoRow";
 
 const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {

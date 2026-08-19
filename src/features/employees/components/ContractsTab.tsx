@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { Plus, Search, Briefcase } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
@@ -62,15 +62,25 @@ const ContractsTab = ({
   statusColors: Record<string, string>;
 }) => {
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<ContractFormData>(EMPTY_CONTRACT_FORM);
+  const [formData, setFormData] =
+    useState<ContractFormData>(EMPTY_CONTRACT_FORM);
   const [saving, setSaving] = useState(false);
 
-  const filtered = contracts.filter((c) => {
-    if (!search) return true;
-    const emp = empMap[c.employee_id];
-    const name = emp ? empDisplayName(emp) : "";
-    return name.includes(search);
-  });
+  const contractTypeById = useMemo(
+    () => new Map(contractTypes.map((t) => [t.id, t])),
+    [contractTypes],
+  );
+
+  const filtered = useMemo(
+    () =>
+      contracts.filter((c) => {
+        if (!search) return true;
+        const emp = empMap[c.employee_id];
+        const name = emp ? empDisplayName(emp) : "";
+        return name.includes(search);
+      }),
+    [contracts, search, empMap],
+  );
 
   const handleCreate = useCallback(async () => {
     if (
@@ -80,7 +90,9 @@ const ContractsTab = ({
     )
       return;
     setSaving(true);
+
     const ct = contractTypes.find((t) => t.id === formData.contract_type_id);
+
     // Calendar-day arithmetic (avoid UTC shift from toISOString).
     const probEnd = (() => {
       if (!ct || !(ct.probation_days > 0) || !formData.start_date) return null;
@@ -108,25 +120,31 @@ const ContractsTab = ({
     setSaving(false);
   }, [formData, contractTypes, refetch]);
 
-  const handleProbation = useCallback(async (contractId: string, status: "passed" | "failed") => {
-    try {
-      await odooData.updateContract(contractId, { probation_status: status });
-      refetch();
-    } catch (e) {
-      console.error(e);
-      alert("خطأ في تحديث حالة التجربة");
-    }
-  }, [refetch]);
+  const handleProbation = useCallback(
+    async (contractId: string, status: "passed" | "failed") => {
+      try {
+        await odooData.updateContract(contractId, { probation_status: status });
+        refetch();
+      } catch (e) {
+        console.error(e);
+        alert("خطأ في تحديث حالة التجربة");
+      }
+    },
+    [refetch],
+  );
 
-  const handleTerminate = useCallback(async (contractId: string) => {
-    try {
-      await odooData.updateContract(contractId, { status: "terminated" });
-      refetch();
-    } catch (e) {
-      console.error(e);
-      alert("خطأ في إنهاء العقد");
-    }
-  }, [refetch]);
+  const handleTerminate = useCallback(
+    async (contractId: string) => {
+      try {
+        await odooData.updateContract(contractId, { status: "terminated" });
+        refetch();
+      } catch (e) {
+        console.error(e);
+        alert("خطأ في إنهاء العقد");
+      }
+    },
+    [refetch],
+  );
 
   const closeForm = useCallback(() => setShowForm(false), []);
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);
@@ -186,7 +204,7 @@ const ContractsTab = ({
                     contract={c}
                     index={i}
                     emp={empMap[c.employee_id]}
-                    contractType={contractTypes.find((t) => t.id === c.contract_type_id)}
+                    contractType={contractTypeById.get(c.contract_type_id)}
                     statusLabels={statusLabels}
                     statusColors={statusColors}
                     onProbationUpdate={handleProbation}
