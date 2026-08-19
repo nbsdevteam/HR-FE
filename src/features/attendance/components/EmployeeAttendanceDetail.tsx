@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Calendar, CalendarDays, BarChart3, TrendingUp, Loader2, X, ChevronLeft, ChevronRight, Fingerprint } from "lucide-react";
+import { CalendarDays, BarChart3, TrendingUp, Loader2, X, Fingerprint } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { resolveEmployeeShift, shiftToSchedule, type DbAttendanceRecord, type DbEmployee } from "@/shared/hooks";
 import type { EmployeeSchedule } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
-import  AttendanceCalendarView  from "./AttendanceCalendarView";
+import AttendanceCalendarView from "./AttendanceCalendarView";
 import AttendanceDetailTabButton from "./AttendanceDetailTabButton";
 import MonthlySummaryView from "./MonthlySummaryView";
 import OverallSummaryView from "./OverallSummaryView";
@@ -17,6 +17,15 @@ export const DETAIL_TABS = [
   { id: "overall" as const, label: arabicSource("attendance.overall_summary"), icon: TrendingUp },
 ];
 type DetailTabId = (typeof DETAIL_TABS)[number]["id"];
+
+const MONTH_LABELS = [
+  arabicSource("common.january"), arabicSource("common.february"), arabicSource("common.march"),
+  arabicSource("common.april"), arabicSource("common.may"), arabicSource("common.jun"),
+  arabicSource("common.july"), arabicSource("common.august"), arabicSource("common.september"),
+  arabicSource("common.october_additional"), arabicSource("common.november"), arabicSource("common.december"),
+];
+
+const PRESENT_STATUSES = ["complete", "auto_checkout", "checked_in", "missing_checkout", "missing_checkin"];
 
 const EmployeeAttendanceDetail = ({
   employeeId,
@@ -33,36 +42,25 @@ const EmployeeAttendanceDetail = ({
   dbDepartments: any[];
   onClose: () => void;
 }) => {
-  const emp = employees.find(e => e.id === employeeId);
-  // Resolve the employee's shift → schedule (determines rest days)
-  const empShift = emp ? resolveEmployeeShift(emp, dbDepartments, dbShifts) : null;
-  const empSchedule: EmployeeSchedule | null = empShift ? shiftToSchedule(empShift) : null;
-  const empInfo = empMap[employeeId];
   const [activeTab, setActiveTab] = useState<DetailTabId>("calendar");
   const [allRecords, setAllRecords] = useState<DbAttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calMonth, setCalMonth] = useState(() => {
+    const now = new Date();
+    return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+  });
 
-  // Current month for calendar navigation
-  const now = new Date();
-  const [calMonth, setCalMonth] = useState(now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0"));
-
-  // Fetch ALL attendance records for this employee
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      try {
-        setAllRecords(await odooData.fetchAttendance({
-          employee_id: employeeId,
-          limit: 5000,
-        }));
-      } catch (e) {
-        console.error(e);
-        setAllRecords([]);
-      }
-      setLoading(false);
-    }
-    fetch();
-  }, [employeeId]);
+  // Resolve the employee's shift → schedule (determines rest days)
+  const emp = useMemo(() => employees.find(e => e.id === employeeId), [employees, employeeId]);
+  const empShift = useMemo(
+    () => (emp ? resolveEmployeeShift(emp, dbDepartments, dbShifts) : null),
+    [emp, dbDepartments, dbShifts]
+  );
+  const empSchedule: EmployeeSchedule | null = useMemo(
+    () => (empShift ? shiftToSchedule(empShift) : null),
+    [empShift]
+  );
+  const empInfo = empMap[employeeId];
 
   // Records for current calendar month
   const monthRecords = useMemo(() => {
@@ -71,24 +69,10 @@ const EmployeeAttendanceDetail = ({
     return allRecords.filter(r => r.date.startsWith(prefix));
   }, [allRecords, calMonth]);
 
-  // Navigate months
-  const prevMonth = useCallback(() => {
-    const [y, m] = calMonth.split("-").map(Number);
-    const d = new Date(y, m - 2, 1);
-    setCalMonth(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
-  }, [calMonth]);
-
-  const nextMonth = useCallback(() => {
-    const [y, m] = calMonth.split("-").map(Number);
-    const d = new Date(y, m, 1);
-    setCalMonth(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
-  }, [calMonth]);
-
   // Month display name
   const monthLabel = useMemo(() => {
     const [y, m] = calMonth.split("-").map(Number);
-    const months = [arabicSource("common.january"), arabicSource("common.february"), arabicSource("common.march"), arabicSource("common.april"), arabicSource("common.may"), arabicSource("common.jun"), arabicSource("common.july"), arabicSource("common.august"), arabicSource("common.september"), arabicSource("common.october_additional"), arabicSource("common.november"), arabicSource("common.december")];
-    return `${months[m - 1]} ${y}`;
+    return `${MONTH_LABELS[m - 1]} ${y}`;
   }, [calMonth]);
 
   // Monthly stats
@@ -114,26 +98,35 @@ const EmployeeAttendanceDetail = ({
     };
   }, [monthRecords]);
 
-  // Overall stats (all time)
+  // Overall stats (all time) — single pass over allRecords instead of separate filter/reduce calls
   const overallStats = useMemo(() => {
-    const complete = allRecords.filter(r => r.status === "complete" || r.status === "auto_checkout");
-    const totalHours = allRecords.reduce((s, r) => s + (r.working_hours || 0), 0);
-    const overtime = allRecords.reduce((s, r) => s + (r.overtime_hours || 0), 0);
-    const lateCount = allRecords.filter(r => r.is_late).length;
-    const lateMins = allRecords.reduce((s, r) => s + (r.late_minutes || 0), 0);
-    const absentCount = allRecords.filter(r => r.status === "absent").length;
-    const avgHours = complete.length > 0 ? totalHours / complete.length : 0;
+    let completeCount = 0;
+    let totalHours = 0;
+    let overtime = 0;
+    let lateCount = 0;
+    let lateMins = 0;
+    let absentCount = 0;
+    let presentCount = 0;
+    const months = new Set<string>();
 
-    // Unique months
-    const months = new Set(allRecords.map(r => r.date.slice(0, 7)));
-    // Date range
+    for (const r of allRecords) {
+      const isComplete = r.status === "complete" || r.status === "auto_checkout";
+      if (isComplete) completeCount++;
+      totalHours += r.working_hours || 0;
+      overtime += r.overtime_hours || 0;
+      if (r.is_late) lateCount++;
+      lateMins += r.late_minutes || 0;
+      if (r.status === "absent") absentCount++;
+      if (PRESENT_STATUSES.includes(r.status)) presentCount++;
+      months.add(r.date.slice(0, 7));
+    }
+
+    const avgHours = completeCount > 0 ? totalHours / completeCount : 0;
     const firstDate = allRecords.length > 0 ? allRecords[0].date : "—";
     const lastDate = allRecords.length > 0 ? allRecords[allRecords.length - 1].date : "—";
-    // Attendance rate (days with records / total calendar days in range)
-    const present = allRecords.filter(r => ["complete", "auto_checkout", "checked_in", "missing_checkout", "missing_checkin"].includes(r.status)).length;
 
     return {
-      daysWorked: complete.length,
+      daysWorked: completeCount,
       totalHours,
       avgHours,
       overtime,
@@ -144,8 +137,8 @@ const EmployeeAttendanceDetail = ({
       monthsCount: months.size,
       firstDate,
       lastDate,
-      presentDays: present,
-      attendanceRate: allRecords.length > 0 ? Math.round((present / allRecords.length) * 100) : 0,
+      presentDays: presentCount,
+      attendanceRate: allRecords.length > 0 ? Math.round((presentCount / allRecords.length) * 100) : 0,
     };
   }, [allRecords]);
 
@@ -155,7 +148,7 @@ const EmployeeAttendanceDetail = ({
     allRecords.forEach(r => {
       const m = r.date.slice(0, 7);
       if (!byMonth[m]) byMonth[m] = { month: m, days: 0, hours: 0, overtime: 0, late: 0, absent: 0 };
-      if (["complete", "auto_checkout", "checked_in", "missing_checkout", "missing_checkin"].includes(r.status)) byMonth[m].days++;
+      if (PRESENT_STATUSES.includes(r.status)) byMonth[m].days++;
       byMonth[m].hours += r.working_hours || 0;
       byMonth[m].overtime += r.overtime_hours || 0;
       if (r.is_late) byMonth[m].late++;
@@ -163,6 +156,37 @@ const EmployeeAttendanceDetail = ({
     });
     return Object.values(byMonth).sort((a, b) => b.month.localeCompare(a.month));
   }, [allRecords]);
+
+  // Navigate months
+  const prevMonth = useCallback(() => {
+    const [y, m] = calMonth.split("-").map(Number);
+    const d = new Date(y, m - 2, 1);
+    setCalMonth(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
+  }, [calMonth]);
+
+  const nextMonth = useCallback(() => {
+    const [y, m] = calMonth.split("-").map(Number);
+    const d = new Date(y, m, 1);
+    setCalMonth(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
+  }, [calMonth]);
+
+  // Fetch ALL attendance records for this employee
+  useEffect(() => {
+    async function fetch() {
+      setLoading(true);
+      try {
+        setAllRecords(await odooData.fetchAttendance({
+          employee_id: employeeId,
+          limit: 5000,
+        }));
+      } catch (e) {
+        console.error(e);
+        setAllRecords([]);
+      }
+      setLoading(false);
+    }
+    fetch();
+  }, [employeeId]);
 
   return (
     <ModalOverlay
@@ -260,5 +284,3 @@ const EmployeeAttendanceDetail = ({
 };
 
 export default EmployeeAttendanceDetail;
-
-// ══════════════════════════ Calendar View ══════════════════════════
