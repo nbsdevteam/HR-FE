@@ -1,4 +1,5 @@
 import { Filter, Search } from "lucide-react";
+import { FilterChip } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass } from "../styles";
 
@@ -26,16 +27,13 @@ const LeaveRequestFilters = ({
     <div className="flex flex-wrap items-center gap-3 mb-4">
       <Filter className="w-4 h-4 text-muted-foreground" />
       {filters.map((filterOption) => (
-        <button
+        <FilterChip
           key={filterOption}
+          label={filterOption}
+          active={filter === filterOption}
           onClick={() => onFilterChange(filterOption)}
-          className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-            filter === filterOption ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          }`}
-          style={{ fontSize: 13 }}
-        >
-          {filterOption}
-        </button>
+          fontSize={13}
+        />
       ))}
       <div className="relative flex-1 max-w-xs ms-auto">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
