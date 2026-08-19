@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { AlertCircle, CalendarDays, FileText, Loader2, Send, X } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { ModalOverlay } from "@/shared/components";
@@ -9,6 +9,13 @@ import {
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
+import LeaveTypeChipButton from "./LeaveTypeChipButton";
+import HalfDayPeriodButton from "./HalfDayPeriodButton";
+
+const HALF_DAY_PERIODS = [
+  ["morning", arabicSource("leave.morning")],
+  ["afternoon", arabicSource("leave.evening")],
+] as const;
 
 const LeaveRequestModal = ({
   employees, leaveTypes, balances, selfOnly, linkError, employeesLoading,
@@ -67,6 +74,11 @@ const LeaveRequestModal = ({
     }
     return bal.total_days + bal.carryover_days + bal.accrued_days - bal.used_days;
   }, [employeeId, leaveTypeId, balances, leaveTypes]);
+
+  const handleSelectLeaveType = useCallback((lt: DbLeaveType) => {
+    setLeaveTypeId(lt.id);
+    if (!lt.allow_half_day) setIsHalfDay(false);
+  }, []);
 
   useEffect(() => {
     if (selfOnly && selfEmployeeId) {
@@ -177,19 +189,12 @@ const LeaveRequestModal = ({
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.leave_type_2")}</label>
             <div className="flex flex-wrap gap-2">
               {leaveTypes.map(t => (
-                <button
+                <LeaveTypeChipButton
                   key={t.id}
-                  onClick={() => { setLeaveTypeId(t.id); if (!t.allow_half_day) setIsHalfDay(false); }}
-                  className={`px-3 py-2 rounded-lg border transition-all cursor-pointer ${
-                    leaveTypeId === t.id
-                      ? "border-primary/40 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/20"
-                  }`}
-                  style={{ fontSize: 13, backgroundColor: leaveTypeId === t.id ? t.color + "15" : undefined }}
-                >
-                  {t.name_ar}
-                  {!t.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.without_salary")}</span>}
-                </button>
+                  leaveType={t}
+                  isSelected={leaveTypeId === t.id}
+                  onSelect={handleSelectLeaveType}
+                />
               ))}
             </div>
           </div>
@@ -206,19 +211,14 @@ const LeaveRequestModal = ({
               </label>
               {isHalfDay && (
                 <div className="flex gap-2">
-                  {([["morning", arabicSource("leave.morning")], ["afternoon", arabicSource("leave.evening")]] as const).map(([val, label]) => (
-                    <button
+                  {HALF_DAY_PERIODS.map(([val, label]) => (
+                    <HalfDayPeriodButton
                       key={val}
-                      onClick={() => setHalfDayPeriod(val)}
-                      className={`px-3 py-1 rounded-md border transition-colors cursor-pointer ${
-                        halfDayPeriod === val
-                          ? "bg-primary text-primary-foreground"
-                          : "border-border text-muted-foreground"
-                      }`}
-                      style={{ fontSize: 12 }}
-                    >
-                      {label}
-                    </button>
+                      value={val}
+                      label={label}
+                      isSelected={halfDayPeriod === val}
+                      onSelect={setHalfDayPeriod}
+                    />
                   ))}
                 </div>
               )}
