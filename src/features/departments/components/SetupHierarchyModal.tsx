@@ -4,6 +4,8 @@ import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
+import OrgPreviewNode from "./OrgPreviewNode";
+import IconBulletListItem from "./IconBulletListItem";
 
 type SetupHierarchyModalProps = {
   dbEmployees: DbEmployee[];
@@ -48,24 +50,16 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
               </div>
               <div className="w-px h-4 bg-border/60" />
               <div className="flex items-center gap-6">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-px bg-border/60" />
-                  <div className="px-3 py-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10">
-                    <span className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("common.chief_executive_officer_ceo")}</span>
-                  </div>
-                  <p className="text-muted-foreground" style={{ fontSize: 10 }}>
-                    {rootEmployeeCount > 0
-                      ? `← ${rootEmployeeCount} ${arabicSource("hierarchy.current_employee")}`
-                      : arabicSource("common.no_subordinates")}
-                  </p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-px bg-border/60" />
-                  <div className="px-3 py-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10">
-                    <span className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("common.chief_operating_officer_coo")}</span>
-                  </div>
-                  <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("common.no_subordinates")}</p>
-                </div>
+                <OrgPreviewNode
+                  title={arabicSource("common.chief_executive_officer_ceo")}
+                  subtitle={rootEmployeeCount > 0
+                    ? `← ${rootEmployeeCount} ${arabicSource("hierarchy.current_employee")}`
+                    : arabicSource("common.no_subordinates")}
+                />
+                <OrgPreviewNode
+                  title={arabicSource("common.chief_operating_officer_coo")}
+                  subtitle={arabicSource("common.no_subordinates")}
+                />
               </div>
             </div>
           </div>
@@ -73,15 +67,15 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
             <p className="text-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.3_new_employees_will_be_created")}</p>
             <ul className="mt-2 space-y-1 text-muted-foreground" style={{ fontSize: 11 }}>
-              <li className="flex items-center gap-1.5">
-                <Crown className="w-3 h-3 text-yellow-400" /> <strong className="text-yellow-400">{arabicSource("common.owner")}</strong> {arabicSource("hierarchy.top_of_the_pyramid_gold")}
-              </li>
-              <li className="flex items-center gap-1.5">
-                <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">{arabicSource("common.chief_executive_officer_ceo")}</strong> {arabicSource("common.under_the_owner")}
-              </li>
-              <li className="flex items-center gap-1.5">
-                <Briefcase className="w-3 h-3 text-purple-400" /> <strong className="text-purple-400">{arabicSource("common.chief_operating_officer_coo")}</strong> {arabicSource("common.under_the_owner")}
-              </li>
+              <IconBulletListItem icon={Crown} colorClassName="text-yellow-400" label={arabicSource("common.owner")}>
+                {arabicSource("hierarchy.top_of_the_pyramid_gold")}
+              </IconBulletListItem>
+              <IconBulletListItem icon={Briefcase} colorClassName="text-purple-400" label={arabicSource("common.chief_executive_officer_ceo")}>
+                {arabicSource("common.under_the_owner")}
+              </IconBulletListItem>
+              <IconBulletListItem icon={Briefcase} colorClassName="text-purple-400" label={arabicSource("common.chief_operating_officer_coo")}>
+                {arabicSource("common.under_the_owner")}
+              </IconBulletListItem>
             </ul>
             {rootEmployeeCount > 0 && (
               <p className="mt-2 text-amber-500" style={{ fontSize: 11 }}>
