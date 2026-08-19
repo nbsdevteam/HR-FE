@@ -1,20 +1,11 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, Clock, GraduationCap, TrendingUp, TrendingDown,
-  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Target, Activity, Percent, Coins, FileText, UserX,
-  Zap, Heart, Building2, PieChart, Gauge, Eye,
-} from "lucide-react";
-import { DonutChart } from "@/shared/components/donut-chart";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
+import { Users, UserPlus, Clock, Briefcase, Target, UserX, Heart } from "lucide-react";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
-import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLeaveStatus } from "@/i18n/status";
-import DashboardMiniBar from "./DashboardMiniBar";
-import DashboardRiskBadge from "./DashboardRiskBadge";
-import DashboardStatGrid from "./DashboardStatGrid";
-import DashboardTrendBadge from "./DashboardTrendBadge";
-import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
+import DashboardSectionStatCard from "./DashboardSectionStatCard";
+import RecruitmentFunnelStageRow from "./RecruitmentFunnelStageRow";
+import { pct } from "../utils/dashboardFormat";
 
 type DashboardRecruitmentSectionProps = {
   data: any;
@@ -29,32 +20,31 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   } = data;
 
+  const recruitmentStatCards = useMemo(() => [
+    { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, sub: `${jobs.length} ${arabicSource("dashboard.total")}`, icon: Briefcase, color: "text-primary" },
+    { label: arabicSource("common.total_applicants"), value: recruitmentStats.totalApplicants, sub: `${recruitmentStats.avgApplicantsPerJob} ${arabicSource("dashboard.average_function")}`, icon: Users, color: "text-blue-400" },
+    { label: arabicSource("dashboard.average_time_to_hire"), value: `${recruitmentStats.avgTimeToFill} ${arabicSource("common.days_2")}`, sub: arabicSource("dashboard.from_applying_for_appointment"), icon: Clock, color: recruitmentStats.avgTimeToFill > cfg.timeToFillWarningDays ? "text-amber-400" : "text-emerald-400" },
+    { label: arabicSource("dashboard.offer_acceptance_rate"), value: `${recruitmentStats.offerAcceptRate}%`, sub: `${recruitmentStats.hired} ${arabicSource("dashboard.were_appointed")}`, icon: Target, color: "text-emerald-400" },
+    { label: arabicSource("dashboard.talent_bank"), value: recruitmentStats.bookmarked, sub: arabicSource("dashboard.saved_filter"), icon: Heart, color: "text-purple-400" },
+  ], [recruitmentStats, jobs, cfg]);
+
+  const funnelStages: Array<{ stage: { name: string; value: number; color: string }; width: number; conversionPct: number | null }> = useMemo(() => {
+    const maxVal = Math.max(...recruitmentPipeline.map((s: any) => s.value), 1);
+    return recruitmentPipeline.map((stage: any, i: number) => ({
+      stage,
+      width: Math.max(8, Math.round((stage.value / maxVal) * 100)),
+      conversionPct: i < recruitmentPipeline.length - 1 && stage.value > 0
+        ? pct(recruitmentPipeline[i + 1].value, stage.value)
+        : null,
+    }));
+  }, [recruitmentPipeline]);
+
   return (
 <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, sub: `${jobs.length} ${arabicSource("dashboard.total")}`, icon: Briefcase, color: "text-primary" },
-              { label: arabicSource("common.total_applicants"), value: recruitmentStats.totalApplicants, sub: `${recruitmentStats.avgApplicantsPerJob} ${arabicSource("dashboard.average_function")}`, icon: Users, color: "text-blue-400" },
-              { label: arabicSource("dashboard.average_time_to_hire"), value: `${recruitmentStats.avgTimeToFill} ${arabicSource("common.days_2")}`, sub: arabicSource("dashboard.from_applying_for_appointment"), icon: Clock, color: recruitmentStats.avgTimeToFill > cfg.timeToFillWarningDays ? "text-amber-400" : "text-emerald-400" },
-              { label: arabicSource("dashboard.offer_acceptance_rate"), value: `${recruitmentStats.offerAcceptRate}%`, sub: `${recruitmentStats.hired} ${arabicSource("dashboard.were_appointed")}`, icon: Target, color: "text-emerald-400" },
-              { label: arabicSource("dashboard.talent_bank"), value: recruitmentStats.bookmarked, sub: arabicSource("dashboard.saved_filter"), icon: Heart, color: "text-purple-400" },
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                  className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg overflow-hidden">
-                  <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                  <div className="flex items-start justify-between relative z-10">
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                      <p className={`text-2xl font-semibold mt-1 ${stat.color}`}>{stat.value}</p>
-                      <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{stat.sub}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20"><Icon className="w-5 h-5 text-primary" /></div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {recruitmentStatCards.map((stat, i) => (
+              <DashboardSectionStatCard key={stat.label} index={i} {...stat} />
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -63,33 +53,9 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.recruitment_suppression")}</h3>
               {recruitmentPipeline.some((stage: any) => stage.value > 0) ? (
                 <div className="space-y-3">
-                  {recruitmentPipeline.map((stage: any, i: number) => {
-                    const maxVal = Math.max(...recruitmentPipeline.map((s: any) => s.value), 1);
-                    const width = Math.max(8, Math.round((stage.value / maxVal) * 100));
-                    return (
-                      <div key={stage.name} className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-24 flex-shrink-0">{stage.name}</span>
-                        <div className="flex-1 relative">
-                          <div className="h-8 rounded-lg bg-muted/20 overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${width}%` }}
-                              transition={{ delay: i * 0.1, duration: 0.5 }}
-                              className="h-full rounded-lg flex items-center justify-end pe-2"
-                              style={{ backgroundColor: stage.color + "30", borderLeft: `3px solid ${stage.color}` }}
-                            >
-                              <span className="text-xs font-medium text-foreground">{stage.value}</span>
-                            </motion.div>
-                          </div>
-                        </div>
-                        {i < recruitmentPipeline.length - 1 && recruitmentPipeline[i].value > 0 && (
-                          <span className="text-xs text-muted-foreground w-12 text-center">
-                            {pct(recruitmentPipeline[i + 1].value, recruitmentPipeline[i].value)}%
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {funnelStages.map(({ stage, width, conversionPct }, i) => (
+                    <RecruitmentFunnelStageRow key={stage.name} stage={stage} width={width} conversionPct={conversionPct} index={i} />
+                  ))}
                   {/* Conversion summary */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 mt-4">
                     <span className="text-sm text-muted-foreground">{arabicSource("dashboard.overall_conversion_rate")}</span>

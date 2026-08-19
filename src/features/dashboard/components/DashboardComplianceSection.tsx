@@ -1,20 +1,12 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, Clock, GraduationCap, TrendingUp, TrendingDown,
-  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Target, Activity, Percent, Coins, FileText, UserX,
-  Zap, Heart, Building2, PieChart, Gauge, Eye,
-} from "lucide-react";
+import { AlertTriangle, GraduationCap, FileCheck, Shield, Award, Zap } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { CustomLineChart } from "@/shared/components/custom-line-chart";
-import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLeaveStatus } from "@/i18n/status";
 import DashboardMiniBar from "./DashboardMiniBar";
-import DashboardRiskBadge from "./DashboardRiskBadge";
-import DashboardStatGrid from "./DashboardStatGrid";
-import DashboardTrendBadge from "./DashboardTrendBadge";
-import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
+import DashboardSectionStatCard from "./DashboardSectionStatCard";
+import DashboardRatingLevelBar from "./DashboardRatingLevelBar";
+import { pct } from "../utils/dashboardFormat";
 
 type DashboardComplianceSectionProps = {
   data: any;
@@ -29,32 +21,28 @@ const DashboardComplianceSection = ({ data }: DashboardComplianceSectionProps) =
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   } = data;
 
+  const complianceStats = useMemo(() => [
+    { label: arabicSource("dashboard.average_performance_rating"), value: `${evalStats.avgRating}/5`, sub: `${arabicSource("common.cover")} ${evalStats.coverageRate}${arabicSource("common.of_employees")}`, icon: Award, color: evalStats.avgRating >= cfg.performanceGoodThreshold ? "text-emerald-400" : "text-amber-400" },
+    { label: arabicSource("common.active_alarms"), value: warningStats.active, sub: `${warningStats.escalationRisk} ${arabicSource("common.risk_of_escalation")}`, icon: AlertTriangle, color: warningStats.active > 0 ? "text-orange-400" : "text-emerald-400" },
+    { label: arabicSource("dashboard.completion_of_training"), value: `${trainingStats.completionRate}%`, sub: `${arabicSource("common.cover")} ${trainingStats.coverageRate}${arabicSource("common.of_employees")}`, icon: GraduationCap, color: trainingStats.completionRate >= cfg.trainingCompletionTarget ? "text-emerald-400" : "text-amber-400" },
+    { label: arabicSource("dashboard.expired_nearly_documents"), value: expiryStats.expiredDocs + expiryStats.expiringDocs, sub: `${expiryStats.expiredDocs} ${arabicSource("dashboard.finished")} ${expiryStats.expiringDocs} ${arabicSource("dashboard.close")}`, icon: FileCheck, color: expiryStats.expiredDocs > 0 ? "text-red-400" : "text-amber-400" },
+    { label: arabicSource("dashboard.high_performance_rate"), value: `${pct(evalStats.high, evalStats.completed)}%`, sub: `${evalStats.high} ${arabicSource("common.from")} ${evalStats.completed} ${arabicSource("dashboard.evaluator")}`, icon: Zap, color: "text-purple-400" },
+  ], [evalStats, cfg, warningStats, trainingStats, expiryStats]);
+
+  const ratingLevels = useMemo(() => [
+    { label: arabicSource("dashboard.featured_5"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 5).length, color: "bg-emerald-500" },
+    { label: arabicSource("dashboard.exceeding_expectations_4"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 4).length, color: "bg-blue-500" },
+    { label: arabicSource("dashboard.within_expected_3"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 3).length, color: "bg-primary" },
+    { label: arabicSource("dashboard.below_expectations_2"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 2).length, color: "bg-amber-500" },
+    { label: arabicSource("dashboard.not_achieved_1"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 1).length, color: "bg-red-500" },
+  ], [evaluations]);
+
   return (
 <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              { label: arabicSource("dashboard.average_performance_rating"), value: `${evalStats.avgRating}/5`, sub: `${arabicSource("common.cover")} ${evalStats.coverageRate}${arabicSource("common.of_employees")}`, icon: Award, color: evalStats.avgRating >= cfg.performanceGoodThreshold ? "text-emerald-400" : "text-amber-400" },
-              { label: arabicSource("common.active_alarms"), value: warningStats.active, sub: `${warningStats.escalationRisk} ${arabicSource("common.risk_of_escalation")}`, icon: AlertTriangle, color: warningStats.active > 0 ? "text-orange-400" : "text-emerald-400" },
-              { label: arabicSource("dashboard.completion_of_training"), value: `${trainingStats.completionRate}%`, sub: `${arabicSource("common.cover")} ${trainingStats.coverageRate}${arabicSource("common.of_employees")}`, icon: GraduationCap, color: trainingStats.completionRate >= cfg.trainingCompletionTarget ? "text-emerald-400" : "text-amber-400" },
-              { label: arabicSource("dashboard.expired_nearly_documents"), value: expiryStats.expiredDocs + expiryStats.expiringDocs, sub: `${expiryStats.expiredDocs} ${arabicSource("dashboard.finished")} ${expiryStats.expiringDocs} ${arabicSource("dashboard.close")}`, icon: FileCheck, color: expiryStats.expiredDocs > 0 ? "text-red-400" : "text-amber-400" },
-              { label: arabicSource("dashboard.high_performance_rate"), value: `${pct(evalStats.high, evalStats.completed)}%`, sub: `${evalStats.high} ${arabicSource("common.from")} ${evalStats.completed} ${arabicSource("dashboard.evaluator")}`, icon: Zap, color: "text-purple-400" },
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                  className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg overflow-hidden">
-                  <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                  <div className="flex items-start justify-between relative z-10">
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                      <p className={`text-2xl font-semibold mt-1 ${stat.color}`}>{stat.value}</p>
-                      <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{stat.sub}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20"><Icon className="w-5 h-5 text-primary" /></div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {complianceStats.map((stat, i) => (
+              <DashboardSectionStatCard key={stat.label} index={i} {...stat} />
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -63,20 +51,14 @@ const DashboardComplianceSection = ({ data }: DashboardComplianceSectionProps) =
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.performance_evaluation_distribution")}</h3>
               {evalStats.completed > 0 ? (
                 <div className="space-y-4">
-                  {[
-                    { label: arabicSource("dashboard.featured_5"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 5).length, color: "bg-emerald-500" },
-                    { label: arabicSource("dashboard.exceeding_expectations_4"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 4).length, color: "bg-blue-500" },
-                    { label: arabicSource("dashboard.within_expected_3"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 3).length, color: "bg-primary" },
-                    { label: arabicSource("dashboard.below_expectations_2"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 2).length, color: "bg-amber-500" },
-                    { label: arabicSource("dashboard.not_achieved_1"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 1).length, color: "bg-red-500" },
-                  ].map(level => (
-                    <div key={level.label} className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground w-32 flex-shrink-0">{level.label}</span>
-                      <div className="flex-1 h-6 rounded-full bg-muted/20 overflow-hidden">
-                        <div className={`h-full ${level.color} rounded-full transition-all`} style={{ width: `${pct(level.count, evalStats.completed)}%` }} />
-                      </div>
-                      <span className="text-sm text-foreground w-8 text-center">{level.count}</span>
-                    </div>
+                  {ratingLevels.map(level => (
+                    <DashboardRatingLevelBar
+                      key={level.label}
+                      label={level.label}
+                      count={level.count}
+                      color={level.color}
+                      percent={pct(level.count, evalStats.completed)}
+                    />
                   ))}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10">

@@ -1,5 +1,5 @@
 import type { DashboardKpiSection } from "../types";
-import { getDashboardKpiTabs } from "../utils/dashboardTabs";
+import { dashboardKpiTabs } from "../data";
 import DashboardKpiTabButton from "./DashboardKpiTabButton";
 
 type DashboardKpiTabsProps = {
@@ -9,7 +9,7 @@ type DashboardKpiTabsProps = {
 
 const DashboardKpiTabs = ({ activeSection, onSectionChange }: DashboardKpiTabsProps) => (
   <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
-    {getDashboardKpiTabs().map((tab) => (
+    {dashboardKpiTabs.map((tab) => (
       <DashboardKpiTabButton
         key={tab.key}
         tabKey={tab.key}

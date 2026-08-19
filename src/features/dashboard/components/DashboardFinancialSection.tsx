@@ -1,20 +1,13 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, Clock, GraduationCap, TrendingUp, TrendingDown,
-  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Target, Activity, Percent, Coins, FileText, UserX,
-  Zap, Heart, Building2, PieChart, Gauge, Eye,
-} from "lucide-react";
-import { DonutChart } from "@/shared/components/donut-chart";
+import { Wallet, TrendingUp, CreditCard, Coins, UserX } from "lucide-react";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
-import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLeaveStatus } from "@/i18n/status";
 import DashboardMiniBar from "./DashboardMiniBar";
-import DashboardRiskBadge from "./DashboardRiskBadge";
-import DashboardStatGrid from "./DashboardStatGrid";
+import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import DashboardTrendBadge from "./DashboardTrendBadge";
-import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
+import { formatIQD, pct } from "../utils/dashboardFormat";
 
 type DashboardFinancialSectionProps = {
   data: any;
@@ -29,32 +22,20 @@ const DashboardFinancialSection = ({ data }: DashboardFinancialSectionProps) => 
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   } = data;
 
+  const financialStats = useMemo(() => [
+    { label: arabicSource("common.total_compensation"), value: formatIQD(compensationStats.totalCompensation), sub: `${arabicSource("dashboard.salaries_allowances")}`, icon: Wallet, color: "text-primary" },
+    { label: arabicSource("dashboard.cost_per_employee"), value: formatIQD(compensationStats.costPerEmployee), sub: `${arabicSource("common.median_salary")} ${formatIQD(medianSalary)}`, icon: Coins, color: "text-emerald-400" },
+    { label: arabicSource("common.total_allowances"), value: formatIQD(compensationStats.totalAllowances), sub: `${allAllowances.length} ${arabicSource("dashboard.active_allowance")}`, icon: TrendingUp, color: "text-blue-400" },
+    { label: arabicSource("dashboard.loan_balance"), value: formatIQD(totalLoanBalance), sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`, icon: CreditCard, color: "text-amber-400" },
+    { label: arabicSource("dashboard.active_exits"), value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, sub: `${arabicSource("dashboard.end_of_service_benefits")}`, icon: UserX, color: "text-red-400" },
+  ], [compensationStats, medianSalary, allAllowances, totalLoanBalance, activeLoans, loanUtilization, exitProcesses]);
+
   return (
 <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              { label: arabicSource("common.total_compensation"), value: formatIQD(compensationStats.totalCompensation), sub: `${arabicSource("dashboard.salaries_allowances")}`, icon: Wallet, color: "text-primary" },
-              { label: arabicSource("dashboard.cost_per_employee"), value: formatIQD(compensationStats.costPerEmployee), sub: `${arabicSource("common.median_salary")} ${formatIQD(medianSalary)}`, icon: Coins, color: "text-emerald-400" },
-              { label: arabicSource("common.total_allowances"), value: formatIQD(compensationStats.totalAllowances), sub: `${allAllowances.length} ${arabicSource("dashboard.active_allowance")}`, icon: TrendingUp, color: "text-blue-400" },
-              { label: arabicSource("dashboard.loan_balance"), value: formatIQD(totalLoanBalance), sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`, icon: CreditCard, color: "text-amber-400" },
-              { label: arabicSource("dashboard.active_exits"), value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, sub: `${arabicSource("dashboard.end_of_service_benefits")}`, icon: UserX, color: "text-red-400" },
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                  className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg overflow-hidden">
-                  <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                  <div className="flex items-start justify-between relative z-10">
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                      <p className={`text-lg font-semibold mt-1 ${stat.color}`} dir="ltr">{stat.value}</p>
-                      <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{stat.sub}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20"><Icon className="w-5 h-5 text-primary" /></div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {financialStats.map((stat, i) => (
+              <DashboardSectionStatCard key={stat.label} index={i} valueTextClassName="text-lg" dir="ltr" {...stat} />
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

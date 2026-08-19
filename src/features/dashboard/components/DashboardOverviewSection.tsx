@@ -1,20 +1,20 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import {
-  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, Clock, GraduationCap, TrendingUp, TrendingDown,
-  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Target, Activity, Percent, Coins, FileText, UserX,
-  Zap, Heart, Building2, PieChart, Gauge, Eye,
+  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, GraduationCap,
+  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Activity, UserX, Zap, Heart,
 } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
-import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLeaveStatus } from "@/i18n/status";
-import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardRiskBadge from "./DashboardRiskBadge";
 import DashboardStatGrid from "./DashboardStatGrid";
 import DashboardTrendBadge from "./DashboardTrendBadge";
-import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
+import DashboardQuickIndicatorRow from "./DashboardQuickIndicatorRow";
+import DashboardRiskItemRow from "./DashboardRiskItemRow";
+import DashboardNotificationRow from "./DashboardNotificationRow";
+import { formatIQD } from "../utils/dashboardFormat";
 
 type DashboardOverviewSectionProps = {
   data: any;
@@ -28,6 +28,20 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
     tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   } = data;
+
+  const quickIndicators = useMemo(() => [
+    { label: arabicSource("dashboard.vacations_pending"), value: pendingLeaves, icon: CalendarDays, color: "text-amber-400" },
+    { label: arabicSource("common.active_loans"), value: activeLoans.length, icon: CreditCard, color: "text-blue-400" },
+    { label: arabicSource("dashboard.reviews_awaited"), value: evalStats.pending, icon: Award, color: "text-purple-400" },
+    { label: arabicSource("dashboard.training_underway"), value: trainingStats.ongoing, icon: GraduationCap, color: "text-emerald-400" },
+    { label: arabicSource("common.active_alarms"), value: warningStats.active, icon: AlertTriangle, color: "text-orange-400" },
+    { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, icon: UserPlus, color: "text-cyan-400" },
+    { label: arabicSource("dashboard.exits"), value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, icon: UserX, color: "text-red-400" },
+  ], [pendingLeaves, activeLoans, evalStats, trainingStats, warningStats, recruitmentStats, exitProcesses]);
+
+  const riskItemsPreview = useMemo(() => riskScore.items.slice(0, 5), [riskScore.items]);
+
+  const notificationsPreview = useMemo(() => notifications.slice(0, 6), [notifications]);
 
   return (
 <>
@@ -145,26 +159,9 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className={cardCls}>
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.quick_indicators")}</h3>
               <div className="space-y-3">
-                {[
-                  { label: arabicSource("dashboard.vacations_pending"), value: pendingLeaves, icon: CalendarDays, color: "text-amber-400" },
-                  { label: arabicSource("common.active_loans"), value: activeLoans.length, icon: CreditCard, color: "text-blue-400" },
-                  { label: arabicSource("dashboard.reviews_awaited"), value: evalStats.pending, icon: Award, color: "text-purple-400" },
-                  { label: arabicSource("dashboard.training_underway"), value: trainingStats.ongoing, icon: GraduationCap, color: "text-emerald-400" },
-                  { label: arabicSource("common.active_alarms"), value: warningStats.active, icon: AlertTriangle, color: "text-orange-400" },
-                  { label: arabicSource("common.open_jobs"), value: recruitmentStats.openPositions, icon: UserPlus, color: "text-cyan-400" },
-                  { label: arabicSource("dashboard.exits"), value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, icon: UserX, color: "text-red-400" },
-                ].map((item: any) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.label} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/20">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${item.color}`} />
-                        <span className="text-sm text-foreground">{item.label}</span>
-                      </div>
-                      <span className={`text-sm font-medium ${item.color}`}>{item.value}</span>
-                    </div>
-                  );
-                })}
+                {quickIndicators.map((item) => (
+                  <DashboardQuickIndicatorRow key={item.label} label={item.label} value={item.value} icon={item.icon} color={item.color} />
+                ))}
               </div>
             </motion.div>
 
@@ -188,11 +185,8 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
                     <Heart className="w-8 h-8 text-emerald-400/30 mx-auto mb-2" />
                     <p className="text-emerald-400 text-sm">{arabicSource("dashboard.no_risks")}</p>
                   </div>
-                ) : riskScore.items.slice(0, 5).map((item: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/10">
-                    <span className="text-xs text-foreground">{item.label}</span>
-                    <DashboardRiskBadge level={item.level} />
-                  </div>
+                ) : riskItemsPreview.map((item: any, i: number) => (
+                  <DashboardRiskItemRow key={i} label={item.label} level={item.level} />
                 ))}
               </div>
             </motion.div>
@@ -206,14 +200,8 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
               <div className="space-y-2.5">
                 {notifications.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">{arabicSource("common.no_notifications")}</p>
-                ) : notifications.slice(0, 6).map((n: any) => (
-                  <div key={n.id} className={`flex items-start gap-3 p-2.5 rounded-lg ${n.is_read ? "bg-muted/10" : "bg-primary/5 border border-primary/20"}`}>
-                    <Bell className={`w-3.5 h-3.5 mt-0.5 ${n.type === "warning" ? "text-amber-400" : n.type === "error" ? "text-red-400" : "text-primary"}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-foreground truncate" style={{ fontSize: 12 }}>{n.title}</p>
-                      <p className="text-muted-foreground" style={{ fontSize: 10 }}>{formatDateTime(n.created_at)}</p>
-                    </div>
-                  </div>
+                ) : notificationsPreview.map((n: any) => (
+                  <DashboardNotificationRow key={n.id} notification={n} />
                 ))}
               </div>
             </motion.div>
