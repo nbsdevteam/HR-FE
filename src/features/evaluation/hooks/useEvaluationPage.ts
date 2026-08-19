@@ -13,7 +13,6 @@ import {
 } from "../types";
 
 export const useEvaluationPage = () => {
-  const { employees, loading: empLoading } = useEmployees();
   const [evaluations, setEvaluations] = useState<DbEvaluation[]>([]);
   const [criteria, setCriteria] = useState<DbEvalCriteria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,19 +25,7 @@ export const useEvaluationPage = () => {
   const [evalSortBy, setEvalSortBy] = useState<EvaluationSortKey>("period");
   const [evalSortDir, setEvalSortDir] = useState<"asc" | "desc">("desc");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { evaluations: evs, criteria: crit } = await odooData.fetchEvaluationsWithCriteria();
-      setEvaluations(evs.map(e => ({ ...e, status: odooStatusToEvaluation[e.status] || e.status })) as DbEvaluation[]);
-      setCriteria(crit as DbEvalCriteria[]);
-    } catch (error) {
-      console.error(error);
-      setEvaluations([]);
-      setCriteria([]);
-    }
-    setLoading(false);
-  }, []);
+  const { employees, loading: empLoading } = useEmployees();
 
   const empMap = useMemo(() => {
     const map: Record<string, DbEmployee> = {};
@@ -79,15 +66,35 @@ export const useEvaluationPage = () => {
     return result;
   }, [evaluations, filterStatus, searchText, empMap, evalSortBy, evalSortDir]);
 
-  const completedEvaluations = evaluations.filter(evaluation => evaluation.status === arabicSource("common.complete"));
-  const completedCount = completedEvaluations.length;
-  const avgRating = completedCount > 0
-    ? (completedEvaluations.filter(evaluation => evaluation.overall_rating > 0).reduce((sum, evaluation) => sum + evaluation.overall_rating, 0) / completedCount).toFixed(1)
-    : "—";
-  const ratingDistribution = ratingScale.map(scale => ({
-    label: scale.label,
-    value: evaluations.filter(evaluation => evaluation.overall_rating === scale.value && evaluation.status === arabicSource("common.complete")).length,
-  }));
+  const evaluationStats = useMemo(() => {
+    const completedEvaluations = evaluations.filter(evaluation => evaluation.status === arabicSource("common.complete"));
+    const completedCount = completedEvaluations.length;
+    const avgRating = completedCount > 0
+      ? (completedEvaluations.filter(evaluation => evaluation.overall_rating > 0).reduce((sum, evaluation) => sum + evaluation.overall_rating, 0) / completedCount).toFixed(1)
+      : "—";
+    const ratingDistribution = ratingScale.map(scale => ({
+      label: scale.label,
+      value: evaluations.filter(evaluation => evaluation.overall_rating === scale.value && evaluation.status === arabicSource("common.complete")).length,
+    }));
+    const inProgressCount = evaluations.filter(evaluation => evaluation.status === arabicSource("common.under_evaluation")).length;
+    return { completedCount, avgRating, ratingDistribution, inProgressCount };
+  }, [evaluations]);
+
+  const { completedCount, avgRating, ratingDistribution, inProgressCount } = evaluationStats;
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { evaluations: evs, criteria: crit } = await odooData.fetchEvaluationsWithCriteria();
+      setEvaluations(evs.map(e => ({ ...e, status: odooStatusToEvaluation[e.status] || e.status })) as DbEvaluation[]);
+      setCriteria(crit as DbEvalCriteria[]);
+    } catch (error) {
+      console.error(error);
+      setEvaluations([]);
+      setCriteria([]);
+    }
+    setLoading(false);
+  }, []);
 
   const closeNewEvaluation = useCallback(() => setShowNewEval(false), []);
 
@@ -129,7 +136,7 @@ export const useEvaluationPage = () => {
     setViewMode,
     showNewEval,
     totalEvals: evaluations.length,
-    inProgressCount: evaluations.filter(evaluation => evaluation.status === arabicSource("common.under_evaluation")).length,
+    inProgressCount,
     closeNewEvaluation,
     viewMode,
   };

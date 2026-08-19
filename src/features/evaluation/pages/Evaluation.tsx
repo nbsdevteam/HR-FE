@@ -100,7 +100,6 @@ const EvaluationPage = () => {
           <KanbanView
             evaluations={filtered}
             empMap={empMap}
-            criteria={criteria}
             onSelect={setSelectedEval}
           />
         )}
@@ -112,7 +111,6 @@ const EvaluationPage = () => {
             evaluation={selectedEval}
             empMap={empMap}
             criteria={criteria.filter(criterion => criterion.evaluation_id === selectedEval.id)}
-            allCriteria={criteria}
             onClose={() => setSelectedEval(null)}
             onUpdate={fetchData}
           />

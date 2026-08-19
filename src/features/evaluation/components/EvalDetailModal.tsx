@@ -1,13 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Star, X, Loader2, Save, Pencil,
-  CheckCircle, Trash2,
+  X, Loader2, Pencil,
+  Trash2,
 } from "lucide-react";
 import { localizedConfirm } from "@/i18n/native";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
-import { ModalOverlay } from "@/shared/components";
+import { ModalOverlay, StatusBadge } from "@/shared/components";
 import { CustomRadarChart } from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
 import {
@@ -18,25 +18,25 @@ import {
   type DbEvaluation,
 } from "../types";
 import { getRatingInfo, renderStars } from "../utils/evaluationHelpers";
+import CriterionRow from "./shared/CriterionRow";
+import StarScoreButtons from "./shared/StarScoreButtons";
+import EvaluationSaveActions from "./shared/EvaluationSaveActions";
 
 const EvalDetailModal = ({
   evaluation,
   empMap,
   criteria,
-  allCriteria,
   onClose,
   onUpdate,
 }: {
   evaluation: DbEvaluation;
   empMap: Record<string, DbEmployee>;
   criteria: DbEvalCriteria[];
-  allCriteria: DbEvalCriteria[];
   onClose: () => void;
   onUpdate: () => void;
 }) => {
   const emp = empMap[evaluation.employee_id];
   const evaluator = evaluation.evaluator_id ? empMap[evaluation.evaluator_id] : null;
-  const ratingInfo = getRatingInfo(evaluation.overall_rating);
 
   const [editing, setEditing] = useState(evaluation.status !== arabicSource("common.complete"));
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -61,7 +61,7 @@ const EvalDetailModal = ({
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [scores]);
 
-  const handleSave = async (status: string | string) => {
+  const handleSave = useCallback(async (status: string) => {
     setSaving(true);
     try {
       const criteriaPayload = Object.entries(scores).map(([name, score]) => ({
@@ -81,9 +81,9 @@ const EvalDetailModal = ({
     setEditing(false);
     onUpdate();
     if (status === arabicSource("common.complete")) onClose();
-  };
+  }, [scores, evaluation.id, overallRating, comments, onUpdate, onClose]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!localizedConfirm(arabicSource("evaluation.are_you_sure_you_want_to_delete_this_review"))) return;
     setDeleting(true);
     try {
@@ -94,7 +94,11 @@ const EvalDetailModal = ({
     setDeleting(false);
     onUpdate();
     onClose();
-  };
+  }, [evaluation.id, onUpdate, onClose]);
+
+  const saveDraft = useCallback(() => handleSave(arabicSource("common.under_evaluation")), [handleSave]);
+  const saveComplete = useCallback(() => handleSave(arabicSource("common.complete")), [handleSave]);
+  const startEditing = useCallback(() => setEditing(true), []);
 
   return (
     <ModalOverlay
@@ -111,15 +115,13 @@ const EvalDetailModal = ({
               </span>
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>|</span>
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>{evaluation.period}</span>
-              <span className={`px-2 py-0.5 rounded-md border ${STATUS_COLORS[evaluation.status] || ""}`} style={{ fontSize: 10 }}>
-                {evaluation.status}
-              </span>
+              <StatusBadge colorClassName={STATUS_COLORS[evaluation.status] || ""} fontSize={10}>{evaluation.status}</StatusBadge>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {evaluation.status !== arabicSource("common.complete") && !editing && (
               <button
-                onClick={() => setEditing(true)}
+                onClick={startEditing}
                 className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
                 title={arabicSource("common.edit")}
               >
@@ -174,24 +176,11 @@ const EvalDetailModal = ({
             const score = scores[criterionName] || 3;
             const cRatingInfo = getRatingInfo(score);
             return (
-              <div key={criterionName + i} className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                <span className="text-foreground" style={{ fontSize: 13 }}>{criterionName}</span>
+              <CriterionRow key={criterionName + i} name={criterionName}>
                 {editing ? (
                   <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map(v => (
-                      <button
-                        key={v}
-                        onClick={() => setScores(prev => ({ ...prev, [criterionName]: v }))}
-                        className="cursor-pointer"
-                      >
-                        <Star
-                          className={`w-5 h-5 transition-colors ${v <= score ? "text-primary fill-primary" : "text-muted-foreground/30 hover:text-primary/50"}`}
-                        />
-                      </button>
-                    ))}
-                    <span className={`px-2 py-0.5 rounded-md border ms-2 ${cRatingInfo.bgColor}`} style={{ fontSize: 10 }}>
-                      {cRatingInfo.label}
-                    </span>
+                    <StarScoreButtons score={score} onChange={(v) => setScores(prev => ({ ...prev, [criterionName]: v }))} />
+                    <StatusBadge colorClassName={cRatingInfo.bgColor} fontSize={10} extraClassName="ms-2">{cRatingInfo.label}</StatusBadge>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -199,7 +188,7 @@ const EvalDetailModal = ({
                     <span className="text-muted-foreground" style={{ fontSize: 12 }}>({score}/5)</span>
                   </div>
                 )}
-              </div>
+              </CriterionRow>
             );
           })}
         </div>
@@ -224,30 +213,13 @@ const EvalDetailModal = ({
 
         {/* Actions */}
         {editing && (
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleSave(arabicSource("common.under_evaluation"))}
-              disabled={saving}
-              className="flex-1 h-11 rounded-lg border-2 border-primary text-primary hover:bg-primary/10 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {arabicSource("common.save_as_draft")}
-            </button>
-            <button
-              onClick={() => handleSave(arabicSource("common.complete"))}
-              disabled={saving}
-              className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              {arabicSource("common.complete_the_assessment")}
-            </button>
-          </div>
+          <EvaluationSaveActions saving={saving} onSaveDraft={saveDraft} onComplete={saveComplete} />
         )}
 
         {/* Edit button for completed evaluations */}
         {!editing && evaluation.status === arabicSource("common.complete") && (
           <button
-            onClick={() => setEditing(true)}
+            onClick={startEditing}
             className="w-full h-10 rounded-lg border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer flex items-center justify-center gap-2"
           >
             <Pencil className="w-4 h-4" />
