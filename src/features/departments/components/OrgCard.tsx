@@ -1,27 +1,10 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Users, ChevronDown, Minus, Plus, Maximize2, Search, Printer, Download,
-  Move, X, UserPlus, Trash2, Building2, UserCheck, Briefcase, ChevronLeft,
-  Loader2, AlertTriangle, Link2, Crown, Edit2, Network, GripVertical, Save, ChevronRight as ChevronRightIcon, GitBranch
-} from "lucide-react";
-import { empDisplayName } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
-import * as odooData from "@/shared/api/odooData";
-import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
-import { formatDate } from "@/i18n/format";
-import { translateArabicSource } from "@/i18n/legacy";
-import { localizedConfirm } from "@/i18n/native";
+import { Users, ChevronDown, UserPlus, Crown } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, CLEVEL_COLOR, defaultDeptColorMap, OWNER_COLOR } from "../styles";
-import {
-  buildPositionTree,
-  countDescendants,
-  findParentOf,
-  flattenTree,
-  pickUniqueColor,
-} from "../utils/hierarchyTree";
+import type { OrgNode } from "../types";
+import { CLEVEL_COLOR } from "../styles";
+import { countDescendants } from "../utils/hierarchyTree";
 import TreeConnectors from "./TreeConnectors";
 
 const OrgCard = ({

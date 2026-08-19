@@ -1,27 +1,9 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Users, ChevronDown, Minus, Plus, Maximize2, Search, Printer, Download,
-  Move, X, UserPlus, Trash2, Building2, UserCheck, Briefcase, ChevronLeft,
-  Loader2, AlertTriangle, Link2, Crown, Edit2, Network, GripVertical, Save, ChevronRight as ChevronRightIcon, GitBranch
-} from "lucide-react";
-import { empDisplayName } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
-import * as odooData from "@/shared/api/odooData";
-import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
-import { formatDate } from "@/i18n/format";
-import { translateArabicSource } from "@/i18n/legacy";
-import { localizedConfirm } from "@/i18n/native";
+import { motion } from "motion/react";
+import { UserPlus, Trash2, Edit2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, CLEVEL_COLOR, defaultDeptColorMap, OWNER_COLOR } from "../styles";
-import {
-  buildPositionTree,
-  countDescendants,
-  findParentOf,
-  flattenTree,
-  pickUniqueColor,
-} from "../utils/hierarchyTree";
+import type { OrgNode } from "../types";
+import { defaultDeptColorMap } from "../styles";
+import { countDescendants, findParentOf } from "../utils/hierarchyTree";
 
 const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   node: OrgNode; orgTree: OrgNode; onClose: () => void;
