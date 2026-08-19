@@ -37,13 +37,17 @@ export function SortableHeaderRow<K extends string>({
               if (col.key !== null) onSort(col.key);
             }}
           >
-            <span className={`inline-flex items-center gap-1.5 ${col.center ? "justify-center" : ""}`}>
+            <span
+              className={`inline-flex items-center gap-1.5 ${col.center ? "justify-center" : ""}`}
+            >
               {col.label}
-              {isSortable && isActive && (
-                sortDir === "asc"
-                  ? <ChevronUp className="w-3.5 h-3.5" />
-                  : <ChevronDown className="w-3.5 h-3.5" />
-              )}
+              {isSortable &&
+                isActive &&
+                (sortDir === "asc" ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ))}
               {isSortable && !isActive && (
                 <ChevronsUpDown className="w-3 h-3 opacity-30" />
               )}

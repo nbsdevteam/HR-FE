@@ -1,12 +1,16 @@
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import {
+  SortableHeaderRow,
+  toggleSort,
+} from "@/shared/components/SortableHeader";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { evaluationCardClass } from "../styles";
 import { type DbEvaluation, type EvaluationSortKey } from "../types";
 import EvaluationTableRow from "./EvaluationTableRow";
+import { sortData } from "../data";
 
 type EvaluationListViewProps = {
   evaluations: DbEvaluation[];
@@ -40,18 +44,12 @@ const EvaluationListView = ({
       <table className="w-full">
         <thead>
           <SortableHeaderRow
-            columns={[
-              { label: arabicSource("common.employee"), key: "employee" },
-              { label: arabicSource("common.section"), key: "department" },
-              { label: arabicSource("evaluation.assessor_2"), key: "evaluator" },
-              { label: arabicSource("common.period"), key: "period" },
-              { label: arabicSource("common.evaluation"), key: "rating" },
-              { label: arabicSource("common.status"), key: "status" },
-              { label: arabicSource("common.procedures"), key: null },
-            ]}
+            columns={sortData}
             sortBy={sortBy}
             sortDir={sortDir}
-            onSort={(key) => toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)}
+            onSort={(key) =>
+              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+            }
           />
         </thead>
         <tbody>
@@ -60,21 +58,39 @@ const EvaluationListView = ({
               <td colSpan={7}>
                 <EmptyState
                   icon={ClipboardCheck}
-                  message={allEvaluationsCount === 0 ? arabicSource("evaluation.there_are_no_reviews_yet") : arabicSource("evaluation.there_are_no_results_matching_your_search")}
-                  hint={allEvaluationsCount === 0 ? arabicSource("evaluation.start_creating_a_new_assessment") : undefined}
+                  message={
+                    allEvaluationsCount === 0
+                      ? arabicSource("evaluation.there_are_no_reviews_yet")
+                      : arabicSource(
+                          "evaluation.there_are_no_results_matching_your_search",
+                        )
+                  }
+                  hint={
+                    allEvaluationsCount === 0
+                      ? arabicSource(
+                          "evaluation.start_creating_a_new_assessment",
+                        )
+                      : undefined
+                  }
                 />
               </td>
             </tr>
-          ) : evaluations.map((evaluation, i) => (
-            <EvaluationTableRow
-              key={evaluation.id}
-              evaluation={evaluation}
-              index={i}
-              employee={empMap[evaluation.employee_id]}
-              evaluator={evaluation.evaluator_id ? empMap[evaluation.evaluator_id] : null}
-              onSelectEvaluation={onSelectEvaluation}
-            />
-          ))}
+          ) : (
+            evaluations.map((evaluation, i) => (
+              <EvaluationTableRow
+                key={evaluation.id}
+                evaluation={evaluation}
+                index={i}
+                employee={empMap[evaluation.employee_id]}
+                evaluator={
+                  evaluation.evaluator_id
+                    ? empMap[evaluation.evaluator_id]
+                    : null
+                }
+                onSelectEvaluation={onSelectEvaluation}
+              />
+            ))
+          )}
         </tbody>
       </table>
     </div>

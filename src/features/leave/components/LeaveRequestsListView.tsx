@@ -1,11 +1,19 @@
 import { CalendarDays } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import {
+  SortableHeaderRow,
+  toggleSort,
+} from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import { empDisplayName, type DbLeaveRequest, type DbLeaveType } from "@/shared/hooks";
+import {
+  empDisplayName,
+  type DbLeaveRequest,
+  type DbLeaveType,
+} from "@/shared/hooks";
 import { leaveCardClass } from "../styles";
 import type { LeaveSortKey } from "../types";
 import LeaveRequestTableRow from "./LeaveRequestTableRow";
+import { leaveData } from "../data";
 
 type LeaveRequestsListViewProps = {
   requests: DbLeaveRequest[];
@@ -37,42 +45,48 @@ const LeaveRequestsListView = ({
       <table className="w-full">
         <thead>
           <SortableHeaderRow
-            columns={[
-              { label: arabicSource("common.employee"), key: "employee" },
-              { label: arabicSource("leave.leave_type"), key: "type" },
-              { label: arabicSource("common.from"), key: "start" },
-              { label: arabicSource("common.to"), key: "end" },
-              { label: arabicSource("common.duration"), key: "days" },
-              { label: arabicSource("common.the_reason"), key: null },
-              { label: arabicSource("common.status"), key: "status" },
-              { label: arabicSource("common.procedures"), key: null },
-            ]}
+            columns={leaveData}
             sortBy={sortBy}
             sortDir={sortDir}
-            onSort={(key) => toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)}
+            onSort={(key) =>
+              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+            }
           />
         </thead>
         <tbody>
-          {requests.length > 0 ? requests.map((leave, index) => {
-            const employee = empMap[leave.employee_id];
-            const employeeName = employee ? empDisplayName(employee) : leave.employee_id;
-            const leaveType = leaveTypes.find((type) => type.code === leave.leave_type || type.name_ar === leave.leave_type);
+          {requests.length > 0 ? (
+            requests.map((leave, index) => {
+              const employee = empMap[leave.employee_id];
+              const employeeName = employee
+                ? empDisplayName(employee)
+                : leave.employee_id;
+              const leaveType = leaveTypes.find(
+                (type) =>
+                  type.code === leave.leave_type ||
+                  type.name_ar === leave.leave_type,
+              );
 
-            return (
-              <LeaveRequestTableRow
-                key={leave.id}
-                leave={leave}
-                index={index}
-                employeeName={employeeName}
-                leaveType={leaveType}
-                onApprove={onApprove}
-                onReject={onReject}
-                onDelete={onDelete}
-              />
-            );
-          }) : (
+              return (
+                <LeaveRequestTableRow
+                  key={leave.id}
+                  leave={leave}
+                  index={index}
+                  employeeName={employeeName}
+                  leaveType={leaveType}
+                  onApprove={onApprove}
+                  onReject={onReject}
+                  onDelete={onDelete}
+                />
+              );
+            })
+          ) : (
             <tr>
-              <td colSpan={8}><EmptyState icon={CalendarDays} message={arabicSource("leave.there_are_no_leave_requests")} /></td>
+              <td colSpan={8}>
+                <EmptyState
+                  icon={CalendarDays}
+                  message={arabicSource("leave.there_are_no_leave_requests")}
+                />
+              </td>
             </tr>
           )}
         </tbody>
