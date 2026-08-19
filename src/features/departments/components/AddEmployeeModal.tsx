@@ -5,6 +5,8 @@ import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { avatarColors } from "../styles";
 import { pickUniqueColor } from "../utils/hierarchyTree";
+import FieldLabel from "./FieldLabel";
+import LabeledTextField from "./LabeledTextField";
 
 const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
@@ -72,32 +74,28 @@ const AddEmployeeModal = ({
         </div>
 
         <div className="p-6 space-y-4">
-          <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.employee_name")}</span>
-            </label>
-            <input type="text" value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: false })); }}
-              placeholder={arabicSource("hierarchy.example_ahmed_ali")}
-              className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.name ? "border-red-500" : "border-border/60"}`}
-              style={{ fontSize: 13 }} />
-            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_employee_name")}</p>}
-          </div>
+          <LabeledTextField
+            icon={UserCheck}
+            label={arabicSource("common.employee_name")}
+            value={name}
+            onChange={(v) => { setName(v); setErrors(p => ({ ...p, name: false })); }}
+            placeholder={arabicSource("hierarchy.example_ahmed_ali")}
+            error={errors.name}
+            errorMessage={arabicSource("common.please_enter_employee_name")}
+          />
+
+          <LabeledTextField
+            icon={Briefcase}
+            label={arabicSource("common.job_title")}
+            value={position}
+            onChange={(v) => { setPosition(v); setErrors(p => ({ ...p, position: false })); }}
+            placeholder={arabicSource("hierarchy.example_software_developer")}
+            error={errors.position}
+            errorMessage={arabicSource("common.please_enter_your_job_title")}
+          />
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.job_title")}</span>
-            </label>
-            <input type="text" value={position} onChange={e => { setPosition(e.target.value); setErrors(p => ({ ...p, position: false })); }}
-              placeholder={arabicSource("hierarchy.example_software_developer")}
-              className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.position ? "border-red-500" : "border-border/60"}`}
-              style={{ fontSize: 13 }} />
-            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_your_job_title")}</p>}
-          </div>
-
-          <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-primary" /> {arabicSource("common.section")}</span>
-            </label>
+            <FieldLabel icon={Building2}>{arabicSource("common.section")}</FieldLabel>
             {!showNewDept ? (
               <div className="space-y-2">
                 <select value={department} onChange={e => setDepartment(e.target.value)}
@@ -135,9 +133,7 @@ const AddEmployeeModal = ({
           </div>
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {arabicSource("hierarchy.direct_supervisor_manager")}</span>
-            </label>
+            <FieldLabel icon={Users}>{arabicSource("hierarchy.direct_supervisor_manager")}</FieldLabel>
             <select value={managerId} onChange={e => setManagerId(Number(e.target.value))}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
               style={{ fontSize: 13 }}>

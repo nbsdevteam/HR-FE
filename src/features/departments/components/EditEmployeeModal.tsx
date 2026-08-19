@@ -4,6 +4,8 @@ import { ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { getDescendantIds } from "../utils/hierarchyTree";
+import FieldLabel from "./FieldLabel";
+import LabeledTextField from "./LabeledTextField";
 
 const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
   node: OrgNode;
@@ -96,32 +98,32 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
         </div>
 
         <div className="p-6 space-y-4">
-          <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.employee_name")}</span>
-            </label>
-            <input type="text" value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: false })); }}
-              placeholder={arabicSource("common.employee_name")}
-              className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500/50 transition-colors ${errors.name ? "border-red-500" : "border-border/60"}`}
-              style={{ fontSize: 13 }} />
-            {errors.name && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_employee_name")}</p>}
-          </div>
+          <LabeledTextField
+            icon={UserCheck}
+            label={arabicSource("common.employee_name")}
+            value={name}
+            onChange={(v) => { setName(v); setErrors(p => ({ ...p, name: false })); }}
+            placeholder={arabicSource("common.employee_name")}
+            error={errors.name}
+            errorMessage={arabicSource("common.please_enter_employee_name")}
+            accentColorClassName="text-blue-400"
+            focusBorderClassName="focus:border-blue-500/50"
+          />
+
+          <LabeledTextField
+            icon={Briefcase}
+            label={arabicSource("common.job_title")}
+            value={position}
+            onChange={(v) => { setPosition(v); setErrors(p => ({ ...p, position: false })); }}
+            placeholder={arabicSource("common.job_title")}
+            error={errors.position}
+            errorMessage={arabicSource("common.please_enter_your_job_title")}
+            accentColorClassName="text-blue-400"
+            focusBorderClassName="focus:border-blue-500/50"
+          />
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.job_title")}</span>
-            </label>
-            <input type="text" value={position} onChange={e => { setPosition(e.target.value); setErrors(p => ({ ...p, position: false })); }}
-              placeholder={arabicSource("common.job_title")}
-              className={`w-full bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500/50 transition-colors ${errors.position ? "border-red-500" : "border-border/60"}`}
-              style={{ fontSize: 13 }} />
-            {errors.position && <p className="text-red-400 mt-1" style={{ fontSize: 11 }}>{arabicSource("common.please_enter_your_job_title")}</p>}
-          </div>
-
-          <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("common.section")}</span>
-            </label>
+            <FieldLabel icon={Building2} accentColorClassName="text-blue-400">{arabicSource("common.section")}</FieldLabel>
             <select value={department} onChange={e => setDepartment(e.target.value)}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
               style={{ fontSize: 13 }}>
@@ -130,9 +132,7 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
           </div>
 
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-blue-400" /> {arabicSource("hierarchy.direct_supervisor_optional")}</span>
-            </label>
+            <FieldLabel icon={Users} accentColorClassName="text-blue-400">{arabicSource("hierarchy.direct_supervisor_optional")}</FieldLabel>
             <select value={managerId ?? ""} onChange={e => setManagerId(e.target.value ? Number(e.target.value) : null)}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
               style={{ fontSize: 13 }}>
