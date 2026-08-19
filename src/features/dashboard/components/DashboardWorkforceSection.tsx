@@ -1,20 +1,13 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle, UserPlus, Clock, GraduationCap, TrendingUp, TrendingDown,
-  Briefcase, FileCheck, CreditCard, Bell, Shield, Award, Target, Activity, Percent, Coins, FileText, UserX,
-  Zap, Heart, Building2, PieChart, Gauge, Eye,
-} from "lucide-react";
+import { Clock, ClipboardCheck, Target, Briefcase, CalendarDays } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { CustomLineChart } from "@/shared/components/custom-line-chart";
-import { formatDateTime } from "@/i18n/format";
+import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
 import DashboardMiniBar from "./DashboardMiniBar";
-import DashboardRiskBadge from "./DashboardRiskBadge";
 import DashboardStatGrid from "./DashboardStatGrid";
-import DashboardTrendBadge from "./DashboardTrendBadge";
-import { formatIQD, formatK, pct } from "../utils/dashboardFormat";
 
 type DashboardWorkforceSectionProps = {
   data: any;
@@ -28,6 +21,14 @@ const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionProps) => 
     tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   } = data;
+
+  const turnoverTiles = useMemo(() => [
+    { value: newHireStats.last30, label: arabicSource("dashboard.set_30_days"), colorClassName: "bg-emerald-500/10 border border-emerald-500/20", textColorClassName: "text-emerald-400" },
+    { value: newHireStats.last90, label: arabicSource("common.set_90_days"), colorClassName: "bg-blue-500/10 border border-blue-500/20", textColorClassName: "text-blue-400" },
+    { value: `${newHireStats.rate}%`, label: arabicSource("dashboard.assignment_rate"), colorClassName: "bg-primary/10 border border-primary/20", textColorClassName: "text-primary" },
+    { value: `${turnoverRate}%`, label: arabicSource("common.turnover_rate_annual"), colorClassName: "bg-amber-500/10 border border-amber-500/20", textColorClassName: "text-amber-400" },
+    { value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, label: arabicSource("dashboard.exits_in_progress"), colorClassName: "bg-purple-500/10 border border-purple-500/20", textColorClassName: "text-purple-400" },
+  ], [newHireStats, turnoverRate, exitProcesses]);
 
   return (
 <>
@@ -97,26 +98,9 @@ const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionProps) => 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
             <h3 className="text-foreground mb-4">{arabicSource("dashboard.appointments_and_job_turnover")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="text-center p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <p className="text-2xl font-semibold text-emerald-400">{newHireStats.last30}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.set_30_days")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <p className="text-2xl font-semibold text-blue-400">{newHireStats.last90}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.set_90_days")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
-                <p className="text-2xl font-semibold text-primary">{newHireStats.rate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.assignment_rate")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <p className="text-2xl font-semibold text-amber-400">{turnoverRate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.turnover_rate_annual")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                <p className="text-2xl font-semibold text-purple-400">{exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.exits_in_progress")}</p>
-              </div>
+              {turnoverTiles.map(tile => (
+                <ColorStatTile key={tile.label} {...tile} />
+              ))}
             </div>
           </motion.div>
         </>

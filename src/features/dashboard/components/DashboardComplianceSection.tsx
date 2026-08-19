@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { AlertTriangle, GraduationCap, FileCheck, Shield, Award, Zap } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
+import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
@@ -36,6 +37,15 @@ const DashboardComplianceSection = ({ data }: DashboardComplianceSectionProps) =
     { label: arabicSource("dashboard.below_expectations_2"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 2).length, color: "bg-amber-500" },
     { label: arabicSource("dashboard.not_achieved_1"), count: evaluations.filter((e: any) => e.status === arabicSource("common.complete") && e.overall_rating === 1).length, color: "bg-red-500" },
   ], [evaluations]);
+
+  const trainingTiles = useMemo(() => [
+    { value: trainingStats.totalPrograms, label: arabicSource("common.total_programs"), colorClassName: "bg-primary/10 border border-primary/20", textColorClassName: "text-primary" },
+    { value: trainingStats.ongoing, label: arabicSource("dashboard.now_underway"), colorClassName: "bg-blue-500/10 border border-blue-500/20", textColorClassName: "text-blue-400" },
+    { value: trainingStats.completed, label: arabicSource("common.complete_2"), colorClassName: "bg-emerald-500/10 border border-emerald-500/20", textColorClassName: "text-emerald-400" },
+    { value: trainingStats.uniqueTrainees, label: arabicSource("dashboard.unique_trainee"), colorClassName: "bg-amber-500/10 border border-amber-500/20", textColorClassName: "text-amber-400" },
+    { value: `${trainingStats.completionRate}%`, label: arabicSource("dashboard.completion_rate"), colorClassName: "bg-purple-500/10 border border-purple-500/20", textColorClassName: "text-purple-400" },
+    { value: trainingStats.avgScore || "—", label: arabicSource("dashboard.average_score"), colorClassName: "bg-cyan-500/10 border border-cyan-500/20", textColorClassName: "text-cyan-400" },
+  ], [trainingStats]);
 
   return (
 <>
@@ -105,30 +115,9 @@ const DashboardComplianceSection = ({ data }: DashboardComplianceSectionProps) =
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
             <h3 className="text-foreground mb-4">{arabicSource("dashboard.summary_of_training_and_development")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
-                <p className="text-2xl font-semibold text-primary">{trainingStats.totalPrograms}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.total_programs")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <p className="text-2xl font-semibold text-blue-400">{trainingStats.ongoing}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.now_underway")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <p className="text-2xl font-semibold text-emerald-400">{trainingStats.completed}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.complete_2")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <p className="text-2xl font-semibold text-amber-400">{trainingStats.uniqueTrainees}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.unique_trainee")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                <p className="text-2xl font-semibold text-purple-400">{trainingStats.completionRate}%</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.completion_rate")}</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                <p className="text-2xl font-semibold text-cyan-400">{trainingStats.avgScore || "—"}</p>
-                <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.average_score")}</p>
-              </div>
+              {trainingTiles.map(tile => (
+                <ColorStatTile key={tile.label} {...tile} />
+              ))}
             </div>
             {/* Coverage bar */}
             <div className="mt-4 p-3 rounded-lg bg-muted/20">

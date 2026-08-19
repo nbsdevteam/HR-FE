@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { Users, UserPlus, Clock, Briefcase, Target, UserX, Heart } from "lucide-react";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
+import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import RecruitmentFunnelStageRow from "./RecruitmentFunnelStageRow";
@@ -39,6 +40,17 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
     }));
   }, [recruitmentPipeline]);
 
+  const completedExitsCount = useMemo(
+    () => exitProcesses.filter((p: any) => p.status === "completed").length,
+    [exitProcesses]
+  );
+  const netGrowth = newHireStats.last90 - completedExitsCount;
+
+  const hireVsExitTiles = useMemo(() => [
+    { value: newHireStats.last90, label: arabicSource("common.set_90_days"), colorClassName: "bg-emerald-500/10 border border-emerald-500/20", textColorClassName: "text-emerald-400", icon: UserPlus },
+    { value: completedExitsCount, label: arabicSource("dashboard.exit_total"), colorClassName: "bg-red-500/10 border border-red-500/20", textColorClassName: "text-red-400", icon: UserX },
+  ], [newHireStats, completedExitsCount]);
+
   return (
 <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -74,30 +86,17 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.hire_vs_exit")}</h3>
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <UserPlus className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-emerald-400">{newHireStats.last90}</p>
-                    <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.set_90_days")}</p>
-                  </div>
-                  <div className="text-center p-5 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <UserX className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-red-400">
-                      {exitProcesses.filter((p: any) => p.status === "completed").length}
-                    </p>
-                    <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.exit_total")}</p>
-                  </div>
+                  {hireVsExitTiles.map(tile => (
+                    <ColorStatTile key={tile.label} padding="p-5" valueTextClassName="text-3xl font-bold" {...tile} />
+                  ))}
                 </div>
 
                 {/* Net growth */}
                 <div className="p-4 rounded-xl bg-muted/20">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{arabicSource("dashboard.net_growth")}</span>
-                    <span className={`text-lg font-bold ${
-                      newHireStats.last90 - exitProcesses.filter((p: any) => p.status === "completed").length >= 0
-                        ? "text-emerald-400" : "text-red-400"
-                    }`}>
-                      {newHireStats.last90 - exitProcesses.filter((p: any) => p.status === "completed").length >= 0 ? "+" : ""}
-                      {newHireStats.last90 - exitProcesses.filter((p: any) => p.status === "completed").length}
+                    <span className={`text-lg font-bold ${netGrowth >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {netGrowth >= 0 ? "+" : ""}{netGrowth}
                     </span>
                   </div>
                 </div>

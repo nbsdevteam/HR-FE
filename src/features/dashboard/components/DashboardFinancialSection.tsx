@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Wallet, TrendingUp, CreditCard, Coins, UserX } from "lucide-react";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
+import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
@@ -29,6 +30,22 @@ const DashboardFinancialSection = ({ data }: DashboardFinancialSectionProps) => 
     { label: arabicSource("dashboard.loan_balance"), value: formatIQD(totalLoanBalance), sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`, icon: CreditCard, color: "text-amber-400" },
     { label: arabicSource("dashboard.active_exits"), value: exitProcesses.filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length, sub: `${arabicSource("dashboard.end_of_service_benefits")}`, icon: UserX, color: "text-red-400" },
   ], [compensationStats, medianSalary, allAllowances, totalLoanBalance, activeLoans, loanUtilization, exitProcesses]);
+
+  const totalLoanAmount = useMemo(
+    () => activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0),
+    [activeLoans]
+  );
+  const totalPaidLoanAmount = totalLoanAmount - totalLoanBalance;
+
+  const loanTiles = useMemo(() => [
+    { value: activeLoans.length, label: arabicSource("common.active_loans"), colorClassName: "bg-blue-500/10 border border-blue-500/20", textColorClassName: "text-blue-400" },
+    { value: formatIQD(totalLoanAmount), label: arabicSource("dashboard.total_loans"), colorClassName: "bg-primary/10 border border-primary/20", textColorClassName: "text-primary", valueTextClassName: "text-lg font-semibold", dir: "ltr" as const },
+  ], [activeLoans.length, totalLoanAmount]);
+
+  const loanPaymentTiles = useMemo(() => [
+    { value: formatIQD(totalPaidLoanAmount), label: arabicSource("dashboard.the_payer"), colorClassName: "bg-emerald-500/10 border border-emerald-500/20", textColorClassName: "text-emerald-400" },
+    { value: formatIQD(totalLoanBalance), label: arabicSource("dashboard.remaining"), colorClassName: "bg-amber-500/10 border border-amber-500/20", textColorClassName: "text-amber-400" },
+  ], [totalPaidLoanAmount, totalLoanBalance]);
 
   return (
 <>
@@ -106,31 +123,21 @@ const DashboardFinancialSection = ({ data }: DashboardFinancialSectionProps) => 
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                      <p className="text-2xl font-semibold text-blue-400">{activeLoans.length}</p>
-                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("common.active_loans")}</p>
-                    </div>
-                    <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20">
-                      <p className="text-lg font-semibold text-primary" dir="ltr">{formatIQD(activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0))}</p>
-                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.total_loans")}</p>
-                    </div>
+                    {loanTiles.map(tile => (
+                      <ColorStatTile key={tile.label} {...tile} />
+                    ))}
                   </div>
                   <div className="p-3 rounded-lg bg-muted/20">
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-muted-foreground">{arabicSource("dashboard.payment_ratio")}</span>
-                      <span className="text-emerald-400 font-medium">{pct(activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0) - totalLoanBalance, activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0))}%</span>
+                      <span className="text-emerald-400 font-medium">{pct(totalPaidLoanAmount, totalLoanAmount)}%</span>
                     </div>
-                    <DashboardMiniBar value={activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0) - totalLoanBalance} max={activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0)} color="bg-emerald-500" />
+                    <DashboardMiniBar value={totalPaidLoanAmount} max={totalLoanAmount} color="bg-emerald-500" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                      <p className="text-lg font-semibold text-emerald-400" dir="ltr">{formatIQD(activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0) - totalLoanBalance)}</p>
-                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.the_payer")}</p>
-                    </div>
-                    <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                      <p className="text-lg font-semibold text-amber-400" dir="ltr">{formatIQD(totalLoanBalance)}</p>
-                      <p className="text-muted-foreground text-xs mt-1">{arabicSource("dashboard.remaining")}</p>
-                    </div>
+                    {loanPaymentTiles.map(tile => (
+                      <ColorStatTile key={tile.label} padding="p-3" valueTextClassName="text-lg font-semibold" dir="ltr" {...tile} />
+                    ))}
                   </div>
                   <div className="p-3 rounded-lg bg-muted/20">
                     <p className="text-xs text-muted-foreground">{arabicSource("dashboard.percentage_of_employees_who_borrow")}</p>
