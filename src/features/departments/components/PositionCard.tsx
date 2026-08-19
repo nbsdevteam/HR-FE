@@ -5,6 +5,7 @@ import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode } from "../types";
+import NodeAvatar from "./NodeAvatar";
 
 const PositionCard = ({
   node, depth, departments, employees, deptColors, onDrop, onAddPosition, onDeletePosition, onEditPosition, expandedPositions, togglePositionExpand,
@@ -80,13 +81,7 @@ const PositionCard = ({
             <div className="space-y-1.5 mb-2">
               {node.assignedEmployees.map(emp => (
                 <div key={emp.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  {emp.profile_picture ? (
-                    <img src={emp.profile_picture} alt={empDisplayName(emp)} className="w-6 h-6 rounded-full object-cover shrink-0" />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: deptColor }}>
-                      <span className="text-white" style={{ fontSize: 9 }}>{empDisplayName(emp).charAt(0)}</span>
-                    </div>
-                  )}
+                  <NodeAvatar photo={emp.profile_picture} name={empDisplayName(emp)} color={deptColor} initials={empDisplayName(emp).charAt(0)} sizeClassName="w-6 h-6" extraClassName="shrink-0" fontSize={9} />
                   <span className="text-foreground truncate" style={{ fontSize: 11 }}>{empDisplayName(emp)}</span>
                 </div>
               ))}

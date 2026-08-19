@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GripVertical } from "lucide-react";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
+import NodeAvatar from "./NodeAvatar";
 
 const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColors: Record<string, string> }) => {
   const [dragging, setDragging] = useState(false);
@@ -18,13 +19,7 @@ const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColor
       }`}
     >
       <GripVertical className="w-3 h-3 text-muted-foreground shrink-0" />
-      {emp.profile_picture ? (
-        <img src={emp.profile_picture} alt={name} className="w-7 h-7 rounded-full object-cover shrink-0" />
-      ) : (
-        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: color }}>
-          <span className="text-white" style={{ fontSize: 10 }}>{name.charAt(0)}</span>
-        </div>
-      )}
+      <NodeAvatar photo={emp.profile_picture} name={name} color={color} initials={name.charAt(0)} sizeClassName="w-7 h-7" extraClassName="shrink-0" fontSize={10} />
       <div className="min-w-0 flex-1">
         <p className="text-foreground truncate" style={{ fontSize: 12 }}>{name}</p>
         <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{emp.department || "—"}</p>

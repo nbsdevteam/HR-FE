@@ -4,6 +4,8 @@ import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
+import NodeAvatar from "./NodeAvatar";
+import InfoRow from "./InfoRow";
 
 const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   node: OrgNode; orgTree: OrgNode; onClose: () => void;
@@ -44,13 +46,16 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         </div>
 
         <div className="flex flex-col items-center text-center">
-          {node.photo ? (
-            <img src={node.photo} alt={node.name} className="w-16 h-16 rounded-full object-cover shadow-lg mb-3" style={{ border: `3px solid ${topColor}` }} />
-          ) : (
-            <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-3" style={{ background: node.color }}>
-              <span className="text-white" style={{ fontSize: 24 }}>{node.initials}</span>
-            </div>
-          )}
+          <NodeAvatar
+            photo={node.photo}
+            name={node.name}
+            color={node.color}
+            initials={node.initials}
+            sizeClassName="w-16 h-16"
+            extraClassName="shadow-lg mb-3"
+            fontSize={24}
+            imgStyle={{ border: `3px solid ${topColor}` }}
+          />
           <h3 className="text-foreground">{node.name}</h3>
           <p className="text-muted-foreground mt-0.5" style={{ fontSize: 13 }}>{node.position}</p>
           <span className="mt-2 px-3 py-1 rounded-full text-white" style={{ fontSize: 11, background: topColor }}>{node.department}</span>
@@ -58,44 +63,29 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
 
         {!isVirtualRoot && (
           <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.employee_number")}</span>
-              <span className="text-foreground" style={{ fontSize: 12 }}>EMP-{String(node.id).padStart(4, "0")}</span>
-            </div>
+            <InfoRow label={arabicSource("common.employee_number")} value={`EMP-${String(node.id).padStart(4, "0")}`} />
             {parentNode && parentNode.dbId !== "__root__" && (
-              <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_manager")}</span>
-                <div className="flex items-center gap-1.5">
-                  {parentNode.photo ? (
-                    <img src={parentNode.photo} alt={parentNode.name} className="w-5 h-5 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: parentNode.color }}>
-                      <span className="text-white" style={{ fontSize: 8 }}>{parentNode.initials}</span>
-                    </div>
-                  )}
-                  <span className="text-foreground" style={{ fontSize: 12 }}>{parentNode.name}</span>
-                </div>
-              </div>
+              <InfoRow
+                label={arabicSource("common.direct_manager")}
+                value={
+                  <div className="flex items-center gap-1.5">
+                    <NodeAvatar photo={parentNode.photo} name={parentNode.name} color={parentNode.color} initials={parentNode.initials} sizeClassName="w-5 h-5" fontSize={8} />
+                    <span className="text-foreground" style={{ fontSize: 12 }}>{parentNode.name}</span>
+                  </div>
+                }
+              />
             )}
             {!parentNode && (
-              <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_manager")}</span>
-                <span className="text-primary" style={{ fontSize: 12 }}>{arabicSource("common.without_a_manager_top_of_the_pyramid")}</span>
-              </div>
+              <InfoRow
+                label={arabicSource("common.direct_manager")}
+                value={arabicSource("common.without_a_manager_top_of_the_pyramid")}
+                valueClassName="text-primary"
+              />
             )}
-            <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.direct_reports")}</span>
-              <span className="text-foreground" style={{ fontSize: 12 }}>{node.children.length}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border/40">
-              <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.total_team")}</span>
-              <span className="text-foreground" style={{ fontSize: 12 }}>{countDescendants(node)}</span>
-            </div>
+            <InfoRow label={arabicSource("common.direct_reports")} value={node.children.length} />
+            <InfoRow label={arabicSource("hierarchy.total_team")} value={countDescendants(node)} />
             {node.email && (
-              <div className="flex items-center justify-between py-2 border-b border-border/40">
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.post")}</span>
-                <span className="text-foreground" style={{ fontSize: 12, direction: "ltr" }}>{node.email}</span>
-              </div>
+              <InfoRow label={arabicSource("common.post")} value={node.email} dir="ltr" />
             )}
           </div>
         )}
@@ -106,13 +96,7 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
             <div className="space-y-2 max-h-[200px] overflow-y-auto">
               {node.children.map(child => (
                 <div key={child.dbId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  {child.photo ? (
-                    <img src={child.photo} alt={child.name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: child.color }}>
-                      <span className="text-white" style={{ fontSize: 10 }}>{child.initials}</span>
-                    </div>
-                  )}
+                  <NodeAvatar photo={child.photo} name={child.name} color={child.color} initials={child.initials} sizeClassName="w-6 h-6" extraClassName="flex-shrink-0" fontSize={10} />
                   <div className="min-w-0">
                     <p className="text-foreground truncate" style={{ fontSize: 11 }}>{child.name}</p>
                     <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{child.position}</p>

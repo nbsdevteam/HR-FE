@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import type { OrgNode } from "../types";
+import NodeAvatar from "./NodeAvatar";
 
 const SearchResults = ({ results, onSelect, onClose }: {
   results: OrgNode[]; onSelect: (node: OrgNode) => void; onClose: () => void;
@@ -11,13 +12,7 @@ const SearchResults = ({ results, onSelect, onClose }: {
       {results.map((node) => (
         <button key={node.dbId} onClick={() => { onSelect(node); onClose(); }}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted/50 transition-colors text-start border-b border-border/20 last:border-b-0">
-          {node.photo ? (
-            <img src={node.photo} alt={node.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: node.color }}>
-              <span className="text-white" style={{ fontSize: 11 }}>{node.initials}</span>
-            </div>
-          )}
+          <NodeAvatar photo={node.photo} name={node.name} color={node.color} initials={node.initials} sizeClassName="w-7 h-7" extraClassName="flex-shrink-0" fontSize={11} />
           <div className="min-w-0 flex-1">
             <p className="text-foreground truncate" style={{ fontSize: 12 }}>{node.name}</p>
             <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{node.position} — {node.department}</p>

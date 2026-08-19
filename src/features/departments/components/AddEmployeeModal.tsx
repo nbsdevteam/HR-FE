@@ -9,6 +9,7 @@ import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
+import NodeAvatar from "./NodeAvatar";
 
 const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
@@ -135,13 +136,7 @@ const AddEmployeeModal = ({
             </select>
             {selectedManager && selectedManager.dbId !== "__root__" && (
               <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                {selectedManager.photo ? (
-                  <img src={selectedManager.photo} alt={selectedManager.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: selectedManager.color }}>
-                    <span className="text-white" style={{ fontSize: 10 }}>{selectedManager.initials}</span>
-                  </div>
-                )}
+                <NodeAvatar photo={selectedManager.photo} name={selectedManager.name} color={selectedManager.color} initials={selectedManager.initials} sizeClassName="w-7 h-7" extraClassName="flex-shrink-0" fontSize={10} />
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground truncate" style={{ fontSize: 11 }}>{arabicSource("hierarchy.will_be_affiliated_with")} {selectedManager.name}</p>
                   <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{selectedManager.department}</p>

@@ -8,6 +8,7 @@ import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
+import NodeAvatar from "./NodeAvatar";
 
 const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
   node: OrgNode;
@@ -48,6 +49,7 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
   const validManagers = allNodes.filter(
     n => n.id !== node.id && !descendantIds.has(n.id) && n.dbId !== "__root__"
   );
+  const selectedManager = managerId !== null ? allNodes.find(n => n.id === managerId) : undefined;
 
   const handleSubmit = () => {
     const e: Record<string, boolean> = {};
@@ -136,18 +138,12 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
               <option value="">{arabicSource("common.without_a_manager_top_of_the_pyramid")}</option>
               {validManagers.map(n => <option key={n.dbId} value={n.id}>{n.name} — {n.position} ({n.department})</option>)}
             </select>
-            {managerId !== null && (
+            {selectedManager && (
               <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10">
-                {allNodes.find(n => n.id === managerId)?.photo ? (
-                  <img src={allNodes.find(n => n.id === managerId)?.photo!} alt={arabicSource("common.direct_manager")} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: allNodes.find(n => n.id === managerId)?.color }}>
-                    <span className="text-white" style={{ fontSize: 10 }}>{allNodes.find(n => n.id === managerId)?.initials}</span>
-                  </div>
-                )}
+                <NodeAvatar photo={selectedManager.photo} name={arabicSource("common.direct_manager")} color={selectedManager.color} initials={selectedManager.initials} sizeClassName="w-7 h-7" extraClassName="flex-shrink-0" fontSize={10} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>{arabicSource("hierarchy.director")} {allNodes.find(n => n.id === managerId)?.name}</p>
-                  <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{allNodes.find(n => n.id === managerId)?.department}</p>
+                  <p className="text-foreground truncate" style={{ fontSize: 11 }}>{arabicSource("hierarchy.director")} {selectedManager.name}</p>
+                  <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{selectedManager.department}</p>
                 </div>
               </div>
             )}

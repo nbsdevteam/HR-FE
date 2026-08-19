@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
+import NodeAvatar from "./NodeAvatar";
 
 const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   node: OrgNode; orgTree: OrgNode; onDelete: (node: OrgNode, reparent: boolean) => void; onClose: () => void;
@@ -26,13 +27,7 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
         <div className="h-1.5" style={{ background: topColor }} />
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            {node.photo ? (
-              <img src={node.photo} alt={node.name} className="w-12 h-12 rounded-full object-cover shadow-md" />
-            ) : (
-              <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-md" style={{ background: node.color }}>
-                <span className="text-white" style={{ fontSize: 18 }}>{node.initials}</span>
-              </div>
-            )}
+            <NodeAvatar photo={node.photo} name={node.name} color={node.color} initials={node.initials} sizeClassName="w-12 h-12" extraClassName="shadow-md" fontSize={18} />
             <div>
               <h3 className="text-foreground" style={{ fontSize: 14 }}>{node.name}</h3>
               <p className="text-muted-foreground" style={{ fontSize: 12 }}>{node.position}</p>

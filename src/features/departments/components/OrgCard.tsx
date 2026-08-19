@@ -6,6 +6,7 @@ import type { OrgNode } from "../types";
 import { CLEVEL_COLOR } from "../styles";
 import { countDescendants } from "../utils/hierarchyTree";
 import TreeConnectors from "./TreeConnectors";
+import NodeAvatar from "./NodeAvatar";
 
 const OrgCard = ({
   node, depth = 0, expandedMap, toggleExpand, onSelect, selectedId, highlightedIds, searchMatchIds, deptColors,
@@ -90,13 +91,7 @@ const OrgCard = ({
               <div className="mt-2 pt-2 border-t border-border/20 space-y-1">
                 {extraEmps.map(emp => (
                   <div key={emp.id} className="flex items-center gap-1.5">
-                    {emp.photo ? (
-                      <img src={emp.photo} alt={emp.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: topColor }}>
-                        <span className="text-white" style={{ fontSize: 8 }}>{emp.name.charAt(0)}</span>
-                      </div>
-                    )}
+                    <NodeAvatar photo={emp.photo} name={emp.name} color={topColor} initials={emp.name.charAt(0)} sizeClassName="w-5 h-5" extraClassName="shrink-0" fontSize={8} />
                     <span className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{emp.name}</span>
                   </div>
                 ))}
