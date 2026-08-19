@@ -1,5 +1,6 @@
 import type { BiometricDevice } from "../types";
 import { arabicSource } from "@/i18n/source";
+import DeviceSelectOption from "./DeviceSelectOption";
 
 type DeviceManagementHeaderProps = {
   devices: BiometricDevice[];
@@ -26,7 +27,7 @@ const DeviceManagementHeader = ({
         onChange={(event) => onSelectedDeviceChange(event.target.value)}
       >
         {devices.map((device) => (
-          <option key={device.id} value={device.id}>{device.name} — {device.model}</option>
+          <DeviceSelectOption key={device.id} device={device} />
         ))}
       </select>
     )}

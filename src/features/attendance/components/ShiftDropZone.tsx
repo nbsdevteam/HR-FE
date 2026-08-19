@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Clock, Users, X } from "lucide-react";
-import { empDisplayName, type DbEmployee, type DbShift } from "@/shared/hooks";
+import { Clock, Users } from "lucide-react";
+import { type DbEmployee, type DbShift } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { shiftDayLabelsAr } from "../data";
+import ShiftAssignedEmployeeRow from "./ShiftAssignedEmployeeRow";
 
 type ShiftDropZoneProps = {
   shift: DbShift;
@@ -28,17 +30,8 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
     if (empId) onDrop(empId, shift.id);
   };
 
-  const dayLabelsAr = [
-    arabicSource("common.sunday"),
-    arabicSource("shared.monday"),
-    arabicSource("shared.three"),
-    arabicSource("shared.arb"),
-    arabicSource("shared.khmi"),
-    arabicSource("shared.plural"),
-    arabicSource("common.sat"),
-  ];
   const workingDays = days.filter(d => (shift as any)[`${d}_is_working`]);
-  const workingDayLabels = workingDays.map(d => dayLabelsAr[days.indexOf(d)]);
+  const workingDayLabels = workingDays.map(d => shiftDayLabelsAr[days.indexOf(d)]);
 
   return (
     <div
@@ -70,28 +63,9 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
       </div>
 
       <div className="p-3 space-y-1.5 min-h-[60px]">
-        {assignedEmps.length > 0 ? assignedEmps.map(emp => {
-          const name = empDisplayName(emp);
-          return (
-            <div key={emp.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
-              {emp.profile_picture ? (
-                <img src={emp.profile_picture} alt={name} className="w-5 h-5 rounded-full object-cover shrink-0" />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <span className="text-primary" style={{ fontSize: 8 }}>{name.charAt(0)}</span>
-                </div>
-              )}
-              <span className="text-foreground truncate flex-1" style={{ fontSize: 11 }}>{name}</span>
-              <button
-                onClick={() => onRemove(emp.id)}
-                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-red-500/20 transition-colors shrink-0"
-                title={arabicSource("shared.cancel_assignment")}
-              >
-                <X className="w-3 h-3 text-red-400" />
-              </button>
-            </div>
-          );
-        }) : (
+        {assignedEmps.length > 0 ? assignedEmps.map(emp => (
+          <ShiftAssignedEmployeeRow key={emp.id} employee={emp} onRemove={onRemove} />
+        )) : (
           <div className={`p-3 rounded-lg border-2 border-dashed text-center transition-colors ${dragOver ? "border-primary/60 bg-primary/5" : "border-border/20"}`}>
             <p className="text-muted-foreground" style={{ fontSize: 11 }}>
               {dragOver ? arabicSource("common.drop_here_to_set") : arabicSource("shared.drag_the_staff_here")}

@@ -1,6 +1,7 @@
 import { ArrowUpDown, Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceSortKey } from "../types";
+import { attendanceStatusFilterOptions, attendanceSortOptions } from "../data";
 import AttendanceFilterButton from "./AttendanceFilterButton";
 import AttendanceSortButton from "./AttendanceSortButton";
 
@@ -30,7 +31,7 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
         />
       </div>
       <div className="flex items-center gap-1.5">
-        {[arabicSource("common.all"), arabicSource("common.present"), arabicSource("common.late"), arabicSource("common.absent"), arabicSource("common.leave")].map(f => (
+        {attendanceStatusFilterOptions.map(f => (
           <AttendanceFilterButton
             key={f}
             label={f}
@@ -41,11 +42,7 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
       </div>
       <div className="flex items-center gap-1.5 border-s border-border/30 ps-3">
         <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-        {([
-          { key: "checkIn" as const, label: arabicSource("common.time") },
-          { key: "name" as const, label: arabicSource("common.name") },
-          { key: "hours" as const, label: arabicSource("common.hours_2") },
-        ]).map(s => (
+        {attendanceSortOptions.map(s => (
           <AttendanceSortButton
             key={s.key}
             sortKey={s.key}
@@ -56,8 +53,6 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
         ))}
       </div>
     </div>
-
-
     </>
   );
 }

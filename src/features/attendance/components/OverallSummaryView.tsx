@@ -7,7 +7,7 @@ import { monthlyBreakdownTableHeadings } from "@/features/attendance/data";
 import type { MonthlyBreakdownEntry } from "../types";
 import AttendanceSummaryCard from "./AttendanceSummaryCard";
 import AttendanceSecondaryStatCard from "./AttendanceSecondaryStatCard";
-import MonthlyBreakdownTableHeaderCell from "./MonthlyBreakdownTableHeaderCell";
+import AttendanceTableHeaderCell from "./AttendanceTableHeaderCell";
 import MonthlyBreakdownTableRow from "./MonthlyBreakdownTableRow";
 
 type OverallSummaryViewProps = {
@@ -66,7 +66,7 @@ const OverallSummaryView = ({ stats, breakdown }: OverallSummaryViewProps) => {
             <thead className="sticky top-0 bg-card/90 backdrop-blur-sm">
               <tr className="border-b border-border/20">
                 {monthlyBreakdownTableHeadings.map(heading => (
-                  <MonthlyBreakdownTableHeaderCell key={heading} heading={heading} />
+                  <AttendanceTableHeaderCell key={heading} heading={heading} />
                 ))}
               </tr>
             </thead>

@@ -1,5 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import { Calendar, Clock, UserCheck, UserX } from "lucide-react";
+import type { AttendanceSortKey } from "./types";
 
 export const attendanceLegendData = [
   { label: arabicSource("common.present"), dot: "bg-emerald-500" },
@@ -40,4 +41,44 @@ export const monthlyBreakdownTableHeadings = [
   arabicSource("common.additional_label"),
   arabicSource("common.delay"),
   arabicSource("common.absence"),
+];
+
+export const attendanceStatusFilterOptions = [
+  arabicSource("common.all"),
+  arabicSource("common.present"),
+  arabicSource("common.late"),
+  arabicSource("common.absent"),
+  arabicSource("common.leave"),
+];
+
+export const attendanceSortOptions: { key: AttendanceSortKey; label: string }[] = [
+  { key: "checkIn", label: arabicSource("common.time") },
+  { key: "name", label: arabicSource("common.name") },
+  { key: "hours", label: arabicSource("common.hours_2") },
+];
+
+export const attendanceDayNamesShort: Record<string, string> = {
+  sunday: arabicSource("common.sunday"), monday: arabicSource("attendance.two"), tuesday: arabicSource("attendance.tuesday"),
+  wednesday: arabicSource("attendance.wed"), thursday: arabicSource("attendance.thursday"), friday: arabicSource("attendance.friday"), saturday: arabicSource("common.sat"),
+};
+
+export const dailyRecordsTableHeadings = [
+  arabicSource("common.date"),
+  arabicSource("common.today"),
+  arabicSource("common.attendance"),
+  arabicSource("common.dismissal"),
+  arabicSource("common.hours_2"),
+  arabicSource("common.additional_label"),
+  arabicSource("common.status"),
+];
+
+// Ordered to match the `days` weekday-key array in ShiftDropZone.tsx
+export const shiftDayLabelsAr = [
+  arabicSource("common.sunday"),
+  arabicSource("shared.monday"),
+  arabicSource("shared.three"),
+  arabicSource("shared.arb"),
+  arabicSource("shared.khmi"),
+  arabicSource("shared.plural"),
+  arabicSource("common.sat"),
 ];
