@@ -3,6 +3,7 @@ import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
+import { inputCls, selectCls, labelCls } from "../styles";
 
 type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
@@ -52,18 +53,18 @@ const AddEmployeeModal = ({
           <p className="text-xs text-primary mb-3 flex items-center gap-1.5"><Fingerprint className="w-3.5 h-3.5" /> {arabicSource("employees.fingerprint_device_data_mandatory")}</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.employee_number")}</label>
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.employee_number")}</label>
               <div className="w-full h-11 px-4 rounded-lg border border-border bg-muted/30 text-foreground flex items-center font-mono" dir="ltr">
                 {loadingNextId ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : nextEmployeeId ? `#${nextEmployeeId}` : "—"}
                 <span className="text-muted-foreground text-[10px] ms-2">{arabicSource("employees.automatic")}</span>
               </div>
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.gender")}</label>
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.gender")}</label>
               <select
                 value={addForm.gender}
                 onChange={(e) => onFormChange({ gender: e.target.value as "male" | "female" })}
-                className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none"
+                className={selectCls}
               >
                 <option value="male">{arabicSource("common.male")}</option>
                 <option value="female">{arabicSource("common.female")}</option>
@@ -71,7 +72,7 @@ const AddEmployeeModal = ({
             </div>
           </div>
           <div className="mt-3">
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.face_image")} <span className="text-muted-foreground">{arabicSource("employees.optional_can_be_added_later")}</span></label>
+            <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.face_image")} <span className="text-muted-foreground">{arabicSource("employees.optional_can_be_added_later")}</span></label>
             <div className="flex items-center gap-3">
               {facePhotoPreview ? (
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-primary/30">
@@ -95,52 +96,52 @@ const AddEmployeeModal = ({
         <div className="border-t border-border/20 pt-3">
           <p className="text-xs text-muted-foreground mb-3">{arabicSource("employees.employee_data")}</p>
           <div className="mb-3">
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.full_name")}</label>
-            <input type="text" value={addForm.name} onChange={(e) => onFormChange({ name: e.target.value })} placeholder={arabicSource("employees.enter_the_employee_s_name")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+            <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.full_name")}</label>
+            <input type="text" value={addForm.name} onChange={(e) => onFormChange({ name: e.target.value })} placeholder={arabicSource("employees.enter_the_employee_s_name")} className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.id_number")}</label>
-              <input type="text" value={addForm.nationalId} onChange={(e) => onFormChange({ nationalId: e.target.value })} placeholder={arabicSource("employees.national_id_number")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.id_number")}</label>
+              <input type="text" value={addForm.nationalId} onChange={(e) => onFormChange({ nationalId: e.target.value })} placeholder={arabicSource("employees.national_id_number")} className={inputCls} />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.email")}</label>
-              <input type="text" value={addForm.email} onChange={(e) => onFormChange({ email: e.target.value })} placeholder="example@company.iq" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.email")}</label>
+              <input type="text" value={addForm.email} onChange={(e) => onFormChange({ email: e.target.value })} placeholder="example@company.iq" className={inputCls} />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.personal_phone")}</label>
-              <input type="text" value={addForm.personalPhone} onChange={(e) => onFormChange({ personalPhone: e.target.value })} placeholder="07XXXXXXXXX" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.personal_phone")}</label>
+              <input type="text" value={addForm.personalPhone} onChange={(e) => onFormChange({ personalPhone: e.target.value })} placeholder="07XXXXXXXXX" className={inputCls} />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.company_phone")}</label>
-              <input type="text" value={addForm.companyPhone} onChange={(e) => onFormChange({ companyPhone: e.target.value })} placeholder="07XXXXXXXXX" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.company_phone")}</label>
+              <input type="text" value={addForm.companyPhone} onChange={(e) => onFormChange({ companyPhone: e.target.value })} placeholder="07XXXXXXXXX" className={inputCls} />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
-              <select value={addForm.departmentId} onChange={(e) => onFormChange({ departmentId: e.target.value, designationId: "" })} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.section")}</label>
+              <select value={addForm.departmentId} onChange={(e) => onFormChange({ departmentId: e.target.value, designationId: "" })} className={selectCls}>
                 <option value="">{arabicSource("employees.select_the_section")}</option>
                 {departmentOptions.map(d => (<option key={d.id} value={d.id}>{d.name}</option>))}
               </select>
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.job_position")}</label>
-              <select value={addForm.designationId} onChange={(e) => onFormChange({ designationId: e.target.value })} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.job_position")}</label>
+              <select value={addForm.designationId} onChange={(e) => onFormChange({ designationId: e.target.value })} className={selectCls}>
                 <option value="">{arabicSource("common.select")}</option>
                 {designationOptions.map(p => (<option key={p.id} value={p.id}>{p.title_ar || p.title_en || p.id}</option>))}
               </select>
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("employees.salary_iqd")}</label>
-              <input type="number" value={addForm.salary} onChange={(e) => onFormChange({ salary: e.target.value })} placeholder="0" className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" dir="ltr" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.salary_iqd")}</label>
+              <input type="number" value={addForm.salary} onChange={(e) => onFormChange({ salary: e.target.value })} placeholder="0" className={inputCls} dir="ltr" />
             </div>
             <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.direct_date")}</label>
-              <input type="date" value={addForm.joinDate} onChange={(e) => onFormChange({ joinDate: e.target.value })} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" dir="ltr" />
+              <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.direct_date")}</label>
+              <input type="date" value={addForm.joinDate} onChange={(e) => onFormChange({ joinDate: e.target.value })} className={inputCls} dir="ltr" />
             </div>
           </div>
           <div className="mt-3">
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("common.address")}</label>
-            <input type="text" value={addForm.address} onChange={(e) => onFormChange({ address: e.target.value })} placeholder={arabicSource("employees.baghdad_region")} className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none" />
+            <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.address")}</label>
+            <input type="text" value={addForm.address} onChange={(e) => onFormChange({ address: e.target.value })} placeholder={arabicSource("employees.baghdad_region")} className={inputCls} />
           </div>
         </div>
 

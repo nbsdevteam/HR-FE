@@ -22,3 +22,10 @@ export const statusColors: Record<string, string> = {
   [arabicSource("common.finished")]: "bg-destructive/10 border-destructive/20 text-destructive",
   [arabicSource("common.pending")]: "bg-amber-500/10 border-amber-500/20 text-amber-400",
 };
+
+export const inputCls =
+  "w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none";
+
+export const selectCls = inputCls;
+
+export const labelCls = "text-foreground block mb-1.5";
