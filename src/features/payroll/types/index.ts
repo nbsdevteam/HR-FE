@@ -19,7 +19,6 @@ export interface PayrollDetailPanelProps {
   onLedgerUpdate: () => Promise<void>;
   dbShifts: DbShift[];
   dbDepartments: any[];
-  dbHolidays: any[];
   holidayDates: Set<string>;
   allowanceTypes: any[];
   allEmployeeAllowances: any[];

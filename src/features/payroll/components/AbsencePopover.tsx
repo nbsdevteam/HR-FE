@@ -1,8 +1,16 @@
-import { X, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import type { ProcessedAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
-import { dayNamesAr } from "../styles";
+import PopoverHeader from "./shared/PopoverHeader";
+import PopoverFooterBar from "./shared/PopoverFooterBar";
+import AbsenceRecordRow from "./AbsenceRecordRow";
+
+const REASON_LABELS: Record<string, string> = {
+  no_punches: arabicSource("payroll.no_fingerprint"),
+  late_threshold: arabicSource("payroll.excessive_delay"),
+  checkout_without_checkin: arabicSource("payroll.leaving_without_attending"),
+};
 
 const AbsencePopover = ({
   records,
@@ -13,12 +21,6 @@ const AbsencePopover = ({
   onClose: () => void;
   onExcuse: (id: string) => void;
 }) => {
-  const reasonLabels: Record<string, string> = {
-    no_punches: arabicSource("payroll.no_fingerprint"),
-    late_threshold: arabicSource("payroll.excessive_delay"),
-    checkout_without_checkin: arabicSource("payroll.leaving_without_attending"),
-  };
-
   return (
     <ModalOverlay
       onClose={onClose}
@@ -29,62 +31,29 @@ const AbsencePopover = ({
         exit: { scale: 0.95 },
       }}
     >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-destructive/10">
-              <XCircle className="w-5 h-5 text-destructive" />
-            </div>
-            <div>
-              <h3 className="text-foreground">{arabicSource("payroll.absence_details")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.days_of_absence_during_the_month")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+        <PopoverHeader
+          icon={XCircle}
+          iconBgClassName="bg-destructive/10"
+          iconColorClassName="text-destructive"
+          title={arabicSource("payroll.absence_details")}
+          subtitle={arabicSource("payroll.days_of_absence_during_the_month")}
+          onClose={onClose}
+        />
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {records.map((rec) => (
-            <div
-              key={rec.id}
-              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                rec.excusedAbsence
-                  ? "bg-emerald-500/5 border-emerald-500/20"
-                  : "bg-destructive/5 border-destructive/15"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="text-foreground" style={{ fontSize: 13 }}>{rec.date}</p>
-                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                    {dayNamesAr[rec.dayOfWeek] || rec.dayOfWeek} — {reasonLabels[rec.absenceReason || ""] || arabicSource("common.absence_2")}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => onExcuse(rec.id)}
-                className={`px-3 py-1.5 rounded-md border cursor-pointer transition-colors ${
-                  rec.excusedAbsence
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                    : "bg-muted/10 border-border text-muted-foreground hover:border-primary/30"
-                }`}
-                style={{ fontSize: 11 }}
-              >
-                {rec.excusedAbsence ? arabicSource("common.sorry") : arabicSource("common.excuse")}
-              </button>
-            </div>
+            <AbsenceRecordRow key={rec.id} rec={rec} reasonLabels={REASON_LABELS} onExcuse={onExcuse} />
           ))}
         </div>
 
-        <div className="px-6 py-3 border-t border-border/30 flex items-center justify-between">
+        <PopoverFooterBar>
           <span className="text-destructive" style={{ fontSize: 12 }}>
             {arabicSource("payroll.total")} {records.length} {arabicSource("common.days_2")}
           </span>
           <span className="text-emerald-400" style={{ fontSize: 12 }}>
             {arabicSource("common.excused")} {records.filter((r) => r.excusedAbsence).length}
           </span>
-        </div>
+        </PopoverFooterBar>
     </ModalOverlay>
   );
 };

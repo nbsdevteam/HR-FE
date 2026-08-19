@@ -1,3 +1,4 @@
+import { StatusBadge } from "@/shared/components";
 import type { ProcessedAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import { dayNamesAr } from "../styles";
@@ -19,16 +20,17 @@ const PayrollLeaveDayRow = ({ rec }: PayrollLeaveDayRowProps) => (
       <span className="text-muted-foreground" style={{ fontSize: 11 }}>{dayNamesAr[rec.dayOfWeek] || rec.dayOfWeek}</span>
     </div>
     <div className="flex items-center gap-2">
-      <span
-        className={`px-2 py-0.5 rounded-md text-center ${
+      <StatusBadge
+        colorClassName={
           rec.isUnpaidLeave
-            ? "bg-destructive/10 text-destructive border border-destructive/20"
-            : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-        }`}
-        style={{ fontSize: 10 }}
+            ? "bg-destructive/10 text-destructive border-destructive/20"
+            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+        }
+        fontSize={10}
+        extraClassName="text-center"
       >
         {rec.leaveType}
-      </span>
+      </StatusBadge>
       {rec.isUnpaidLeave && (
         <span className="text-destructive" style={{ fontSize: 10 }}>{arabicSource("common.discounted")}</span>
       )}

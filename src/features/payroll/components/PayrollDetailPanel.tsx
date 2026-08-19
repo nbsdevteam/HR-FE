@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
@@ -48,6 +49,14 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
     showShortfall,
     unpaidLeaveCount,
   } = usePayrollDetailPanel(props);
+
+  const handleShowShortfall = useCallback(() => setShowShortfall(true), [setShowShortfall]);
+  const handleShowAbsence = useCallback(() => setShowAbsence(true), [setShowAbsence]);
+  const handleToggleCalendar = useCallback(() => setShowCalendar((current) => !current), [setShowCalendar]);
+  const handleStartEditLedger = useCallback(() => setEditingLedger(true), [setEditingLedger]);
+  const handleCancelEditLedger = useCallback(() => setEditingLedger(false), [setEditingLedger]);
+  const handleCloseShortfall = useCallback(() => setShowShortfall(false), [setShowShortfall]);
+  const handleCloseAbsence = useCallback(() => setShowAbsence(false), [setShowAbsence]);
 
   return (
     <AnimatePresence>
@@ -104,9 +113,9 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                 paidLeaveCount={paidLeaveCount}
                 unpaidLeaveCount={unpaidLeaveCount}
                 showCalendar={showCalendar}
-                onShowShortfall={() => setShowShortfall(true)}
-                onShowAbsence={() => setShowAbsence(true)}
-                onToggleCalendar={() => setShowCalendar((current) => !current)}
+                onShowShortfall={handleShowShortfall}
+                onShowAbsence={handleShowAbsence}
+                onToggleCalendar={handleToggleCalendar}
               />
 
               {/* Ledger Editor + Salary Breakdown */}
@@ -115,8 +124,8 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                   ledgerCurrency={ledgerCurrency}
                   onLedgerCurrencyChange={setLedgerCurrency}
                   editingLedger={editingLedger}
-                  onStartEdit={() => setEditingLedger(true)}
-                  onCancelEdit={() => setEditingLedger(false)}
+                  onStartEdit={handleStartEditLedger}
+                  onCancelEdit={handleCancelEditLedger}
                   onSave={handleSaveLedger}
                   ledgerSaving={ledgerSaving}
                   ledgerLoan={ledgerLoan}
@@ -160,7 +169,7 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                   <ShortfallPopover
                     records={shortfallRecs}
                     targetHours={DEFAULT_SETTINGS.targetWorkingHoursPerDay}
-                    onClose={() => setShowShortfall(false)}
+                    onClose={handleCloseShortfall}
                     onExcuse={excuseShortfall}
                   />
                 )}
@@ -171,7 +180,7 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                 {showAbsence && (
                   <AbsencePopover
                     records={absenceRecs}
-                    onClose={() => setShowAbsence(false)}
+                    onClose={handleCloseAbsence}
                     onExcuse={excuseAbsence}
                   />
                 )}

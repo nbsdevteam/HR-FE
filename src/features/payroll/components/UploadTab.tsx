@@ -1,11 +1,5 @@
-import { useState, useMemo, useRef } from "react";
-import {
-  Download, Users, FileText, Loader2,
-  Upload, FileSpreadsheet, AlertCircle, CheckCircle,
-  CalendarDays,
-  TriangleAlert,
-  UserCheck,
-} from "lucide-react";
+import { useState, useMemo, useRef, useCallback } from "react";
+import { Download, Loader2, CheckCircle } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import type { DbEmployee } from "@/shared/hooks";
 import {
@@ -13,18 +7,18 @@ import {
   type RawAttendanceRecord,
 } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
-import { payrollCardClass as cardCls } from "../styles";
+import UploadDropzone from "./UploadDropzone";
+import UploadErrorsPanel from "./UploadErrorsPanel";
+import UploadSummaryCards from "./UploadSummaryCards";
+import UploadSummaryDetails from "./UploadSummaryDetails";
 
 const UploadTab = ({
   employees,
-  selectedMonth,
   onComplete,
 }: {
   employees: DbEmployee[];
-  selectedMonth: string;
   onComplete: () => void;
 }) => {
-  const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<{
     records: RawAttendanceRecord[];
@@ -34,13 +28,7 @@ const UploadTab = ({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleFile = async (file: File) => {
-    setUploading(true);
-    setSaved(false);
-    const result = await parseAttendanceFile(file);
-    setParseResult(result);
-    setUploading(false);
-  };
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Summary of parsed data
   const summary = useMemo(() => {
@@ -74,7 +62,15 @@ const UploadTab = ({
     };
   }, [parseResult, employees]);
 
-  const handleSaveToSupabase = async () => {
+  const handleFile = useCallback(async (file: File) => {
+    setUploading(true);
+    setSaved(false);
+    const result = await parseAttendanceFile(file);
+    setParseResult(result);
+    setUploading(false);
+  }, []);
+
+  const handleSaveToSupabase = useCallback(async () => {
     if (!parseResult || parseResult.records.length === 0) return;
     setSaving(true);
 
@@ -190,133 +186,38 @@ const UploadTab = ({
       console.error("Error saving:", err);
     }
     setSaving(false);
-  };
+  }, [parseResult, employees]);
 
   return (
     <div className="space-y-6">
-      {/* Upload Area */}
-      <div className={`${cardCls} p-8`}>
-        <div className="text-center max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center mx-auto mb-4">
-            <FileSpreadsheet className="w-8 h-8 text-primary" />
-          </div>
-          <h3 className="text-foreground mb-2">{arabicSource("payroll.uploading_the_attendance_and_departure_file")}</h3>
-          <p className="text-muted-foreground mb-6" style={{ fontSize: 13 }}>
-            {arabicSource("payroll.upload_an_excel_or_csv_file_containing_the_columns_person_id_nam")}
-          </p>
+      <UploadDropzone
+        fileInputRef={fileRef}
+        uploading={uploading}
+        hasResult={!!parseResult}
+        onFileSelected={handleFile}
+      />
 
-          <div
-            onClick={() => fileRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 transition-colors cursor-pointer ${
-              parseResult
-                ? "border-emerald-500/40 bg-emerald-500/5"
-                : "border-border hover:border-primary/50 hover:bg-primary/5"
-            }`}
-          >
-            {uploading ? (
-              <div className="flex items-center justify-center gap-3">
-                <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                <span className="text-foreground">{arabicSource("payroll.analyzing_the_file")}</span>
-              </div>
-            ) : parseResult ? (
-              <div className="flex items-center justify-center gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-400" />
-                <span className="text-emerald-400">{arabicSource("payroll.the_file_was_successfully_parsed_click_to_upload_another_file")}</span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="w-8 h-8 text-primary/60" />
-                <span className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("payroll.click_to_select_a_file_or_drag_it_here")}</span>
-                <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("payroll.excel_xlsx_xls_or_csv_max_10mb")}</span>
-              </div>
-            )}
-          </div>
-          <input
-            ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
-            className="hidden"
-            onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
-          />
-        </div>
-      </div>
-
-      {/* Parse Errors */}
       {parseResult && parseResult.errors.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="w-5 h-5 text-destructive" />
-            <span className="text-destructive" style={{ fontSize: 14 }}>{arabicSource("payroll.warnings")}{parseResult.errors.length})</span>
-          </div>
-          <ul className="space-y-1 max-h-32 overflow-y-auto">
-            {parseResult.errors.slice(0, 20).map((err, i) => (
-              <li key={i} className="text-destructive/80 ps-4" style={{ fontSize: 12 }}>• {err}</li>
-            ))}
-            {parseResult.errors.length > 20 && (
-              <li className="text-destructive/60 ps-4" style={{ fontSize: 12 }}>{arabicSource("payroll.and")} {parseResult.errors.length - 20} {arabicSource("payroll.another_warning")}</li>
-            )}
-          </ul>
-        </div>
+        <UploadErrorsPanel errors={parseResult.errors} />
       )}
 
       {/* Parse Summary */}
       {summary && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: arabicSource("common.total_records"), value: summary.totalRecords, icon: FileText },
-              { label: arabicSource("common.number_of_employees"), value: summary.uniqueEmployees, icon: Users },
-              { label: arabicSource("payroll.number_of_days"), value: summary.uniqueDates, icon: CalendarDays },
-              { label: arabicSource("payroll.are_identical_to_the_system"), value: summary.matched.length, icon: UserCheck },
-            ].map((s) => {
-              const Icon = s.icon;
-              return (
-                <div key={s.label} className={`${cardCls} p-4`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Icon className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground" style={{ fontSize: 12 }}>{s.label}</p>
-                      <span className="text-foreground" style={{ fontSize: 20 }}>{s.value}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <UploadSummaryCards
+            totalRecords={summary.totalRecords}
+            uniqueEmployees={summary.uniqueEmployees}
+            uniqueDates={summary.uniqueDates}
+            matchedCount={summary.matched.length}
+          />
 
-          {/* Details chips */}
-          <div className={`${cardCls} p-5`}>
-            <div className="flex flex-wrap gap-3">
-              <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" style={{ fontSize: 12 }}>
-                Check-in: {summary.checkIns}
-              </span>
-              <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400" style={{ fontSize: 12 }}>
-                Check-out: {summary.checkOuts}
-              </span>
-              {summary.nones > 0 && (
-                <span className="px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 12 }}>
-                  {arabicSource("payroll.none_absence")} {summary.nones}
-                </span>
-              )}
-              {summary.dateRange.length > 0 && (
-                <span className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary" style={{ fontSize: 12 }}>
-                  {arabicSource("common.from")} {summary.dateRange[0]} {arabicSource("common.to")} {summary.dateRange[summary.dateRange.length - 1]}
-                </span>
-              )}
-            </div>
-
-            {summary.unmatched.length > 0 && (
-              <div className="mt-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
-                <p className="text-amber-400 mb-1" style={{ fontSize: 13 }}>
-                  <TriangleAlert className="w-4 h-4 inline-block me-1" />
-                  {summary.unmatched.length} {arabicSource("payroll.an_employee_that_does_not_match_the_system")}
-                </p>
-                <p className="text-amber-400/70" style={{ fontSize: 12 }}>
-                  IDs: {summary.unmatched.join(", ")}
-                </p>
-              </div>
-            )}
-          </div>
+          <UploadSummaryDetails
+            checkIns={summary.checkIns}
+            checkOuts={summary.checkOuts}
+            nones={summary.nones}
+            dateRange={summary.dateRange}
+            unmatched={summary.unmatched}
+          />
 
           {/* Save Button */}
           <div className="flex justify-center">

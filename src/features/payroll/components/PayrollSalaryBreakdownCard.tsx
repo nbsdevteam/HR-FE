@@ -67,47 +67,52 @@ const PayrollSalaryBreakdownCard = ({ sc, calc, monthLabel }: PayrollSalaryBreak
       )}
 
       {sc.lateDeduction > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-orange-400 flex items-center gap-2" style={{ fontSize: 13 }}>
-            <Clock className="w-3.5 h-3.5" />
-            {arabicSource("payroll.delay")}{calc.lateDays} {arabicSource("common.days_3")}
-          </span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.lateDeduction, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={<>{arabicSource("payroll.delay")}{calc.lateDays} {arabicSource("common.days_3")}</>}
+          amount={sc.lateDeduction}
+          currency={sc.currency}
+          icon={Clock}
+        />
       )}
 
       {sc.shortfallDeduction > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-amber-400 flex items-center gap-2" style={{ fontSize: 13 }}>
-            <ArrowDownRight className="w-3.5 h-3.5" />
-            {arabicSource("payroll.shortage_of_hours")}{formatHoursMinutes(calc.shortfallHours)})
-          </span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.shortfallDeduction, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={<>{arabicSource("payroll.shortage_of_hours")}{formatHoursMinutes(calc.shortfallHours)})</>}
+          amount={sc.shortfallDeduction}
+          currency={sc.currency}
+          icon={ArrowDownRight}
+          labelColorClassName="text-amber-400"
+        />
       )}
 
       {sc.absenceDeduction > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-destructive flex items-center gap-2" style={{ fontSize: 13 }}>
-            <XCircle className="w-3.5 h-3.5" />
-            {arabicSource("payroll.absence")}{calc.absenceDays.length} {arabicSource("common.days_3")}
-          </span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.absenceDeduction, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={<>{arabicSource("payroll.absence")}{calc.absenceDays.length} {arabicSource("common.days_3")}</>}
+          amount={sc.absenceDeduction}
+          currency={sc.currency}
+          icon={XCircle}
+          labelColorClassName="text-destructive"
+        />
       )}
 
       {sc.loan > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("common.advance")}</span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.loan, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={arabicSource("common.advance")}
+          amount={sc.loan}
+          currency={sc.currency}
+          icon={null}
+          labelColorClassName="text-muted-foreground"
+        />
       )}
 
       {sc.penalty > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("payroll.penalties")}</span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.penalty, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={arabicSource("payroll.penalties")}
+          amount={sc.penalty}
+          currency={sc.currency}
+          icon={null}
+          labelColorClassName="text-muted-foreground"
+        />
       )}
 
       {sc.deductionBreakdown.length > 0 && sc.deductionBreakdown.map((d, idx) => (
@@ -115,20 +120,16 @@ const PayrollSalaryBreakdownCard = ({ sc, calc, monthLabel }: PayrollSalaryBreak
       ))}
 
       {sc.loanInstallment > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-orange-400 flex items-center gap-2" style={{ fontSize: 13 }}>
-            <CreditCard className="w-3.5 h-3.5" />
-            {arabicSource("payroll.loan_installment")}
-          </span>
-          <span className="text-destructive" style={{ fontSize: 13 }} dir="ltr">-{formatCurrency(sc.loanInstallment, sc.currency)}</span>
-        </div>
+        <PayrollDeductionRow
+          name={arabicSource("payroll.loan_installment")}
+          amount={sc.loanInstallment}
+          currency={sc.currency}
+          icon={CreditCard}
+        />
       )}
 
       {sc.tip > 0 && (
-        <div className="flex items-center justify-between py-2 ps-4 border-b border-border/10">
-          <span className="text-emerald-400" style={{ fontSize: 13 }}>{arabicSource("common.gratuity_tip")}</span>
-          <span className="text-emerald-400" style={{ fontSize: 13 }} dir="ltr">+{formatCurrency(sc.tip, sc.currency)}</span>
-        </div>
+        <PayrollAllowanceRow name={arabicSource("common.gratuity_tip")} amount={sc.tip} currency={sc.currency} icon={null} />
       )}
 
       <div className="flex items-center justify-between py-3 mt-2 bg-gradient-to-l from-primary/10 to-transparent rounded-lg px-3 -mx-3 border border-primary/20">

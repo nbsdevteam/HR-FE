@@ -1,16 +1,15 @@
 import { useState, useMemo } from "react";
-import { motion } from "motion/react";
 import {
   Wallet, TrendingUp, Calculator, Users,
-  ArrowUpRight, ArrowDownRight,
   Search,
 } from "lucide-react";
-import { formatCurrency } from "@/features/payroll";
+import StatCard from "@/shared/components/StatCard";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
 import { payrollCardClass as cardCls, payrollInputClass as inputCls } from "../styles";
 import { formatIQD } from "../utils/payrollFormat";
+import PayrollOverviewRow from "./PayrollOverviewRow";
 
 const OverviewTab = ({
   payrollData,
@@ -46,12 +45,12 @@ const OverviewTab = ({
     return list;
   }, [payrollData, search, paySortBy, paySortDir]);
 
-  const stats = [
+  const stats = useMemo(() => [
     { label: arabicSource("common.total_basic_salaries"), value: formatIQD(totalBasic), icon: Wallet, color: "text-primary", accent: "from-primary/10" },
     { label: arabicSource("payroll.net_salaries"), value: formatIQD(totalNet), icon: TrendingUp, color: "text-emerald-500", accent: "from-emerald-500/10" },
     { label: arabicSource("common.total_deductions"), value: formatIQD(Math.abs(totalDeductions)), icon: Calculator, color: "text-destructive", accent: "from-destructive/10" },
     { label: arabicSource("common.number_of_employees"), value: String(totalEmployees), icon: Users, color: "text-blue-500", accent: "from-blue-500/10" },
-  ];
+  ], [totalBasic, totalNet, totalDeductions, totalEmployees]);
 
   const departmentPayroll = useMemo(() => {
     const map: Record<string, number> = {};
@@ -66,30 +65,24 @@ const OverviewTab = ({
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -4, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.15)" }}
-              className="relative bg-card backdrop-blur-sm border border-border rounded-xl p-4 shadow-lg overflow-hidden hover:border-primary/30 transition-colors"
-            >
-              <div className={`absolute top-0 end-0 w-28 h-28 bg-gradient-to-bl ${stat.accent} to-transparent rounded-bl-full`} />
-              <div className="flex items-start justify-between relative z-10">
-                <div>
-                  <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                  <span className={`block mt-2 ${stat.color}`} style={{ fontSize: 22 }} dir="ltr">{stat.value}</span>
-                </div>
-                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+        {stats.map((stat, i) => (
+          <StatCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            index={i}
+            decoration="blob"
+            decorationClassName={stat.accent}
+            hoverLift
+            valueSize={22}
+            valueClassName={stat.color}
+            valueMarginClassName="mt-2"
+            labelSize={12}
+            iconClassName={`w-5 h-5 ${stat.color}`}
+            dir="ltr"
+          />
+        ))}
       </div>
 
       {/* Chart */}
@@ -136,51 +129,7 @@ const OverviewTab = ({
             </thead>
             <tbody>
               {filtered.length > 0 ? filtered.map((r: any, i: number) => (
-                <motion.tr
-                  key={r.empId}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.02 }}
-                  className="border-b border-border/20 hover:bg-muted/10 transition-colors cursor-pointer"
-                  onClick={() => onViewPayslip(r.empId)}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-primary" style={{ fontSize: 12 }}>{r.name.charAt(0)}</span>
-                      </div>
-                      <span className="text-foreground whitespace-nowrap">{r.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap" style={{ fontSize: 13 }}>{r.department}</td>
-                  <td className="px-4 py-3 text-foreground whitespace-nowrap text-center" style={{ fontSize: 13 }} dir="ltr">
-                    {formatCurrency(r.basicSalary, r.currency)}
-                  </td>
-                  <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{r.daysWorked}</td>
-                  <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{r.totalHours.toFixed(1)}</td>
-                  <td className="px-4 py-3" style={{ fontSize: 13 }}>
-                    {r.overtime > 0 ? (
-                      <span className="text-emerald-400 flex items-center gap-1">
-                        <ArrowUpRight className="w-3.5 h-3.5" /> {r.overtime.toFixed(1)}h
-                      </span>
-                    ) : <span className="text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-4 py-3" style={{ fontSize: 13 }}>
-                    {r.shortfall > 0 ? (
-                      <span className="text-amber-400 flex items-center gap-1">
-                        <ArrowDownRight className="w-3.5 h-3.5" /> {r.shortfall.toFixed(1)}h
-                      </span>
-                    ) : <span className="text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-4 py-3" style={{ fontSize: 13 }}>
-                    {r.absences > 0 ? (
-                      <span className="text-destructive">{r.absences} {arabicSource("common.days_2")}</span>
-                    ) : <span className="text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center" style={{ fontSize: 13 }} dir="ltr">
-                    <span className="text-gradient-gold">{formatCurrency(r.netSalary, r.currency)}</span>
-                  </td>
-                </motion.tr>
+                <PayrollOverviewRow key={r.empId} row={r} index={i} onViewPayslip={onViewPayslip} />
               )) : (
                 <tr>
                   <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
@@ -197,5 +146,3 @@ const OverviewTab = ({
 };
 
 export default OverviewTab;
-
-// Upload tab

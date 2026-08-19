@@ -4,6 +4,8 @@ export { default as ModalOverlay } from "./ModalOverlay";
 export { default as NodeAvatar } from "./NodeAvatar";
 export * from "./SortableHeader";
 export { default as StatusBadge } from "./StatusBadge";
+export { default as TabButton } from "./TabButton";
+export { default as TabGroup } from "./TabGroup";
 export { default as TableHeaderRow } from "./TableHeaderRow";
 export * from "./ViewToggle";
 export * from "./chart-utils";

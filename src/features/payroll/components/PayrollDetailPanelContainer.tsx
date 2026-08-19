@@ -28,7 +28,6 @@ const PayrollDetailPanelContainer = ({ page }: PayrollDetailPanelContainerProps)
       onLedgerUpdate={handleLedgerUpdate}
       dbShifts={page.dbShifts}
       dbDepartments={page.dbDepartments}
-      dbHolidays={page.dbHolidays}
       holidayDates={page.holidayDates}
       allowanceTypes={page.allowanceTypes}
       allEmployeeAllowances={page.allEmployeeAllowances}

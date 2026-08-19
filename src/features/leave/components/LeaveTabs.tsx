@@ -1,5 +1,5 @@
+import { TabButton, TabGroup } from "@/shared/components";
 import { leaveTabs, type LeaveTabId } from "../types";
-import LeaveTabButton from "./LeaveTabButton";
 
 type LeaveTabsProps = {
   activeTab: LeaveTabId;
@@ -7,9 +7,9 @@ type LeaveTabsProps = {
 };
 
 const LeaveTabs = ({ activeTab, onTabChange }: LeaveTabsProps) => (
-  <div className="flex gap-1 p-1 bg-card/40 border border-border/30 rounded-xl w-fit">
+  <TabGroup>
     {leaveTabs.map((tab) => (
-      <LeaveTabButton
+      <TabButton
         key={tab.id}
         id={tab.id}
         label={tab.label}
@@ -18,7 +18,7 @@ const LeaveTabs = ({ activeTab, onTabChange }: LeaveTabsProps) => (
         onSelect={onTabChange}
       />
     ))}
-  </div>
+  </TabGroup>
 );
 
 export default LeaveTabs;

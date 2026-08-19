@@ -3,6 +3,7 @@ import type { DbMonthlyLedger } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { payrollCardClass as cardCls } from "../styles";
 import PayrollLedgerRow from "./PayrollLedgerRow";
+import PayrollCurrencyToggleButton from "./PayrollCurrencyToggleButton";
 
 type PayrollLedgerEditorProps = {
   ledgerCurrency: "IQD" | "USD";
@@ -57,18 +58,12 @@ const PayrollLedgerEditor = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 rounded-lg border border-border/40 p-0.5 bg-muted/10">
             {(["IQD", "USD"] as const).map((cur) => (
-              <button
+              <PayrollCurrencyToggleButton
                 key={cur}
-                onClick={() => onLedgerCurrencyChange(cur)}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  ledgerCurrency === cur
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                style={{ fontSize: 12 }}
-              >
-                {cur}
-              </button>
+                currency={cur}
+                isActive={ledgerCurrency === cur}
+                onSelect={onLedgerCurrencyChange}
+              />
             ))}
           </div>
           {!editingLedger ? (

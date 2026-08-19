@@ -13,7 +13,6 @@ import type { DbEmployee } from "@/shared/hooks";
 import {
   processAttendanceRecords,
   calculateSalary,
-  formatCurrency,
   buildLeaveDateMap,
   applyLeaveToRecords,
   buildSettingsFromShift,
@@ -35,7 +34,7 @@ export const usePayrollPage = () => {
   const { shifts: dbShifts } = useShifts();
   const { departments: dbDepartments } = useHierarchyData();
   const { holidays: dbHolidays } = usePublicHolidays();
-  const { getNumber, getValue } = useConfigurations();
+  useConfigurations();
   const { types: allowanceTypes } = useAllowanceTypes();
   const { allowances: allEmployeeAllowances } = useEmployeeAllowances();
   const { types: deductionTypes } = useDeductionTypes();
@@ -43,9 +42,9 @@ export const usePayrollPage = () => {
   const { loans: allLoans } = useLoans();
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const [activeTab, setActiveTab] = useState<PayrollTabId>("overview");
-  const { records: monthlyRecords, loading: mrLoading, refetch: refetchMonthly } = useMonthlyRecords();
+  const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
   const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
-  const { records: attRecords, loading: attLoading, refetch: refetchAtt } = useAttendanceRecords();
+  const { records: attRecords, loading: attLoading } = useAttendanceRecords();
   const { requests: leaveReqRows, loading: lvLoading } = useLeaveRequests({ status: "مقبول" });
   const { types: leaveTypes } = useLeaveTypes();
   const leaveRequests = leaveReqRows as LeaveRequest[];
@@ -167,13 +166,6 @@ export const usePayrollPage = () => {
 
       // Build raw records from DB attendance
       const empAtt = monthAtt.filter((r) => r.employee_id === empId);
-      const rawRecs: RawAttendanceRecord[] = empAtt.map((a) => ({
-        personId: String(emp.person_id),
-        name: empDisplayName(emp),
-        department: emp.department,
-        time: `${a.date} ${a.check_in_time || a.check_out_time || "00:00:00"}`,
-        attendanceStatus: a.check_in_time ? "Check-in" as const : "Check-out" as const,
-      }));
 
       // Build both check-in and check-out records
       const rawRecsAll: RawAttendanceRecord[] = [];
@@ -288,10 +280,16 @@ export const usePayrollPage = () => {
   }, [attRecords, monthlyRecords, selectedMonth, empMap, ledgers, leaveRequests, leaveTypeInfos, holidayDates, allEmployeeAllowances, allowanceTypes, allEmployeeDeductions, deductionTypes, allLoans, dbDepartments, dbShifts]);
 
   // Stats
-  const totalBasic = payrollData.reduce((s, r) => s + r.basicSalary, 0);
-  const totalNet = payrollData.reduce((s, r) => s + r.netSalary, 0);
-  const totalDeductions = totalBasic - totalNet;
-  const totalEmployees = payrollData.length;
+  const { totalBasic, totalNet, totalDeductions, totalEmployees } = useMemo(() => {
+    const basic = payrollData.reduce((s, r) => s + r.basicSalary, 0);
+    const net = payrollData.reduce((s, r) => s + r.netSalary, 0);
+    return {
+      totalBasic: basic,
+      totalNet: net,
+      totalDeductions: basic - net,
+      totalEmployees: payrollData.length,
+    };
+  }, [payrollData]);
 
   // Persist payslips
   const handleSavePayslips = useCallback(async () => {
@@ -369,7 +367,6 @@ export const usePayrollPage = () => {
     appSettings,
     availableMonths,
     dbDepartments,
-    dbHolidays,
     dbShifts,
     deductionTypes,
     displayMonth,

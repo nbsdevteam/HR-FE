@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName, resolveEmployeeShift, shiftToSchedule } from "@/shared/hooks";
 import { formatMonthYear } from "@/app/providers";
@@ -52,12 +52,19 @@ export const usePayrollDetailPanel = ({
 
   const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
 
-  const selectedData = payrollData.find((r: any) => r.empId === empId);
+  const selectedData = useMemo(
+    () => payrollData.find((r: any) => r.empId === empId),
+    [payrollData, empId],
+  );
 
   // Recalculate salary live (respects excusedShortfall / excusedAbsence mutations)
-  const empForCalc = employees.find((e) => e.id === empId);
-  const currentLedgerForCalc = ledgers.find(
-    (l) => l.employee_id === empId && l.month_year === selectedMonth
+  const empForCalc = useMemo(
+    () => employees.find((e) => e.id === empId),
+    [employees, empId],
+  );
+  const currentLedgerForCalc = useMemo(
+    () => ledgers.find((l) => l.employee_id === empId && l.month_year === selectedMonth),
+    [ledgers, empId, selectedMonth],
   );
   const liveCalc = useMemo(() => {
     if (!selectedData || !empForCalc) return null;
@@ -115,15 +122,27 @@ export const usePayrollDetailPanel = ({
   const records = isOpen ? (selectedData!.records as ProcessedAttendanceRecord[]) : [];
   // calc is guaranteed non-null when isOpen is true (all JSX usage is inside isOpen guard)
   const calc = (isOpen ? (liveCalc || selectedData!.calc) : null) as SalaryCalculation;
-  const shortfallRecs = isOpen ? getShortfallRecords(records, DEFAULT_SETTINGS.targetWorkingHoursPerDay) : [];
-  const absenceRecs = isOpen ? getAbsenceRecords(records) : [];
-  const leaveRecs = isOpen ? getLeaveRecords(records) : [];
-  const paidLeaveCount = leaveRecs.filter((r) => !r.isUnpaidLeave).length;
-  const unpaidLeaveCount = leaveRecs.filter((r) => r.isUnpaidLeave).length;
+
+  const shortfallRecs = useMemo(
+    () => (isOpen ? getShortfallRecords(records, DEFAULT_SETTINGS.targetWorkingHoursPerDay) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isOpen, records, excuseVersion],
+  );
+  const absenceRecs = useMemo(
+    () => (isOpen ? getAbsenceRecords(records) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isOpen, records, excuseVersion],
+  );
+  const leaveRecs = useMemo(
+    () => (isOpen ? getLeaveRecords(records) : []),
+    [isOpen, records],
+  );
+  const paidLeaveCount = useMemo(() => leaveRecs.filter((r) => !r.isUnpaidLeave).length, [leaveRecs]);
+  const unpaidLeaveCount = useMemo(() => leaveRecs.filter((r) => r.isUnpaidLeave).length, [leaveRecs]);
 
   const currentLedger = currentLedgerForCalc;
 
-  const handleSaveLedger = async () => {
+  const handleSaveLedger = useCallback(async () => {
     if (!empId) return;
     setLedgerSaving(true);
     try {
@@ -148,7 +167,31 @@ export const usePayrollDetailPanel = ({
     } finally {
       setLedgerSaving(false);
     }
-  };
+  }, [empId, ledgerCurrency, currentLedger, selectedMonth, ledgerLoan, ledgerTip, ledgerPenalty, onLedgerUpdate]);
+
+  const excuseAbsence = useCallback((id: string) => {
+    const rec = records.find((r) => r.id === id);
+    if (rec) {
+      rec.excusedAbsence = !rec.excusedAbsence;
+      bumpExcuseVersion();
+      if (empId) {
+        odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [records, empId]);
+
+  const excuseShortfall = useCallback((id: string) => {
+    const rec = records.find((r) => r.id === id);
+    if (rec) {
+      rec.excusedShortfall = !rec.excusedShortfall;
+      bumpExcuseVersion();
+      if (empId) {
+        odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [records, empId]);
 
   const avgHoursPerDay = calc && calc.daysWorked > 0 ? calc.totalHours / calc.daysWorked : 0;
 
@@ -182,28 +225,6 @@ export const usePayrollDetailPanel = ({
     setLedgerPenalty(cl?.penalty_by_currency?.[c] || 0);
     setEditingLedger(false);
   }, [empId, selectedMonth, ledgers, ledgerCurrency]);
-
-  const excuseAbsence = (id: string) => {
-    const rec = records.find((r) => r.id === id);
-    if (rec) {
-      rec.excusedAbsence = !rec.excusedAbsence;
-      bumpExcuseVersion();
-      if (empId) {
-        odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: rec.excusedAbsence }).catch(() => {});
-      }
-    }
-  };
-
-  const excuseShortfall = (id: string) => {
-    const rec = records.find((r) => r.id === id);
-    if (rec) {
-      rec.excusedShortfall = !rec.excusedShortfall;
-      bumpExcuseVersion();
-      if (empId) {
-        odooData.excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: rec.excusedShortfall }).catch(() => {});
-      }
-    }
-  };
 
   return {
     absenceRecs,
