@@ -6,7 +6,7 @@ import {
   ClipboardList, LogOut,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState } from "@/shared/components/EmptyState";
+import { EmptyState, TableHeaderRow } from "@/shared/components";
 import { EmployeeSelect } from "@/features/employees";
 import {
   empDisplayName, useExitChecklist,
@@ -16,6 +16,7 @@ import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
+import FormFieldLabel from "./FormFieldLabel";
 
 const ExitTab = ({
   processes, exitItems, empMap, employees, employeeLabels, refetch,
@@ -266,7 +267,7 @@ const ExitTab = ({
             <h3 className="text-foreground mb-4">{arabicSource("lifecycle.termination_of_an_employee")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
+                <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
                 <EmployeeSelect
                   employees={employees}
                   labels={employeeLabels}
@@ -276,25 +277,25 @@ const ExitTab = ({
                 />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.termination_type_2")}</label>
+                <FormFieldLabel>{arabicSource("lifecycle.termination_type_2")}</FormFieldLabel>
                 <select value={formData.exit_type} onChange={e => setFormData(p => ({ ...p, exit_type: e.target.value }))} className={inputCls}>
                   {Object.entries(exitTypeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.termination_date_2")}</label>
+                <FormFieldLabel>{arabicSource("lifecycle.termination_date_2")}</FormFieldLabel>
                 <input type="date" value={formData.exit_date} onChange={e => setFormData(p => ({ ...p, exit_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.last_working_day")}</label>
+                <FormFieldLabel>{arabicSource("common.last_working_day")}</FormFieldLabel>
                 <input type="date" value={formData.last_working_day} onChange={e => setFormData(p => ({ ...p, last_working_day: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.notice_date")}</label>
+                <FormFieldLabel>{arabicSource("lifecycle.notice_date")}</FormFieldLabel>
                 <input type="date" value={formData.notice_date} onChange={e => setFormData(p => ({ ...p, notice_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.the_reason")}</label>
+                <FormFieldLabel>{arabicSource("common.the_reason")}</FormFieldLabel>
                 <input value={formData.reason} onChange={e => setFormData(p => ({ ...p, reason: e.target.value }))} className={inputCls} placeholder={arabicSource("lifecycle.reason_for_termination")} />
               </div>
             </div>
@@ -313,11 +314,7 @@ const ExitTab = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-muted/20 border-b border-border/20">
-                {[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")].map(h => (
-                  <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
-                ))}
-              </tr>
+              <TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")]} />
             </thead>
             <tbody>
               {processes.length > 0 ? processes.map((p, i) => {

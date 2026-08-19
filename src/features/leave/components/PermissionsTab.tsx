@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Check, Loader2, Timer, X } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import { EmptyState, TableHeaderRow } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName, type DbLeavePermission } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -37,11 +37,7 @@ const PermissionsTab = ({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-muted/20 border-b border-border/20">
-              {[arabicSource("common.employee"), arabicSource("common.date"), arabicSource("common.from"), arabicSource("common.to"), arabicSource("common.duration"), arabicSource("common.the_reason"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
-                <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
-              ))}
-            </tr>
+            <TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("common.date"), arabicSource("common.from"), arabicSource("common.to"), arabicSource("common.duration"), arabicSource("common.the_reason"), arabicSource("common.status"), arabicSource("common.procedures")]} />
           </thead>
           <tbody>
             {permissions.length > 0 ? permissions.map((p, i) => {

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ShieldAlert } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import { EmptyState, TableHeaderRow } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { WarningWithEmployee } from "../types";
 import WarningTableRow from "./WarningTableRow";
@@ -32,11 +32,7 @@ const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, wa
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-muted/20 border-b border-border/20">
-            {TABLE_HEADERS.map(h => (
-              <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
-            ))}
-          </tr>
+          <TableHeaderRow headings={TABLE_HEADERS} />
         </thead>
         <tbody>
           {warnings.length > 0 ? (

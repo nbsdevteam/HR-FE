@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import type { UIEvent } from "react";
 import { Activity, Loader2 } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import { EmptyState, TableHeaderRow } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceEvent } from "../types";
 import { tableRowData } from "../data";
@@ -42,11 +42,7 @@ const DeviceEventsTable = ({ events, loading }: DeviceEventsTableProps) => {
       <div className="max-h-[500px] overflow-y-auto" onScroll={handleScroll}>
         <table className="w-full">
           <thead className="sticky top-0 bg-card z-10">
-            <tr className="bg-muted/20 border-b border-border/20">
-              {tableRowData.map((heading) => (
-                <th key={heading} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{heading}</th>
-              ))}
-            </tr>
+            <TableHeaderRow headings={tableRowData} />
           </thead>
           <tbody>
             {loading ? (

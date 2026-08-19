@@ -1,6 +1,7 @@
 export * from "./EmptyState";
 export { default as ModalOverlay } from "./ModalOverlay";
 export * from "./SortableHeader";
+export { default as TableHeaderRow } from "./TableHeaderRow";
 export * from "./ViewToggle";
 export * from "./chart-utils";
 export * from "./custom-bar-chart";

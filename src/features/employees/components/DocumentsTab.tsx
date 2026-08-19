@@ -4,7 +4,7 @@ import {
   FileText, Plus, Loader2, Save, Trash2,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState } from "@/shared/components/EmptyState";
+import { EmptyState, TableHeaderRow } from "@/shared/components";
 import { EmployeeSelect } from "@/features/employees";
 import {
   empDisplayName,
@@ -12,6 +12,7 @@ import {
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
+import FormFieldLabel from "./FormFieldLabel";
 
 const DocumentsTab = ({
   documents, docTypes, empMap, employees, employeeLabels, refetch,
@@ -99,7 +100,7 @@ const DocumentsTab = ({
             <h3 className="text-foreground mb-4">{arabicSource("common.add_document")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.employee_3")}</label>
+                <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
                 <EmployeeSelect
                   employees={employees}
                   labels={employeeLabels}
@@ -108,22 +109,22 @@ const DocumentsTab = ({
                 />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("lifecycle.document_type_2")}</label>
+                <FormFieldLabel>{arabicSource("lifecycle.document_type_2")}</FormFieldLabel>
                 <select value={formData.document_type_id} onChange={e => setFormData(p => ({ ...p, document_type_id: e.target.value }))} className={inputCls}>
                   <option value="">{arabicSource("common.choose")}</option>
                   {docTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.document_number")}</label>
+                <FormFieldLabel>{arabicSource("common.document_number")}</FormFieldLabel>
                 <input value={formData.document_number} onChange={e => setFormData(p => ({ ...p, document_number: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.release_date")}</label>
+                <FormFieldLabel>{arabicSource("common.release_date")}</FormFieldLabel>
                 <input type="date" value={formData.issue_date} onChange={e => setFormData(p => ({ ...p, issue_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
               <div>
-                <label className="text-foreground block mb-1" style={{ fontSize: 12 }}>{arabicSource("common.end_date")}</label>
+                <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
                 <input type="date" value={formData.expiry_date} onChange={e => setFormData(p => ({ ...p, expiry_date: e.target.value }))} className={inputCls} dir="ltr" />
               </div>
             </div>
@@ -142,11 +143,7 @@ const DocumentsTab = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-muted/20 border-b border-border/20">
-                {[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")].map(h => (
-                  <th key={h} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{h}</th>
-                ))}
-              </tr>
+              <TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")]} />
             </thead>
             <tbody>
               {filtered.length > 0 ? filtered.map((d: DbEmployeeDocument & { computedStatus: string }, i: number) => {
