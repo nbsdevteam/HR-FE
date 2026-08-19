@@ -25,3 +25,19 @@ export const tableRowData = [
   arabicSource("devicemanagement.card_number"),
   arabicSource("devicemanagement.the_door"),
 ]
+
+export const attendanceMonthNamesByNumber: Record<string, string> = {
+  "01": arabicSource("common.january"), "02": arabicSource("common.february"), "03": arabicSource("common.march"), "04": arabicSource("common.april"),
+  "05": arabicSource("common.may"), "06": arabicSource("common.jun"), "07": arabicSource("common.july"), "08": arabicSource("common.august"),
+  "09": arabicSource("common.september"), "10": arabicSource("common.october_additional"), "11": arabicSource("common.november"), "12": arabicSource("common.december"),
+};
+
+export const monthlyBreakdownTableHeadings = [
+  arabicSource("attendance.month"),
+  arabicSource("attendance.days"),
+  arabicSource("common.hours_2"),
+  arabicSource("attendance.average"),
+  arabicSource("common.additional_label"),
+  arabicSource("common.delay"),
+  arabicSource("common.absence"),
+];

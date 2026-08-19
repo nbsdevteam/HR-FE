@@ -120,6 +120,15 @@ export type DeviceFacePreview = {
   image: string;
 };
 
+export type MonthlyBreakdownEntry = {
+  month: string;
+  days: number;
+  hours: number;
+  overtime: number;
+  late: number;
+  absent: number;
+};
+
 export const dayNames: Record<string, string> = {
   sunday: arabicSource("common.sunday_2"), monday: arabicSource("common.monday"), tuesday: arabicSource("common.tuesday"),
   wednesday: arabicSource("common.wednesday"), thursday: arabicSource("common.thursday"), friday: arabicSource("common.friday"), saturday: arabicSource("common.saturday"),
