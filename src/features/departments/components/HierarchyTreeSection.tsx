@@ -5,6 +5,9 @@ import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import OrgCard from "./OrgCard";
+import DepartmentStatTile from "./DepartmentStatTile";
+import ToolbarIconButton from "./ToolbarIconButton";
+import ToolbarTextButton from "./ToolbarTextButton";
 
 type DepartmentStat = {
   name: string;
@@ -94,14 +97,7 @@ const HierarchyTreeSection = ({
         <p className="text-muted-foreground" style={{ fontSize: 10 }}>{arabicSource("hierarchy.in")} {departmentStats.length} {arabicSource("common.sections")}</p>
       </motion.div>
       {departmentStats.map((dept, i) => (
-        <motion.div key={dept.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.05 }}
-          className="bg-card border border-border/60 rounded-xl p-3 text-center shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <div className="w-2 h-2 rounded-full" style={{ background: deptColors[dept.name] || "#888" }} />
-            <p className="text-muted-foreground truncate" style={{ fontSize: 11 }}>{dept.name}</p>
-          </div>
-          <span className="text-foreground block" style={{ fontSize: 20 }}>{dept.count}</span>
-        </motion.div>
+        <DepartmentStatTile key={dept.name} name={dept.name} count={dept.count} color={deptColors[dept.name] || "#888"} delay={(i + 1) * 0.05} />
       ))}
     </div>
 
@@ -115,19 +111,20 @@ const HierarchyTreeSection = ({
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> {arabicSource("common.saving")}
             </div>
           )}
-          <button onClick={onTogglePan}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${panEnabled ? "bg-primary/20 text-primary border border-primary/40" : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"}`}
-            title={panEnabled ? arabicSource("hierarchy.stop_dragging") : arabicSource("hierarchy.activate_drag_to_move")}>
-            <Move className="w-4 h-4" />
-          </button>
+          <ToolbarIconButton
+            icon={Move}
+            onClick={onTogglePan}
+            active={panEnabled}
+            title={panEnabled ? arabicSource("hierarchy.stop_dragging") : arabicSource("hierarchy.activate_drag_to_move")}
+          />
           <div className="w-px h-5 bg-border/40" />
-          <button onClick={onZoomOut} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.zoom_out")}><Minus className="w-4 h-4" /></button>
+          <ToolbarIconButton icon={Minus} onClick={onZoomOut} title={arabicSource("hierarchy.zoom_out")} />
           <span className="text-muted-foreground min-w-[40px] text-center" style={{ fontSize: 12 }}>{Math.round(zoom * 100)}%</span>
-          <button onClick={onZoomIn} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.enlarge")}><Plus className="w-4 h-4" /></button>
-          <button onClick={onResetZoom} className="w-8 h-8 rounded-lg bg-muted/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title={arabicSource("hierarchy.reset")}><Maximize2 className="w-4 h-4" /></button>
+          <ToolbarIconButton icon={Plus} onClick={onZoomIn} title={arabicSource("hierarchy.enlarge")} />
+          <ToolbarIconButton icon={Maximize2} onClick={onResetZoom} title={arabicSource("hierarchy.reset")} />
           <div className="w-px h-5 bg-border/40" />
-          <button onClick={onExpandAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>{arabicSource("hierarchy.expand_all")}</button>
-          <button onClick={onCollapseAll} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>{arabicSource("hierarchy.collapse_all")}</button>
+          <ToolbarTextButton onClick={onExpandAll}>{arabicSource("hierarchy.expand_all")}</ToolbarTextButton>
+          <ToolbarTextButton onClick={onCollapseAll}>{arabicSource("hierarchy.collapse_all")}</ToolbarTextButton>
         </div>
       </div>
 
