@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { AlertTriangle, Link2, X } from "lucide-react";
+import { AlertTriangle, Link2 } from "lucide-react";
 import { ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
+import ModalHeader from "./ModalHeader";
 
 const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
   employees: DbEmployee[];
@@ -24,20 +25,16 @@ const UnlinkedPanel = ({ employees, allNodes, onLink, onClose }: {
         animate: { opacity: 1, scale: 1, y: 0 },
       }}
     >
-        <div className="bg-amber-500/10 px-6 py-4 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.employees_without_attachment")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={AlertTriangle}
+          title={arabicSource("hierarchy.employees_without_attachment")}
+          subtitle={arabicSource("hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di")}
+          onClose={onClose}
+          headerClassName="bg-amber-500/10"
+          iconBadgeClassName="bg-amber-500/20"
+          iconColorClassName="text-amber-500"
+          wrapperClassName="shrink-0"
+        />
         <div className="p-4 space-y-3 overflow-y-auto flex-1">
           {employees.map(emp => {
             const name = empDisplayName(emp);

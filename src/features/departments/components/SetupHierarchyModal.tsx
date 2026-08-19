@@ -1,7 +1,9 @@
-import { Briefcase, Crown, Loader2, X } from "lucide-react";
+import { Briefcase, Crown } from "lucide-react";
 import { ModalOverlay } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import ModalHeader from "./ModalHeader";
+import ModalFooterActions from "./ModalFooterActions";
 
 type SetupHierarchyModalProps = {
   dbEmployees: DbEmployee[];
@@ -25,20 +27,17 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
     >
-        <div className="px-6 py-4 flex items-center justify-between" style={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}>
-              <Crown className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.preparing_the_organizational_structure")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.create_a_structure_owner_ceo_coo")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={Crown}
+          title={arabicSource("hierarchy.preparing_the_organizational_structure")}
+          subtitle={arabicSource("hierarchy.create_a_structure_owner_ceo_coo")}
+          onClose={onClose}
+          headerClassName=""
+          headerStyle={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}
+          iconBadgeClassName=""
+          iconBadgeStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
+          iconColorClassName="text-white"
+        />
 
         <div className="p-6 space-y-4">
           <div className="bg-muted/20 border border-border/40 rounded-xl p-4">
@@ -96,14 +95,17 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
           </p>
         </div>
 
-        <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-          <button onClick={onSetup} disabled={saving}
-            className="px-5 py-2 rounded-lg text-black disabled:opacity-50 transition-colors flex items-center gap-2" style={{ fontSize: 13, background: "linear-gradient(135deg, #FFD700, #FFA500)" }}>
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
-            {saving ? arabicSource("hierarchy.initializing") : arabicSource("common.chassis_initialization")}
-          </button>
-        </div>
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={onSetup}
+          confirmLabel={arabicSource("common.chassis_initialization")}
+          confirmIcon={Crown}
+          confirmClassName="text-black"
+          confirmStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
+          disabled={saving}
+          loading={saving}
+          loadingLabel={arabicSource("hierarchy.initializing")}
+        />
     </ModalOverlay>
   );
 };

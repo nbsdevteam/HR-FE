@@ -1,7 +1,10 @@
-import { Loader2, Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { ModalOverlay } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import ModalHeader from "./ModalHeader";
+import ChecklistItem from "./ChecklistItem";
+import ModalFooterActions from "./ModalFooterActions";
 
 type CleanupDuplicatesModalProps = {
   dbEmployees: DbEmployee[];
@@ -27,41 +30,32 @@ const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: Cle
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
     >
-        <div className="px-6 py-4 flex items-center justify-between bg-red-500/10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
-              <Trash2 className="w-5 h-5 text-red-400" />
-            </div>
-            <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("common.clean_up_duplicates")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.delete_duplicate_entries_owner_ceo_coo")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={Trash2}
+          title={arabicSource("common.clean_up_duplicates")}
+          subtitle={arabicSource("hierarchy.delete_duplicate_entries_owner_ceo_coo")}
+          onClose={onClose}
+          headerClassName="bg-red-500/10"
+          iconBadgeClassName="bg-red-500/20"
+          iconColorClassName="text-red-400"
+        />
 
         <div className="p-6 space-y-4">
           <div className="bg-muted/20 border border-border/40 rounded-xl p-4 space-y-2">
             <p className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("hierarchy.the_system_will")}</p>
             <div className="space-y-1.5">
-              <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+              <ChecklistItem dotColorClassName="bg-red-400">
                 {arabicSource("hierarchy.delete_duplicate_entries_for_owner_ceo_and_coo")}
-              </p>
-              <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+              </ChecklistItem>
+              <ChecklistItem dotColorClassName="bg-green-400">
                 {arabicSource("hierarchy.keep_the_older_version_of_each_position")}
-              </p>
-              <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+              </ChecklistItem>
+              <ChecklistItem dotColorClassName="bg-blue-400">
                 {arabicSource("hierarchy.automatically_reconnect_all_affected_employees")}
-              </p>
-              <p className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 12 }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
+              </ChecklistItem>
+              <ChecklistItem dotColorClassName="bg-yellow-400">
                 {arabicSource("hierarchy.ensure_one_correct_structure_owner_ceo_coo")}
-              </p>
+              </ChecklistItem>
             </div>
           </div>
 
@@ -78,14 +72,16 @@ const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: Cle
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-          <button onClick={onCleanup} disabled={saving}
-            className="px-5 py-2 rounded-lg bg-red-500/90 hover:bg-red-500 text-white disabled:opacity-50 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            {saving ? arabicSource("hierarchy.cleaning_in_progress") : arabicSource("common.clean_up_duplicates")}
-          </button>
-        </div>
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={onCleanup}
+          confirmLabel={arabicSource("common.clean_up_duplicates")}
+          confirmIcon={Trash2}
+          confirmClassName="bg-red-500/90 hover:bg-red-500 text-white"
+          disabled={saving}
+          loading={saving}
+          loadingLabel={arabicSource("hierarchy.cleaning_in_progress")}
+        />
     </ModalOverlay>
   );
 };

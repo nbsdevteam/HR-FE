@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Briefcase, GripVertical, Loader2, Network, Plus, Save, Search, X } from "lucide-react";
+import { Briefcase, GripVertical, Loader2, Network, Plus, Save, Search } from "lucide-react";
 import { ModalOverlay } from "@/shared/components";
 import { empDisplayName, usePositions } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
@@ -11,6 +11,8 @@ import type { PositionNode } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
 import PositionCard from "./PositionCard";
 import DraggableEmployeeCard from "./DraggableEmployeeCard";
+import ModalHeader from "./ModalHeader";
+import ModalFooterActions from "./ModalFooterActions";
 
 const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch }: {
   dbEmployees: DbEmployee[];
@@ -278,20 +280,11 @@ const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch }: {
               exit: { opacity: 0, scale: 0.92, y: 20 },
             }}
           >
-              <div className="bg-primary/10 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
-                    <Briefcase className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="text-foreground" style={{ fontSize: 15 }}>
-                    {editingPosition ? arabicSource("hierarchy.edit_position") : arabicSource("hierarchy.add_a_new_position")}
-                  </h3>
-                </div>
-                <button onClick={closeAddEditModal}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              <ModalHeader
+                icon={Briefcase}
+                title={editingPosition ? arabicSource("hierarchy.edit_position") : arabicSource("hierarchy.add_a_new_position")}
+                onClose={closeAddEditModal}
+              />
 
               <div className="p-6 space-y-4">
                 <div>
@@ -333,15 +326,14 @@ const PositionsView = ({ dbEmployees, dbDepartments, deptColors, refetch }: {
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-                <button onClick={closeAddEditModal}
-                  className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-                <button onClick={editingPosition ? handleEditPosition : handleAddPosition} disabled={saving || !posForm.title_ar.trim()}
-                  className="px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50" style={{ fontSize: 13 }}>
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {editingPosition ? arabicSource("common.save_changes") : arabicSource("hierarchy.create_position")}
-                </button>
-              </div>
+              <ModalFooterActions
+                onCancel={closeAddEditModal}
+                onConfirm={editingPosition ? handleEditPosition : handleAddPosition}
+                confirmLabel={editingPosition ? arabicSource("common.save_changes") : arabicSource("hierarchy.create_position")}
+                confirmIcon={Save}
+                disabled={saving || !posForm.title_ar.trim()}
+                loading={saving}
+              />
           </ModalOverlay>
         )}
       </AnimatePresence>

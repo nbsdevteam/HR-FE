@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { ModalOverlay } from "@/shared/components";
-import { Users, UserPlus, X, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
+import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { avatarColors } from "../styles";
 import { pickUniqueColor } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
+import ModalHeader from "./ModalHeader";
+import ModalFooterActions from "./ModalFooterActions";
 
 const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
@@ -58,20 +60,12 @@ const AddEmployeeModal = ({
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
     >
-        <div className="bg-primary/10 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
-              <UserPlus className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("common.add_a_new_employee")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.will_be_added_to_the_organizational_structure_and_database")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={UserPlus}
+          title={arabicSource("common.add_a_new_employee")}
+          subtitle={arabicSource("hierarchy.will_be_added_to_the_organizational_structure_and_database")}
+          onClose={onClose}
+        />
 
         <div className="p-6 space-y-4">
           <LabeledTextField
@@ -157,12 +151,12 @@ const AddEmployeeModal = ({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-          <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-            <UserPlus className="w-4 h-4" /> {arabicSource("hierarchy.addition_to_the_structure")}
-          </button>
-        </div>
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={handleSubmit}
+          confirmLabel={arabicSource("hierarchy.addition_to_the_structure")}
+          confirmIcon={UserPlus}
+        />
     </ModalOverlay>
   );
 

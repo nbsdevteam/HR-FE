@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Building2, Edit2, UserCheck, Users, X } from "lucide-react";
+import { Briefcase, Building2, Edit2, UserCheck, Users } from "lucide-react";
 import { ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { getDescendantIds } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
+import ModalHeader from "./ModalHeader";
+import ModalFooterActions from "./ModalFooterActions";
 
 const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
   node: OrgNode;
@@ -82,20 +84,15 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
     >
-        <div className="bg-blue-500/10 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Edit2 className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <h3 className="text-foreground" style={{ fontSize: 15 }}>{arabicSource("hierarchy.modifying_employee_data")}</h3>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("hierarchy.update_employee_information")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={Edit2}
+          title={arabicSource("hierarchy.modifying_employee_data")}
+          subtitle={arabicSource("hierarchy.update_employee_information")}
+          onClose={onClose}
+          headerClassName="bg-blue-500/10"
+          iconBadgeClassName="bg-blue-500/20"
+          iconColorClassName="text-blue-400"
+        />
 
         <div className="p-6 space-y-4">
           <LabeledTextField
@@ -157,12 +154,13 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-border/30 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-          <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-500/90 transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
-            <Edit2 className="w-4 h-4" /> {arabicSource("common.save_changes")}
-          </button>
-        </div>
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={handleSubmit}
+          confirmLabel={arabicSource("common.save_changes")}
+          confirmIcon={Edit2}
+          confirmClassName="bg-blue-500 text-white hover:bg-blue-500/90"
+        />
     </ModalOverlay>
   );
 
