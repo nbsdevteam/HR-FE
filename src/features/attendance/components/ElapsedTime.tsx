@@ -1,20 +1,46 @@
 import { arabicSource } from "@/i18n/source";
 import { TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+// Get current Iraq time using Intl (handles DST correctly)
+const computeIraqNowMinutes = (): number => {
+  const [hours, minutes] = new Date()
+    .toLocaleTimeString("en-GB", { timeZone: "Asia/Baghdad", hour12: false })
+    .split(":");
+  return parseInt(hours, 10) * 60 + parseInt(minutes, 10);
+};
+
+let iraqNowMinutes = computeIraqNowMinutes();
+const subscribers = new Set<() => void>();
+let intervalId: ReturnType<typeof setInterval> | null = null;
+
+// One shared 60s clock for every ElapsedTime instance instead of one setInterval per row.
+const subscribeToIraqNow = (callback: () => void) => {
+  subscribers.add(callback);
+  if (subscribers.size === 1) {
+    intervalId = setInterval(() => {
+      iraqNowMinutes = computeIraqNowMinutes();
+      subscribers.forEach((cb) => cb());
+    }, 60_000);
+  }
+  return () => {
+    subscribers.delete(callback);
+    if (subscribers.size === 0 && intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+};
+
+const getIraqNowMinutesSnapshot = () => iraqNowMinutes;
+
+const useIraqNowMinutes = () => useSyncExternalStore(subscribeToIraqNow, getIraqNowMinutesSnapshot);
 
 const ElapsedTime = ({ checkIn }: { checkIn: string }) => {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const nowMinutes = useIraqNowMinutes();
 
   const parts = checkIn.split(":");
   const checkInMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1] || "0", 10);
-  // Get current Iraq time using Intl (handles DST correctly)
-  const iraqTimeStr = new Date(now).toLocaleTimeString("en-GB", { timeZone: "Asia/Baghdad", hour12: false });
-  const iraqParts = iraqTimeStr.split(":");
-  const nowMinutes = parseInt(iraqParts[0], 10) * 60 + parseInt(iraqParts[1], 10);
   const elapsed = Math.max(0, nowMinutes - checkInMinutes);
   const hrs = Math.floor(elapsed / 60);
   const mins = elapsed % 60;
