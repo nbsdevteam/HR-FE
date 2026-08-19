@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { AlertTriangle, Bell, Check, CheckCircle, ClipboardCheck, Download, Edit2, Info, LogIn, Settings, Trash2, Upload, XCircle } from "lucide-react";
+import { AlertTriangle, Bell, Check, CheckCircle, ClipboardCheck, Download, Edit2, Info, LogIn, Settings, Shield, Trash2, Upload, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
 type IconComponent = ComponentType<{ className?: string }>;
@@ -56,3 +56,8 @@ export const notifTypeIcons: Record<string, IconComponent> = {
   error: XCircle,
   action: Bell,
 };
+
+export const tabs = [
+  { key: "notifications" as const, label: arabicSource("common.notices"), icon: Bell },
+  { key: "audit" as const, label: arabicSource("auditcenter.audit_log"), icon: Shield },
+];

@@ -51,7 +51,7 @@ const EmployeeAttendanceDetail = ({
   });
 
   // Resolve the employee's shift → schedule (determines rest days)
-  const emp = useMemo(() => employees.find(e => e.id === employeeId), [employees, employeeId]);
+  const emp =  employees.find(e => e.id === employeeId);
   const empShift = useMemo(
     () => (emp ? resolveEmployeeShift(emp, dbDepartments, dbShifts) : null),
     [emp, dbDepartments, dbShifts]

@@ -11,6 +11,7 @@ import CalendarDayHeaderCell from "./CalendarDayHeaderCell";
 import CalendarEmptyCell from "./CalendarEmptyCell";
 import CalendarLegendItem from "./CalendarLegendItem";
 import CalendarStatChip from "./CalendarStatChip";
+import { attendanceLegendData } from "../data";
 
 type AttendanceCalendarViewProps = {
   records: DbAttendanceRecord[];
@@ -36,17 +37,20 @@ const AttendanceCalendarView = ({
   const restDowSet = useMemo(() => buildRestDowSet(schedule), [schedule]);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
+  const calanderData = useMemo(() => [
+  { label: arabicSource("common.working_days"), value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400", bg: "from-emerald-500/10" },
+  { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400", bg: "from-blue-500/10" },
+  { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400", bg: "from-amber-500/10" },
+  { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400", bg: "from-emerald-500/10" },
+  { label: arabicSource("common.absence"), value: stats.absentCount, icon: XCircle, color: "text-destructive", bg: "from-destructive/10" },
+], [stats, arabicSource]);
+
+
   return (
     <div className="space-y-5">
       {/* Month stats — compact row */}
       <div className="grid grid-cols-5 gap-3">
-        {[
-          { label: arabicSource("common.working_days"), value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400", bg: "from-emerald-500/10" },
-          { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400", bg: "from-blue-500/10" },
-          { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400", bg: "from-amber-500/10" },
-          { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400", bg: "from-emerald-500/10" },
-          { label: arabicSource("common.absence"), value: stats.absentCount, icon: XCircle, color: "text-destructive", bg: "from-destructive/10" },
-        ].map((chip, i) => {
+        {calanderData.map((chip, i) => {
           return <CalendarStatChip key={chip.label} label={chip.label} value={chip.value} icon={chip.icon} color={chip.color} index={i} />;
         })}
       </div>
@@ -99,14 +103,7 @@ const AttendanceCalendarView = ({
 
         {/* Legend — prominent bar */}
         <div className="flex flex-wrap items-center justify-center gap-5 px-5 py-3.5 border-t border-border/30 bg-muted/10">
-          {[
-            { label: arabicSource("common.present"), dot: "bg-emerald-500" },
-            { label: arabicSource("common.late"), dot: "bg-amber-400" },
-            { label: arabicSource("attendance.login_only"), dot: "bg-orange-400" },
-            { label: arabicSource("common.absence_2"), dot: "bg-destructive" },
-            { label: arabicSource("common.leave"), dot: "bg-blue-400" },
-            { label: arabicSource("common.a_day_of_rest"), dot: "bg-muted-foreground/30" },
-          ].map(l => (
+          {attendanceLegendData.map(l => (
             <CalendarLegendItem key={l.label} label={l.label} dot={l.dot} />
           ))}
         </div>

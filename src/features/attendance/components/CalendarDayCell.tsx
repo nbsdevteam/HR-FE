@@ -50,10 +50,14 @@ const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }:
 
   return (
     <div
-      className={`${cellHeight} border-b border-e border-border/20 p-2 flex flex-col transition-all duration-200 ${cellBg} ${isToday ? "ring-2 ring-inset ring-primary/40" : ""} ${isRest && !record ? "bg-[repeating-linear-gradient(135deg,transparent,transparent_4px,rgba(128,128,128,0.03)_4px,rgba(128,128,128,0.03)_8px)]" : ""}`}
-      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(212, 175, 55, 0.06)"; e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(212, 175, 55, 0.12)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ""; e.currentTarget.style.boxShadow = ""; }}
-    >
+  className={`
+    ${cellHeight} ${cellBg} 
+    border-b border-e border-border/20 p-2 flex flex-col transition-all duration-200 
+    ${isToday ? "ring-2 ring-inset ring-primary/40" : ""} 
+    ${isRest && !record ? "bg-[repeating-linear-gradient(135deg,transparent,transparent_4px,rgba(128,128,128,0.03)_4px,rgba(128,128,128,0.03)_8px)]" : ""}
+    hover:bg-[rgba(212,175,55,0.06)] hover:shadow-[inset_0_0_0_1px_rgba(212,175,55,0.12)]
+  `}
+>
       {/* Day number + status icon */}
       <div className="flex items-center justify-between mb-1">
         <span

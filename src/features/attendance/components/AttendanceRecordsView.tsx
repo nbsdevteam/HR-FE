@@ -6,6 +6,7 @@ import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm }
 import AttendanceKanbanCard from "./AttendanceKanbanCard";
 import AttendanceTableRow from "./AttendanceTableRow";
 import { memo } from "react";
+import { kanbanColumns } from "../data";
 
 type AttendanceRecordsViewProps = {
   viewMode: AttendanceViewMode;
@@ -19,12 +20,7 @@ type AttendanceRecordsViewProps = {
   setExcuseModal: (value: { record: AttendanceRow } | null) => void;
 };
 
-const kanbanColumns = [
-  { key: arabicSource("common.present"), label: arabicSource("common.present"), accent: "border-emerald-500/40", textColor: "text-emerald-500", icon: UserCheck },
-  { key: arabicSource("common.late"), label: arabicSource("common.late"), accent: "border-primary/40", textColor: "text-primary", icon: Clock },
-  { key: arabicSource("common.absent"), label: arabicSource("common.absent"), accent: "border-destructive/40", textColor: "text-destructive", icon: UserX },
-  { key: arabicSource("common.leave"), label: arabicSource("common.leave"), accent: "border-blue-500/40", textColor: "text-blue-500", icon: Calendar },
-];
+
 
 const AttendanceRecordsView = ({
   viewMode,

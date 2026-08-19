@@ -20,8 +20,6 @@ const ShiftAssigner = () => {
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); } }, [toast]);
-
   // Map employees to their shift (via shift_id on employee or via assignment table)
   const empShiftMap = useMemo(() => {
     const map: Record<string, string> = {}; // empId → shiftId
@@ -91,6 +89,9 @@ const ShiftAssigner = () => {
     await refetchAssignments();
     setSaving(false);
   }, [refetchEmployees, refetchAssignments]);
+
+  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); } }, [toast]);
+
 
   if (shiftsLoading || assignLoading) {
     return (

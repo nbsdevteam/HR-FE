@@ -21,6 +21,12 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
     setExcuseForm(f => ({ ...f, [key]: !f[key] }));
   };
 
+  const execuseData = [
+    { key: "late" as const, label: arabicSource("attendance.excuse_for_delay"), desc: arabicSource("attendance.late_salary_will_not_be_counted"), show: (excuseModal?.record.lateMinutes || 0) > 0 || excuseModal?.record.status === arabicSource("common.late") },
+    { key: "shortfall" as const, label: arabicSource("attendance.excuse_of_lack_of_hours"), desc: arabicSource("attendance.short_hours_for_this_day_will_not_be_deducted"), show: true },
+    { key: "absence" as const, label: arabicSource("attendance.absence_excuse"), desc: arabicSource("attendance.this_day_will_not_be_counted_as_an_absence"), show: excuseModal?.record.status === arabicSource("common.absent") || excuseModal?.record.rawStatus === "absent" },
+  ];
+
   return (
     <>
     {/* Excuse Modal */}
@@ -68,11 +74,7 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
 
               {/* Excuse toggles */}
               <div className="space-y-3">
-                  {[
-                    { key: "late" as const, label: arabicSource("attendance.excuse_for_delay"), desc: arabicSource("attendance.late_salary_will_not_be_counted"), show: excuseModal.record.lateMinutes > 0 || excuseModal.record.status === arabicSource("common.late") },
-                    { key: "shortfall" as const, label: arabicSource("attendance.excuse_of_lack_of_hours"), desc: arabicSource("attendance.short_hours_for_this_day_will_not_be_deducted"), show: true },
-                    { key: "absence" as const, label: arabicSource("attendance.absence_excuse"), desc: arabicSource("attendance.this_day_will_not_be_counted_as_an_absence"), show: excuseModal.record.status === arabicSource("common.absent") || excuseModal.record.rawStatus === "absent" },
-                  ].filter(t => t.show).map(toggle => (
+                  {execuseData.filter(t => t.show).map(toggle => (
                     <ExcuseToggleRow
                       key={toggle.key}
                       item={toggle}
