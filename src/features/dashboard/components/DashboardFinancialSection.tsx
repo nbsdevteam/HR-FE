@@ -4,6 +4,7 @@ import { Wallet, TrendingUp, CreditCard, Coins, UserX } from "lucide-react";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
+import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
@@ -81,23 +82,19 @@ const DashboardFinancialSection = ({ data }: DashboardFinancialSectionProps) => 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.compensation_analysis")}</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_basic_salaries")}</span>
-                  <span className="text-sm font-medium text-primary" dir="ltr">{formatIQD(totalSalaries)}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_allowances")}</span>
-                  <span className="text-sm font-medium text-emerald-400" dir="ltr">{formatIQD(compensationStats.totalAllowances)}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <span className="text-sm text-muted-foreground">{arabicSource("common.total_deductions")}</span>
-                  <span className="text-sm font-medium text-red-400" dir="ltr">{formatIQD(compensationStats.totalDeductions)}</span>
-                </div>
+                <LabeledMetricRow label={arabicSource("common.total_basic_salaries")} value={formatIQD(totalSalaries)} valueColorClassName="text-primary" dir="ltr" />
+                <LabeledMetricRow label={arabicSource("common.total_allowances")} value={formatIQD(compensationStats.totalAllowances)} valueColorClassName="text-emerald-400" dir="ltr" />
+                <LabeledMetricRow label={arabicSource("common.total_deductions")} value={formatIQD(compensationStats.totalDeductions)} valueColorClassName="text-red-400" dir="ltr" />
                 <div className="border-t border-border/40 pt-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
-                    <span className="text-sm font-medium text-foreground">{arabicSource("dashboard.net_compensation")}</span>
-                    <span className="text-sm font-bold text-primary" dir="ltr">{formatIQD(compensationStats.totalCompensation - compensationStats.totalDeductions)}</span>
-                  </div>
+                  <LabeledMetricRow
+                    label={arabicSource("dashboard.net_compensation")}
+                    value={formatIQD(compensationStats.totalCompensation - compensationStats.totalDeductions)}
+                    valueColorClassName="text-primary"
+                    valueWeightClassName="font-bold"
+                    labelClassName="font-medium text-foreground"
+                    wrapperClassName="bg-primary/10 border border-primary/20"
+                    dir="ltr"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <div className="p-3 rounded-lg bg-muted/20 text-center">

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { AlertTriangle, GraduationCap, FileCheck, Shield, Award, Zap } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
+import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
@@ -67,14 +68,8 @@ const DashboardComplianceSection = ({ data }: DashboardComplianceSectionProps) =
                     />
                   ))}
                   <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10">
-                      <span className="text-sm text-muted-foreground">{arabicSource("dashboard.high_performance_4")}</span>
-                      <span className="text-sm font-medium text-emerald-400">{pct(evalStats.high, evalStats.completed)}%</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
-                      <span className="text-sm text-muted-foreground">{arabicSource("dashboard.needs_development_2")}</span>
-                      <span className="text-sm font-medium text-red-400">{pct(evalStats.low, evalStats.completed)}%</span>
-                    </div>
+                    <LabeledMetricRow label={arabicSource("dashboard.high_performance_4")} value={`${pct(evalStats.high, evalStats.completed)}%`} valueColorClassName="text-emerald-400" wrapperClassName="bg-emerald-500/10" />
+                    <LabeledMetricRow label={arabicSource("dashboard.needs_development_2")} value={`${pct(evalStats.low, evalStats.completed)}%`} valueColorClassName="text-red-400" wrapperClassName="bg-red-500/10" />
                   </div>
                 </div>
               ) : (

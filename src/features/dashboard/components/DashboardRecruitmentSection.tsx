@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Users, UserPlus, Clock, Briefcase, Target, UserX, Heart } from "lucide-react";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
+import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import RecruitmentFunnelStageRow from "./RecruitmentFunnelStageRow";
@@ -65,12 +66,12 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
                     <RecruitmentFunnelStageRow key={stage.name} stage={stage} width={width} conversionPct={conversionPct} index={i} />
                   ))}
                   {/* Conversion summary */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 mt-4">
-                    <span className="text-sm text-muted-foreground">{arabicSource("dashboard.overall_conversion_rate")}</span>
-                    <span className="text-sm font-medium text-emerald-400">
-                      {recruitmentPipeline[0].value > 0 ? pct(recruitmentPipeline[recruitmentPipeline.length - 1].value, recruitmentPipeline[0].value) : 0}%
-                    </span>
-                  </div>
+                  <LabeledMetricRow
+                    label={arabicSource("dashboard.overall_conversion_rate")}
+                    value={`${recruitmentPipeline[0].value > 0 ? pct(recruitmentPipeline[recruitmentPipeline.length - 1].value, recruitmentPipeline[0].value) : 0}%`}
+                    valueColorClassName="text-emerald-400"
+                    wrapperClassName="bg-muted/20 mt-4"
+                  />
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("dashboard.no_employment_data")}</div>
