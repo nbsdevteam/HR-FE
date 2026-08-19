@@ -15,11 +15,9 @@ type DashboardWorkforceSectionProps = {
 
 const DashboardWorkforceSection = ({ data }: DashboardWorkforceSectionProps) => {
   const {
-    activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
-    expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
-    pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
-    salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
+    attendanceStats, turnoverRate, newHireStats, tenureStats, approvedLeaves,
+    probationCount, pendingLeaves, exitProcesses, cardCls, deptAttendance,
+    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, activeContracts,
   } = data;
 
   const turnoverTiles = useMemo(() => [

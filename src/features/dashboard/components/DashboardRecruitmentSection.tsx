@@ -14,11 +14,7 @@ type DashboardRecruitmentSectionProps = {
 
 const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps) => {
   const {
-    activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
-    expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
-    pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
-    salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
+    newHireStats, cfg, headcountTrend, recruitmentStats, exitProcesses, cardCls, recruitmentPipeline, jobs,
   } = data;
 
   const recruitmentStatCards = useMemo(() => [
