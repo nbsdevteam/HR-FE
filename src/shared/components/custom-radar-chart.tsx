@@ -145,8 +145,6 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
       {hoveredIndex !== null && (() => {
         const d = data[hoveredIndex];
         const p = getPoint(hoveredIndex, d.score);
-        const leftPct = (p.x / size) * 100;
-        const topPct = (p.y / height) * (height / size) * 100;
 
         return (
           <div

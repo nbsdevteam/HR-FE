@@ -265,7 +265,6 @@ const EmployeeAttendanceDetail = ({
                     stats={monthStats}
                     monthLabel={monthLabel}
                     records={monthRecords}
-                    calMonth={calMonth}
                     onPrev={prevMonth}
                     onNext={nextMonth}
                   />

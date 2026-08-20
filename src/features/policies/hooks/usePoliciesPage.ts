@@ -5,7 +5,7 @@ import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
 import { translateArabicSource } from "@/i18n/legacy";
-import { usePolicies, type DbPolicy } from "@/shared/hooks";
+import { usePolicies } from "@/shared/hooks";
 import {
   ODOO_STATUS_TO_POLICY,
   POLICY_STATUS_TO_ODOO,

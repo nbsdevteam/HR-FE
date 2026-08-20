@@ -1,6 +1,6 @@
 import { useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertCircle, ShieldAlert, TrendingUp } from "lucide-react";
+import { ShieldAlert, TrendingUp } from "lucide-react";
 import StatusBadge from "@/shared/components/StatusBadge";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -9,6 +9,9 @@ import { MISSING_INFO_LABELS } from "../constants/recruitment";
 import { rankLabel } from "../utils/recruitmentRanking";
 import IrComponentRow from "./IrComponentRow";
 import IrPenaltyRow from "./IrPenaltyRow";
+import SkillTag from "./SkillTag";
+import RedFlagRow from "./RedFlagRow";
+import MissingInfoTag from "./MissingInfoTag";
 
 const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
   const [openEvidence, setOpenEvidence] = useState<string | null>(null);
@@ -118,9 +121,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.matched_skills!.map((skill, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }} data-i18n-ignore>
-                    {skill}
-                  </span>
+                  <SkillTag key={i} skill={skill} variant="matched" />
                 ))}
               </div>
             </div>
@@ -132,9 +133,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.missing_skills!.map((skill, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-md border border-destructive/30 bg-destructive/10 text-destructive" style={{ fontSize: 11 }} data-i18n-ignore>
-                    {skill}
-                  </span>
+                  <SkillTag key={i} skill={skill} variant="missing" />
                 ))}
               </div>
             </div>
@@ -150,10 +149,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
           </label>
           <div className="space-y-1">
             {applicant.ir_red_flags!.map((flag, i) => (
-              <div key={i} className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-                <span className="text-muted-foreground" style={{ fontSize: 11.5 }} data-i18n-ignore>{flag.detail}</span>
-              </div>
+              <RedFlagRow key={i} detail={flag.detail} />
             ))}
           </div>
         </div>
@@ -166,20 +162,9 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
             {arabicSource("recruitment.missing_info")}
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {applicant.ir_missing_info!.map((info, i) => {
-              const label = MISSING_INFO_LABELS[info];
-              return (
-                <span
-                  key={i}
-                  className="px-2 py-0.5 rounded-md bg-muted/20 border border-border/30 text-muted-foreground"
-                  style={{ fontSize: 11 }}
-                  dir={label ? undefined : "ltr"}
-                  {...(label ? {} : { "data-i18n-ignore": true })}
-                >
-                  {label || info}
-                </span>
-              );
-            })}
+            {applicant.ir_missing_info!.map((info, i) => (
+              <MissingInfoTag key={i} info={info} label={MISSING_INFO_LABELS[info]} />
+            ))}
           </div>
         </div>
       )}

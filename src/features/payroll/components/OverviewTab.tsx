@@ -20,7 +20,6 @@ const OverviewTab = ({
   totalNet,
   totalDeductions,
   totalEmployees,
-  selectedMonth,
   onViewPayslip,
 }: {
   payrollData: any[];
@@ -28,7 +27,6 @@ const OverviewTab = ({
   totalNet: number;
   totalDeductions: number;
   totalEmployees: number;
-  selectedMonth: string;
   onViewPayslip: (id: string) => void;
 }) => {
   const [search, setSearch] = useState("");

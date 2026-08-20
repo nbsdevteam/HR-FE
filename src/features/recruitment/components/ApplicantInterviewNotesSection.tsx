@@ -42,4 +42,4 @@ const ApplicantInterviewNotesSection = ({
   </div>
 );
 
-export default ApplicantInterviewNotesSection;
+export default memo(ApplicantInterviewNotesSection);

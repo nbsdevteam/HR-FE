@@ -1,10 +1,9 @@
 import { memo } from "react";
-import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
+import type { DbApplicant } from "@/shared/hooks";
 import CandidateBank from "./CandidateBank";
 
 type RecruitmentCandidateBankViewProps = {
   applicants: DbApplicant[];
-  jobs: DbJobOpening[];
   sortBy: "rank" | "rating" | "date" | "name" | "job" | "stage";
   onSelectApplicant: (applicant: DbApplicant) => void;
   onSortChange: (sortBy: "rank" | "rating" | "date" | "name" | "job" | "stage") => void;
@@ -14,7 +13,6 @@ type RecruitmentCandidateBankViewProps = {
 
 const RecruitmentCandidateBankView = ({
   applicants,
-  jobs,
   sortBy,
   onSelectApplicant,
   onSortChange,
@@ -23,7 +21,6 @@ const RecruitmentCandidateBankView = ({
 }: RecruitmentCandidateBankViewProps) => (
   <CandidateBank
     applicants={applicants}
-    jobs={jobs}
     onSelect={onSelectApplicant}
     onToggleBookmark={onToggleBookmark}
     onUpdateRating={onUpdateRating}

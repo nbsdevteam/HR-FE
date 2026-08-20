@@ -699,8 +699,6 @@ export const fetchExitChecklistItems = async (): Promise<DbExitChecklistItem[]> 
   return rows.map(mapExitChecklistItem);
 }
 
-type ExitProcessRaw = ReturnType<typeof mapExitProcess> & { checklist?: any[] };
-
 export const fetchExitProcesses = async (
   employeeId?: string | number,
 ): Promise<{ processes: DbExitProcess[]; checklist: DbExitChecklist[] }> => {

@@ -153,11 +153,6 @@ const Attendance = () => {
     return orderedDays.map(d => ({ day: dayNames[d] || d, ...dayMap[d] })).reverse();
   }, [rawRecords]);
 
-  const stableEmployees = useMemo(() => {
-  // Do your data derivation, filtering, or fallback here
-  return employees || []; 
-}, [employees]); // Only updates when raw data changes
-
   const handleSaveExcuse = useCallback(async () => {
     if (!excuseModal) return;
     setExcuseSaving(true);

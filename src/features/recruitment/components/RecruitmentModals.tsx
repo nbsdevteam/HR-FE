@@ -56,7 +56,6 @@ const RecruitmentModals = ({
   <AnimatePresence>
     {(showJobForm || editingJob) && (
       <JobFormModal
-        jobs={jobs}
         editingJob={editingJob}
         key={editingJob?.id || "new"}
         onClose={onJobFormClose}

@@ -2,7 +2,7 @@ import type { DbDepartment, DbEmployee, DbPosition } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, CLEVEL_COLOR, defaultDeptColorMap, OWNER_COLOR } from "../styles";
+import { avatarColors, defaultDeptColorMap, OWNER_COLOR } from "../styles";
 
 export const pickUniqueColor = (usedColors: Set<string>): string => {
   for (const color of avatarColors) {

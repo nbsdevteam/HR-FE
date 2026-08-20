@@ -233,7 +233,6 @@ const Hierarchy = () => {
             node={editTarget}
             allNodes={allNodes}
             departments={departments}
-            departmentColors={deptColors}
             onSave={handleEditEmployee}
             onClose={handleCloseEditModal}
           />

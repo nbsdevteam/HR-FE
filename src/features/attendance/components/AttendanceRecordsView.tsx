@@ -1,5 +1,4 @@
 ﻿import { motion } from "motion/react";
-import { Calendar, Clock, UserCheck, UserX } from "lucide-react";
 import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm } from "@/features/attendance/types";

@@ -1,13 +1,12 @@
 import { useState, useMemo, memo } from "react";
 import { Search, BookmarkCheck, Trophy, TrendingUp } from "lucide-react";
-import { type DbJobOpening, type DbApplicant } from "@/shared/hooks";
+import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { effectiveScore } from "../utils/recruitmentRanking";
 import CandidateCard from "./CandidateCard";
 
 const CandidateBank = ({
   applicants,
-  jobs,
   onSelect,
   onToggleBookmark,
   onUpdateRating,
@@ -15,7 +14,6 @@ const CandidateBank = ({
   setSortBy,
 }: {
   applicants: DbApplicant[];
-  jobs: DbJobOpening[];
   onSelect: (a: DbApplicant) => void;
   onToggleBookmark: (a: DbApplicant) => void;
   onUpdateRating: (id: string, r: number) => void;

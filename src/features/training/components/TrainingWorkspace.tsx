@@ -24,7 +24,6 @@ import {
   computeMonthlyHours,
   computeStats,
 } from "../utils/trainingStats";
-import type { ToastType } from "../types";
 import CreateProgramModal from "./CreateProgramModal";
 import EditProgramModal from "./EditProgramModal";
 import EnrollParticipantModal from "./EnrollParticipantModal";

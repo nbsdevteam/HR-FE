@@ -40,7 +40,7 @@ const RecruitmentWorkspace = () => {
   const [sortBy, setSortBy] = useState<
     "rank" | "rating" | "date" | "name" | "job" | "stage"
   >("rank");
-  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
+  const [recSortDir] = useState<"asc" | "desc">("desc");
   const {
     jobs: rawJobs,
     loading: jobsLoading,
@@ -179,7 +179,6 @@ const RecruitmentWorkspace = () => {
       {view === "bank" && (
         <RecruitmentCandidateBankView
           applicants={applicants}
-          jobs={jobs}
           sortBy={sortBy}
           onSelectApplicant={setSelectedApplicant}
           onSortChange={setSortBy}

@@ -1,6 +1,4 @@
-﻿import { Bell, Shield } from "lucide-react";
-import { arabicSource } from "@/i18n/source";
-import type { AuditTabId } from "../types";
+﻿import type { AuditTabId } from "../types";
 import AuditTabButton from "./AuditTabButton";
 import { tabs } from "../data/auditMeta";
 

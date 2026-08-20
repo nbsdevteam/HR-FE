@@ -12,12 +12,11 @@ type MonthlySummaryViewProps = {
   stats: { daysWorked: number; totalHours: number; avgHours: number; overtime: number; lateCount: number; lateMins: number; absentCount: number; checkedInOnly: number; totalRecords: number };
   monthLabel: string;
   records: DbAttendanceRecord[];
-  calMonth: string;
   onPrev: () => void;
   onNext: () => void;
 };
 
-const MonthlySummaryView = ({ stats, monthLabel, records, calMonth, onPrev, onNext }: MonthlySummaryViewProps) => {
+const MonthlySummaryView = ({ stats, monthLabel, records, onPrev, onNext }: MonthlySummaryViewProps) => {
   // Per-day breakdown table
   const sortedRecords = useMemo(() =>
     [...records].sort((a, b) => a.date.localeCompare(b.date)),

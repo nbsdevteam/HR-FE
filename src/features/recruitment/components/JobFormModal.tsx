@@ -18,12 +18,10 @@ import { inputCls, labelCls, selectCls } from "../styles";
 import JobScreeningSpecFields from "./JobScreeningSpecFields";
 
 const JobFormModal = ({
-  jobs,
   editingJob,
   onClose,
   onSaved,
 }: {
-  jobs: DbJobOpening[];
   editingJob: DbJobOpening | null;
   onClose: () => void;
   onSaved: () => void;

@@ -9,11 +9,10 @@ import LabeledTextField from "./LabeledTextField";
 import ModalHeader from "./ModalHeader";
 import ModalFooterActions from "./ModalFooterActions";
 
-const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSave, onClose }: {
+const EditEmployeeModal = ({ node, allNodes, departments, onSave, onClose }: {
   node: OrgNode;
   allNodes: OrgNode[];
   departments: string[];
-  departmentColors: Record<string, string>;
   onSave: (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => void;
   onClose: () => void;
 }) => {
@@ -43,7 +42,6 @@ const EditEmployeeModal = ({ node, allNodes, departments, departmentColors, onSa
     setManagerId(currentManagerId ?? null);
   }, [node.id, allNodes]);
 
-  const topColor = departmentColors[department] || node.color;
   const descendantIds = getDescendantIds(node);
   const validManagers = allNodes.filter(
     n => n.id !== node.id && !descendantIds.has(n.id) && n.dbId !== "__root__"

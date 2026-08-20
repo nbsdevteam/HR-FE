@@ -699,9 +699,6 @@ export const useMonthlyLedgers = (monthYear?: string) => {
 }
 
 // ── Mock shifts for local testing ──
-const _dayTemplate = (working: boolean, start = "08:00:00", end = "16:00:00") => ({
-  is_working: working, start, end,
-});
 const _mockShifts: DbShift[] = [
   {
     id: "mock-shift-morning", name: arabicSource("messages.morning_shift"), description: arabicSource("messages.morning_official_working_hours"), is_default: true,

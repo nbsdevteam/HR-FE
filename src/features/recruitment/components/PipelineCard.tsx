@@ -32,4 +32,4 @@ const PipelineCard = ({ applicant, onSelect }: PipelineCardProps) => (
   </motion.div>
 );
 
-export default PipelineCard;
+export default memo(PipelineCard);

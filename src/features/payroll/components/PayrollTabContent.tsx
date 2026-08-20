@@ -22,7 +22,6 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
           totalNet={page.totalNet}
           totalDeductions={page.totalDeductions}
           totalEmployees={page.totalEmployees}
-          selectedMonth={page.selectedMonth}
           onViewPayslip={page.setSelectedEmpId}
         />
       </motion.div>

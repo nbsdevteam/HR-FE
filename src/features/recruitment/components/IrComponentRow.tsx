@@ -41,4 +41,4 @@ const IrComponentRow = ({
   </div>
 );
 
-export default IrComponentRow;
+export default memo(IrComponentRow);

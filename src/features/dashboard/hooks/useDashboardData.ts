@@ -36,9 +36,9 @@ export const useDashboardData = () => {
 
   const { requests: leaveRequests } = useLeaveRequests();
   const { contracts } = useEmployeeContracts();
-  const { types: contractTypes } = useContractTypes();
+  useContractTypes();
   const { documents: empDocuments } = useEmployeeDocuments();
-  const { types: documentTypes } = useDocumentTypes();
+  useDocumentTypes();
   const { loans } = useLoans();
   const { notifications, unreadCount } = useNotifications();
   const { evaluations } = useEvaluations();
@@ -49,7 +49,7 @@ export const useDashboardData = () => {
   const { jobs } = useJobOpenings();
   const { applicants } = useApplicants();
   const { balances: leaveBalances } = useLeaveBalances(new Date().getFullYear());
-  const { types: leaveTypes } = useLeaveTypes();
+  useLeaveTypes();
   const { allowances: allAllowances } = useEmployeeAllowances();
   const { deductions: allDeductions } = useEmployeeDeductions();
   const { getNumber: cfgNum, getValue: cfgVal } = useConfigurations();

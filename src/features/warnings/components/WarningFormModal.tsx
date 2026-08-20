@@ -6,6 +6,9 @@ import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
+const inputCls =
+  "w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none";
+
 type TWarningFormModalProps = {
   form: FormData;
   employees: DbEmployee[];
@@ -84,7 +87,7 @@ const WarningFormModal = ({
           placeholder={arabicSource("warnings.cause_of_alarm")}
           value={form.reason}
           onChange={(e) => onFieldChange({ reason: e.target.value })}
-          className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+          className={inputCls}
         />
       </div>
 
