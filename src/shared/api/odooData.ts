@@ -99,17 +99,17 @@ async function items<T>(path: string, params: Record<string, unknown> = {}): Pro
   return (data?.items as T[]) || [];
 }
 
-export async function fetchEmployees(): Promise<DbEmployee[]> {
+export const fetchEmployees = async (): Promise<DbEmployee[]> => {
   // Backend allows up to 5000; load the full active roster for dropdowns.
   const rows = await items<any>("/api/hr/employees/list", { limit: 5000, offset: 0 });
   return rows.map(mapEmployee);
 }
 
 /** Scoped dashboard cards from Odoo (present/absent/on_leave/late). */
-export async function fetchHrDashboard(params?: {
+export const fetchHrDashboard = async (params?: {
   departmentId?: string | number;
   newJoinerDays?: number;
-}): Promise<Record<string, unknown>> {
+}): Promise<Record<string, unknown>> => {
   const body: Record<string, unknown> = {};
   if (params?.departmentId != null) body.department_id = eid(params.departmentId);
   if (params?.newJoinerDays != null) body.new_joiner_days = params.newJoinerDays;
@@ -117,12 +117,12 @@ export async function fetchHrDashboard(params?: {
 }
 
 /** Server-side payroll compute (same snapshot contract as FE generate). */
-export async function computePayrollServer(month: string) {
+export const computePayrollServer = async (month: string) => {
   return hrCall("/api/hr/payroll/compute", { month });
 }
 
 /** Current user's linked hr.employee (JWT only; does not require hr.employees.list). */
-export async function fetchCurrentEmployee(): Promise<DbEmployee> {
+export const fetchCurrentEmployee = async (): Promise<DbEmployee> => {
   const data = await hrCall<any>("/api/hr/employees/me", {});
   return mapEmployee(data);
 }
@@ -131,7 +131,7 @@ const UNLINKED_EMPLOYEE_MSG =
   "Your user account is not linked to an employee. Please contact HR.";
 
 /** True when /api/hr/employees/list failed due to missing hr.employees.list (not network). */
-export function isEmployeesListForbiddenError(error: unknown): boolean {
+export const isEmployeesListForbiddenError = (error: unknown): boolean => {
   const msg = String(
     error && typeof error === "object" && "message" in error
       ? (error as { message?: unknown }).message
@@ -156,12 +156,12 @@ export type LeaveEmployeeScopeDeps = {
  * - Has hr.employees.list → full /employees/list (HR/admin dropdown).
  * - Forbidden on list → /employees/me + selfOnly (agent self-leave).
  */
-export async function resolveLeaveEmployeeScope(
+export const resolveLeaveEmployeeScope = async (
   deps: LeaveEmployeeScopeDeps = {
     fetchEmployees,
     fetchCurrentEmployee,
   },
-): Promise<LeaveEmployeeScopeResult> {
+): Promise<LeaveEmployeeScopeResult> => {
   try {
     const employees = await deps.fetchEmployees();
     return { selfOnly: false, employees, linkError: null };
@@ -194,16 +194,16 @@ export async function resolveLeaveEmployeeScope(
  * Self-leave payloads must omit employee_id so the backend uses current_employee().
  * Roster mode may include a selected employee_id (HR manage_types path unchanged).
  */
-export function leaveRequestEmployeeIdField(
+export const leaveRequestEmployeeIdField = (
   selfOnly: boolean,
   employeeId: string | number | null | undefined,
-): { employee_id: string | number } | Record<string, never> {
+): { employee_id: string | number } | Record<string, never> => {
   if (selfOnly) return {};
   if (employeeId == null || employeeId === "") return {};
   return { employee_id: employeeId };
 }
 
-export async function fetchDepartments(): Promise<DbDepartment[]> {
+export const fetchDepartments = async (): Promise<DbDepartment[]> => {
   const rows = await items<any>("/api/hr/departments/list", { limit: 200 });
   return rows.map(mapDepartment);
 }
@@ -216,9 +216,9 @@ export type AttendanceFetchOpts = {
   limit?: number;
 };
 
-export async function fetchAttendance(
+export const fetchAttendance = async (
   dateOrOpts?: string | AttendanceFetchOpts,
-): Promise<DbAttendanceRecord[]> {
+): Promise<DbAttendanceRecord[]> => {
   const opts: AttendanceFetchOpts =
     typeof dateOrOpts === "string" || dateOrOpts === undefined
       ? { date: dateOrOpts }
@@ -240,91 +240,91 @@ export async function fetchAttendance(
   return rows.map(mapAttendance);
 }
 
-export async function fetchMonthlyRecords(monthYear?: string): Promise<DbMonthlyRecord[]> {
+export const fetchMonthlyRecords = async (monthYear?: string): Promise<DbMonthlyRecord[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (monthYear) params.month_year = monthYear;
   const rows = await items<any>("/api/hr/payroll/monthly_records/list", params);
   return rows.map(mapMonthlyRecord);
 }
 
-export async function fetchMonthlyLedgers(monthYear?: string): Promise<DbMonthlyLedger[]> {
+export const fetchMonthlyLedgers = async (monthYear?: string): Promise<DbMonthlyLedger[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (monthYear) params.month_year = monthYear;
   const rows = await items<any>("/api/hr/payroll/ledgers/list", params);
   return rows.map(mapMonthlyLedger);
 }
 
-export async function fetchShifts(): Promise<DbShift[]> {
+export const fetchShifts = async (): Promise<DbShift[]> => {
   const rows = await items<any>("/api/hr/shifts/list", { limit: 200 });
   return rows.map(mapShift);
 }
 
-export async function fetchPositions(): Promise<DbPosition[]> {
+export const fetchPositions = async (): Promise<DbPosition[]> => {
   const rows = await items<any>("/api/hr/designations/list", { limit: 200 });
   return rows.map(mapPosition);
 }
 
-export async function fetchShiftAssignments(): Promise<DbEmployeeShiftAssignment[]> {
+export const fetchShiftAssignments = async (): Promise<DbEmployeeShiftAssignment[]> => {
   const rows = await items<any>("/api/hr/shift_assignments/list", { active_only: true, limit: 500 });
   return rows.map(mapShiftAssignment);
 }
 
-export async function fetchModules(): Promise<DbSystemModule[]> {
+export const fetchModules = async (): Promise<DbSystemModule[]> => {
   const rows = await items<any>("/api/hr/modules/list");
   return rows.map(mapModule);
 }
 
-export async function fetchConfigs(): Promise<DbConfiguration[]> {
+export const fetchConfigs = async (): Promise<DbConfiguration[]> => {
   const rows = await items<any>("/api/hr/configs/list");
   return rows.map(mapConfig);
 }
 
-export async function fetchHolidays(year?: number): Promise<DbPublicHoliday[]> {
+export const fetchHolidays = async (year?: number): Promise<DbPublicHoliday[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (year) params.year = year;
   const rows = await items<any>("/api/hr/holidays/list", params);
   return rows.map(mapHoliday);
 }
 
-export async function fetchLeaveTypes(): Promise<DbLeaveType[]> {
+export const fetchLeaveTypes = async (): Promise<DbLeaveType[]> => {
   const rows = await items<any>("/api/hr/leave/types");
   return rows.map(mapLeaveType);
 }
 
-export async function createLeaveType(payload: Record<string, unknown>) {
+export const createLeaveType = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/leave/types/create", payload);
 }
 
-export async function updateLeaveType(typeId: string | number, payload: Record<string, unknown>) {
+export const updateLeaveType = async (typeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/leave/types/${eid(typeId)}/update`, payload);
 }
 
-export async function deleteLeaveType(typeId: string | number) {
+export const deleteLeaveType = async (typeId: string | number) => {
   return hrCall(`/api/hr/leave/types/${eid(typeId)}/delete`, {});
 }
 
-export async function createDocumentType(payload: Record<string, unknown>) {
+export const createDocumentType = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/document_types/create", payload);
 }
 
-export async function updateDocumentType(typeId: string | number, payload: Record<string, unknown>) {
+export const updateDocumentType = async (typeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/document_types/${eid(typeId)}/update`, payload);
 }
 
-export async function deleteDocumentType(typeId: string | number) {
+export const deleteDocumentType = async (typeId: string | number) => {
   return hrCall(`/api/hr/document_types/${eid(typeId)}/delete`, {});
 }
 
-export async function fetchLeavePolicies(): Promise<DbLeavePolicy[]> {
+export const fetchLeavePolicies = async (): Promise<DbLeavePolicy[]> => {
   const rows = await items<any>("/api/hr/leave/policies/list");
   return rows.map(mapLeavePolicy);
 }
 
-export async function fetchLeaveRequests(filters?: {
+export const fetchLeaveRequests = async (filters?: {
   employeeId?: string;
   status?: string;
   month?: string;
-}): Promise<DbLeaveRequest[]> {
+}): Promise<DbLeaveRequest[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (filters?.employeeId) params.employee_id = Number(filters.employeeId) || filters.employeeId;
   if (filters?.month) {
@@ -340,7 +340,7 @@ export async function fetchLeaveRequests(filters?: {
   return mapped;
 }
 
-export async function fetchLeaveBalances(year?: number): Promise<DbLeaveBalance[]> {
+export const fetchLeaveBalances = async (year?: number): Promise<DbLeaveBalance[]> => {
   const params: Record<string, unknown> = {};
   if (year) params.year = year;
   const data = await hrCall<any>("/api/hr/leave/balances", params);
@@ -348,50 +348,50 @@ export async function fetchLeaveBalances(year?: number): Promise<DbLeaveBalance[
   return rows.map(mapLeaveBalance);
 }
 
-export async function fetchLeavePermissions(employeeId?: string): Promise<DbLeavePermission[]> {
+export const fetchLeavePermissions = async (employeeId?: string): Promise<DbLeavePermission[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
   const rows = await items<any>("/api/hr/leave/permissions/list", params);
   return rows.map(mapLeavePermission);
 }
 
-export async function fetchAllowanceTypes(): Promise<DbAllowanceType[]> {
+export const fetchAllowanceTypes = async (): Promise<DbAllowanceType[]> => {
   const rows = await items<any>("/api/hr/payroll/allowance_types/list");
   return rows.map(mapAllowanceType);
 }
 
-export async function fetchEmployeeAllowances(employeeId?: string): Promise<DbEmployeeAllowance[]> {
+export const fetchEmployeeAllowances = async (employeeId?: string): Promise<DbEmployeeAllowance[]> => {
   const params: Record<string, unknown> = {};
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
   const rows = await items<any>("/api/hr/payroll/employee_allowances/list", params);
   return rows.map(mapEmployeeAllowance);
 }
 
-export async function fetchDeductionTypes(): Promise<DbDeductionType[]> {
+export const fetchDeductionTypes = async (): Promise<DbDeductionType[]> => {
   const rows = await items<any>("/api/hr/payroll/deduction_types/list");
   return rows.map(mapDeductionType);
 }
 
-export async function fetchEmployeeDeductions(employeeId?: string): Promise<DbEmployeeDeduction[]> {
+export const fetchEmployeeDeductions = async (employeeId?: string): Promise<DbEmployeeDeduction[]> => {
   const params: Record<string, unknown> = {};
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
   const rows = await items<any>("/api/hr/payroll/employee_deductions/list", params);
   return rows.map(mapEmployeeDeduction);
 }
 
-export async function fetchDocumentTypes(): Promise<DbDocumentType[]> {
+export const fetchDocumentTypes = async (): Promise<DbDocumentType[]> => {
   const rows = await items<any>("/api/hr/document_types/list");
   return rows.map(mapDocumentType);
 }
 
-export async function fetchDocuments(employeeId?: string): Promise<DbEmployeeDocument[]> {
+export const fetchDocuments = async (employeeId?: string): Promise<DbEmployeeDocument[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
   const rows = await items<any>("/api/hr/documents/list", params);
   return rows.map(mapDocument);
 }
 
-export async function fetchDevices(): Promise<any[]> {
+export const fetchDevices = async (): Promise<any[]> => {
   return items<any>("/api/hr/devices/list", { limit: 100 });
 }
 
@@ -404,26 +404,26 @@ function eid(id: string | number): number {
 }
 
 /** Convert "HH:MM" or "HH:MM:SS" → float hours for Odoo. */
-export function timeToFloat(t: string | number | null | undefined): number {
+export const timeToFloat = (t: string | number | null | undefined): number => {
   if (typeof t === "number") return t;
   if (!t) return 0;
   const [h, m] = String(t).split(":").map(Number);
   return (h || 0) + ((m || 0) / 60);
 }
 
-export async function createEmployee(payload: Record<string, unknown>) {
+export const createEmployee = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/employees/create", payload);
 }
 
-export async function updateEmployee(employeeId: string | number, payload: Record<string, unknown>) {
+export const updateEmployee = async (employeeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/employees/${eid(employeeId)}/update`, payload);
 }
 
-export async function setEmployeeStatus(employeeId: string | number, status: string) {
+export const setEmployeeStatus = async (employeeId: string | number, status: string) => {
   return hrCall(`/api/hr/employees/${eid(employeeId)}/set_status`, { status });
 }
 
-export async function excuseAttendance(payload: {
+export const excuseAttendance = async (payload: {
   attendance_id?: string | number;
   employee_id?: string | number;
   date?: string;
@@ -431,31 +431,31 @@ export async function excuseAttendance(payload: {
   excused_absence?: boolean;
   excused_shortfall?: boolean;
   excuse_note?: string | null;
-}) {
+}) => {
   const params: Record<string, unknown> = { ...payload };
   if (payload.attendance_id != null) params.attendance_id = eid(payload.attendance_id);
   if (payload.employee_id != null) params.employee_id = eid(payload.employee_id);
   return hrCall("/api/hr/attendance/excuse", params);
 }
 
-export async function upsertAttendance(payload: Record<string, unknown>) {
+export const upsertAttendance = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/attendance/upsert", params);
 }
 
-export async function importAttendance(records: Record<string, unknown>[]) {
+export const importAttendance = async (records: Record<string, unknown>[]) => {
   return hrCall("/api/hr/attendance/import", { records });
 }
 
-export async function requestLeave(payload: {
+export const requestLeave = async (payload: {
   leave_type_id: string | number;
   date_from: string;
   date_to?: string;
   reason?: string | null;
   half_day?: boolean;
   employee_id?: string | number;
-}) {
+}) => {
   const params: Record<string, unknown> = {
     leave_type_id: eid(payload.leave_type_id),
     date_from: payload.date_from,
@@ -467,30 +467,30 @@ export async function requestLeave(payload: {
   return hrCall("/api/hr/leave/request", params);
 }
 
-export async function managerApproveLeave(leaveId: string | number) {
+export const managerApproveLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/manager_approve`, {});
 }
 
-export async function hrApproveLeave(leaveId: string | number) {
+export const hrApproveLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/hr_approve`, {});
 }
 
-export async function refuseLeave(leaveId: string | number, reason?: string | null) {
+export const refuseLeave = async (leaveId: string | number, reason?: string | null) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/refuse`, { reason: reason || "" });
 }
 
-export async function cancelLeave(leaveId: string | number) {
+export const cancelLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/cancel`, {});
 }
 
-export async function createLeavePermission(payload: {
+export const createLeavePermission = async (payload: {
   employee_id: string | number;
   date: string;
   start_time: string | number;
   end_time: string | number;
   hours?: number;
   reason?: string | null;
-}) {
+}) => {
   return hrCall("/api/hr/leave/permissions/create", {
     employee_id: eid(payload.employee_id),
     date: payload.date,
@@ -501,10 +501,10 @@ export async function createLeavePermission(payload: {
   });
 }
 
-export async function updateLeavePermission(
+export const updateLeavePermission = async (
   permissionId: string | number,
   status: "approved" | "refused" | "pending" | string,
-) {
+) => {
   // Map FE Arabic labels → Odoo states
   const map: Record<string, string> = {
     مقبول: "approved",
@@ -519,11 +519,11 @@ export async function updateLeavePermission(
   });
 }
 
-export async function upsertMonthlyRecord(payload: {
+export const upsertMonthlyRecord = async (payload: {
   employee_id: string | number;
   month_year: string;
   salary_calculation?: unknown;
-}) {
+}) => {
   return hrCall("/api/hr/payroll/monthly_records/upsert", {
     employee_id: eid(payload.employee_id),
     month_year: payload.month_year,
@@ -531,17 +531,17 @@ export async function upsertMonthlyRecord(payload: {
   });
 }
 
-export async function upsertMonthlyLedger(payload: Record<string, unknown>) {
+export const upsertMonthlyLedger = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/payroll/ledgers/upsert", params);
 }
 
-export async function generatePayslips(payload: {
+export const generatePayslips = async (payload: {
   month: string;
   payslips: Record<string, unknown>[];
   replace_month?: boolean;
-}) {
+}) => {
   return hrCall("/api/hr/payroll/payslips/generate", {
     month: payload.month,
     payslips: payload.payslips.map((p) => ({
@@ -552,25 +552,25 @@ export async function generatePayslips(payload: {
   });
 }
 
-export async function createShift(payload: Record<string, unknown>) {
+export const createShift = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/shifts/create", payload);
 }
 
-export async function updateShift(shiftId: string | number, payload: Record<string, unknown>) {
+export const updateShift = async (shiftId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/shifts/${eid(shiftId)}/update`, payload);
 }
 
-export async function deleteShift(shiftId: string | number) {
+export const deleteShift = async (shiftId: string | number) => {
   return hrCall(`/api/hr/shifts/${eid(shiftId)}/delete`, {});
 }
 
-export async function createShiftAssignment(payload: {
+export const createShiftAssignment = async (payload: {
   employee_id: string | number;
   shift_id: string | number;
   start_date?: string;
   end_date?: string | null;
   set_employee_default?: boolean;
-}) {
+}) => {
   return hrCall("/api/hr/shift_assignments/create", {
     employee_id: eid(payload.employee_id),
     shift_id: eid(payload.shift_id),
@@ -580,25 +580,25 @@ export async function createShiftAssignment(payload: {
   });
 }
 
-export async function updateConfig(configId: string | number, config_value: unknown) {
+export const updateConfig = async (configId: string | number, config_value: unknown) => {
   return hrCall("/api/hr/configs/update", {
     config_id: eid(configId),
     config_value,
   });
 }
 
-export async function updateModule(moduleId: string | number, is_enabled: boolean) {
+export const updateModule = async (moduleId: string | number, is_enabled: boolean) => {
   return hrCall("/api/hr/modules/update", {
     module_id: eid(moduleId),
     is_enabled,
   });
 }
 
-export async function createHoliday(payload: {
+export const createHoliday = async (payload: {
   name_ar?: string;
   name?: string;
   date: string;
-}) {
+}) => {
   return hrCall("/api/hr/holidays/create", {
     name: payload.name_ar || payload.name,
     name_ar: payload.name_ar,
@@ -606,34 +606,34 @@ export async function createHoliday(payload: {
   });
 }
 
-export async function deleteHoliday(holidayId: string | number) {
+export const deleteHoliday = async (holidayId: string | number) => {
   return hrCall(`/api/hr/holidays/${eid(holidayId)}/delete`, {});
 }
 
-export async function updateDepartment(
+export const updateDepartment = async (
   departmentId: string | number,
   payload: Record<string, unknown>,
-) {
+) => {
   return hrCall(`/api/hr/departments/${eid(departmentId)}/update`, payload);
 }
 
-export async function createDepartment(payload: Record<string, unknown>) {
+export const createDepartment = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/departments/create", payload);
 }
 
-export async function createDesignation(payload: Record<string, unknown>) {
+export const createDesignation = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/designations/create", payload);
 }
 
-export async function updateDesignation(jobId: string | number, payload: Record<string, unknown>) {
+export const updateDesignation = async (jobId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/designations/${eid(jobId)}/update`, payload);
 }
 
-export async function deleteDesignation(jobId: string | number) {
+export const deleteDesignation = async (jobId: string | number) => {
   return hrCall(`/api/hr/designations/${eid(jobId)}/delete`, {});
 }
 
-export async function createDocument(payload: Record<string, unknown>) {
+export const createDocument = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   if (params.document_type_id != null) {
@@ -642,68 +642,68 @@ export async function createDocument(payload: Record<string, unknown>) {
   return hrCall("/api/hr/documents/create", params);
 }
 
-export async function updateDocument(documentId: string | number, payload: Record<string, unknown>) {
+export const updateDocument = async (documentId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/documents/${eid(documentId)}/update`, payload);
 }
 
-export async function deleteDocument(documentId: string | number) {
+export const deleteDocument = async (documentId: string | number) => {
   return hrCall(`/api/hr/documents/${eid(documentId)}/delete`, {});
 }
 
-export async function linkEmployeesToUsers(dry_run = true, employee_ids?: number[]) {
+export const linkEmployeesToUsers = async (dry_run = true, employee_ids?: number[]) => {
   return hrCall("/api/hr/employees/link_users", { dry_run, employee_ids });
 }
 
 // ─── Slice A: Lifecycle (contracts / exit / custodies) ───────────────
 
-export async function fetchContractTypes(): Promise<DbContractType[]> {
+export const fetchContractTypes = async (): Promise<DbContractType[]> => {
   const rows = await items<any>("/api/hr/contract_types/list", { active_only: true });
   return rows.map(mapContractType);
 }
 
-export async function createContractType(payload: Record<string, unknown>) {
+export const createContractType = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/contract_types/create", payload);
 }
 
-export async function updateContractType(typeId: string | number, payload: Record<string, unknown>) {
+export const updateContractType = async (typeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/contract_types/${eid(typeId)}/update`, payload);
 }
 
-export async function deleteContractType(typeId: string | number) {
+export const deleteContractType = async (typeId: string | number) => {
   return hrCall(`/api/hr/contract_types/${eid(typeId)}/delete`, {});
 }
 
-export async function fetchContracts(employeeId?: string | number): Promise<DbEmployeeContract[]> {
+export const fetchContracts = async (employeeId?: string | number): Promise<DbEmployeeContract[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/contracts/list", params);
   return rows.map(mapEmployeeContract);
 }
 
-export async function createContract(payload: Record<string, unknown>) {
+export const createContract = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/contracts/create", params);
 }
 
-export async function updateContract(contractId: string | number, payload: Record<string, unknown>) {
+export const updateContract = async (contractId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/contracts/${eid(contractId)}/update`, payload);
 }
 
-export async function deleteContract(contractId: string | number) {
+export const deleteContract = async (contractId: string | number) => {
   return hrCall(`/api/hr/contracts/${eid(contractId)}/delete`, {});
 }
 
-export async function fetchExitChecklistItems(): Promise<DbExitChecklistItem[]> {
+export const fetchExitChecklistItems = async (): Promise<DbExitChecklistItem[]> => {
   const rows = await items<any>("/api/hr/exit/checklist_items/list", { active_only: true });
   return rows.map(mapExitChecklistItem);
 }
 
 type ExitProcessRaw = ReturnType<typeof mapExitProcess> & { checklist?: any[] };
 
-export async function fetchExitProcesses(
+export const fetchExitProcesses = async (
   employeeId?: string | number,
-): Promise<{ processes: DbExitProcess[]; checklist: DbExitChecklist[] }> {
+): Promise<{ processes: DbExitProcess[]; checklist: DbExitChecklist[] }> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/exit/list", params);
@@ -717,66 +717,66 @@ export async function fetchExitProcesses(
   return { processes, checklist };
 }
 
-export async function createExitProcess(payload: Record<string, unknown>) {
+export const createExitProcess = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/exit/create", params);
 }
 
-export async function updateExitProcess(exitId: string | number, payload: Record<string, unknown>) {
+export const updateExitProcess = async (exitId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/exit/${eid(exitId)}/update`, payload);
 }
 
-export async function updateExitChecklistLine(lineId: string | number, payload: Record<string, unknown>) {
+export const updateExitChecklistLine = async (lineId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/exit/checklist/${eid(lineId)}/update`, payload);
 }
 
-export async function fetchCustodies(employeeId?: string | number): Promise<any[]> {
+export const fetchCustodies = async (employeeId?: string | number): Promise<any[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   return items<any>("/api/hr/custodies/list", params);
 }
 
-export async function createCustody(payload: Record<string, unknown>) {
+export const createCustody = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/custodies/create", params);
 }
 
-export async function updateCustody(custodyId: string | number, payload: Record<string, unknown>) {
+export const updateCustody = async (custodyId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/custodies/${eid(custodyId)}/update`, payload);
 }
 
-export async function deleteCustody(custodyId: string | number) {
+export const deleteCustody = async (custodyId: string | number) => {
   return hrCall(`/api/hr/custodies/${eid(custodyId)}/delete`, {});
 }
 
 // ─── Slice A: Warnings ────────────────────────────────────────────────
 
-export async function fetchWarnings(employeeId?: string | number): Promise<DbWarning[]> {
+export const fetchWarnings = async (employeeId?: string | number): Promise<DbWarning[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/warnings/list", params);
   return rows.map(mapWarning);
 }
 
-export async function createWarning(payload: Record<string, unknown>) {
+export const createWarning = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/warnings/create", params);
 }
 
-export async function updateWarning(warningId: string | number, payload: Record<string, unknown>) {
+export const updateWarning = async (warningId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/warnings/${eid(warningId)}/update`, payload);
 }
 
-export async function deleteWarning(warningId: string | number) {
+export const deleteWarning = async (warningId: string | number) => {
   return hrCall(`/api/hr/warnings/${eid(warningId)}/delete`, {});
 }
 
 // ─── Slice A: Notifications ───────────────────────────────────────────
 
-export async function fetchNotifications(includeDismissed = false): Promise<DbNotification[]> {
+export const fetchNotifications = async (includeDismissed = false): Promise<DbNotification[]> => {
   const rows = await items<any>("/api/hr/notifications/list", {
     include_dismissed: includeDismissed,
     limit: 200,
@@ -784,29 +784,29 @@ export async function fetchNotifications(includeDismissed = false): Promise<DbNo
   return rows.map(mapNotification);
 }
 
-export async function createNotification(payload: Record<string, unknown>) {
+export const createNotification = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/notifications/create", payload);
 }
 
-export async function markNotificationRead(notificationId: string | number) {
+export const markNotificationRead = async (notificationId: string | number) => {
   return hrCall(`/api/hr/notifications/${eid(notificationId)}/mark_read`, {});
 }
 
-export async function dismissNotification(notificationId: string | number) {
+export const dismissNotification = async (notificationId: string | number) => {
   return hrCall(`/api/hr/notifications/${eid(notificationId)}/dismiss`, {});
 }
 
-export async function markAllNotificationsRead() {
+export const markAllNotificationsRead = async () => {
   return hrCall("/api/hr/notifications/mark_all_read", {});
 }
 
 // ─── Slice A: Audit log ───────────────────────────────────────────────
 
-export async function fetchAuditLog(filters?: {
+export const fetchAuditLog = async (filters?: {
   entityType?: string;
   action?: string;
   entityId?: string | number;
-}): Promise<DbAuditLog[]> {
+}): Promise<DbAuditLog[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (filters?.entityType) params.entity_type = filters.entityType;
   if (filters?.action) params.action = filters.action;
@@ -815,20 +815,20 @@ export async function fetchAuditLog(filters?: {
   return rows.map(mapAuditLog);
 }
 
-export async function createAuditLog(payload: Record<string, unknown>) {
+export const createAuditLog = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/audit/create", payload);
 }
 
 // ─── Slice B: Evaluations ─────────────────────────────────────────────
 
-export async function fetchEvaluations(employeeId?: string | number): Promise<DbEvaluation[]> {
+export const fetchEvaluations = async (employeeId?: string | number): Promise<DbEvaluation[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/evaluations/list", params);
   return rows.map(mapEvaluation);
 }
 
-export async function fetchEvaluationCriteria(): Promise<DbEvaluationCriteria[]> {
+export const fetchEvaluationCriteria = async (): Promise<DbEvaluationCriteria[]> => {
   // Criteria are embedded in evaluations/list responses; provided for API parity.
   const rows = await items<any>("/api/hr/evaluations/list", { limit: 500 });
   const criteria: DbEvaluationCriteria[] = [];
@@ -840,9 +840,9 @@ export async function fetchEvaluationCriteria(): Promise<DbEvaluationCriteria[]>
   return criteria;
 }
 
-export async function fetchEvaluationsWithCriteria(
+export const fetchEvaluationsWithCriteria = async (
   employeeId?: string | number,
-): Promise<{ evaluations: DbEvaluation[]; criteria: DbEvaluationCriteria[] }> {
+): Promise<{ evaluations: DbEvaluation[]; criteria: DbEvaluationCriteria[] }> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/evaluations/list", params);
@@ -856,73 +856,73 @@ export async function fetchEvaluationsWithCriteria(
   return { evaluations, criteria };
 }
 
-export async function createEvaluation(payload: Record<string, unknown>) {
+export const createEvaluation = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/evaluations/create", params);
 }
 
-export async function updateEvaluation(evaluationId: string | number, payload: Record<string, unknown>) {
+export const updateEvaluation = async (evaluationId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/update`, payload);
 }
 
-export async function deleteEvaluation(evaluationId: string | number) {
+export const deleteEvaluation = async (evaluationId: string | number) => {
   return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/delete`, {});
 }
 
 // ─── Slice B: Policies ────────────────────────────────────────────────
 
-export async function fetchPolicies(): Promise<DbPolicy[]> {
+export const fetchPolicies = async (): Promise<DbPolicy[]> => {
   const rows = await items<any>("/api/hr/policies/list", { limit: 200 });
   return rows.map(mapPolicy);
 }
 
-export async function createPolicy(payload: Record<string, unknown>) {
+export const createPolicy = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/policies/create", payload);
 }
 
-export async function updatePolicy(policyId: string | number, payload: Record<string, unknown>) {
+export const updatePolicy = async (policyId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/policies/${eid(policyId)}/update`, payload);
 }
 
-export async function deletePolicy(policyId: string | number) {
+export const deletePolicy = async (policyId: string | number) => {
   return hrCall(`/api/hr/policies/${eid(policyId)}/delete`, {});
 }
 
 // ─── Slice B: Training ────────────────────────────────────────────────
 
-export async function fetchTrainingPrograms(): Promise<DbTrainingProgram[]> {
+export const fetchTrainingPrograms = async (): Promise<DbTrainingProgram[]> => {
   const rows = await items<any>("/api/hr/training/programs/list", { limit: 200 });
   return rows.map(mapTrainingProgram);
 }
 
-export async function createTrainingProgram(payload: Record<string, unknown>) {
+export const createTrainingProgram = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/training/programs/create", payload);
 }
 
-export async function updateTrainingProgram(programId: string | number, payload: Record<string, unknown>) {
+export const updateTrainingProgram = async (programId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/training/programs/${eid(programId)}/update`, payload);
 }
 
-export async function deleteTrainingProgram(programId: string | number) {
+export const deleteTrainingProgram = async (programId: string | number) => {
   return hrCall(`/api/hr/training/programs/${eid(programId)}/delete`, {});
 }
 
-export async function fetchTrainingParticipants(
+export const fetchTrainingParticipants = async (
   programId?: string | number,
-): Promise<DbTrainingParticipant[]> {
+): Promise<DbTrainingParticipant[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (programId) params.program_id = eid(programId);
   const rows = await items<any>("/api/hr/training/participants/list", params);
   return rows.map(mapTrainingParticipant);
 }
 
-export async function createTrainingParticipant(payload: {
+export const createTrainingParticipant = async (payload: {
   training_program_id: string | number;
   employee_id: string | number;
   completion_status?: string;
   score?: number | null;
-}) {
+}) => {
   return hrCall("/api/hr/training/participants/create", {
     program_id: eid(payload.training_program_id),
     employee_id: eid(payload.employee_id),
@@ -931,44 +931,44 @@ export async function createTrainingParticipant(payload: {
   });
 }
 
-export async function updateTrainingParticipant(
+export const updateTrainingParticipant = async (
   participantId: string | number,
   payload: Record<string, unknown>,
-) {
+) => {
   return hrCall(`/api/hr/training/participants/${eid(participantId)}/update`, payload);
 }
 
-export async function deleteTrainingParticipant(participantId: string | number) {
+export const deleteTrainingParticipant = async (participantId: string | number) => {
   return hrCall(`/api/hr/training/participants/${eid(participantId)}/delete`, {});
 }
 
 // ─── Slice C: Recruitment ─────────────────────────────────────────────
 
-export async function fetchJobOpenings(): Promise<DbJobOpening[]> {
+export const fetchJobOpenings = async (): Promise<DbJobOpening[]> => {
   const rows = await items<any>("/api/hr/jobs/list", { limit: 200 });
   return rows.map(mapJobOpening);
 }
 
-export async function createJobOpening(payload: Record<string, unknown>) {
+export const createJobOpening = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/jobs/create", payload);
 }
 
-export async function updateJobOpening(jobId: string | number, payload: Record<string, unknown>) {
+export const updateJobOpening = async (jobId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/jobs/${eid(jobId)}/update`, payload);
 }
 
-export async function deleteJobOpening(jobId: string | number) {
+export const deleteJobOpening = async (jobId: string | number) => {
   return hrCall(`/api/hr/jobs/${eid(jobId)}/delete`, {});
 }
 
-export async function fetchApplicants(jobOpeningId?: string | number): Promise<DbApplicant[]> {
+export const fetchApplicants = async (jobOpeningId?: string | number): Promise<DbApplicant[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (jobOpeningId) params.job_opening_id = eid(jobOpeningId);
   const rows = await items<any>("/api/hr/applicants/list", params);
   return rows.map(mapApplicant);
 }
 
-export async function createApplicant(payload: Record<string, unknown>) {
+export const createApplicant = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.job_opening_id != null) {
     params.job_opening_id = eid(params.job_opening_id as string | number);
@@ -976,19 +976,19 @@ export async function createApplicant(payload: Record<string, unknown>) {
   return hrCall("/api/hr/applicants/create", params);
 }
 
-export async function updateApplicant(applicantId: string | number, payload: Record<string, unknown>) {
+export const updateApplicant = async (applicantId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/applicants/${eid(applicantId)}/update`, payload);
 }
 
-export async function deleteApplicant(applicantId: string | number) {
+export const deleteApplicant = async (applicantId: string | number) => {
   return hrCall(`/api/hr/applicants/${eid(applicantId)}/delete`, {});
 }
 
-export async function uploadApplicantResume(
+export const uploadApplicantResume = async (
   applicantId: string | number,
   fileDataBase64: string,
   fileName?: string,
-) {
+) => {
   return hrCall(`/api/hr/applicants/${eid(applicantId)}/upload_resume`, {
     file_data: fileDataBase64,
     file_name: fileName,
@@ -1003,7 +1003,7 @@ export async function uploadApplicantResume(
  * link navigation. Fetch the bytes through the authenticated API instead and
  * hand the browser a Blob.
  */
-export async function downloadApplicantResume(applicantId: string | number) {
+export const downloadApplicantResume = async (applicantId: string | number) => {
   const res = await hrCall<{
     file_name: string;
     mimetype: string;
@@ -1031,10 +1031,10 @@ export async function downloadApplicantResume(applicantId: string | number) {
 // ─── AI resume screening / Initial Rating ─────────────────────────────
 
 /** Queue (or with `sync`, immediately run) the AI screening for one applicant. */
-export async function screenApplicant(
+export const screenApplicant = async (
   applicantId: string | number,
   options: { force?: boolean; sync?: boolean } = {},
-): Promise<DbApplicant> {
+): Promise<DbApplicant> => {
   const row = await hrCall<any>(`/api/hr/applicants/${eid(applicantId)}/screen`, {
     force: Boolean(options.force),
     sync: Boolean(options.sync),
@@ -1042,11 +1042,11 @@ export async function screenApplicant(
   return mapApplicant(row);
 }
 
-export async function fetchApplicantScreening(applicantId: string | number): Promise<{
+export const fetchApplicantScreening = async (applicantId: string | number): Promise<{
   applicant: DbApplicant;
   parsed_profile: Record<string, unknown>;
   runs: ScreeningRun[];
-}> {
+}> => {
   const data = await hrCall<any>(`/api/hr/applicants/${eid(applicantId)}/screening`, {});
   return {
     applicant: mapApplicant(data.applicant || {}),
@@ -1055,11 +1055,11 @@ export async function fetchApplicantScreening(applicantId: string | number): Pro
   };
 }
 
-export async function bulkScreenApplicants(params: {
+export const bulkScreenApplicants = async (params: {
   applicantIds?: Array<string | number>;
   jobOpeningId?: string | number;
   force?: boolean;
-}): Promise<{ queued: number; skipped: number }> {
+}): Promise<{ queued: number; skipped: number }> => {
   return hrCall("/api/hr/applicants/bulk_screen", {
     applicant_ids: params.applicantIds?.map(eid),
     job_opening_id: params.jobOpeningId != null ? eid(params.jobOpeningId) : undefined,
@@ -1067,10 +1067,10 @@ export async function bulkScreenApplicants(params: {
   });
 }
 
-export async function fetchJobRanking(
+export const fetchJobRanking = async (
   jobId: string | number,
   params: { minIr?: number; stage?: string } = {},
-): Promise<{ job: DbJobOpening; items: DbApplicant[]; stats: JobRankingStats }> {
+): Promise<{ job: DbJobOpening; items: DbApplicant[]; stats: JobRankingStats }> => {
   const data = await hrCall<any>(`/api/hr/jobs/${eid(jobId)}/ranking`, {
     limit: 200,
     min_ir: params.minIr,
@@ -1086,36 +1086,36 @@ export async function fetchJobRanking(
   };
 }
 
-export async function getJobApplyLink(
+export const getJobApplyLink = async (
   jobId: string | number,
   params: { rotate?: boolean; expires_on?: string | null; max_submissions?: number; active?: boolean } = {},
-): Promise<ApplicationLink> {
+): Promise<ApplicationLink> => {
   return hrCall<ApplicationLink>(`/api/hr/jobs/${eid(jobId)}/apply_link`, params);
 }
 
-export async function fetchApplicationLinks(jobOpeningId?: string | number): Promise<ApplicationLink[]> {
+export const fetchApplicationLinks = async (jobOpeningId?: string | number): Promise<ApplicationLink[]> => {
   return items<ApplicationLink>("/api/hr/recruitment/links/list", {
     limit: 200,
     job_opening_id: jobOpeningId != null ? eid(jobOpeningId) : undefined,
   });
 }
 
-export async function updateApplicationLink(
+export const updateApplicationLink = async (
   linkId: string | number,
   payload: Record<string, unknown>,
-): Promise<ApplicationLink> {
+): Promise<ApplicationLink> => {
   return hrCall<ApplicationLink>(`/api/hr/recruitment/links/${eid(linkId)}/update`, payload);
 }
 
-export async function deleteApplicationLink(linkId: string | number) {
+export const deleteApplicationLink = async (linkId: string | number) => {
   return hrCall(`/api/hr/recruitment/links/${eid(linkId)}/delete`, {});
 }
 
-export async function fetchScreeningSettings(): Promise<ScreeningSettings> {
+export const fetchScreeningSettings = async (): Promise<ScreeningSettings> => {
   return hrCall<ScreeningSettings>("/api/hr/recruitment/screening_settings", {});
 }
 
-export async function updateScreeningSettings(
+export const updateScreeningSettings = async (
   payload: Partial<{
     weights: Record<string, number>;
     min_confidence: number;
@@ -1123,7 +1123,7 @@ export async function updateScreeningSettings(
     max_resume_mb: number;
     model: string;
   }>,
-): Promise<ScreeningSettings> {
+): Promise<ScreeningSettings> => {
   return hrCall<ScreeningSettings>("/api/hr/recruitment/screening_settings/update", payload);
 }
 
@@ -1157,54 +1157,54 @@ export interface ScreeningSettings {
 
 // ─── Slice C: Loans ───────────────────────────────────────────────────
 
-export async function fetchLoans(employeeId?: string | number): Promise<DbLoan[]> {
+export const fetchLoans = async (employeeId?: string | number): Promise<DbLoan[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/payroll/loans/list", params);
   return rows.map(mapLoan);
 }
 
-export async function createLoan(payload: Record<string, unknown>) {
+export const createLoan = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/payroll/loans/create", params);
 }
 
-export async function updateLoan(loanId: string | number, payload: Record<string, unknown>) {
+export const updateLoan = async (loanId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/update`, payload);
 }
 
-export async function deleteLoan(loanId: string | number) {
+export const deleteLoan = async (loanId: string | number) => {
   return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/delete`, {});
 }
 
 // ─── Slice D: Reports ─────────────────────────────────────────────────
 
-export async function fetchReportTemplates(): Promise<DbReportTemplate[]> {
+export const fetchReportTemplates = async (): Promise<DbReportTemplate[]> => {
   const rows = await items<any>("/api/hr/reports/templates/list", { active_only: true });
   return rows.map(mapReportTemplate);
 }
 
-export async function createReportTemplate(payload: Record<string, unknown>) {
+export const createReportTemplate = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/reports/templates/create", payload);
 }
 
-export async function updateReportTemplate(templateId: string | number, payload: Record<string, unknown>) {
+export const updateReportTemplate = async (templateId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/reports/templates/${eid(templateId)}/update`, payload);
 }
 
-export async function deleteReportTemplate(templateId: string | number) {
+export const deleteReportTemplate = async (templateId: string | number) => {
   return hrCall(`/api/hr/reports/templates/${eid(templateId)}/delete`, {});
 }
 
-export async function fetchReportHistory(templateId?: string | number): Promise<DbReportHistory[]> {
+export const fetchReportHistory = async (templateId?: string | number): Promise<DbReportHistory[]> => {
   const params: Record<string, unknown> = { limit: 100 };
   if (templateId) params.report_template_id = eid(templateId);
   const rows = await items<any>("/api/hr/reports/history/list", params);
   return rows.map(mapReportHistory);
 }
 
-export async function createReportHistory(payload: Record<string, unknown>) {
+export const createReportHistory = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.report_template_id != null) {
     params.report_template_id = eid(params.report_template_id as string | number);
@@ -1214,19 +1214,19 @@ export async function createReportHistory(payload: Record<string, unknown>) {
 
 // ─── Slice D: Payroll catalog writes (allowances / deductions) ───────
 
-export async function createAllowanceType(payload: Record<string, unknown>) {
+export const createAllowanceType = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/payroll/allowance_types/create", payload);
 }
 
-export async function updateAllowanceType(typeId: string | number, payload: Record<string, unknown>) {
+export const updateAllowanceType = async (typeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/update`, payload);
 }
 
-export async function deleteAllowanceType(typeId: string | number) {
+export const deleteAllowanceType = async (typeId: string | number) => {
   return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/delete`, {});
 }
 
-export async function createEmployeeAllowance(payload: Record<string, unknown>) {
+export const createEmployeeAllowance = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   if (params.allowance_type_id != null) {
@@ -1235,27 +1235,27 @@ export async function createEmployeeAllowance(payload: Record<string, unknown>) 
   return hrCall("/api/hr/payroll/employee_allowances/create", params);
 }
 
-export async function updateEmployeeAllowance(allowanceId: string | number, payload: Record<string, unknown>) {
+export const updateEmployeeAllowance = async (allowanceId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/update`, payload);
 }
 
-export async function deleteEmployeeAllowance(allowanceId: string | number) {
+export const deleteEmployeeAllowance = async (allowanceId: string | number) => {
   return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/delete`, {});
 }
 
-export async function createDeductionType(payload: Record<string, unknown>) {
+export const createDeductionType = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/payroll/deduction_types/create", payload);
 }
 
-export async function updateDeductionType(typeId: string | number, payload: Record<string, unknown>) {
+export const updateDeductionType = async (typeId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/update`, payload);
 }
 
-export async function deleteDeductionType(typeId: string | number) {
+export const deleteDeductionType = async (typeId: string | number) => {
   return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/delete`, {});
 }
 
-export async function createEmployeeDeduction(payload: Record<string, unknown>) {
+export const createEmployeeDeduction = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   if (params.deduction_type_id != null) {
@@ -1264,57 +1264,57 @@ export async function createEmployeeDeduction(payload: Record<string, unknown>) 
   return hrCall("/api/hr/payroll/employee_deductions/create", params);
 }
 
-export async function updateEmployeeDeduction(deductionId: string | number, payload: Record<string, unknown>) {
+export const updateEmployeeDeduction = async (deductionId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/update`, payload);
 }
 
-export async function deleteEmployeeDeduction(deductionId: string | number) {
+export const deleteEmployeeDeduction = async (deductionId: string | number) => {
   return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/delete`, {});
 }
 
 // ─── Slice D: Leave policy CRUD ───────────────────────────────────────
 
-export async function createLeavePolicy(payload: Record<string, unknown>) {
+export const createLeavePolicy = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.leave_type_id != null) params.leave_type_id = eid(params.leave_type_id as string | number);
   return hrCall("/api/hr/leave/policies/create", params);
 }
 
-export async function updateLeavePolicy(policyId: string | number, payload: Record<string, unknown>) {
+export const updateLeavePolicy = async (policyId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/leave/policies/${eid(policyId)}/update`, payload);
 }
 
-export async function deleteLeavePolicy(policyId: string | number) {
+export const deleteLeavePolicy = async (policyId: string | number) => {
   return hrCall(`/api/hr/leave/policies/${eid(policyId)}/delete`, {});
 }
 
 // ─── Slice F: Devices process / Issues / Approvals / Currency / Trends ─
 
-export async function syncDevices(deviceId?: string | number, processEvents = true) {
+export const syncDevices = async (deviceId?: string | number, processEvents = true) => {
   const params: Record<string, unknown> = { process_events: processEvents };
   if (deviceId != null) params.device_id = eid(deviceId);
   return hrCall("/api/hr/devices/sync", params);
 }
 
-export async function processDeviceEvents(deviceId?: string | number, limit = 500) {
+export const processDeviceEvents = async (deviceId?: string | number, limit = 500) => {
   const params: Record<string, unknown> = { limit };
   if (deviceId != null) params.device_id = eid(deviceId);
   return hrCall("/api/hr/devices/events/process", params);
 }
 
-export async function createDeviceEvent(payload: Record<string, unknown>) {
+export const createDeviceEvent = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/devices/events/create", payload);
 }
 
 /** Raw punch ledger (lugal.hr.device.event). */
-export async function fetchDeviceEvents(filters?: {
+export const fetchDeviceEvents = async (filters?: {
   deviceId?: string | number;
   employeeNo?: string;
   dateFrom?: string;
   dateTo?: string;
   processed?: boolean;
   limit?: number;
-}): Promise<any[]> {
+}): Promise<any[]> => {
   const params: Record<string, unknown> = {
     limit: filters?.limit ?? 2000,
     offset: 0,
@@ -1327,11 +1327,11 @@ export async function fetchDeviceEvents(filters?: {
   return items<any>("/api/hr/devices/events/list", params);
 }
 
-export async function fetchAttendanceTrends(params?: {
+export const fetchAttendanceTrends = async (params?: {
   employeeId?: string | number;
   dateFrom?: string;
   dateTo?: string;
-}) {
+}) => {
   const body: Record<string, unknown> = {};
   if (params?.employeeId != null) body.employee_id = eid(params.employeeId);
   if (params?.dateFrom) body.date_from = params.dateFrom;
@@ -1339,11 +1339,11 @@ export async function fetchAttendanceTrends(params?: {
   return hrCall("/api/hr/attendance/trends", body);
 }
 
-export async function fetchIssues(filters?: {
+export const fetchIssues = async (filters?: {
   employeeId?: string | number;
   state?: string;
   category?: string;
-}): Promise<any[]> {
+}): Promise<any[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (filters?.employeeId != null) params.employee_id = eid(filters.employeeId);
   if (filters?.state) params.state = filters.state;
@@ -1352,25 +1352,25 @@ export async function fetchIssues(filters?: {
   return rows.map(mapIssue);
 }
 
-export async function createIssue(payload: Record<string, unknown>) {
+export const createIssue = async (payload: Record<string, unknown>) => {
   const params = { ...payload };
   if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
   return hrCall("/api/hr/issues/create", params);
 }
 
-export async function updateIssue(issueId: string | number, payload: Record<string, unknown>) {
+export const updateIssue = async (issueId: string | number, payload: Record<string, unknown>) => {
   return hrCall(`/api/hr/issues/${eid(issueId)}/update`, payload);
 }
 
-export async function resolveIssue(
+export const resolveIssue = async (
   issueId: string | number,
   resolution_note?: string,
   state = "resolved",
-) {
+) => {
   return hrCall(`/api/hr/issues/${eid(issueId)}/resolve`, { resolution_note, state });
 }
 
-export async function fetchApprovalWorkflows(entityType = "leave_request"): Promise<any[]> {
+export const fetchApprovalWorkflows = async (entityType = "leave_request"): Promise<any[]> => {
   const data = await hrCall<{ items?: any[] }>("/api/hr/approvals/workflows/list", {
     entity_type: entityType,
     active_only: true,
@@ -1379,22 +1379,22 @@ export async function fetchApprovalWorkflows(entityType = "leave_request"): Prom
   return rows.map(mapApprovalWorkflow);
 }
 
-export async function createApprovalWorkflow(payload: Record<string, unknown>) {
+export const createApprovalWorkflow = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/approvals/workflows/create", payload);
 }
 
-export async function updateApprovalWorkflow(
+export const updateApprovalWorkflow = async (
   workflowId: string | number,
   payload: Record<string, unknown>,
-) {
+) => {
   return hrCall(`/api/hr/approvals/workflows/${eid(workflowId)}/update`, payload);
 }
 
-export async function fetchApprovalRequests(filters?: {
+export const fetchApprovalRequests = async (filters?: {
   entityType?: string;
   status?: string;
   mineOnly?: boolean;
-}): Promise<any[]> {
+}): Promise<any[]> => {
   const params: Record<string, unknown> = {
     status: filters?.status || "pending",
     limit: 200,
@@ -1405,43 +1405,43 @@ export async function fetchApprovalRequests(filters?: {
   return rows.map(mapApprovalRequest);
 }
 
-export async function approveApprovalRequest(requestId: string | number, comment?: string) {
+export const approveApprovalRequest = async (requestId: string | number, comment?: string) => {
   return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/approve`, { comment });
 }
 
-export async function rejectApprovalRequest(requestId: string | number, comment?: string) {
+export const rejectApprovalRequest = async (requestId: string | number, comment?: string) => {
   return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/reject`, { comment });
 }
 
-export async function fetchCurrencies() {
+export const fetchCurrencies = async () => {
   return hrCall("/api/hr/currencies/list", {});
 }
 
-export async function fetchCurrencyRates(filters?: {
+export const fetchCurrencyRates = async (filters?: {
   currencyFrom?: string;
   currencyTo?: string;
-}) {
+}) => {
   const params: Record<string, unknown> = { limit: 200 };
   if (filters?.currencyFrom) params.currency_from = filters.currencyFrom;
   if (filters?.currencyTo) params.currency_to = filters.currencyTo;
   return items<any>("/api/hr/currency_rates/list", params);
 }
 
-export async function createCurrencyRate(payload: {
+export const createCurrencyRate = async (payload: {
   currency_from: string;
   currency_to: string;
   rate: number;
   rate_date?: string;
   note?: string;
-}) {
+}) => {
   return hrCall("/api/hr/currency_rates/create", payload);
 }
 
-export async function convertCurrency(payload: {
+export const convertCurrency = async (payload: {
   amount: number;
   currency_from: string;
   currency_to: string;
   rate_date?: string;
-}) {
+}) => {
   return hrCall("/api/hr/currency_rates/convert", payload);
 }
