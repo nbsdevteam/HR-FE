@@ -77,7 +77,7 @@ const EvaluationPage = () => {
       />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`${evaluationCardClass} p-6`}>
-        <h3 className="text-foreground mb-4">{arabicSource("evaluation.distribution_of_ratings")}</h3>
+        <h2 className="text-foreground mb-4">{arabicSource("evaluation.distribution_of_ratings")}</h2>
         <CustomBarChart data={ratingDistribution} barLabel={arabicSource("common.number_of_employees")} height={250} color="#D4AF37" />
       </motion.div>
 

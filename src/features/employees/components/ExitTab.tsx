@@ -7,7 +7,7 @@ import {
   useExitChecklist,
   type DbExitProcess, type DbExitChecklistItem,
 } from "@/shared/hooks";
-import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll";
+import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";

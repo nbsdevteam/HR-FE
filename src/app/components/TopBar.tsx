@@ -114,10 +114,10 @@ const TopBar = () => {
           </button>
         )}
         <div className="min-w-0">
-          <h3 className="text-foreground truncate" style={{ fontSize: 14 }}>
+          <p className="text-foreground truncate" style={{ fontSize: 14 }}>
             <span className="md:hidden">{displayName}</span>
             <span className="hidden md:inline">{arabicSource("shared.hello_human_resources_manager")}</span>
-          </h3>
+          </p>
           <p className="text-muted-foreground hidden lg:block truncate" style={{ fontSize: 12 }}>
             {quote}
           </p>
@@ -170,7 +170,12 @@ const TopBar = () => {
           onSelectNotification={handleSelectNotification}
         />
 
-        <motion.button whileHover={{ scale: 1.05 }} className="hidden sm:inline-flex p-2 rounded-lg hover:bg-secondary cursor-pointer">
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05 }}
+          aria-label={arabicSource("common.messages")}
+          className="hidden sm:inline-flex p-2 rounded-lg hover:bg-secondary cursor-pointer"
+        >
           <MessageSquare className="w-5 h-5 text-muted-foreground" />
         </motion.button>
 
@@ -178,7 +183,12 @@ const TopBar = () => {
           <ThemeSwitcher />
         </div>
 
-        <motion.button whileHover={{ scale: 1.05 }} className="hidden md:inline-flex p-2 rounded-lg hover:bg-secondary cursor-pointer">
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05 }}
+          aria-label={arabicSource("common.settings")}
+          className="hidden md:inline-flex p-2 rounded-lg hover:bg-secondary cursor-pointer"
+        >
           <Settings className="w-5 h-5 text-muted-foreground" />
         </motion.button>
 

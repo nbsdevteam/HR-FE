@@ -4,7 +4,7 @@ import { AlertCircle, Edit, Eye, Fingerprint, Trash2 } from "lucide-react";
 import { NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
-import { formatCurrency } from "@/features/payroll";
+import { formatCurrency } from "@/features/payroll/services/payslip-engine";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { arabicSource } from "@/i18n/source";
 import { statusColors } from "../styles";

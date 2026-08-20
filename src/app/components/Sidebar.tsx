@@ -108,9 +108,9 @@ const Sidebar = () => {
             </div>
             {!collapsed && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <h2 className="text-gradient-gold leading-tight" style={{ fontSize: 15 }}>
+                <p className="text-gradient-gold leading-tight" style={{ fontSize: 15 }}>
                   {arabicSource("shared.human_resources_system")}
-                </h2>
+                </p>
               </motion.div>
             )}
           </div>
@@ -164,9 +164,9 @@ const Sidebar = () => {
                 <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
                   <Shield className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <h2 className="text-gradient-gold truncate" style={{ fontSize: 15 }}>
+                <p className="text-gradient-gold truncate" style={{ fontSize: 15 }}>
                   {arabicSource("shared.human_resources_system")}
-                </h2>
+                </p>
               </div>
               <button
                 onClick={closeMobileNav}

@@ -30,6 +30,7 @@ const EvaluationFilters = ({
     <select
       value={filterStatus}
       onChange={e => onFilterStatusChange(e.target.value)}
+      aria-label={arabicSource("common.status")}
       className={evaluationInputClass}
       style={{ width: 160, height: 38 }}
     >

@@ -44,7 +44,7 @@ const LanguageSwitcher = () => {
         type="button"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.97 }}
-        aria-label={selectorLabel}
+        aria-label={`${selectorLabel}: ${languageName(current)}`}
         title={selectorLabel}
         aria-haspopup="menu"
         aria-expanded={open}
