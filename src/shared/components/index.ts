@@ -1,8 +1,10 @@
 export * from "./EmptyState";
 export { default as FilterChip } from "./FilterChip";
+export { default as InputField } from "./InputField";
 export { default as ModalHeader } from "./ModalHeader";
 export { default as ModalOverlay } from "./ModalOverlay";
 export { default as NodeAvatar } from "./NodeAvatar";
+export { default as SearchInput } from "./SearchInput";
 export { default as SelectField } from "./SelectField";
 export * from "./SortableHeader";
 export { default as StatusBadge } from "./StatusBadge";

@@ -1,17 +1,10 @@
-import { useMemo } from "react";
-import { motion } from "motion/react";
-import {
-  AlertTriangle,
-  GraduationCap,
-  FileCheck,
-  Shield,
-  Award,
-  Zap,
-} from "lucide-react";
+import { Shield, Zap } from "lucide-react";
 import { DonutChart } from "@/shared/components/donut-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
+import { useDashboardComplianceData } from "../hooks/useDashboardComplianceData";
+import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import DashboardRatingLevelBar from "./DashboardRatingLevelBar";
@@ -24,156 +17,9 @@ type DashboardComplianceSectionProps = {
 const DashboardComplianceSection = ({
   data,
 }: DashboardComplianceSectionProps) => {
-  const {
-    cfg,
-    expiryStats,
-    warningStats,
-    evalStats,
-    trainingStats,
-    cardCls,
-    warningDistribution,
-    evaluations,
-  } = data;
+  const { cfg, evalStats, trainingStats, cardCls, warningDistribution, warningStats } = data;
 
-  const complianceStats = useMemo(
-    () => [
-      {
-        label: arabicSource("dashboard.average_performance_rating"),
-        value: `${evalStats.avgRating}/5`,
-        sub: `${arabicSource("common.cover")} ${evalStats.coverageRate}${arabicSource("common.of_employees")}`,
-        icon: Award,
-        color:
-          evalStats.avgRating >= cfg.performanceGoodThreshold
-            ? "text-emerald-400"
-            : "text-amber-400",
-      },
-      {
-        label: arabicSource("common.active_alarms"),
-        value: warningStats.active,
-        sub: `${warningStats.escalationRisk} ${arabicSource("common.risk_of_escalation")}`,
-        icon: AlertTriangle,
-        color: warningStats.active > 0 ? "text-orange-400" : "text-emerald-400",
-      },
-      {
-        label: arabicSource("dashboard.completion_of_training"),
-        value: `${trainingStats.completionRate}%`,
-        sub: `${arabicSource("common.cover")} ${trainingStats.coverageRate}${arabicSource("common.of_employees")}`,
-        icon: GraduationCap,
-        color:
-          trainingStats.completionRate >= cfg.trainingCompletionTarget
-            ? "text-emerald-400"
-            : "text-amber-400",
-      },
-      {
-        label: arabicSource("dashboard.expired_nearly_documents"),
-        value: expiryStats.expiredDocs + expiryStats.expiringDocs,
-        sub: `${expiryStats.expiredDocs} ${arabicSource("dashboard.finished")} ${expiryStats.expiringDocs} ${arabicSource("dashboard.close")}`,
-        icon: FileCheck,
-        color: expiryStats.expiredDocs > 0 ? "text-red-400" : "text-amber-400",
-      },
-      {
-        label: arabicSource("dashboard.high_performance_rate"),
-        value: `${pct(evalStats.high, evalStats.completed)}%`,
-        sub: `${evalStats.high} ${arabicSource("common.from")} ${evalStats.completed} ${arabicSource("dashboard.evaluator")}`,
-        icon: Zap,
-        color: "text-purple-400",
-      },
-    ],
-    [evalStats, cfg, warningStats, trainingStats, expiryStats],
-  );
-
-  const ratingLevels = useMemo(
-    () => [
-      {
-        label: arabicSource("dashboard.featured_5"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 5,
-        ).length,
-        color: "bg-emerald-500",
-      },
-      {
-        label: arabicSource("dashboard.exceeding_expectations_4"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 4,
-        ).length,
-        color: "bg-blue-500",
-      },
-      {
-        label: arabicSource("dashboard.within_expected_3"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 3,
-        ).length,
-        color: "bg-primary",
-      },
-      {
-        label: arabicSource("dashboard.below_expectations_2"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 2,
-        ).length,
-        color: "bg-amber-500",
-      },
-      {
-        label: arabicSource("dashboard.not_achieved_1"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 1,
-        ).length,
-        color: "bg-red-500",
-      },
-    ],
-    [evaluations],
-  );
-
-  const trainingTiles = useMemo(
-    () => [
-      {
-        value: trainingStats.totalPrograms,
-        label: arabicSource("common.total_programs"),
-        colorClassName: "bg-primary/10 border border-primary/20",
-        textColorClassName: "text-primary",
-      },
-      {
-        value: trainingStats.ongoing,
-        label: arabicSource("dashboard.now_underway"),
-        colorClassName: "bg-blue-500/10 border border-blue-500/20",
-        textColorClassName: "text-blue-400",
-      },
-      {
-        value: trainingStats.completed,
-        label: arabicSource("common.complete_2"),
-        colorClassName: "bg-emerald-500/10 border border-emerald-500/20",
-        textColorClassName: "text-emerald-400",
-      },
-      {
-        value: trainingStats.uniqueTrainees,
-        label: arabicSource("dashboard.unique_trainee"),
-        colorClassName: "bg-amber-500/10 border border-amber-500/20",
-        textColorClassName: "text-amber-400",
-      },
-      {
-        value: `${trainingStats.completionRate}%`,
-        label: arabicSource("dashboard.completion_rate"),
-        colorClassName: "bg-purple-500/10 border border-purple-500/20",
-        textColorClassName: "text-purple-400",
-      },
-      {
-        value: trainingStats.avgScore || "—",
-        label: arabicSource("dashboard.average_score"),
-        colorClassName: "bg-cyan-500/10 border border-cyan-500/20",
-        textColorClassName: "text-cyan-400",
-      },
-    ],
-    [trainingStats],
-  );
+  const { complianceStats, ratingLevels, trainingTiles } = useDashboardComplianceData(data);
 
   return (
     <>
@@ -185,11 +31,7 @@ const DashboardComplianceSection = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Performance Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.performance_evaluation_distribution")}
           </h3>
@@ -224,14 +66,10 @@ const DashboardComplianceSection = ({
               {arabicSource("dashboard.there_are_no_completed_reviews")}
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
 
         {/* Warning Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.alarms_by_type")}
           </h3>
@@ -266,15 +104,11 @@ const DashboardComplianceSection = ({
               </p>
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
       </div>
 
       {/* Training Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={cardCls}
-      >
+      <DashboardChartCard className={cardCls}>
         <h3 className="text-foreground mb-4">
           {arabicSource("dashboard.summary_of_training_and_development")}
         </h3>
@@ -305,7 +139,7 @@ const DashboardComplianceSection = ({
             }
           />
         </div>
-      </motion.div>
+      </DashboardChartCard>
     </>
   );
 };

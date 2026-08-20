@@ -1,5 +1,4 @@
-import { useState, useEffect, memo } from "react";
-import { Sparkles } from "lucide-react";
+import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import {
@@ -11,13 +10,12 @@ import { DEPARTMENTS } from "@/shared/constants";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import {
-  EDUCATION_LEVELS,
   JOB_STATUSES,
   JOB_STATUS_TO_ODOO,
   JOB_TYPE_TO_ODOO,
 } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
-import SkillTagInput from "./SkillTagInput";
+import JobScreeningSpecFields from "./JobScreeningSpecFields";
 
 const JobFormModal = ({
   jobs,
@@ -102,6 +100,16 @@ const JobFormModal = ({
       .fetchDepartments()
       .then(setOdooDepartments)
       .catch(() => {});
+  }, []);
+
+  const handleMinExperienceYearsChange = useCallback((value: number) => {
+    setForm((prev) => ({ ...prev, min_experience_years: value }));
+  }, []);
+  const handleEducationLevelChange = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, education_level: value }));
+  }, []);
+  const handleIrAutoShortlistChange = useCallback((value: number) => {
+    setForm((prev) => ({ ...prev, ir_auto_shortlist: value }));
   }, []);
 
   return (
@@ -233,86 +241,18 @@ const JobFormModal = ({
           />
         </div>
 
-        {/* AI screening spec — drives the Initial Rating for every applicant */}
-        <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-4">
-          <div
-            className="flex items-center gap-2 text-primary"
-            style={{ fontSize: 13 }}
-          >
-            <Sparkles className="w-4 h-4" />
-            {arabicSource("recruitment.screening_spec")}
-          </div>
-          <SkillTagInput
-            label={arabicSource("recruitment.required_skills")}
-            skills={requiredSkills}
-            onChange={setRequiredSkills}
-            weighted
-          />
-          <SkillTagInput
-            label={arabicSource("recruitment.nice_to_have")}
-            skills={niceToHave}
-            onChange={setNiceToHave}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls} style={{ fontSize: 12 }}>
-                {arabicSource("recruitment.min_experience")}
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={50}
-                value={form.min_experience_years}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    min_experience_years: Number(e.target.value) || 0,
-                  })
-                }
-                className={inputCls}
-                dir="ltr"
-              />
-            </div>
-            <div>
-              <label className={labelCls} style={{ fontSize: 12 }}>
-                {arabicSource("recruitment.education_level")}
-              </label>
-              <SelectField
-                value={form.education_level}
-                onChange={(education_level) =>
-                  setForm({ ...form, education_level })
-                }
-                options={EDUCATION_LEVELS}
-                className={selectCls}
-              />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls} style={{ fontSize: 12 }}>
-              {arabicSource("recruitment.auto_shortlist")}
-              {form.ir_auto_shortlist === 0 &&
-                ` — ${arabicSource("recruitment.auto_shortlist_off")}`}
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={95}
-              step={5}
-              value={form.ir_auto_shortlist}
-              onChange={(e) =>
-                setForm({ ...form, ir_auto_shortlist: Number(e.target.value) })
-              }
-              className="w-full cursor-pointer accent-current text-primary"
-              dir="ltr"
-            />
-            <div
-              className="text-muted-foreground text-center"
-              style={{ fontSize: 11 }}
-            >
-              {form.ir_auto_shortlist > 0 ? `${form.ir_auto_shortlist}%` : ""}
-            </div>
-          </div>
-        </div>
+        <JobScreeningSpecFields
+          requiredSkills={requiredSkills}
+          niceToHave={niceToHave}
+          minExperienceYears={form.min_experience_years}
+          educationLevel={form.education_level}
+          irAutoShortlist={form.ir_auto_shortlist}
+          onRequiredSkillsChange={setRequiredSkills}
+          onNiceToHaveChange={setNiceToHave}
+          onMinExperienceYearsChange={handleMinExperienceYearsChange}
+          onEducationLevelChange={handleEducationLevelChange}
+          onIrAutoShortlistChange={handleIrAutoShortlistChange}
+        />
 
         <div className="flex gap-3 pt-2">
           <button

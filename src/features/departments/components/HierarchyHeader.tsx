@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Crown, Download, Printer, Search, Trash2, UserPlus, X } from "lucide-react";
+import { AlertTriangle, Crown, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import type { Ref } from "react";
 import type { OrgNode } from "../types";
 import SearchResults from "./SearchResults";
+import { SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type HierarchyHeaderProps = {
@@ -71,18 +72,17 @@ const HierarchyHeader = ({
         <UserPlus className="w-4 h-4" /> {arabicSource("common.add_an_employee")}
       </button>
 
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        <input ref={searchInputRef} type="text" placeholder={arabicSource("common.search_for_an_employee")} value={searchQuery}
-          onChange={e => onSearchChange(e.target.value)}
-          onFocus={onSearchFocus}
-          className="bg-card border border-border/60 rounded-lg ps-9 pe-8 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-          style={{ fontSize: 13, width: 220 }} />
-        {searchQuery && (
-          <button onClick={onClearSearch} className="absolute end-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-3 h-3" />
-          </button>
-        )}
+      <SearchInput
+        inputRef={searchInputRef}
+        iconClassName="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+        inputClassName="bg-card border border-border/60 rounded-lg ps-9 pe-8 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+        placeholder={arabicSource("common.search_for_an_employee")}
+        value={searchQuery}
+        onChange={onSearchChange}
+        onFocus={onSearchFocus}
+        onClear={onClearSearch}
+        style={{ fontSize: 13, width: 220 }}
+      >
         <AnimatePresence>
           {showSearchResults && searchQuery.trim() && <SearchResults results={searchResults} onSelect={onSearchSelect} onClose={onCloseSearchResults} />}
         </AnimatePresence>
@@ -94,7 +94,7 @@ const HierarchyHeader = ({
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </SearchInput>
 
       <button onClick={onPrint} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all" style={{ fontSize: 13 }} title={arabicSource("common.print")}>
         <Printer className="w-4 h-4" /><span className="hidden sm:inline">{arabicSource("common.print")}</span>

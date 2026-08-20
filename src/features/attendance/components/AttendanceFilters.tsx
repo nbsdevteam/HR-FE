@@ -1,5 +1,5 @@
-import { ArrowUpDown, Search } from "lucide-react";
-import { FilterChip } from "@/shared/components";
+import { ArrowUpDown } from "lucide-react";
+import { FilterChip, SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceSortKey } from "../types";
 import { attendanceStatusFilterOptions, attendanceSortOptions } from "../data";
@@ -19,17 +19,15 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
     <>
     {/* Search & Filters Bar */}
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder={arabicSource("attendance.search_by_name_fingerprint_number_or_department")}
-          value={searchTerm}
-          onChange={(e) => onSearchTermChange(e.target.value)}
-          className="w-full h-10 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-          style={{ fontSize: 13 }}
-        />
-      </div>
+      <SearchInput
+        wrapperClassName="relative flex-1 min-w-[200px]"
+        iconClassName="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground"
+        inputClassName="w-full h-10 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+        placeholder={arabicSource("attendance.search_by_name_fingerprint_number_or_department")}
+        value={searchTerm}
+        onChange={onSearchTermChange}
+        style={{ fontSize: 13 }}
+      />
       <div className="flex items-center gap-1.5">
         {attendanceStatusFilterOptions.map(f => (
           <FilterChip

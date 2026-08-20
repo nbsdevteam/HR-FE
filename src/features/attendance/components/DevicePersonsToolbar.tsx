@@ -1,4 +1,5 @@
-import { Loader2, RefreshCw, Search } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DevicePersonsToolbarProps = {
@@ -19,16 +20,13 @@ const DevicePersonsToolbar = ({
   onRefresh,
 }: DevicePersonsToolbarProps) => (
   <div className="flex items-center gap-3 flex-wrap">
-    <div className="relative flex-1 min-w-[200px]">
-      <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-      <input
-        type="text"
-        value={search}
-        onChange={(event) => onSearchChange(event.target.value)}
-        placeholder={arabicSource("devicemanagement.search_by_name_or_employee_number")}
-        className="w-full ps-10 pe-4 py-2 rounded-lg bg-card/30 backdrop-blur-md border border-border/20 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/50"
-      />
-    </div>
+    <SearchInput
+      wrapperClassName="relative flex-1 min-w-[200px]"
+      inputClassName="w-full ps-10 pe-4 py-2 rounded-lg bg-card/30 backdrop-blur-md border border-border/20 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/50"
+      value={search}
+      onChange={onSearchChange}
+      placeholder={arabicSource("devicemanagement.search_by_name_or_employee_number")}
+    />
     <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-muted/20 transition-colors" title={arabicSource("common.update")}>
       <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
     </button>

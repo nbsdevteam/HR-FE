@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 import { Sidebar } from "@/app/components/Sidebar";
-import { TopBar } from "@/app/components/TopBar";
+import TopBar from "@/app/components/TopBar";
 import { motion } from "motion/react";
 import { ThemeProvider } from "@/app/providers";
 import { SettingsProvider } from "@/app/providers";

@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, GripVertical, Loader2 } from "lucide-react";
+import { GripVertical, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
   useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
   type DbEmployee,
 } from "@/shared/hooks";
+import { SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import DragEmpCard from "./DragEmpCard";
 import ShiftDropZone from "./ShiftDropZone";
@@ -117,13 +118,14 @@ const ShiftAssigner = () => {
         <div className="w-64 shrink-0 bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col" style={{ maxHeight: 480 }}>
           <div className="p-3 border-b border-border/30">
             <h4 className="text-foreground mb-2" style={{ fontSize: 13 }}>{arabicSource("shared.non_working")}{unassigned.length})</h4>
-            <div className="relative">
-              <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder={arabicSource("common.search")}
-                className="w-full bg-background border border-border/40 rounded-lg ps-8 pe-3 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
-                style={{ fontSize: 11 }} />
-            </div>
+            <SearchInput
+              iconClassName="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
+              inputClassName="w-full bg-background border border-border/40 rounded-lg ps-8 pe-3 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
+              value={search}
+              onChange={setSearch}
+              placeholder={arabicSource("common.search")}
+              style={{ fontSize: 11 }}
+            />
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
             {filteredUnassigned.length > 0 ? filteredUnassigned.map(emp => (

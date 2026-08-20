@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
+import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewHolidayForm as NewHolidayFormState } from "../types";
 import SettingsToggle from "./SettingsToggle";
@@ -10,6 +11,8 @@ type TNewHolidayFormProps = {
   onSave: () => void;
   onCancel: () => void;
 };
+
+const fieldCls = "w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary";
 
 const NewHolidayForm = ({
   form,
@@ -24,41 +27,27 @@ const NewHolidayForm = ({
   >
     <h4 className="text-foreground">{arabicSource("settings.new_holiday")}</h4>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className="block text-foreground text-sm mb-2">
-          {arabicSource("settings.name_arabic")}
-        </label>
-        <input
-          type="text"
-          value={form.name_ar}
-          onChange={(e) => onFieldChange({ name_ar: e.target.value })}
-          className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary"
-          placeholder={arabicSource("settings.eid_al_fitr")}
-        />
-      </div>
-      <div>
-        <label className="block text-foreground text-sm mb-2">
-          {arabicSource("settings.name_english")}
-        </label>
-        <input
-          type="text"
-          value={form.name_en}
-          onChange={(e) => onFieldChange({ name_en: e.target.value })}
-          className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary"
-          placeholder={arabicSource("settings.eid_al_fitr")}
-        />
-      </div>
-      <div>
-        <label className="block text-foreground text-sm mb-2">
-          {arabicSource("common.date_2")}
-        </label>
-        <input
-          type="date"
-          value={form.date}
-          onChange={(e) => onFieldChange({ date: e.target.value })}
-          className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-foreground focus:outline-none focus:border-primary"
-        />
-      </div>
+      <InputField
+        label={arabicSource("settings.name_arabic")}
+        value={form.name_ar}
+        onChange={(value) => onFieldChange({ name_ar: value })}
+        className={fieldCls}
+        placeholder={arabicSource("settings.eid_al_fitr")}
+      />
+      <InputField
+        label={arabicSource("settings.name_english")}
+        value={form.name_en}
+        onChange={(value) => onFieldChange({ name_en: value })}
+        className={fieldCls}
+        placeholder={arabicSource("settings.eid_al_fitr")}
+      />
+      <InputField
+        label={arabicSource("common.date_2")}
+        type="date"
+        value={form.date}
+        onChange={(value) => onFieldChange({ date: value })}
+        className={fieldCls}
+      />
       <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
         <label className="text-foreground text-sm">
           {arabicSource("settings.annual_frequency_2")}

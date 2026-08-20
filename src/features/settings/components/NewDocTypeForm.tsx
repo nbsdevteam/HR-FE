@@ -1,3 +1,4 @@
+import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewDocTypeForm as NewDocTypeFormState } from "../types";
 
@@ -7,6 +8,8 @@ type TNewDocTypeFormProps = {
   onSave: () => void;
 };
 
+const inputCls = "p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm";
+
 const NewDocTypeForm = ({
   form,
   onFieldChange,
@@ -14,34 +17,34 @@ const NewDocTypeForm = ({
 }: TNewDocTypeFormProps) => (
   <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
     <div className="grid grid-cols-2 gap-3">
-      <input
+      <InputField
         placeholder={arabicSource("settings.document_name_arabic")}
         value={form.name_ar}
-        onChange={(e) => onFieldChange({ name_ar: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ name_ar: value })}
+        className={inputCls}
       />
-      <input
+      <InputField
         placeholder={arabicSource("settings.name_english")}
         value={form.name_en}
-        onChange={(e) => onFieldChange({ name_en: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ name_en: value })}
+        className={inputCls}
       />
     </div>
     <div className="grid grid-cols-2 gap-3">
-      <input
+      <InputField
         placeholder={arabicSource("common.code")}
         value={form.code}
-        onChange={(e) => onFieldChange({ code: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ code: value })}
+        className={inputCls}
       />
-      <input
+      <InputField
         type="number"
         placeholder={arabicSource("settings.alert_days_before_expiry")}
         value={form.expiry_warning_days}
-        onChange={(e) =>
-          onFieldChange({ expiry_warning_days: +e.target.value })
+        onChange={(value) =>
+          onFieldChange({ expiry_warning_days: +value })
         }
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        className={inputCls}
       />
     </div>
     <div className="flex items-center gap-6">

@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { motion } from "motion/react";
 import {
   Clock,
   ClipboardCheck,
@@ -12,6 +11,7 @@ import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
+import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardStatGrid from "./DashboardStatGrid";
 
@@ -126,11 +126,7 @@ const DashboardWorkforceSection = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Tenure Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.distribution_of_service_period")}
           </h3>
@@ -140,14 +136,10 @@ const DashboardWorkforceSection = ({
           >
             <DonutChart data={tenureDistribution} />
           </div>
-        </motion.div>
+        </DashboardChartCard>
 
         {/* Attendance by Department */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource(
               "dashboard.attendance_percentage_by_department_7_days",
@@ -165,16 +157,12 @@ const DashboardWorkforceSection = ({
               {arabicSource("common.no_data")}
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Day of Week Pattern */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`lg:col-span-2 ${cardCls}`}
-        >
+        <DashboardChartCard className={`lg:col-span-2 ${cardCls}`}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.attendance_pattern_by_day")}
           </h3>
@@ -184,14 +172,10 @@ const DashboardWorkforceSection = ({
             height={250}
             barLabel={arabicSource("common.attendance_rate")}
           />
-        </motion.div>
+        </DashboardChartCard>
 
         {/* Leave Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("common.vacation_summary")}
           </h3>
@@ -252,15 +236,11 @@ const DashboardWorkforceSection = ({
               </p>
             </div>
           </div>
-        </motion.div>
+        </DashboardChartCard>
       </div>
 
       {/* New Hires + Turnover Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={cardCls}
-      >
+      <DashboardChartCard className={cardCls}>
         <h3 className="text-foreground mb-4">
           {arabicSource("dashboard.appointments_and_job_turnover")}
         </h3>
@@ -269,7 +249,7 @@ const DashboardWorkforceSection = ({
             <ColorStatTile key={tile.label} {...tile} />
           ))}
         </div>
-      </motion.div>
+      </DashboardChartCard>
     </>
   );
 };

@@ -1,3 +1,4 @@
+import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewContractTypeForm as NewContractTypeFormState } from "../types";
 
@@ -7,6 +8,8 @@ type TNewContractTypeFormProps = {
   onSave: () => void;
 };
 
+const inputCls = "p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm";
+
 const NewContractTypeForm = ({
   form,
   onFieldChange,
@@ -14,56 +17,56 @@ const NewContractTypeForm = ({
 }: TNewContractTypeFormProps) => (
   <div className="mb-4 p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
     <div className="grid grid-cols-2 gap-3">
-      <input
+      <InputField
         placeholder={arabicSource("settings.species_name_arabic")}
         value={form.name_ar}
-        onChange={(e) => onFieldChange({ name_ar: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ name_ar: value })}
+        className={inputCls}
       />
-      <input
+      <InputField
         placeholder={arabicSource("settings.name_english")}
         value={form.name_en}
-        onChange={(e) => onFieldChange({ name_en: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ name_en: value })}
+        className={inputCls}
       />
     </div>
     <div className="grid grid-cols-3 gap-3">
-      <input
+      <InputField
         placeholder={arabicSource("common.code")}
         value={form.code}
-        onChange={(e) => onFieldChange({ code: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ code: value })}
+        className={inputCls}
       />
-      <input
+      <InputField
         type="number"
         placeholder={arabicSource("settings.duration_months")}
         value={form.default_duration_months}
-        onChange={(e) =>
-          onFieldChange({ default_duration_months: +e.target.value })
+        onChange={(value) =>
+          onFieldChange({ default_duration_months: +value })
         }
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        className={inputCls}
       />
-      <input
+      <InputField
         type="number"
         placeholder={arabicSource("settings.trial_period_days")}
         value={form.probation_days}
-        onChange={(e) => onFieldChange({ probation_days: +e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ probation_days: +value })}
+        className={inputCls}
       />
     </div>
     <div className="grid grid-cols-2 gap-3">
-      <input
+      <InputField
         type="number"
         placeholder={arabicSource("settings.notice_period_days")}
         value={form.notice_period_days}
-        onChange={(e) => onFieldChange({ notice_period_days: +e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ notice_period_days: +value })}
+        className={inputCls}
       />
-      <input
+      <InputField
         placeholder={arabicSource("common.description")}
         value={form.description}
-        onChange={(e) => onFieldChange({ description: e.target.value })}
-        className="p-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        onChange={(value) => onFieldChange({ description: value })}
+        className={inputCls}
       />
     </div>
     <div className="flex items-center gap-4">

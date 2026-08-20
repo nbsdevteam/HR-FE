@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { motion } from "motion/react";
 import { Users, UserPlus, Clock, Briefcase, Target, UserX, Heart } from "lucide-react";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
+import DashboardChartCard from "./DashboardChartCard";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import RecruitmentFunnelStageRow from "./RecruitmentFunnelStageRow";
 import { pct } from "../utils/dashboardFormat";
@@ -58,7 +58,7 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recruitment Funnel */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
+            <DashboardChartCard className={cardCls}>
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.recruitment_suppression")}</h3>
               {recruitmentPipeline.some((stage: any) => stage.value > 0) ? (
                 <div className="space-y-3">
@@ -76,10 +76,10 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
               ) : (
                 <div className="flex items-center justify-center h-[280px] text-muted-foreground">{arabicSource("dashboard.no_employment_data")}</div>
               )}
-            </motion.div>
+            </DashboardChartCard>
 
             {/* Hiring vs Turnover Comparison */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cardCls}>
+            <DashboardChartCard className={cardCls}>
               <h3 className="text-foreground mb-4">{arabicSource("dashboard.hire_vs_exit")}</h3>
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -104,7 +104,7 @@ const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps)
                   <CustomLineChart data={headcountTrend} color="#3B82F6" height={150} valueLabel={arabicSource("dashboard.number")} />
                 </div>
               </div>
-            </motion.div>
+            </DashboardChartCard>
           </div>
         </>
   );

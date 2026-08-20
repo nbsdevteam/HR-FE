@@ -1,11 +1,10 @@
-import { useMemo } from "react";
-import { motion } from "motion/react";
-import { Wallet, TrendingUp, CreditCard, Coins, UserX } from "lucide-react";
 import { CustomBarChart } from "@/shared/components/custom-bar-chart";
 import { CustomLineChart } from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
+import { useDashboardFinancialData } from "../hooks/useDashboardFinancialData";
+import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import DashboardTrendBadge from "./DashboardTrendBadge";
@@ -24,112 +23,16 @@ const DashboardFinancialSection = ({
     payrollMoM,
     monthlyPayroll,
     activeLoans,
-    exitProcesses,
     cardCls,
     totalSalaries,
     avgSalary,
     medianSalary,
     salaryByDept,
     loanUtilization,
-    totalLoanBalance,
-    allAllowances,
   } = data;
 
-  const financialStats = useMemo(
-    () => [
-      {
-        label: arabicSource("common.total_compensation"),
-        value: formatIQD(compensationStats.totalCompensation),
-        sub: `${arabicSource("dashboard.salaries_allowances")}`,
-        icon: Wallet,
-        color: "text-primary",
-      },
-      {
-        label: arabicSource("dashboard.cost_per_employee"),
-        value: formatIQD(compensationStats.costPerEmployee),
-        sub: `${arabicSource("common.median_salary")} ${formatIQD(medianSalary)}`,
-        icon: Coins,
-        color: "text-emerald-400",
-      },
-      {
-        label: arabicSource("common.total_allowances"),
-        value: formatIQD(compensationStats.totalAllowances),
-        sub: `${allAllowances.length} ${arabicSource("dashboard.active_allowance")}`,
-        icon: TrendingUp,
-        color: "text-blue-400",
-      },
-      {
-        label: arabicSource("dashboard.loan_balance"),
-        value: formatIQD(totalLoanBalance),
-        sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`,
-        icon: CreditCard,
-        color: "text-amber-400",
-      },
-      {
-        label: arabicSource("dashboard.active_exits"),
-        value: exitProcesses.filter(
-          (p: any) => p.status !== "completed" && p.status !== "cancelled",
-        ).length,
-        sub: `${arabicSource("dashboard.end_of_service_benefits")}`,
-        icon: UserX,
-        color: "text-red-400",
-      },
-    ],
-    [
-      compensationStats,
-      medianSalary,
-      allAllowances,
-      totalLoanBalance,
-      activeLoans,
-      loanUtilization,
-      exitProcesses,
-    ],
-  );
-
-  const totalLoanAmount = useMemo(
-    () =>
-      activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0),
-    [activeLoans],
-  );
-  const totalPaidLoanAmount = totalLoanAmount - totalLoanBalance;
-
-  const loanTiles = useMemo(
-    () => [
-      {
-        value: activeLoans.length,
-        label: arabicSource("common.active_loans"),
-        colorClassName: "bg-blue-500/10 border border-blue-500/20",
-        textColorClassName: "text-blue-400",
-      },
-      {
-        value: formatIQD(totalLoanAmount),
-        label: arabicSource("dashboard.total_loans"),
-        colorClassName: "bg-primary/10 border border-primary/20",
-        textColorClassName: "text-primary",
-        valueTextClassName: "text-lg font-semibold",
-        dir: "ltr" as const,
-      },
-    ],
-    [activeLoans.length, totalLoanAmount],
-  );
-
-  const loanPaymentTiles = useMemo(
-    () => [
-      {
-        value: formatIQD(totalPaidLoanAmount),
-        label: arabicSource("dashboard.the_payer"),
-        colorClassName: "bg-emerald-500/10 border border-emerald-500/20",
-        textColorClassName: "text-emerald-400",
-      },
-      {
-        value: formatIQD(totalLoanBalance),
-        label: arabicSource("dashboard.remaining"),
-        colorClassName: "bg-amber-500/10 border border-amber-500/20",
-        textColorClassName: "text-amber-400",
-      },
-    ],
-    [totalPaidLoanAmount, totalLoanBalance],
-  );
+  const { financialStats, totalLoanAmount, totalPaidLoanAmount, loanTiles, loanPaymentTiles } =
+    useDashboardFinancialData(data);
 
   return (
     <>
@@ -146,11 +49,7 @@ const DashboardFinancialSection = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-foreground">
               {arabicSource("common.net_monthly_salaries_thousand_iqd")}
@@ -175,13 +74,9 @@ const DashboardFinancialSection = ({
               {arabicSource("common.there_is_no_salary_data")}
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource(
               "dashboard.cost_of_salaries_by_department_thousand_iqd",
@@ -199,17 +94,13 @@ const DashboardFinancialSection = ({
               {arabicSource("common.no_data")}
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
       </div>
 
       {/* Compensation Breakdown + Loan Portfolio */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Compensation breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.compensation_analysis")}
           </h3>
@@ -265,14 +156,10 @@ const DashboardFinancialSection = ({
               </div>
             </div>
           </div>
-        </motion.div>
+        </DashboardChartCard>
 
         {/* Loan Portfolio */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cardCls}
-        >
+        <DashboardChartCard className={cardCls}>
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.loan_portfolio")}
           </h3>
@@ -324,7 +211,7 @@ const DashboardFinancialSection = ({
               </div>
             </div>
           )}
-        </motion.div>
+        </DashboardChartCard>
       </div>
     </>
   );

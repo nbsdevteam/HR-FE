@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Save } from "lucide-react";
+import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewLeaveTypeForm as NewLeaveTypeFormState } from "../types";
 
@@ -9,6 +10,8 @@ type TNewLeaveTypeFormProps = {
   onSave: () => void;
   onCancel: () => void;
 };
+
+const inputCls = "h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none";
 
 const NewLeaveTypeForm = ({
   form,
@@ -22,34 +25,34 @@ const NewLeaveTypeForm = ({
     className="mb-4 p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-3"
   >
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <input
+      <InputField
         value={form.name_ar}
-        onChange={(e) => onFieldChange({ name_ar: e.target.value })}
+        onChange={(value) => onFieldChange({ name_ar: value })}
         placeholder={arabicSource("settings.name_in_arabic")}
-        className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none"
+        className={inputCls}
       />
-      <input
+      <InputField
         value={form.name_en}
-        onChange={(e) => onFieldChange({ name_en: e.target.value })}
+        onChange={(value) => onFieldChange({ name_en: value })}
         placeholder={arabicSource("settings.name_english")}
-        className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none"
+        className={inputCls}
         dir="ltr"
       />
-      <input
+      <InputField
         value={form.code}
-        onChange={(e) => onFieldChange({ code: e.target.value })}
+        onChange={(value) => onFieldChange({ code: value })}
         placeholder={arabicSource("settings.code_annual")}
-        className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none"
+        className={inputCls}
         dir="ltr"
       />
-      <input
+      <InputField
         type="number"
         value={form.default_days_per_year || ""}
-        onChange={(e) =>
-          onFieldChange({ default_days_per_year: Number(e.target.value) })
+        onChange={(value) =>
+          onFieldChange({ default_days_per_year: Number(value) })
         }
         placeholder={arabicSource("settings.days_year")}
-        className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm outline-none"
+        className={inputCls}
       />
     </div>
     <div className="flex flex-wrap items-center gap-4">
