@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { DbEmployee } from "@/shared/hooks";
 import type { DbEvaluation } from "../types";

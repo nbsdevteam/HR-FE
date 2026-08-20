@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { ShieldAlert } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import type { KanbanStatusCol, WarningWithEmployee } from "../types";
 import { arabicSource } from "@/i18n/source";
 import WarningKanbanCard from "./WarningKanbanCard";

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Briefcase } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { DbJobOpening } from "@/shared/hooks";
 import JobCard from "./JobCard";

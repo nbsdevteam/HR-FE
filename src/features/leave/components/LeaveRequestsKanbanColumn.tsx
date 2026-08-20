@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { CalendarDays } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbLeaveRequest } from "@/shared/hooks";

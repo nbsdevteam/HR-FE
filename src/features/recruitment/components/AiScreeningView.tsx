@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import { Users, Loader2, Sparkles } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,

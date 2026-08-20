@@ -1,7 +1,6 @@
 import { CalendarDays } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
-import {
-  SortableHeaderRow,
+import EmptyState from "@/shared/components/EmptyState";
+import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";

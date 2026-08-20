@@ -1,8 +1,7 @@
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
-import {
-  SortableHeaderRow,
+import EmptyState from "@/shared/components/EmptyState";
+import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import type { DbEmployee } from "@/shared/hooks";
