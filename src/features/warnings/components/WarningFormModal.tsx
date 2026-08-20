@@ -1,10 +1,11 @@
 import { motion } from "motion/react";
-import { X } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
+import WarningModalHeader from "./WarningModalHeader";
+import WarningOptionsSelect from "./WarningOptionsSelect";
 
 type WarningFormModalProps = {
   form: FormData;
@@ -28,12 +29,10 @@ const WarningFormModal = ({
   onClose,
 }: WarningFormModalProps) => (
   <ModalOverlay onClose={onClose}>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-foreground">{isEditing ? arabicSource("warnings.alarm_adjustment") : arabicSource("warnings.new_alarm_issued")}</h2>
-        <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </div>
+      <WarningModalHeader
+        title={isEditing ? arabicSource("warnings.alarm_adjustment") : arabicSource("warnings.new_alarm_issued")}
+        onClose={onClose}
+      />
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
@@ -49,14 +48,13 @@ const WarningFormModal = ({
 
         <div>
           <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.alarm_type")}</label>
-          <select
+          <WarningOptionsSelect
             value={form.type}
-            onChange={(e) => onFieldChange({ type: e.target.value })}
+            onChange={(value) => onFieldChange({ type: value })}
+            options={warningTypes}
+            blankLabel={arabicSource("warnings.choose_the_alarm_type")}
             className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-          >
-            <option value="">{arabicSource("warnings.choose_the_alarm_type")}</option>
-            {warningTypes.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          />
         </div>
 
         <div>

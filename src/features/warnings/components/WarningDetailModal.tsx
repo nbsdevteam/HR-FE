@@ -1,8 +1,10 @@
 import { motion } from "motion/react";
-import { CheckCircle, Trash2, X, XCircle } from "lucide-react";
+import { CheckCircle, Trash2, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
+import WarningDetailRow from "./WarningDetailRow";
+import WarningModalHeader from "./WarningModalHeader";
 
 type WarningDetailModalProps = {
   warning: WarningWithEmployee;
@@ -26,57 +28,43 @@ const WarningDetailModal = ({
   onDelete,
 }: WarningDetailModalProps) => (
   <ModalOverlay onClose={onClose}>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-foreground">{arabicSource("warnings.alarm_details")}</h2>
-        <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </div>
+      <WarningModalHeader title={arabicSource("warnings.alarm_details")} onClose={onClose} />
       <div className="space-y-3">
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.employee")} </span>
+        <WarningDetailRow label={arabicSource("warnings.employee")}>
           <span className="text-foreground">{warning.employeeName}</span>
-        </div>
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.section")} </span>
+        </WarningDetailRow>
+        <WarningDetailRow label={arabicSource("warnings.section")}>
           <span className="text-foreground">{warning.employeeDepartment}</span>
-        </div>
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.alarm_type")} </span>
+        </WarningDetailRow>
+        <WarningDetailRow label={arabicSource("warnings.alarm_type")}>
           <span className={`px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`} style={{ fontSize: 12 }}>
             {warning.type}
           </span>
-        </div>
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.reason")} </span>
+        </WarningDetailRow>
+        <WarningDetailRow label={arabicSource("warnings.reason")}>
           <span className="text-foreground">{warning.reason}</span>
-        </div>
+        </WarningDetailRow>
         {warning.details && (
-          <div className="p-3 rounded-lg bg-muted/20">
-            <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.details")} </span>
+          <WarningDetailRow label={arabicSource("warnings.details")}>
             <p className="text-foreground mt-1">{warning.details}</p>
-          </div>
+          </WarningDetailRow>
         )}
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.date")} </span>
+        <WarningDetailRow label={arabicSource("warnings.date")}>
           <span className="text-foreground" dir="ltr">{warning.date}</span>
-        </div>
+        </WarningDetailRow>
         {warning.expiry_date && (
-          <div className="p-3 rounded-lg bg-muted/20">
-            <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.completion_date")} </span>
+          <WarningDetailRow label={arabicSource("warnings.completion_date")}>
             <span className="text-foreground" dir="ltr">{warning.expiry_date}</span>
-          </div>
+          </WarningDetailRow>
         )}
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.issued_by_2")} </span>
+        <WarningDetailRow label={arabicSource("warnings.issued_by_2")}>
           <span className="text-foreground">{warning.issued_by || "—"}</span>
-        </div>
-        <div className="p-3 rounded-lg bg-muted/20">
-          <span className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("warnings.condition")} </span>
+        </WarningDetailRow>
+        <WarningDetailRow label={arabicSource("warnings.condition")}>
           <span className={`px-2 py-0.5 rounded-md border ${statusColors[warning.status]}`} style={{ fontSize: 12 }}>
             {warning.status}
           </span>
-        </div>
+        </WarningDetailRow>
       </div>
 
       <div className="flex gap-2 mt-6 pt-6 border-t border-border/20">

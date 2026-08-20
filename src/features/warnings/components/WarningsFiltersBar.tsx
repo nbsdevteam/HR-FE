@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import WarningOptionsSelect from "./WarningOptionsSelect";
 
 type WarningsFiltersBarProps = {
   searchQuery: string;
@@ -41,27 +42,21 @@ const WarningsFiltersBar = ({
         />
       </div>
 
-      <select
+      <WarningOptionsSelect
         value={filterType}
-        onChange={(e) => onFilterTypeChange(e.target.value)}
+        onChange={onFilterTypeChange}
+        options={warningTypes}
+        blankLabel={arabicSource("common.all_types")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-      >
-        <option value="">{arabicSource("common.all_types")}</option>
-        {warningTypes.map(t => (
-          <option key={t} value={t}>{t}</option>
-        ))}
-      </select>
+      />
 
-      <select
+      <WarningOptionsSelect
         value={filterStatus}
-        onChange={(e) => onFilterStatusChange(e.target.value)}
+        onChange={onFilterStatusChange}
+        options={warningStatuses}
+        blankLabel={arabicSource("warnings.all_cases")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-      >
-        <option value="">{arabicSource("warnings.all_cases")}</option>
-        {warningStatuses.map(s => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
+      />
     </div>
   </motion.div>
 );
