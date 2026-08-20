@@ -62,14 +62,14 @@ export const leaveStatusKeys: TranslationKeyMap = {
 };
 
 /** Normalize any leave status string to the Arabic canonical used by Leave filters. */
-export function normalizeLeaveStatus(status: string | null | undefined): string {
+export const normalizeLeaveStatus = (status: string | null | undefined): string => {
   if (!status) return "";
   const key = leaveStatusKeys[status] ?? leaveStatusKeys[status.toLowerCase()];
   if (!key) return status;
   return arabicSource(key as Parameters<typeof arabicSource>[0]);
 }
 
-export function isLeavePending(status: string | null | undefined): boolean {
+export const isLeavePending = (status: string | null | undefined): boolean => {
   return normalizeLeaveStatus(status) === arabicSource("common.pending");
 }
 
@@ -77,11 +77,11 @@ export function isLeavePending(status: string | null | undefined): boolean {
  * Translate a backend enum without ever exposing a raw i18n key.
  * Unknown codes remain readable so newly introduced backend values do not break the UI.
  */
-export function translateBackendCode(
+export const translateBackendCode = (
   code: string | null | undefined,
   mapping: TranslationKeyMap,
   fallback = "—",
-): string {
+): string => {
   if (!code) return fallback;
   const key = mapping[code] ?? mapping[code.toLowerCase()];
   if (!key || !i18n.exists(key)) return code;

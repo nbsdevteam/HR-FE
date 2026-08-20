@@ -19,22 +19,22 @@ export const languageOptions: ReadonlyArray<{
   { code: "ku", dir: "rtl", intlLocale: "ckb-IQ" },
 ];
 
-export function normalizeLanguage(value: string | null | undefined): AppLanguage {
+export const normalizeLanguage = (value: string | null | undefined): AppLanguage => {
   const language = value?.toLowerCase().split("-")[0];
   return supportedLanguages.includes(language as AppLanguage)
     ? (language as AppLanguage)
     : "ar";
 }
 
-export function getLanguageDirection(language: string): "rtl" | "ltr" {
+export const getLanguageDirection = (language: string): "rtl" | "ltr" => {
   return normalizeLanguage(language) === "en" ? "ltr" : "rtl";
 }
 
-export function getIntlLocale(language = i18n.resolvedLanguage ?? i18n.language): string {
+export const getIntlLocale = (language = i18n.resolvedLanguage ?? i18n.language): string => {
   return languageOptions.find((option) => option.code === normalizeLanguage(language))?.intlLocale ?? "ar-IQ";
 }
 
-export function syncDocumentLocale(language: string): void {
+export const syncDocumentLocale = (language: string): void => {
   if (typeof document === "undefined") return;
   const normalized = normalizeLanguage(language);
   document.documentElement.lang = normalized;
@@ -87,7 +87,7 @@ i18n.on("languageChanged", (language) => {
   syncDocumentLocale(normalized);
 });
 
-export async function changeLanguage(language: AppLanguage): Promise<void> {
+export const changeLanguage = async (language: AppLanguage): Promise<void> => {
   await i18n.changeLanguage(language);
 }
 

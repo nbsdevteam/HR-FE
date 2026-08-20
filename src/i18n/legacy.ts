@@ -13,10 +13,10 @@ function preserveOuterWhitespace(original: string, translated: string): string {
   return `${leading}${translated}${trailing}`;
 }
 
-export function translateArabicSource(
+export const translateArabicSource = (
   value: string,
   language: AppLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language),
-): string {
+): string => {
   if (!value || language === "ar" || !arabicPattern.test(value)) return value;
   const normalized = value.replace(/\s+/g, " ").trim();
   const exactKey = sourceKeys[normalized];
@@ -33,19 +33,19 @@ export function translateArabicSource(
   return translated;
 }
 
-export function translationKeyForArabicSource(source: string): string | undefined {
+export const translationKeyForArabicSource = (source: string): string | undefined => {
   return sourceKeys[source.replace(/\s+/g, " ").trim()];
 }
 
-export function translateCataloguedValue(
+export const translateCataloguedValue = (
   value: string,
   language: AppLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language),
-): string {
+): string => {
   const key = translationKeyForArabicSource(value);
   return key ? i18n.getFixedT(language)(key) : value;
 }
 
-export function containsCataloguedArabicSource(value: string): boolean {
+export const containsCataloguedArabicSource = (value: string): boolean => {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (sourceKeys[normalized]) return true;
   return replacementEntries.some(([source]) => value.includes(source));

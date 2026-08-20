@@ -6,17 +6,17 @@ function asDate(value: DateInput): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
-export function formatDate(
+export const formatDate = (
   value: DateInput,
   options: Intl.DateTimeFormatOptions = {},
-): string {
+): string => {
   return new Intl.DateTimeFormat(getIntlLocale(), options).format(asDate(value));
 }
 
-export function formatDateTime(
+export const formatDateTime = (
   value: DateInput,
   options: Intl.DateTimeFormatOptions = {},
-): string {
+): string => {
   return formatDate(value, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -24,38 +24,38 @@ export function formatDateTime(
   });
 }
 
-export function formatTime(
+export const formatTime = (
   value: DateInput,
   options: Intl.DateTimeFormatOptions = {},
-): string {
+): string => {
   return new Intl.DateTimeFormat(getIntlLocale(), {
     timeStyle: "short",
     ...options,
   }).format(asDate(value));
 }
 
-export function formatNumber(
+export const formatNumber = (
   value: number,
   options: Intl.NumberFormatOptions = {},
-): string {
+): string => {
   return new Intl.NumberFormat(getIntlLocale(), options).format(value);
 }
 
-export function formatPercent(
+export const formatPercent = (
   value: number,
   options: Intl.NumberFormatOptions = {},
-): string {
+): string => {
   return formatNumber(value, {
     style: "percent",
     ...options,
   });
 }
 
-export function formatCurrency(
+export const formatCurrency = (
   value: number,
   currency: string,
   options: Intl.NumberFormatOptions = {},
-): string {
+): string => {
   return formatNumber(value, {
     style: "currency",
     currency,

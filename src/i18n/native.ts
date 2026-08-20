@@ -8,17 +8,17 @@ function localizeMessage(message: string): string {
   );
 }
 
-export function localizedAlert(message: string): void {
+export const localizedAlert = (message: string): void => {
   window.alert(localizeMessage(message));
 }
 
-export function localizedConfirm(message: string): boolean {
+export const localizedConfirm = (message: string): boolean => {
   return window.confirm(localizeMessage(message));
 }
 
-export function localizedPrompt(
+export const localizedPrompt = (
   message: string,
   defaultValue?: string,
-): string | null {
+): string | null => {
   return window.prompt(localizeMessage(message), defaultValue);
 }
