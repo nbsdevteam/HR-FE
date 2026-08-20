@@ -1,6 +1,5 @@
-import { BarChart3, ClipboardCheck, FileText, Users } from "lucide-react";
 import StatCard from "@/shared/components/StatCard";
-import { arabicSource } from "@/i18n/source";
+import { reportsStatFields } from "../data";
 
 type ReportsStatsProps = {
   templateCount: number;
@@ -10,12 +9,8 @@ type ReportsStatsProps = {
 };
 
 const ReportsStats = ({ templateCount, historyCount, departmentCount, employeeCount }: ReportsStatsProps) => {
-  const items = [
-    { label: arabicSource("reports.report_templates"), value: templateCount, icon: BarChart3 },
-    { label: arabicSource("reports.reports_generated"), value: historyCount, icon: FileText },
-    { label: arabicSource("common.sections"), value: departmentCount, icon: Users },
-    { label: arabicSource("common.total_employees"), value: employeeCount, icon: ClipboardCheck },
-  ];
+  const values: Record<string, number> = { templateCount, historyCount, departmentCount, employeeCount };
+  const items = reportsStatFields.map(field => ({ ...field, value: values[field.key] }));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

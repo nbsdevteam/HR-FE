@@ -1,6 +1,6 @@
 import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
-import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
+import { reportTemplatesTableColumns } from "../data";
 import { cardCls } from "../styles";
 import type { ReportSortBy, ReportSortDir } from "../types";
 import ReportTemplateRow from "./ReportTemplateRow";
@@ -27,13 +27,7 @@ const ReportTemplatesTable = ({
       <table className="w-full text-sm">
         <thead>
           <SortableHeaderRow
-            columns={[
-              { label: arabicSource("reports.report"), key: "name" },
-              { label: arabicSource("common.category"), key: "category" },
-              { label: arabicSource("reports.columns"), key: null },
-              { label: arabicSource("reports.formula"), key: null },
-              { label: arabicSource("reports.procedure"), key: null },
-            ]}
+            columns={reportTemplatesTableColumns}
             sortBy={sortBy}
             sortDir={sortDir}
             onSort={(key) => toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)}

@@ -27,12 +27,15 @@ export type ReportDataContext = {
 
 type ReportGenerator = (ctx: ReportDataContext) => ReportRow[];
 
+const filterByDept = <T,>(records: T[], filterDept: string, getDept: (record: T) => string): T[] =>
+  filterDept ? records.filter(r => getDept(r) === filterDept) : records;
+
 const generateAttendanceMonthly: ReportGenerator = (ctx) => {
   const { dateFrom, dateTo, filterDept } = ctx.filters;
   let filtered = ctx.attendanceRecords;
   if (dateFrom) filtered = filtered.filter(r => r.date >= dateFrom);
   if (dateTo) filtered = filtered.filter(r => r.date <= dateTo);
-  if (filterDept) filtered = filtered.filter(r => ctx.empDeptMap[r.employee_id] === filterDept);
+  filtered = filterByDept(filtered, filterDept, r => ctx.empDeptMap[r.employee_id]);
   return filtered.map(r => {
     let statusLabel = r.status || "—";
     if (r.status === "complete" || r.status === "missing_checkout") {
@@ -62,7 +65,7 @@ const generateLeaveRequests: ReportGenerator = (ctx) => {
   let filtered = ctx.leaveRequests;
   if (dateFrom) filtered = filtered.filter(r => r.start_date >= dateFrom);
   if (dateTo) filtered = filtered.filter(r => r.start_date <= dateTo);
-  if (filterDept) filtered = filtered.filter(r => ctx.empDeptMap[r.employee_id] === filterDept);
+  filtered = filterByDept(filtered, filterDept, r => ctx.empDeptMap[r.employee_id]);
   return filtered.map(r => ({
     employee_name: ctx.empMap[r.employee_id] || r.employee_id,
     leave_type: r.leave_type || "—",
@@ -76,11 +79,7 @@ const generateLeaveRequests: ReportGenerator = (ctx) => {
 
 const generatePayrollMonthly: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
-  let filtered = ctx.monthlyRecords;
-  if (filterDept) {
-    const deptEmpIds = ctx.employees.filter(e => e.department === filterDept).map(e => e.id);
-    filtered = filtered.filter(r => deptEmpIds.includes(r.employee_id));
-  }
+  const filtered = filterByDept(ctx.monthlyRecords, filterDept, r => ctx.empDeptMap[r.employee_id]);
   return filtered.map(r => {
     const calc = (r.salary_calculation || {}) as any;
     return {
@@ -96,7 +95,8 @@ const generatePayrollMonthly: ReportGenerator = (ctx) => {
 
 const generateLeaveBalances: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
-  let rows = ctx.leaveBalances.map(b => {
+  const balances = filterByDept(ctx.leaveBalances, filterDept, b => ctx.empDeptMap[b.employee_id]);
+  return balances.map(b => {
     const lt = ctx.leaveTypes.find(t => t.id === b.leave_type_id);
     return {
       employee_name: ctx.empMap[b.employee_id] || b.employee_id,
@@ -107,14 +107,11 @@ const generateLeaveBalances: ReportGenerator = (ctx) => {
       carryover: b.carryover_days || 0,
     };
   });
-  if (filterDept) rows = rows.filter((_, i) => ctx.empDeptMap[ctx.leaveBalances[i]?.employee_id] === filterDept);
-  return rows;
 };
 
 const generateEmployeeMaster: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
-  let filtered = ctx.employees;
-  if (filterDept) filtered = filtered.filter(e => e.department === filterDept);
+  const filtered = filterByDept(ctx.employees, filterDept, e => e.department || "");
   return filtered.map(e => ({
     name: e.name || "—",
     arabic_name: e.arabic_name || "—",
@@ -128,11 +125,7 @@ const generateEmployeeMaster: ReportGenerator = (ctx) => {
 
 const generateContractsStatus: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
-  let filtered = ctx.contracts;
-  if (filterDept) {
-    const deptEmpIds = ctx.employees.filter(e => e.department === filterDept).map(e => e.id);
-    filtered = filtered.filter(c => deptEmpIds.includes(c.employee_id));
-  }
+  const filtered = filterByDept(ctx.contracts, filterDept, c => ctx.empDeptMap[c.employee_id]);
   return filtered.map(c => {
     const ct = ctx.contractTypes.find(t => t.id === c.contract_type_id);
     return {
@@ -149,11 +142,7 @@ const generateContractsStatus: ReportGenerator = (ctx) => {
 const generateDocumentsExpiry: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
   const now = new Date();
-  let filtered = ctx.empDocuments;
-  if (filterDept) {
-    const deptEmpIds = ctx.employees.filter(e => e.department === filterDept).map(e => e.id);
-    filtered = filtered.filter(d => deptEmpIds.includes(d.employee_id));
-  }
+  const filtered = filterByDept(ctx.empDocuments, filterDept, d => ctx.empDeptMap[d.employee_id]);
   return filtered.filter(d => d.expiry_date).map(d => {
     const dt = ctx.documentTypes.find(t => t.id === d.document_type_id);
     const expiry = new Date(d.expiry_date!);

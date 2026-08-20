@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Eye, FileText } from "lucide-react";
+import StatusBadge from "@/shared/components/StatusBadge";
 import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { categoryIcons, categoryLabels } from "../constants/reports";
@@ -31,9 +32,9 @@ const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplateCardPro
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <span className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary" style={{ fontSize: 11 }}>
+        <StatusBadge colorClassName="bg-primary/10 border-primary/20 text-primary" fontSize={11}>
           {categoryLabels[template.category] || template.category}
-        </span>
+        </StatusBadge>
         <span className="text-muted-foreground" style={{ fontSize: 11 }}>
           {template.columns.length} {arabicSource("common.column")}
         </span>
