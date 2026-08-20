@@ -72,7 +72,7 @@ function hhmmFromFloatOrLabel(v: unknown, label?: unknown): string {
   return "08:00:00";
 }
 
-export function mapEmployee(r: any): DbEmployee {
+export const mapEmployee = (r: any): DbEmployee => {
   const address =
     typeof r.address === "string"
       ? r.address
@@ -113,7 +113,7 @@ export function mapEmployee(r: any): DbEmployee {
   };
 }
 
-export function mapDepartment(r: any): DbDepartment {
+export const mapDepartment = (r: any): DbDepartment => {
   return {
     id: sid(r.id),
     name: r.name_ar || r.name || "",
@@ -126,7 +126,7 @@ export function mapDepartment(r: any): DbDepartment {
   };
 }
 
-export function mapAttendance(r: any): DbAttendanceRecord {
+export const mapAttendance = (r: any): DbAttendanceRecord => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -156,7 +156,7 @@ export function mapAttendance(r: any): DbAttendanceRecord {
   };
 }
 
-export function mapShift(r: any): DbShift {
+export const mapShift = (r: any): DbShift => {
   const start = hhmmFromFloatOrLabel(r.start_time, r.start_time_label || r.sunday_start);
   const end = hhmmFromFloatOrLabel(r.end_time, r.end_time_label || r.sunday_end);
   return {
@@ -193,7 +193,7 @@ export function mapShift(r: any): DbShift {
   };
 }
 
-export function mapPosition(r: any): DbPosition {
+export const mapPosition = (r: any): DbPosition => {
   return {
     id: sid(r.id),
     title_ar: r.title_ar || r.name || "",
@@ -209,7 +209,7 @@ export function mapPosition(r: any): DbPosition {
   };
 }
 
-export function mapShiftAssignment(r: any): DbEmployeeShiftAssignment {
+export const mapShiftAssignment = (r: any): DbEmployeeShiftAssignment => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -223,7 +223,7 @@ export function mapShiftAssignment(r: any): DbEmployeeShiftAssignment {
   };
 }
 
-export function mapMonthlyRecord(r: any): DbMonthlyRecord {
+export const mapMonthlyRecord = (r: any): DbMonthlyRecord => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -233,7 +233,7 @@ export function mapMonthlyRecord(r: any): DbMonthlyRecord {
   };
 }
 
-export function mapMonthlyLedger(r: any): DbMonthlyLedger {
+export const mapMonthlyLedger = (r: any): DbMonthlyLedger => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -250,7 +250,7 @@ export function mapMonthlyLedger(r: any): DbMonthlyLedger {
   };
 }
 
-export function mapConfig(r: any): DbConfiguration {
+export const mapConfig = (r: any): DbConfiguration => {
   return {
     id: sid(r.id),
     config_key: r.config_key || "",
@@ -269,7 +269,7 @@ export function mapConfig(r: any): DbConfiguration {
   };
 }
 
-export function mapModule(r: any): DbSystemModule {
+export const mapModule = (r: any): DbSystemModule => {
   return {
     id: sid(r.id),
     module_key: r.module_key || "",
@@ -285,7 +285,7 @@ export function mapModule(r: any): DbSystemModule {
   };
 }
 
-export function mapHoliday(r: any): DbPublicHoliday {
+export const mapHoliday = (r: any): DbPublicHoliday => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -299,7 +299,7 @@ export function mapHoliday(r: any): DbPublicHoliday {
   };
 }
 
-export function mapLeaveType(r: any): DbLeaveType {
+export const mapLeaveType = (r: any): DbLeaveType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -355,7 +355,7 @@ function mapLeaveStatus(state: string): string {
   return m[state] || m[String(state || "").toLowerCase()] || state || "";
 }
 
-export function mapLeaveRequest(r: any): DbLeaveRequest {
+export const mapLeaveRequest = (r: any): DbLeaveRequest => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -376,7 +376,7 @@ export function mapLeaveRequest(r: any): DbLeaveRequest {
   };
 }
 
-export function mapLeaveBalance(r: any): DbLeaveBalance {
+export const mapLeaveBalance = (r: any): DbLeaveBalance => {
   return {
     id: sid(r.id || `${r.employee_id}-${r.leave_type_id}-${r.year}`),
     employee_id: sid(r.employee_id),
@@ -392,7 +392,7 @@ export function mapLeaveBalance(r: any): DbLeaveBalance {
   };
 }
 
-export function mapLeavePermission(r: any): DbLeavePermission {
+export const mapLeavePermission = (r: any): DbLeavePermission => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -408,7 +408,7 @@ export function mapLeavePermission(r: any): DbLeavePermission {
   };
 }
 
-export function mapLeavePolicy(r: any): DbLeavePolicy {
+export const mapLeavePolicy = (r: any): DbLeavePolicy => {
   return {
     id: sid(r.id),
     leave_type_id: sid(r.leave_type_id),
@@ -423,7 +423,7 @@ export function mapLeavePolicy(r: any): DbLeavePolicy {
   };
 }
 
-export function mapAllowanceType(r: any): DbAllowanceType {
+export const mapAllowanceType = (r: any): DbAllowanceType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -438,7 +438,7 @@ export function mapAllowanceType(r: any): DbAllowanceType {
   };
 }
 
-export function mapEmployeeAllowance(r: any): DbEmployeeAllowance {
+export const mapEmployeeAllowance = (r: any): DbEmployeeAllowance => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -452,7 +452,7 @@ export function mapEmployeeAllowance(r: any): DbEmployeeAllowance {
   };
 }
 
-export function mapDeductionType(r: any): DbDeductionType {
+export const mapDeductionType = (r: any): DbDeductionType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -468,7 +468,7 @@ export function mapDeductionType(r: any): DbDeductionType {
   };
 }
 
-export function mapEmployeeDeduction(r: any): DbEmployeeDeduction {
+export const mapEmployeeDeduction = (r: any): DbEmployeeDeduction => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -484,7 +484,7 @@ export function mapEmployeeDeduction(r: any): DbEmployeeDeduction {
   };
 }
 
-export function mapDocumentType(r: any): DbDocumentType {
+export const mapDocumentType = (r: any): DbDocumentType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -500,7 +500,7 @@ export function mapDocumentType(r: any): DbDocumentType {
   };
 }
 
-export function mapDocument(r: any): DbEmployeeDocument {
+export const mapDocument = (r: any): DbEmployeeDocument => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -519,7 +519,7 @@ export function mapDocument(r: any): DbEmployeeDocument {
 
 // ——— Slice A: Lifecycle (contracts / exit / custodies) ———
 
-export function mapContractType(r: any): DbContractType {
+export const mapContractType = (r: any): DbContractType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -537,7 +537,7 @@ export function mapContractType(r: any): DbContractType {
   };
 }
 
-export function mapEmployeeContract(r: any): DbEmployeeContract {
+export const mapEmployeeContract = (r: any): DbEmployeeContract => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -559,7 +559,7 @@ export function mapEmployeeContract(r: any): DbEmployeeContract {
   };
 }
 
-export function mapExitChecklistItem(r: any): DbExitChecklistItem {
+export const mapExitChecklistItem = (r: any): DbExitChecklistItem => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -572,7 +572,7 @@ export function mapExitChecklistItem(r: any): DbExitChecklistItem {
   };
 }
 
-export function mapExitProcess(r: any): DbExitProcess {
+export const mapExitProcess = (r: any): DbExitProcess => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -593,7 +593,7 @@ export function mapExitProcess(r: any): DbExitProcess {
   };
 }
 
-export function mapExitChecklistLine(r: any): DbExitChecklist {
+export const mapExitChecklistLine = (r: any): DbExitChecklist => {
   return {
     id: sid(r.id),
     exit_process_id: sid(r.exit_process_id),
@@ -608,7 +608,7 @@ export function mapExitChecklistLine(r: any): DbExitChecklist {
 
 // ——— Slice A: Warnings, Notifications, Audit ———
 
-export function mapWarning(r: any): DbWarning {
+export const mapWarning = (r: any): DbWarning => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -624,7 +624,7 @@ export function mapWarning(r: any): DbWarning {
   };
 }
 
-export function mapNotification(r: any): DbNotification {
+export const mapNotification = (r: any): DbNotification => {
   return {
     id: sid(r.id),
     title: r.title || "",
@@ -642,7 +642,7 @@ export function mapNotification(r: any): DbNotification {
   };
 }
 
-export function mapApprovalWorkflow(r: any): any {
+export const mapApprovalWorkflow = (r: any): any => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
@@ -656,7 +656,7 @@ export function mapApprovalWorkflow(r: any): any {
   };
 }
 
-export function mapApprovalRequest(r: any): any {
+export const mapApprovalRequest = (r: any): any => {
   return {
     id: sid(r.id),
     workflow_id: sornull(r.workflow_id),
@@ -672,7 +672,7 @@ export function mapApprovalRequest(r: any): any {
   };
 }
 
-export function mapIssue(r: any): any {
+export const mapIssue = (r: any): any => {
   return {
     id: sid(r.id),
     name: r.name || r.subject || "",
@@ -689,7 +689,7 @@ export function mapIssue(r: any): any {
   };
 }
 
-export function mapAuditLog(r: any): DbAuditLog {
+export const mapAuditLog = (r: any): DbAuditLog => {
   return {
     id: sid(r.id),
     action: r.action || "",
@@ -706,7 +706,7 @@ export function mapAuditLog(r: any): DbAuditLog {
 
 // ——— Slice B: Evaluations, Policies, Training ———
 
-export function mapEvaluationCriterion(r: any): DbEvaluationCriteria {
+export const mapEvaluationCriterion = (r: any): DbEvaluationCriteria => {
   return {
     id: sid(r.id),
     evaluation_id: sid(r.evaluation_id),
@@ -716,7 +716,7 @@ export function mapEvaluationCriterion(r: any): DbEvaluationCriteria {
   };
 }
 
-export function mapEvaluation(r: any): DbEvaluation {
+export const mapEvaluation = (r: any): DbEvaluation => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -730,7 +730,7 @@ export function mapEvaluation(r: any): DbEvaluation {
   };
 }
 
-export function mapPolicy(r: any): DbPolicy {
+export const mapPolicy = (r: any): DbPolicy => {
   return {
     id: sid(r.id),
     title: r.title || "",
@@ -745,7 +745,7 @@ export function mapPolicy(r: any): DbPolicy {
   };
 }
 
-export function mapTrainingProgram(r: any): DbTrainingProgram {
+export const mapTrainingProgram = (r: any): DbTrainingProgram => {
   return {
     id: sid(r.id),
     title: r.title || "",
@@ -764,7 +764,7 @@ export function mapTrainingProgram(r: any): DbTrainingProgram {
   };
 }
 
-export function mapTrainingParticipant(r: any): DbTrainingParticipant {
+export const mapTrainingParticipant = (r: any): DbTrainingParticipant => {
   return {
     id: sid(r.id),
     training_program_id: sid(r.training_program_id ?? r.program_id),
@@ -778,7 +778,7 @@ export function mapTrainingParticipant(r: any): DbTrainingParticipant {
 
 // ——— Slice C: Recruitment, Loans ———
 
-export function mapJobOpening(r: any): DbJobOpening {
+export const mapJobOpening = (r: any): DbJobOpening => {
   return {
     id: sid(r.id),
     title: r.title || "",
@@ -808,7 +808,7 @@ export function mapJobOpening(r: any): DbJobOpening {
   };
 }
 
-export function mapApplicant(r: any): DbApplicant {
+export const mapApplicant = (r: any): DbApplicant => {
   return {
     id: sid(r.id),
     name: r.name || "",
@@ -860,7 +860,7 @@ export function mapApplicant(r: any): DbApplicant {
   };
 }
 
-export function mapLoan(r: any): DbLoan {
+export const mapLoan = (r: any): DbLoan => {
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -884,7 +884,7 @@ export function mapLoan(r: any): DbLoan {
 
 // ——— Slice D: Reports ———
 
-export function mapReportTemplate(r: any): DbReportTemplate {
+export const mapReportTemplate = (r: any): DbReportTemplate => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || "",
@@ -903,7 +903,7 @@ export function mapReportTemplate(r: any): DbReportTemplate {
   };
 }
 
-export function mapReportHistory(r: any): DbReportHistory {
+export const mapReportHistory = (r: any): DbReportHistory => {
   return {
     id: sid(r.id),
     report_template_id: sornull(r.report_template_id),
