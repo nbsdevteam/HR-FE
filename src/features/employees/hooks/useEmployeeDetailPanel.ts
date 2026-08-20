@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { DEPARTMENTS, SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
@@ -50,31 +50,31 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     allDepts.push(editData.department);
   }
 
-  const handleEditField = (field: keyof Employee, value: string | number) => {
+  const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
     setEditData({ ...editData, [field]: value });
-  };
+  }, [editData]);
 
-  const handleManagerChange = (managerId: string | null) => {
+  const handleManagerChange = useCallback((managerId: string | null) => {
     setEditData({
       ...editData,
       managerId,
       managerName: managerId ? (allEmployees.find(emp => emp.dbId === managerId)?.name || "—") : arabicSource("common.no_manager"),
     });
-  };
+  }, [editData, allEmployees]);
 
-  const handleConfirmNewDept = () => {
+  const handleConfirmNewDept = useCallback(() => {
     if (!newDeptName.trim()) return;
     handleEditField("department", newDeptName.trim());
     setAddingNewDept(false);
     setNewDeptName("");
-  };
+  }, [newDeptName, handleEditField]);
 
-  const handleCancelNewDept = () => {
+  const handleCancelNewDept = useCallback(() => {
     setAddingNewDept(false);
     setNewDeptName("");
-  };
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
     setSaveError(null);
     try {
@@ -117,16 +117,16 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     } finally {
       setSaving(false);
     }
-  };
+  }, [editData, employee, onSave]);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
     setEditData({ ...employee });
     setShowAddCustody(false);
     setShowAddAttachment(false);
-  };
+  }, [employee]);
 
-  const handleTermination = async () => {
+  const handleTermination = useCallback(async () => {
     setTerminationLoading(true);
     setTerminationResult(null);
     try {
@@ -155,15 +155,15 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
       setTerminationResult(null);
       onSave?.();
     }, 2500);
-  };
+  }, [employee, terminationOptions, onSave]);
 
-  const handleCloseTerminationDialog = () => {
+  const handleCloseTerminationDialog = useCallback(() => {
     setShowTerminationDialog(false);
     setTerminationResult(null);
-  };
+  }, []);
 
   // ---- Custody handlers ----
-  const handleAddCustody = () => {
+  const handleAddCustody = useCallback(() => {
     if (!newCustody.item.trim()) return;
     const nextId = editData.custodies.length > 0 ? Math.max(...editData.custodies.map(c => c.id)) + 1 : 1;
     const custody: Custody = {
@@ -176,19 +176,19 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     setEditData({ ...editData, custodies: [...editData.custodies, custody] });
     setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" });
     setShowAddCustody(false);
-  };
+  }, [newCustody, editData]);
 
-  const handleCancelAddCustody = () => {
+  const handleCancelAddCustody = useCallback(() => {
     setShowAddCustody(false);
     setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" });
-  };
+  }, []);
 
-  const handleDeleteCustody = (id: number) => {
+  const handleDeleteCustody = useCallback((id: number) => {
     setEditData({ ...editData, custodies: editData.custodies.filter(c => c.id !== id) });
-  };
+  }, [editData]);
 
   // ---- Attachment handlers ----
-  const handleAddAttachment = () => {
+  const handleAddAttachment = useCallback(() => {
     if (!newAttachment.name.trim()) return;
     const nextId = editData.attachments.length > 0 ? Math.max(...editData.attachments.map(a => a.id)) + 1 : 1;
     const att: Attachment = {
@@ -200,16 +200,16 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     setEditData({ ...editData, attachments: [...editData.attachments, att] });
     setNewAttachment({ name: "", type: "PDF" });
     setShowAddAttachment(false);
-  };
+  }, [newAttachment, editData]);
 
-  const handleCancelAddAttachment = () => {
+  const handleCancelAddAttachment = useCallback(() => {
     setShowAddAttachment(false);
     setNewAttachment({ name: "", type: "PDF" });
-  };
+  }, []);
 
-  const handleDeleteAttachment = (id: number) => {
+  const handleDeleteAttachment = useCallback((id: number) => {
     setEditData({ ...editData, attachments: editData.attachments.filter(a => a.id !== id) });
-  };
+  }, [editData]);
 
   return {
     addingNewDept,
