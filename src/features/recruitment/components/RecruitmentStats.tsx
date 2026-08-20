@@ -1,6 +1,6 @@
-import { BookmarkCheck, Briefcase, FileCheck, UserPlus, Users } from "lucide-react";
+import { useMemo, memo } from "react";
 import StatCard from "@/shared/components/StatCard";
-import { arabicSource } from "@/i18n/source";
+import { recruitmentStatFields } from "../data";
 
 type RecruitmentStatsProps = {
   stats: {
@@ -13,13 +13,10 @@ type RecruitmentStatsProps = {
 };
 
 const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
-  const items = [
-    { label: arabicSource("recruitment.vacancies_2"), value: stats.openJobs, icon: Briefcase },
-    { label: arabicSource("common.total_applicants"), value: stats.totalApplicants, icon: Users },
-    { label: arabicSource("recruitment.under_interview"), value: stats.interviewing, icon: UserPlus },
-    { label: arabicSource("recruitment.hired"), value: stats.hired, icon: FileCheck },
-    { label: arabicSource("recruitment.preferred_candidates"), value: stats.bookmarked, icon: BookmarkCheck },
-  ];
+  const items = useMemo(
+    () => recruitmentStatFields.map(field => ({ ...field, value: stats[field.key as keyof typeof stats] })),
+    [stats],
+  );
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -42,4 +39,4 @@ const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
   );
 };
 
-export default RecruitmentStats;
+export default memo(RecruitmentStats);

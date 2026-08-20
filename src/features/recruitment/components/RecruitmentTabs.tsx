@@ -1,5 +1,6 @@
-import { Sparkles } from "lucide-react";
-import { arabicSource } from "@/i18n/source";
+import { useCallback, memo } from "react";
+import { recruitmentTabsData } from "../data";
+import RecruitmentTabButton from "./RecruitmentTabButton";
 
 type RecruitmentView = "jobs" | "applicants" | "pipeline" | "bank" | "ai";
 
@@ -9,29 +10,18 @@ type RecruitmentTabsProps = {
 };
 
 const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) => {
-  const tabs = [
-    { id: "jobs" as const, label: arabicSource("recruitment.vacancies") },
-    { id: "applicants" as const, label: arabicSource("recruitment.applicants") },
-    { id: "ai" as const, label: arabicSource("recruitment.ai_tab") },
-    { id: "pipeline" as const, label: arabicSource("recruitment.recruitment_path") },
-    { id: "bank" as const, label: arabicSource("recruitment.candidates_bank") },
-  ];
+  const handleSelect = useCallback(
+    (id: string) => onViewChange(id as RecruitmentView),
+    [onViewChange],
+  );
 
   return (
     <div className="flex gap-2 flex-wrap">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onViewChange(tab.id)}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${view === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
-          style={{ fontSize: 13 }}
-        >
-          {tab.id === "ai" && <Sparkles className="w-3.5 h-3.5" />}
-          {tab.label}
-        </button>
+      {recruitmentTabsData.map((tab) => (
+        <RecruitmentTabButton key={tab.id} id={tab.id} label={tab.label} isActive={view === tab.id} onSelect={handleSelect} />
       ))}
     </div>
   );
 };
 
-export default RecruitmentTabs;
+export default memo(RecruitmentTabs);

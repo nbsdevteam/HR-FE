@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Plus, UserPlus } from "lucide-react";
 import { ViewToggle } from "@/shared/components/ViewToggle";
@@ -45,4 +46,4 @@ const RecruitmentHeader = ({
   </div>
 );
 
-export default RecruitmentHeader;
+export default memo(RecruitmentHeader);

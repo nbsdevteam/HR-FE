@@ -34,9 +34,9 @@ export const usePublicApplyPage = () => {
   const [dragging, setDragging] = useState(false);
   const [form, setForm] = useState<PublicApplyForm>(initialForm);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const { token = "" } = useParams();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const maxBytes = useMemo(() => (info?.max_resume_mb || 10) * 1024 * 1024, [info?.max_resume_mb]);
 

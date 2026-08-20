@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
 import CandidateBank from "./CandidateBank";
 
@@ -31,4 +32,4 @@ const RecruitmentCandidateBankView = ({
   />
 );
 
-export default RecruitmentCandidateBankView;
+export default memo(RecruitmentCandidateBankView);

@@ -1,18 +1,13 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "motion/react";
-import { Users, Bookmark, BookmarkCheck, Download, Eye } from "lucide-react";
+import { Users } from "lucide-react";
 import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
 import {
   type DbApplicant,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import {
-  ALL_STAGES,
-  stageColors,
-} from "../constants/recruitment";
-import { handleDownloadResume } from "../utils/resumeDownload";
-import IrBadge from "./IrBadge";
-import StarRating from "./StarRating";
+import { applicantsTableColumns } from "../data";
+import ApplicantTableRow from "./ApplicantTableRow";
 
 const ApplicantsTable = ({ applicants, onSelect, onToggleBookmark, onUpdateRating, onUpdateStage }: {
   applicants: DbApplicant[];
@@ -41,77 +36,24 @@ const ApplicantsTable = ({ applicants, onSelect, onToggleBookmark, onUpdateRatin
         <table className="w-full">
           <thead>
             <SortableHeaderRow
-              columns={[
-                { label: "", key: null },
-                { label: arabicSource("recruitment.advanced"), key: "name" },
-                { label: arabicSource("recruitment.function"), key: "job" },
-                { label: arabicSource("common.submission_date"), key: "date" },
-                { label: arabicSource("common.stage"), key: "stage" },
-                { label: arabicSource("common.evaluation"), key: "rating" },
-                { label: arabicSource("recruitment.ranking"), key: "rank" },
-                { label: "", key: null },
-              ]}
+              columns={applicantsTableColumns}
               sortBy={sortBy}
               sortDir={recSortDir}
               onSort={(key) => toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir)}
             />
           </thead>
           <tbody>
-            {applicants.map((app, i) => {
-              return (
-                <motion.tr key={app.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-                  <td className="px-3 py-3">
-                    <button onClick={() => onToggleBookmark(app)} className="cursor-pointer p-1 rounded hover:bg-primary/10">
-                      {app.is_bookmarked
-                        ? <BookmarkCheck className="w-4 h-4 text-primary" />
-                        : <Bookmark className="w-4 h-4 text-muted-foreground/40" />}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => onSelect(app)} className="flex items-center gap-3 cursor-pointer hover:text-primary transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-primary" style={{ fontSize: 12 }}>{app.name.charAt(0)}</span>
-                      </div>
-                      <div className="text-start">
-                        <span className="text-foreground block">{app.name}</span>
-                        {app.email && <span className="text-muted-foreground block" style={{ fontSize: 11 }} dir="ltr">{app.email}</span>}
-                      </div>
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{app.job_title || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{app.applied_date}</td>
-                  <td className="px-4 py-3">
-                    <select value={app.stage}
-                      onChange={e => onUpdateStage(app.id, e.target.value)}
-                      className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[app.stage] || ""}`}
-                      style={{ fontSize: 12 }}>
-                      {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StarRating value={app.rating} onChange={r => onUpdateRating(app.id, r)} size={12} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <IrBadge applicant={app} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      {app.resume_url && (
-                        <button type="button" onClick={() => { void handleDownloadResume(app.id); }}
-                          className="p-1 rounded hover:bg-primary/10 text-primary cursor-pointer" title={arabicSource("recruitment.download_cv_2")}>
-                          <Download className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                      <button onClick={() => onSelect(app)} className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer" title={arabicSource("common.show_details")}>
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              );
-            })}
+            {applicants.map((app, i) => (
+              <ApplicantTableRow
+                key={app.id}
+                app={app}
+                index={i}
+                onSelect={onSelect}
+                onToggleBookmark={onToggleBookmark}
+                onUpdateRating={onUpdateRating}
+                onUpdateStage={onUpdateStage}
+              />
+            ))}
           </tbody>
         </table>
       </div>
@@ -119,4 +61,4 @@ const ApplicantsTable = ({ applicants, onSelect, onToggleBookmark, onUpdateRatin
   );
 };
 
-export default ApplicantsTable;
+export default memo(ApplicantsTable);

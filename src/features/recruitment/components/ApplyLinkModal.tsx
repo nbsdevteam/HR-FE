@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, memo } from "react";
 import {
   X, Loader2, AlertCircle, Link2, Copy, RefreshCw, Check, MessageCircle,
 } from "lucide-react";
@@ -15,6 +15,16 @@ const ApplyLinkModal = ({ job, onClose }: { job: DbJobOpening; onClose: () => vo
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
+  // The backend only returns an absolute URL when an SPA origin is configured
+  // (candidates on a different host than HR staff). Otherwise it sends a
+  // relative path, which we resolve against this app's own origin — so the
+  // candidate never receives a link pointing at Odoo.
+  const applyUrl = useMemo(() => {
+    if (!link) return "";
+    if (link.base_url_configured) return link.url;
+    return new URL(`/apply/${link.token}`, window.location.origin).toString();
+  }, [link]);
+
   const load = useCallback(async (rotate = false) => {
     setLoading(true);
     setError("");
@@ -27,16 +37,6 @@ const ApplyLinkModal = ({ job, onClose }: { job: DbJobOpening; onClose: () => vo
   }, [job.id]);
 
   useEffect(() => { void load(); }, [load]);
-
-  // The backend only returns an absolute URL when an SPA origin is configured
-  // (candidates on a different host than HR staff). Otherwise it sends a
-  // relative path, which we resolve against this app's own origin — so the
-  // candidate never receives a link pointing at Odoo.
-  const applyUrl = useMemo(() => {
-    if (!link) return "";
-    if (link.base_url_configured) return link.url;
-    return new URL(`/apply/${link.token}`, window.location.origin).toString();
-  }, [link]);
 
   const copy = async () => {
     if (!applyUrl) return;
@@ -133,4 +133,4 @@ const ApplyLinkModal = ({ job, onClose }: { job: DbJobOpening; onClose: () => vo
   );
 };
 
-export default ApplyLinkModal;
+export default memo(ApplyLinkModal);

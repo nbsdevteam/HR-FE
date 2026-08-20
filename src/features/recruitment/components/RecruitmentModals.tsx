@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { AnimatePresence } from "motion/react";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
 import ApplicantDetailPanel from "./ApplicantDetailPanel";
@@ -90,4 +91,4 @@ const RecruitmentModals = ({
   </AnimatePresence>
 );
 
-export default RecruitmentModals;
+export default memo(RecruitmentModals);

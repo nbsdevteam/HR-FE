@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
@@ -66,4 +67,4 @@ const RecruitmentApplicantsView = ({
   </>
 );
 
-export default RecruitmentApplicantsView;
+export default memo(RecruitmentApplicantsView);

@@ -1,24 +1,18 @@
-import { useState, useRef } from "react";
-import {
-  UserPlus, X, Users, FileCheck,
-  Upload,
-  GraduationCap, Phone, FileText,
-  Trophy, Loader2, AlertCircle,
-} from "lucide-react";
+import { useState, useRef, useCallback, useMemo, memo } from "react";
+import { UserPlus, X, FileCheck, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalOverlay } from "@/shared/components";
 import {
   type DbJobOpening, type DbApplicant,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import {
-  ALL_STAGES, GENDER_TO_ODOO,
-  STAGE_TO_ODOO,
-  sourceOptions,
-} from "../constants/recruitment";
-import { inputCls, labelCls, selectCls } from "../styles";
+import { GENDER_TO_ODOO, STAGE_TO_ODOO } from "../constants/recruitment";
 import { fileToBase64 } from "../utils/fileToBase64";
-import StarRating from "./StarRating";
+import ApplicantFormBasicSection from "./ApplicantFormBasicSection";
+import ApplicantFormContactSection from "./ApplicantFormContactSection";
+import ApplicantFormQualificationsSection from "./ApplicantFormQualificationsSection";
+import ApplicantFormResumeSection from "./ApplicantFormResumeSection";
+import ApplicantFormSalarySection from "./ApplicantFormSalarySection";
 
 const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
   jobs: DbJobOpening[];
@@ -27,12 +21,10 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
   onSaved: () => void;
 }) => {
   const isEdit = !!editingApplicant;
-  const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [pendingResumeFile, setPendingResumeFile] = useState<File | null>(null);
-
   const [form, setForm] = useState({
     name: editingApplicant?.name || "",
     email: editingApplicant?.email || "",
@@ -52,8 +44,23 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
     notes: editingApplicant?.notes || "",
     resume_url: editingApplicant?.resume_url || "",
   });
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (file: File) => {
+  const openJobs = useMemo(
+    () => jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === arabicSource("common.is_under_review")),
+    [jobs],
+  );
+
+  const handleFieldChange = useCallback(
+    (field: string, value: string | number) => setForm(prev => ({ ...prev, [field]: value })),
+    [],
+  );
+  const handleRatingChange = useCallback(
+    (r: number) => setForm(prev => ({ ...prev, rating: r })),
+    [],
+  );
+
+  const handleFileUpload = useCallback((file: File) => {
     setUploading(true);
     setUploadError("");
 
@@ -62,7 +69,7 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
     setPendingResumeFile(file);
     setForm(prev => ({ ...prev, resume_url: "pending" }));
     setUploading(false);
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.job_opening_id) return;
@@ -108,8 +115,6 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
     }
   };
 
-  const openJobs = jobs.filter(j => j.status === arabicSource("common.is_open") || j.status === arabicSource("common.is_under_review"));
-
   return (
     <ModalOverlay
       onClose={onClose}
@@ -138,185 +143,48 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
 
         {/* ── Scrollable Body ── */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          <ApplicantFormBasicSection
+            name={form.name}
+            jobOpeningId={form.job_opening_id}
+            gender={form.gender}
+            city={form.city}
+            openJobs={openJobs}
+            onFieldChange={handleFieldChange}
+          />
 
-          {/* Section 1: Basic information */}
-          <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
-            <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Users className="w-4 h-4" /> {arabicSource("recruitment.basic_information")}
-            </legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.full_name")}</label>
-                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder={arabicSource("recruitment.applicant_s_name")} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.the_job_applied_for")}</label>
-                <select value={form.job_opening_id} onChange={e => setForm({ ...form, job_opening_id: e.target.value })} className={selectCls}>
-                  {openJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
-                  {openJobs.length === 0 && <option value="">{arabicSource("recruitment.there_are_no_open_positions")}</option>}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.sex")}</label>
-                <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className={selectCls}>
-                  <option value="">{arabicSource("common.select")}</option>
-                  <option>{arabicSource("common.male")}</option>
-                  <option>{arabicSource("common.female")}</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.city")}</label>
-                <input type="text" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
-                  placeholder={arabicSource("common.baghdad")} className={inputCls} />
-              </div>
-            </div>
-          </fieldset>
+          <ApplicantFormContactSection
+            email={form.email}
+            phone={form.phone}
+            onFieldChange={handleFieldChange}
+          />
 
-          {/* Section 2: Contact information */}
-          <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
-            <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Phone className="w-4 h-4" /> {arabicSource("recruitment.contact_information")}
-            </legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.email")}</label>
-                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="email@example.com" className={inputCls} dir="ltr" />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.phone_number")}</label>
-                <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="07xxxxxxxxx" className={inputCls} dir="ltr" />
-              </div>
-            </div>
-          </fieldset>
+          <ApplicantFormQualificationsSection
+            education={form.education}
+            experienceYears={form.experience_years}
+            currentCompany={form.current_company}
+            source={form.source}
+            skills={form.skills}
+            onFieldChange={handleFieldChange}
+          />
 
-          {/* Section 3: Qualifications and experience */}
-          <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
-            <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <GraduationCap className="w-4 h-4" /> {arabicSource("recruitment.qualifications_and_experience")}
-            </legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.academic_qualification")}</label>
-                <select value={form.education} onChange={e => setForm({ ...form, education: e.target.value })} className={selectCls}>
-                  <option value="">{arabicSource("common.select")}</option>
-                  <option>{arabicSource("recruitment.preparatory_school")}</option>
-                  <option>{arabicSource("recruitment.diploma")}</option>
-                  <option>{arabicSource("recruitment.bachelor_s_degree")}</option>
-                  <option>{arabicSource("recruitment.master")}</option>
-                  <option>{arabicSource("recruitment.ph_d")}</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.years_of_experience")}</label>
-                <input type="number" min={0} max={50} value={form.experience_years}
-                  onChange={e => setForm({ ...form, experience_years: Number(e.target.value) })}
-                  className={inputCls} dir="ltr" />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.current_company")}</label>
-                <input type="text" value={form.current_company} onChange={e => setForm({ ...form, current_company: e.target.value })}
-                  placeholder={arabicSource("recruitment.company_name")} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.submission_source")}</label>
-                <select value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} className={selectCls}>
-                  {sourceOptions.map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.skills_comma_separated")}</label>
-              <input type="text" value={form.skills} onChange={e => setForm({ ...form, skills: e.target.value })}
-                placeholder={arabicSource("recruitment.react_node_js_sql_project_management")} className={inputCls} />
-              {form.skills && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {form.skills.split(",").map(s => s.trim()).filter(Boolean).map((s, i) => (
-                    <span key={i} className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary" style={{ fontSize: 11 }}>{s}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </fieldset>
+          <ApplicantFormSalarySection
+            expectedSalary={form.expected_salary}
+            salaryCurrency={form.salary_currency}
+            rating={form.rating}
+            stage={form.stage}
+            onFieldChange={handleFieldChange}
+            onRatingChange={handleRatingChange}
+          />
 
-          {/* Section 4: Salary and rating */}
-          <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
-            <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <Trophy className="w-4 h-4" /> {arabicSource("recruitment.salary_and_evaluation")}
-            </legend>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.expected_salary")}</label>
-                <input type="number" value={form.expected_salary} onChange={e => setForm({ ...form, expected_salary: e.target.value })}
-                  placeholder="0" className={inputCls} dir="ltr" />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.currency")}</label>
-                <select value={form.salary_currency} onChange={e => setForm({ ...form, salary_currency: e.target.value })} className={selectCls}>
-                  <option>IQD</option>
-                  <option>USD</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.initial_assessment")}</label>
-                <div className="pt-1.5">
-                  <StarRating value={form.rating} onChange={r => setForm({ ...form, rating: r })} size={22} />
-                </div>
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.stage")}</label>
-                <select value={form.stage} onChange={e => setForm({ ...form, stage: e.target.value })} className={selectCls}>
-                  {ALL_STAGES.map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Section 5: Resume and notes */}
-          <fieldset className="rounded-xl border border-border/30 p-4 space-y-4">
-            <legend className="px-2 text-primary flex items-center gap-1.5" style={{ fontSize: 13 }}>
-              <FileText className="w-4 h-4" /> {arabicSource("recruitment.biography_and_notes")}
-            </legend>
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.curriculum_vitae_cv")}</label>
-              <div
-                onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${form.resume_url ? "border-emerald-500/40 bg-emerald-500/5" : "border-border hover:border-primary/50 hover:bg-primary/5"}`}
-              >
-                {form.resume_url ? (
-                  <>
-                    <FileCheck className="w-8 h-8 text-emerald-400" />
-                    <span className="text-emerald-400" style={{ fontSize: 13 }}>{arabicSource("recruitment.the_file_was_uploaded_successfully")}</span>
-                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("recruitment.click_to_change_the_file")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-8 h-8 text-primary/60" />
-                    <span className="text-foreground" style={{ fontSize: 13 }}>
-                      {uploading ? arabicSource("recruitment.uploading") : arabicSource("recruitment.click_to_upload_your_cv_file")}
-                    </span>
-                    <span className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("recruitment.pdf_doc_docx_max_5mb")}</span>
-                  </>
-                )}
-              </div>
-              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" className="hidden"
-                onChange={e => { if (e.target.files?.[0]) handleFileUpload(e.target.files[0]); }} />
-              {uploadError && (
-                <p className="text-destructive mt-2 flex items-center gap-1" style={{ fontSize: 12 }}>
-                  <AlertCircle className="w-3.5 h-3.5" /> {uploadError}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.notes")}</label>
-              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
-                rows={4} placeholder={arabicSource("recruitment.additional_notes_about_the_candidate")} className={`${inputCls} h-auto py-3 resize-none`} />
-            </div>
-          </fieldset>
+          <ApplicantFormResumeSection
+            resumeUrl={form.resume_url}
+            notes={form.notes}
+            uploading={uploading}
+            uploadError={uploadError}
+            fileRef={fileRef}
+            onFileSelected={handleFileUpload}
+            onFieldChange={handleFieldChange}
+          />
         </div>
 
         {/* ── Sticky Footer ── */}
@@ -340,4 +208,4 @@ const ApplicantFormModal = ({ jobs, editingApplicant, onClose, onSaved }: {
   );
 };
 
-export default ApplicantFormModal;
+export default memo(ApplicantFormModal);

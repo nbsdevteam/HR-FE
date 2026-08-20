@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobOpenings, useApplicants,
@@ -23,8 +23,23 @@ import RecruitmentStats from "./RecruitmentStats";
 import RecruitmentTabs from "./RecruitmentTabs";
 
 const RecruitmentWorkspace = () => {
+  const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank" | "ai">("applicants");
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [showApplicantForm, setShowApplicantForm] = useState(false);
+  const [linkJob, setLinkJob] = useState<DbJobOpening | null>(null);
+  const [aiJobId, setAiJobId] = useState<string | null>(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<DbApplicant | null>(null);
+  const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(null);
+  const [editingJob, setEditingJob] = useState<DbJobOpening | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStage, setFilterStage] = useState<string>(arabicSource("common.all"));
+  const [filterJob, setFilterJob] = useState<string>(arabicSource("common.all"));
+  const [sortBy, setSortBy] = useState<"rank" | "rating" | "date" | "name" | "job" | "stage">("rank");
+  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
   const { jobs: rawJobs, loading: jobsLoading, refetch: refetchJobs } = useJobOpenings();
   const { applicants: rawApplicants, loading: appsLoading, refetch: refetchApps } = useApplicants();
+  const loading = jobsLoading || appsLoading;
 
   const jobs = useMemo(() => (
     rawJobs.map(j => ({
@@ -41,23 +56,6 @@ const RecruitmentWorkspace = () => {
       job_status: a.job_status ? (ODOO_TO_JOB_STATUS[a.job_status] || a.job_status) : a.job_status,
     }))
   ), [rawApplicants]);
-
-  const [view, setView] = useState<"jobs" | "applicants" | "pipeline" | "bank" | "ai">("applicants");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
-  const [showJobForm, setShowJobForm] = useState(false);
-  const [showApplicantForm, setShowApplicantForm] = useState(false);
-  const [linkJob, setLinkJob] = useState<DbJobOpening | null>(null);
-  const [aiJobId, setAiJobId] = useState<string | null>(null);
-  const [selectedApplicant, setSelectedApplicant] = useState<DbApplicant | null>(null);
-  const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(null);
-  const [editingJob, setEditingJob] = useState<DbJobOpening | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStage, setFilterStage] = useState<string>(arabicSource("common.all"));
-  const [filterJob, setFilterJob] = useState<string>(arabicSource("common.all"));
-  const [sortBy, setSortBy] = useState<"rank" | "rating" | "date" | "name" | "job" | "stage">("rank");
-  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
-  const [saving, setSaving] = useState(false);
-  const loading = jobsLoading || appsLoading;
 
   const filteredApplicants = useMemo(() => {
     let list = [...applicants];
@@ -293,4 +291,4 @@ const RecruitmentWorkspace = () => {
   );
 };
 
-export default RecruitmentWorkspace;
+export default memo(RecruitmentWorkspace);

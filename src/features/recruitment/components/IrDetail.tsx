@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, ShieldAlert, TrendingUp } from "lucide-react";
+import StatusBadge from "@/shared/components/StatusBadge";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
-import { IR_COMPONENT_LABELS, MISSING_INFO_LABELS } from "../constants/recruitment";
+import { MISSING_INFO_LABELS } from "../constants/recruitment";
 import { rankLabel } from "../utils/recruitmentRanking";
-import RankBar from "./RankBar";
+import IrComponentRow from "./IrComponentRow";
+import IrPenaltyRow from "./IrPenaltyRow";
 
 const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
   const [openEvidence, setOpenEvidence] = useState<string | null>(null);
@@ -26,6 +28,11 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
     : applicant.ir_summary_ar || applicant.ir_summary_en;
   const summaryDir = summary && summary === applicant.ir_summary_en ? "ltr" : "rtl";
 
+  const toggleEvidence = useCallback(
+    (key: string) => setOpenEvidence(current => (current === key ? null : key)),
+    [],
+  );
+
   return (
     <div className="space-y-4">
       {/* Headline score */}
@@ -35,9 +42,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
           <span style={{ fontSize: 9 }}>/ 100</span>
         </div>
         <div className="min-w-0">
-          <div className={`inline-block px-2 py-0.5 rounded-md border ${band.color}`} style={{ fontSize: 12 }}>
-            {band.text}
-          </div>
+          <StatusBadge colorClassName={band.color}>{band.text}</StatusBadge>
           <p className="text-muted-foreground mt-1.5" style={{ fontSize: 11 }}>
             {arabicSource("recruitment.ai_disclaimer")}
           </p>
@@ -79,24 +84,13 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
       {/* Weighted components — click to reveal the evidence behind a score */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {Object.entries(components).map(([key, component]) => (
-          <div key={key}>
-            <button
-              onClick={() => setOpenEvidence(openEvidence === key ? null : key)}
-              className="w-full text-start cursor-pointer"
-            >
-              <RankBar
-                label={IR_COMPONENT_LABELS[key] || key}
-                value={component.score}
-                weight={`${component.weight}%`}
-              />
-            </button>
-            {openEvidence === key && component.evidence && (
-              <p className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2" style={{ fontSize: 11 }}>
-                <span className="text-primary">{arabicSource("recruitment.evidence")}: </span>
-                <span data-i18n-ignore>{component.evidence}</span>
-              </p>
-            )}
-          </div>
+          <IrComponentRow
+            key={key}
+            componentKey={key}
+            component={component}
+            isOpen={openEvidence === key}
+            onToggle={toggleEvidence}
+          />
         ))}
       </div>
 
@@ -108,10 +102,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
           </label>
           <div className="space-y-1">
             {penalties.map((penalty, i) => (
-              <div key={i} className="flex items-start justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2">
-                <span className="text-muted-foreground" style={{ fontSize: 11.5 }} data-i18n-ignore>{penalty.detail}</span>
-                <span className="text-destructive flex-shrink-0" style={{ fontSize: 11.5 }} dir="ltr">−{penalty.amount}</span>
-              </div>
+              <IrPenaltyRow key={i} detail={penalty.detail} amount={penalty.amount} />
             ))}
           </div>
         </div>
@@ -210,4 +201,4 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
   );
 };
 
-export default IrDetail;
+export default memo(IrDetail);

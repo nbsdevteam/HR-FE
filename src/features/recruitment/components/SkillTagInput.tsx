@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { X } from "lucide-react";
 import { type JobSkillRequirement } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { inputCls, labelCls } from "../styles";
+import SkillTagChip from "./SkillTagChip";
 
 const SkillTagInput = ({ label, skills, onChange, weighted = false }: {
   label: string;
@@ -37,29 +37,13 @@ const SkillTagInput = ({ label, skills, onChange, weighted = false }: {
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {skills.map((skill, i) => (
-            <span key={`${skill.name}-${i}`}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border/40 bg-muted/20 text-foreground"
-              style={{ fontSize: 11 }}>
-              {skill.name}
-              {weighted && (
-                <select
-                  value={skill.weight || 2}
-                  onChange={e => onChange(skills.map((s, si) =>
-                    si === i ? { ...s, weight: Number(e.target.value) } : s))}
-                  className="bg-transparent text-primary cursor-pointer outline-none"
-                  style={{ fontSize: 10 }}
-                  dir="ltr"
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                </select>
-              )}
-              <button type="button" onClick={() => onChange(skills.filter((_, si) => si !== i))}
-                className="text-destructive cursor-pointer">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
+            <SkillTagChip
+              key={`${skill.name}-${i}`}
+              skill={skill}
+              weighted={weighted}
+              onWeightChange={(weight) => onChange(skills.map((s, si) => (si === i ? { ...s, weight } : s)))}
+              onRemove={() => onChange(skills.filter((_, si) => si !== i))}
+            />
           ))}
         </div>
       )}

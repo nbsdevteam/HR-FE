@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
-import { motion } from "motion/react";
-import { Users, Download, Eye, Loader2, Sparkles } from "lucide-react";
+import { useState, useMemo, memo } from "react";
+import { Users, Loader2, Sparkles } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
 import * as odooData from "@/shared/api/odooData";
 import {
@@ -9,11 +8,10 @@ import {
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import {
-  ALL_STAGES, stageColors,
-} from "../constants/recruitment";
 import { hasIr } from "../utils/recruitmentRanking";
-import IrBadge from "./IrBadge";
+import { aiScreeningStatFields } from "../data";
+import AiScreeningStatTile from "./AiScreeningStatTile";
+import AiScreeningTableRow from "./AiScreeningTableRow";
 
 const AiScreeningView = ({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
   jobs: DbJobOpening[];
@@ -22,14 +20,23 @@ const AiScreeningView = ({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
   onSelect: (a: DbApplicant) => void;
   onUpdateStage: (id: string, stage: string) => void;
 }) => {
-  const { items, stats, loading, refetch } = useJobRanking(jobId);
   const [minIr, setMinIr] = useState(0);
   const [busy, setBusy] = useState(false);
+  const { items, stats, loading, refetch } = useJobRanking(jobId);
 
   const visible = useMemo(
     () => items.filter(a => !hasIr(a) || (a.ir_score || 0) >= minIr),
     [items, minIr],
   );
+
+  const statTiles = useMemo(() => {
+    if (!stats) return null;
+    return aiScreeningStatFields.map(field => ({
+      key: field.key,
+      label: field.label,
+      value: "suffix" in field ? `${(stats as any)[field.key]}${field.suffix}` : (stats as any)[field.key],
+    }));
+  }, [stats]);
 
   const screenAll = async () => {
     if (!jobId) return;
@@ -103,18 +110,10 @@ const AiScreeningView = ({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
         </div>
       ) : (
         <>
-          {stats && (
+          {statTiles && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: arabicSource("common.total_applicants"), value: stats.total },
-                { label: arabicSource("recruitment.screened_count"), value: stats.screened },
-                { label: arabicSource("recruitment.ir_pending"), value: stats.pending },
-                { label: arabicSource("recruitment.average_ir"), value: `${stats.average_ir}%` },
-              ].map(stat => (
-                <div key={stat.label} className="bg-card/30 border border-border/40 rounded-xl p-4">
-                  <p className="text-muted-foreground" style={{ fontSize: 12 }}>{stat.label}</p>
-                  <span className="text-gradient-gold block mt-1" style={{ fontSize: 22 }}>{stat.value}</span>
-                </div>
+              {statTiles.map(stat => (
+                <AiScreeningStatTile key={stat.key} label={stat.label} value={stat.value} />
               ))}
             </div>
           )}
@@ -144,64 +143,7 @@ const AiScreeningView = ({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
                   </thead>
                   <tbody>
                     {visible.map((app, i) => (
-                      <motion.tr key={app.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.02 }}
-                        className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-                        <td className="px-4 py-3">
-                          {app.rank ? (
-                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${
-                              app.rank <= 3 ? "bg-primary/20 text-primary border border-primary/40" : "text-muted-foreground"
-                            }`} style={{ fontSize: 12 }} dir="ltr">
-                              {app.rank}
-                            </span>
-                          ) : <span className="text-muted-foreground">—</span>}
-                        </td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => onSelect(app)}
-                            className="text-start cursor-pointer hover:text-primary transition-colors">
-                            <span className="text-foreground block">{app.name}</span>
-                            {app.email && <span className="text-muted-foreground block" style={{ fontSize: 11 }} dir="ltr">{app.email}</span>}
-                          </button>
-                        </td>
-                        <td className="px-4 py-3"><IrBadge applicant={app} /></td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1 max-w-[240px]">
-                            {(app.matched_skills || []).slice(0, 3).map((skill, si) => (
-                              <span key={si} className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 10 }}>
-                                {skill}
-                              </span>
-                            ))}
-                            {(app.matched_skills?.length || 0) > 3 && (
-                              <span className="px-1.5 py-0.5 rounded bg-muted/20 text-muted-foreground" style={{ fontSize: 10 }}>
-                                +{(app.matched_skills?.length || 0) - 3}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <select value={app.stage}
-                            onChange={e => onUpdateStage(app.id, e.target.value)}
-                            className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[app.stage] || ""}`}
-                            style={{ fontSize: 12 }}>
-                            {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            {app.resume_url && (
-                              <a href={app.resume_url} target="_blank" rel="noopener noreferrer"
-                                className="p-1 rounded hover:bg-primary/10 text-primary" title={arabicSource("recruitment.download_cv_2")}>
-                                <Download className="w-3.5 h-3.5" />
-                              </a>
-                            )}
-                            <button onClick={() => onSelect(app)}
-                              className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer"
-                              title={arabicSource("common.show_details")}>
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </motion.tr>
+                      <AiScreeningTableRow key={app.id} app={app} index={i} onSelect={onSelect} onUpdateStage={onUpdateStage} />
                     ))}
                   </tbody>
                 </table>
@@ -214,4 +156,4 @@ const AiScreeningView = ({ jobs, jobId, setJobId, onSelect, onUpdateStage }: {
   );
 };
 
-export default AiScreeningView;
+export default memo(AiScreeningView);

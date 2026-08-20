@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import {
   UserPlus, X, Briefcase, MapPin, Clock, Users,
@@ -9,14 +9,17 @@ import {
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalOverlay } from "@/shared/components";
+import NodeAvatar from "@/shared/components/NodeAvatar";
+import StatusBadge from "@/shared/components/StatusBadge";
 import { type DbApplicant } from "@/shared/hooks";
 import { formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import {
-  ALL_STAGES, IR_STATUS_LABELS, STAGES, stageColors,
+  ALL_STAGES, IR_STATUS_LABELS, STAGES,
 } from "../constants/recruitment";
 import { effectiveScore, hasIr, rankLabel } from "../utils/recruitmentRanking";
 import { handleDownloadResume } from "../utils/resumeDownload";
+import ApplicantStageButton from "./ApplicantStageButton";
 import InfoRow from "./InfoRow";
 import IrDetail from "./IrDetail";
 import RankBar from "./RankBar";
@@ -47,6 +50,15 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
     onRefresh();
   };
 
+  const handleRatingChange = useCallback(
+    (r: number) => onUpdateRating(applicant.id, r),
+    [applicant.id, onUpdateRating],
+  );
+  const handleStageSelect = useCallback(
+    (s: string) => onUpdateStage(applicant.id, s),
+    [applicant.id, onUpdateStage],
+  );
+
   return (
     <ModalOverlay
       onClose={onClose}
@@ -60,9 +72,14 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
         <div className="p-6 border-b border-border/40">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
-                <span className="text-primary" style={{ fontSize: 24 }}>{applicant.name.charAt(0)}</span>
-              </div>
+              <NodeAvatar
+                name={applicant.name}
+                initials={applicant.name.charAt(0)}
+                sizeClassName="w-16 h-16"
+                fontSize={24}
+                extraClassName="bg-primary/20 border-2 border-primary/30"
+                textClassName="text-primary"
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-foreground">{applicant.name}</h2>
@@ -74,10 +91,8 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
                 </div>
                 <p className="text-muted-foreground" style={{ fontSize: 13 }}>{applicant.job_title || "—"} — {applicant.job_department || ""}</p>
                 <div className="flex items-center gap-3 mt-2">
-                  <StarRating value={applicant.rating} onChange={r => onUpdateRating(applicant.id, r)} />
-                  <span className={`px-2 py-0.5 rounded-md border ${rank.color}`} style={{ fontSize: 11 }}>
-                    {score}% — {rank.text}
-                  </span>
+                  <StarRating value={applicant.rating} onChange={handleRatingChange} />
+                  <StatusBadge colorClassName={rank.color} fontSize={11}>{score}% — {rank.text}</StatusBadge>
                 </div>
               </div>
             </div>
@@ -102,11 +117,7 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
             <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>{arabicSource("recruitment.current_phase")}</label>
             <div className="flex items-center gap-2 flex-wrap">
               {ALL_STAGES.map(s => (
-                <button key={s} onClick={() => onUpdateStage(applicant.id, s)}
-                  className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${applicant.stage === s ? stageColors[s] : "border-border/30 text-muted-foreground hover:bg-muted/20"}`}
-                  style={{ fontSize: 12 }}>
-                  {s}
-                </button>
+                <ApplicantStageButton key={s} stage={s} isActive={applicant.stage === s} onSelect={handleStageSelect} />
               ))}
             </div>
           </div>
@@ -249,4 +260,4 @@ const ApplicantDetailPanel = ({ applicant, onClose, onEdit, onDelete, onUpdateSt
   );
 };
 
-export default ApplicantDetailPanel;
+export default memo(ApplicantDetailPanel);

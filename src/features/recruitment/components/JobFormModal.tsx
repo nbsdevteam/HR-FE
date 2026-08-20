@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { X, Sparkles } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalOverlay } from "@/shared/components";
@@ -207,4 +207,4 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
   );
 };
 
-export default JobFormModal;
+export default memo(JobFormModal);
