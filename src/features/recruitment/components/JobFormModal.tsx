@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from "react";
-import { X, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
@@ -109,19 +109,14 @@ const JobFormModal = ({
       onClose={onClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-foreground">
-          {isEdit
+      <ModalHeader
+        title={
+          isEdit
             ? arabicSource("recruitment.edit_vacancy")
-            : arabicSource("common.new_vacancy")}
-        </h2>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-secondary cursor-pointer"
-        >
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </div>
+            : arabicSource("common.new_vacancy")
+        }
+        onClose={onClose}
+      />
       <div className="space-y-4">
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>
@@ -140,15 +135,12 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("common.section")}
             </label>
-            <select
+            <SelectField
               value={form.department}
-              onChange={(e) => setForm({ ...form, department: e.target.value })}
+              onChange={(department) => setForm({ ...form, department })}
+              options={DEPARTMENTS}
               className={selectCls}
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </select>
+            />
           </div>
           <div>
             <label className={labelCls} style={{ fontSize: 13 }}>
@@ -167,15 +159,16 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("recruitment.permanent_type")}
             </label>
-            <select
+            <SelectField
               value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              onChange={(type) => setForm({ ...form, type })}
+              options={[
+                arabicSource("common.full_time"),
+                arabicSource("recruitment.part_time"),
+                arabicSource("recruitment.temporary_contract"),
+              ]}
               className={selectCls}
-            >
-              <option>{arabicSource("common.full_time")}</option>
-              <option>{arabicSource("recruitment.part_time")}</option>
-              <option>{arabicSource("recruitment.temporary_contract")}</option>
-            </select>
+            />
           </div>
           <div>
             <label className={labelCls} style={{ fontSize: 13 }}>
@@ -194,17 +187,12 @@ const JobFormModal = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.vacancy_status")}
           </label>
-          <select
+          <SelectField
             value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            onChange={(status) => setForm({ ...form, status })}
+            options={JOB_STATUSES}
             className={selectCls}
-          >
-            {JOB_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>
@@ -289,19 +277,14 @@ const JobFormModal = ({
               <label className={labelCls} style={{ fontSize: 12 }}>
                 {arabicSource("recruitment.education_level")}
               </label>
-              <select
+              <SelectField
                 value={form.education_level}
-                onChange={(e) =>
-                  setForm({ ...form, education_level: e.target.value })
+                onChange={(education_level) =>
+                  setForm({ ...form, education_level })
                 }
+                options={EDUCATION_LEVELS}
                 className={selectCls}
-              >
-                {EDUCATION_LEVELS.map((level) => (
-                  <option key={level.value} value={level.value}>
-                    {level.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
           <div>

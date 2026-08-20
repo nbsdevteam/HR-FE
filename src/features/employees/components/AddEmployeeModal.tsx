@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import { labelCls } from "../styles";
 import LabeledInput from "./LabeledInput";
@@ -54,19 +54,13 @@ const AddEmployeeModal = ({
     }}
     contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[80vh] overflow-y-auto"
   >
-    <div className="flex items-center justify-between mb-5">
-      <h2 className="text-foreground">
-        {arabicSource("common.add_a_new_employee")}
-      </h2>
-      <button
-        onClick={() => {
-          if (!addSaving) onClose();
-        }}
-        className="p-1 rounded hover:bg-secondary cursor-pointer"
-      >
-        <X className="w-5 h-5 text-muted-foreground" />
-      </button>
-    </div>
+    <ModalHeader
+      title={arabicSource("common.add_a_new_employee")}
+      onClose={() => {
+        if (!addSaving) onClose();
+      }}
+      className="flex items-center justify-between mb-5"
+    />
     <div className="space-y-4">
       <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
         <p className="text-xs text-primary mb-3 flex items-center gap-1.5">

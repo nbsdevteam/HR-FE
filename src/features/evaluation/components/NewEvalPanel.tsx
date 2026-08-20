@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { X } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -124,17 +123,15 @@ const NewEvalPanel = ({
         exit: { scale: 0.9, opacity: 0, y: 30 },
       }}
     >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-foreground">{arabicSource("evaluation.new_performance_evaluation")}</h2>
-            <p className="text-muted-foreground" style={{ fontSize: 12 }}>
-              {step === 1 ? arabicSource("evaluation.select_employee_and_period") : arabicSource("evaluation.evaluate_the_employee_s_performance")}
-            </p>
-          </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+        <ModalHeader
+          title={arabicSource("evaluation.new_performance_evaluation")}
+          subtitle={
+            step === 1
+              ? arabicSource("evaluation.select_employee_and_period")
+              : arabicSource("evaluation.evaluate_the_employee_s_performance")
+          }
+          onClose={onClose}
+        />
 
         {step === 1 ? (
           <NewEvalStepOne

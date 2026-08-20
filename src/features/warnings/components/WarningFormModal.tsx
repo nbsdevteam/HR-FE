@@ -2,11 +2,9 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
-import WarningModalHeader from "./WarningModalHeader";
-import WarningOptionsSelect from "./WarningOptionsSelect";
 
 type TWarningFormModalProps = {
   form: FormData;
@@ -30,7 +28,7 @@ const WarningFormModal = ({
   onClose,
 }: TWarningFormModalProps) => (
   <ModalOverlay onClose={onClose}>
-    <WarningModalHeader
+    <ModalHeader
       title={
         isEditing
           ? arabicSource("warnings.alarm_adjustment")
@@ -65,7 +63,7 @@ const WarningFormModal = ({
         >
           {arabicSource("common.alarm_type")}
         </label>
-        <WarningOptionsSelect
+        <SelectField
           value={form.type}
           onChange={(value) => onFieldChange({ type: value })}
           options={warningTypes}

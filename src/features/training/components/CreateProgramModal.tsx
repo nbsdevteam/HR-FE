@@ -1,10 +1,8 @@
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { fieldCls } from "../styles";
 import type { CreateProgramForm } from "../types";
 import TrainingModalFooterActions from "./TrainingModalFooterActions";
-import TrainingModalHeader from "./TrainingModalHeader";
-import TrainingSelectField from "./TrainingSelectField";
 
 type TCreateProgramModalProps = {
   form: CreateProgramForm;
@@ -36,7 +34,7 @@ const CreateProgramModal = ({
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-    <TrainingModalHeader
+    <ModalHeader
       title={arabicSource("training.new_training_program")}
       onClose={onClose}
     />
@@ -56,11 +54,12 @@ const CreateProgramModal = ({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <TrainingSelectField
+        <SelectField
           label={arabicSource("training.category")}
           value={form.category}
           onChange={(value) => onFieldChange({ category: value })}
           options={trainingCategories}
+          className={fieldCls}
         />
 
         <div>
@@ -131,11 +130,12 @@ const CreateProgramModal = ({
         </div>
       </div>
 
-      <TrainingSelectField
+      <SelectField
         label={arabicSource("common.status")}
         value={form.status}
         onChange={(value) => onFieldChange({ status: value })}
         options={trainingStatuses}
+        className={fieldCls}
       />
 
       <div>

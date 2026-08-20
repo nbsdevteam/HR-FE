@@ -1,10 +1,8 @@
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { fieldCls } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 import TrainingModalFooterActions from "./TrainingModalFooterActions";
-import TrainingModalHeader from "./TrainingModalHeader";
-import TrainingSelectField from "./TrainingSelectField";
 
 type TEditProgramModalProps = {
   program: DbTrainingProgram;
@@ -32,7 +30,7 @@ const EditProgramModal = ({
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-    <TrainingModalHeader
+    <ModalHeader
       title={arabicSource("training.modify_the_program")}
       onClose={onClose}
     />
@@ -63,11 +61,12 @@ const EditProgramModal = ({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <TrainingSelectField
+        <SelectField
           label={arabicSource("common.status")}
           value={program.status}
           onChange={(value) => onFieldChange({ status: value })}
           options={trainingStatuses}
+          className={fieldCls}
         />
 
         <div>

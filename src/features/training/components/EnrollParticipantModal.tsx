@@ -1,13 +1,11 @@
 import { useMemo } from "react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { fieldCls } from "../styles";
 import type { EnrollParticipantForm } from "../types";
 import TrainingModalFooterActions from "./TrainingModalFooterActions";
-import TrainingModalHeader from "./TrainingModalHeader";
-import TrainingSelectField from "./TrainingSelectField";
 
 type TEnrollParticipantModalProps = {
   form: EnrollParticipantForm;
@@ -48,7 +46,7 @@ const EnrollParticipantModal = ({
         exit: { scale: 0.95, opacity: 0 },
       }}
     >
-      <TrainingModalHeader
+      <ModalHeader
         title={arabicSource("training.register_a_new_employee")}
         onClose={onClose}
       />
@@ -68,11 +66,12 @@ const EnrollParticipantModal = ({
           />
         </div>
 
-        <TrainingSelectField
+        <SelectField
           label={arabicSource("training.join_status")}
           value={form.completion_status}
           onChange={(value) => onFieldChange({ completion_status: value })}
           options={participantStatuses}
+          className={fieldCls}
         />
 
         {form.completion_status === arabicSource("common.complete") && (

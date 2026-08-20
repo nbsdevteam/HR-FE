@@ -2,10 +2,9 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { CheckCircle, Trash2, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import WarningDetailRow from "./WarningDetailRow";
-import WarningModalHeader from "./WarningModalHeader";
 
 type TWarningDetailModalProps = {
   warning: WarningWithEmployee;
@@ -29,7 +28,7 @@ const WarningDetailModal = ({
   onDelete,
 }: TWarningDetailModalProps) => (
   <ModalOverlay onClose={onClose}>
-    <WarningModalHeader
+    <ModalHeader
       title={arabicSource("warnings.alarm_details")}
       onClose={onClose}
     />
