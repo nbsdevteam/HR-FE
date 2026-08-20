@@ -1,11 +1,13 @@
 import { createBrowserRouter } from "react-router";
 import Layout from "@/app/layouts/Layout";
 import NotFound from "./NotFound";
+import HydrateFallback from "./HydrateFallback";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: Layout,
+    HydrateFallback,
     children: [
       { 
         index: true, 
