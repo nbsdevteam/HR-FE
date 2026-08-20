@@ -1,13 +1,17 @@
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-type TrainingModalFooterActionsProps = {
+interface ITrainingModalFooterActionsProps {
   onSave: () => void;
   onClose: () => void;
   saveLabel: string;
-};
+}
 
-const TrainingModalFooterActions = ({ onSave, onClose, saveLabel }: TrainingModalFooterActionsProps) => (
+const TrainingModalFooterActions = ({
+  onSave,
+  onClose,
+  saveLabel,
+}: ITrainingModalFooterActionsProps) => (
   <div className="flex items-center gap-3 pt-4 border-t border-border/20">
     <button
       onClick={onSave}

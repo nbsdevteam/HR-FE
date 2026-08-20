@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Clock, Edit2, GraduationCap, Plus, Trash2, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -6,7 +7,7 @@ import { statusColorPalette } from "../constants/training";
 import ProgramObjectiveItem from "./ProgramObjectiveItem";
 import ProgramParticipantRow from "./ProgramParticipantRow";
 
-type TrainingProgramCardProps = {
+interface ITrainingProgramCardProps {
   program: DbTrainingProgram;
   index: number;
   participants: DbTrainingParticipant[];
@@ -15,12 +16,12 @@ type TrainingProgramCardProps = {
   statusIcons: Record<string, any>;
   participantStatusColors: Record<string, string>;
   getEmployeeName: (employeeId: string) => string;
-  onEdit: () => void;
-  onDelete: () => void;
-  onEnroll: () => void;
+  onEditProgram: (program: DbTrainingProgram) => void;
+  onDeleteProgram: (programId: string) => void;
+  onEnrollProgram: (programId: string) => void;
   onMarkParticipantCompleted: (participantId: string, score: number) => void;
   onDeleteParticipant: (participantId: string) => void;
-};
+}
 
 const TrainingProgramCard = ({
   program,
@@ -31,13 +32,26 @@ const TrainingProgramCard = ({
   statusIcons,
   participantStatusColors,
   getEmployeeName,
-  onEdit,
-  onDelete,
-  onEnroll,
+  onEditProgram,
+  onDeleteProgram,
+  onEnrollProgram,
   onMarkParticipantCompleted,
   onDeleteParticipant,
-}: TrainingProgramCardProps) => {
+}: ITrainingProgramCardProps) => {
   const StatusIcon = statusIcons[program.status];
+
+  const handleEdit = useCallback(
+    () => onEditProgram(program),
+    [onEditProgram, program],
+  );
+  const handleDelete = useCallback(
+    () => onDeleteProgram(program.id),
+    [onDeleteProgram, program.id],
+  );
+  const handleEnroll = useCallback(
+    () => onEnrollProgram(program.id),
+    [onEnrollProgram, program.id],
+  );
 
   return (
     <motion.div
@@ -61,10 +75,16 @@ const TrainingProgramCard = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onEdit} className="p-2 hover:bg-primary/20 rounded-lg transition-colors">
+          <button
+            onClick={handleEdit}
+            className="p-2 hover:bg-primary/20 rounded-lg transition-colors"
+          >
             <Edit2 className="w-4 h-4 text-primary" />
           </button>
-          <button onClick={onDelete} className="p-2 hover:bg-red-500/20 rounded-lg transition-colors">
+          <button
+            onClick={handleDelete}
+            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+          >
             <Trash2 className="w-4 h-4 text-red-400" />
           </button>
         </div>
@@ -81,19 +101,29 @@ const TrainingProgramCard = ({
       <div className="flex flex-wrap gap-3 my-3">
         <span
           className={`px-2 py-0.5 rounded-md border ${
-            statusColorPalette[trainingCategories.indexOf(program.category) % statusColorPalette.length] || "bg-primary/10 border-primary/20 text-primary"
+            statusColorPalette[
+              trainingCategories.indexOf(program.category) %
+                statusColorPalette.length
+            ] || "bg-primary/10 border-primary/20 text-primary"
           }`}
           style={{ fontSize: 11 }}
         >
           {program.category} ({program.weight})
         </span>
         {program.duration && (
-          <span className="text-muted-foreground flex items-center gap-1" style={{ fontSize: 12 }}>
+          <span
+            className="text-muted-foreground flex items-center gap-1"
+            style={{ fontSize: 12 }}
+          >
             <Clock className="w-3 h-3" /> {program.duration}
           </span>
         )}
-        <span className="text-muted-foreground flex items-center gap-1" style={{ fontSize: 12 }}>
-          <Users className="w-3 h-3" /> {participants.length} {arabicSource("training.participant")}
+        <span
+          className="text-muted-foreground flex items-center gap-1"
+          style={{ fontSize: 12 }}
+        >
+          <Users className="w-3 h-3" /> {participants.length}{" "}
+          {arabicSource("training.participant")}
         </span>
       </div>
 
@@ -126,9 +156,11 @@ const TrainingProgramCard = ({
 
       <div className="mt-4 pt-4 border-t border-border/20">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm text-foreground">{arabicSource("training.participants")}</h4>
+          <h4 className="text-sm text-foreground">
+            {arabicSource("training.participants")}
+          </h4>
           <button
-            onClick={onEnroll}
+            onClick={handleEnroll}
             className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
           >
             <Plus className="w-3 h-3" />
@@ -144,17 +176,19 @@ const TrainingProgramCard = ({
                 participant={p}
                 employeeName={getEmployeeName(p.employee_id)}
                 statusColor={participantStatusColors[p.completion_status]}
-                onMarkCompleted={() => onMarkParticipantCompleted(p.id, 85)}
-                onDelete={() => onDeleteParticipant(p.id)}
+                onMarkParticipantCompleted={onMarkParticipantCompleted}
+                onDeleteParticipant={onDeleteParticipant}
               />
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">{arabicSource("training.there_are_no_participants")}</p>
+          <p className="text-xs text-muted-foreground">
+            {arabicSource("training.there_are_no_participants")}
+          </p>
         )}
       </div>
     </motion.div>
   );
 };
 
-export default TrainingProgramCard;
+export default memo(TrainingProgramCard);

@@ -6,7 +6,7 @@ import TrainingModalFooterActions from "./TrainingModalFooterActions";
 import TrainingModalHeader from "./TrainingModalHeader";
 import TrainingSelectField from "./TrainingSelectField";
 
-type CreateProgramModalProps = {
+type TCreateProgramModalProps = {
   form: CreateProgramForm;
   trainingCategories: string[];
   trainingStatuses: string[];
@@ -24,7 +24,7 @@ const CreateProgramModal = ({
   onFieldChange,
   onSave,
   onClose,
-}: CreateProgramModalProps) => (
+}: TCreateProgramModalProps) => (
   <ModalOverlay
     onClose={onClose}
     closeOnBackdropClick={false}
@@ -36,117 +36,142 @@ const CreateProgramModal = ({
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-      <TrainingModalHeader title={arabicSource("training.new_training_program")} onClose={onClose} />
+    <TrainingModalHeader
+      title={arabicSource("training.new_training_program")}
+      onClose={onClose}
+    />
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("training.address")}</label>
-          <input
-            type="text"
-            value={form.title}
-            onChange={(e) => onFieldChange({ title: e.target.value })}
-            className={fieldCls}
-            placeholder={arabicSource("training.program_title")}
-          />
-        </div>
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm text-foreground mb-2">
+          {arabicSource("training.address")}
+        </label>
+        <input
+          type="text"
+          value={form.title}
+          onChange={(e) => onFieldChange({ title: e.target.value })}
+          className={fieldCls}
+          placeholder={arabicSource("training.program_title")}
+        />
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <TrainingSelectField
-            label={arabicSource("training.category")}
-            value={form.category}
-            onChange={(value) => onFieldChange({ category: value })}
-            options={trainingCategories}
-          />
-
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("training.weight")}</label>
-            <input
-              type="text"
-              value={form.weight}
-              onChange={(e) => onFieldChange({ weight: e.target.value })}
-              className={fieldCls}
-              placeholder={`${defaultWeight}%`}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("common.coach")}</label>
-            <input
-              type="text"
-              value={form.instructor}
-              onChange={(e) => onFieldChange({ instructor: e.target.value })}
-              className={fieldCls}
-              placeholder={arabicSource("training.name_of_coach")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("common.duration_hours")}</label>
-            <input
-              type="text"
-              value={form.duration}
-              onChange={(e) => onFieldChange({ duration: e.target.value })}
-              className={fieldCls}
-              placeholder={arabicSource("training.20_hours")}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("common.start_date")}</label>
-            <input
-              type="date"
-              value={form.start_date}
-              onChange={(e) => onFieldChange({ start_date: e.target.value })}
-              className={fieldCls}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("training.end_date")}</label>
-            <input
-              type="date"
-              value={form.end_date}
-              onChange={(e) => onFieldChange({ end_date: e.target.value })}
-              className={fieldCls}
-            />
-          </div>
-        </div>
-
+      <div className="grid grid-cols-2 gap-4">
         <TrainingSelectField
-          label={arabicSource("common.status")}
-          value={form.status}
-          onChange={(value) => onFieldChange({ status: value })}
-          options={trainingStatuses}
+          label={arabicSource("training.category")}
+          value={form.category}
+          onChange={(value) => onFieldChange({ category: value })}
+          options={trainingCategories}
         />
 
         <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("training.maximum_participants")}</label>
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("training.weight")}
+          </label>
           <input
-            type="number"
-            value={form.max_participants}
-            onChange={(e) => onFieldChange({ max_participants: e.target.value })}
+            type="text"
+            value={form.weight}
+            onChange={(e) => onFieldChange({ weight: e.target.value })}
             className={fieldCls}
-            placeholder="30"
+            placeholder={`${defaultWeight}%`}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("common.coach")}
+          </label>
+          <input
+            type="text"
+            value={form.instructor}
+            onChange={(e) => onFieldChange({ instructor: e.target.value })}
+            className={fieldCls}
+            placeholder={arabicSource("training.name_of_coach")}
           />
         </div>
 
         <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("training.targets_each_target_in_a_line")}</label>
-          <textarea
-            value={form.objectives}
-            onChange={(e) => onFieldChange({ objectives: e.target.value })}
-            rows={4}
-            className={`${fieldCls} resize-none`}
-            placeholder={arabicSource("training.the_first_goal_the_second_goal_the_third_goal")}
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("common.duration_hours")}
+          </label>
+          <input
+            type="text"
+            value={form.duration}
+            onChange={(e) => onFieldChange({ duration: e.target.value })}
+            className={fieldCls}
+            placeholder={arabicSource("training.20_hours")}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("common.start_date")}
+          </label>
+          <input
+            type="date"
+            value={form.start_date}
+            onChange={(e) => onFieldChange({ start_date: e.target.value })}
+            className={fieldCls}
           />
         </div>
 
-        <TrainingModalFooterActions onSave={onSave} onClose={onClose} saveLabel={arabicSource("training.save_the_program")} />
+        <div>
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("training.end_date")}
+          </label>
+          <input
+            type="date"
+            value={form.end_date}
+            onChange={(e) => onFieldChange({ end_date: e.target.value })}
+            className={fieldCls}
+          />
+        </div>
       </div>
+
+      <TrainingSelectField
+        label={arabicSource("common.status")}
+        value={form.status}
+        onChange={(value) => onFieldChange({ status: value })}
+        options={trainingStatuses}
+      />
+
+      <div>
+        <label className="block text-sm text-foreground mb-2">
+          {arabicSource("training.maximum_participants")}
+        </label>
+        <input
+          type="number"
+          value={form.max_participants}
+          onChange={(e) => onFieldChange({ max_participants: e.target.value })}
+          className={fieldCls}
+          placeholder="30"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm text-foreground mb-2">
+          {arabicSource("training.targets_each_target_in_a_line")}
+        </label>
+        <textarea
+          value={form.objectives}
+          onChange={(e) => onFieldChange({ objectives: e.target.value })}
+          rows={4}
+          className={`${fieldCls} resize-none`}
+          placeholder={arabicSource(
+            "training.the_first_goal_the_second_goal_the_third_goal",
+          )}
+        />
+      </div>
+
+      <TrainingModalFooterActions
+        onSave={onSave}
+        onClose={onClose}
+        saveLabel={arabicSource("training.save_the_program")}
+      />
+    </div>
   </ModalOverlay>
 );
 

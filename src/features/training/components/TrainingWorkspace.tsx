@@ -3,13 +3,27 @@ import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
-import { useEmployees, useTrainingParticipants, useTrainingPrograms } from "@/shared/hooks";
+import {
+  useEmployees,
+  useTrainingParticipants,
+  useTrainingPrograms,
+} from "@/shared/hooks";
 import { useParticipantEnrollment } from "../hooks/useParticipantEnrollment";
 import { useProgramForm } from "../hooks/useProgramForm";
 import { useTrainingConfig } from "../hooks/useTrainingConfig";
 import { useTrainingToasts } from "../hooks/useTrainingToasts";
-import { getEmployeeName, getProgramParticipants, filterPrograms, mapParticipantsToDisplay, mapProgramsToDisplay } from "../utils/trainingDisplay";
-import { computeCategoryDistribution, computeMonthlyHours, computeStats } from "../utils/trainingStats";
+import {
+  getEmployeeName,
+  getProgramParticipants,
+  filterPrograms,
+  mapParticipantsToDisplay,
+  mapProgramsToDisplay,
+} from "../utils/trainingDisplay";
+import {
+  computeCategoryDistribution,
+  computeMonthlyHours,
+  computeStats,
+} from "../utils/trainingStats";
 import type { ToastType } from "../types";
 import CreateProgramModal from "./CreateProgramModal";
 import EditProgramModal from "./EditProgramModal";
@@ -20,31 +34,23 @@ import TrainingHeader from "./TrainingHeader";
 import TrainingProgramsGrid from "./TrainingProgramsGrid";
 import TrainingStatsGrid from "./TrainingStatsGrid";
 import WeightDistributionCard from "./WeightDistributionCard";
-
-const TOAST_TONE_BORDER: Record<ToastType, string> = {
-  success: "border-green-500/40",
-  error: "border-red-500/40",
-  info: "border-blue-500/40",
-};
-
-const TOAST_TONE_ICON_BG: Record<ToastType, string> = {
-  success: "bg-green-500/20",
-  error: "bg-red-500/20",
-  info: "bg-blue-500/20",
-};
-
-const TOAST_TONE_ICON_COLOR: Record<ToastType, string> = {
-  success: "text-green-400",
-  error: "text-red-400",
-  info: "text-blue-400",
-};
+import {
+  TOAST_TONE_BORDER,
+  TOAST_TONE_ICON_BG,
+  TOAST_TONE_ICON_COLOR,
+} from "../constants/training";
 
 const TrainingWorkspace = () => {
   const [filter, setFilter] = useState(arabicSource("common.all"));
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { programs, loading: programsLoading, refetch: refetchPrograms } = useTrainingPrograms();
-  const { participants: allParticipants, refetch: refetchParticipants } = useTrainingParticipants();
+  const {
+    programs,
+    loading: programsLoading,
+    refetch: refetchPrograms,
+  } = useTrainingPrograms();
+  const { participants: allParticipants, refetch: refetchParticipants } =
+    useTrainingParticipants();
   const { employees } = useEmployees();
   const config = useTrainingConfig();
   const { toasts, showToast } = useTrainingToasts();
@@ -62,20 +68,46 @@ const TrainingWorkspace = () => {
     showToast,
   });
 
-  const displayPrograms = useMemo(() => mapProgramsToDisplay(programs), [programs]);
-  const displayParticipants = useMemo(() => mapParticipantsToDisplay(allParticipants), [allParticipants]);
+  const displayPrograms = useMemo(
+    () => mapProgramsToDisplay(programs),
+    [programs],
+  );
+  const displayParticipants = useMemo(
+    () => mapParticipantsToDisplay(allParticipants),
+    [allParticipants],
+  );
   const filtered = useMemo(
-    () => filterPrograms(displayPrograms, filter, searchTerm, arabicSource("common.all")),
+    () =>
+      filterPrograms(
+        displayPrograms,
+        filter,
+        searchTerm,
+        arabicSource("common.all"),
+      ),
     [displayPrograms, filter, searchTerm],
   );
-  const stats = useMemo(() => computeStats(displayPrograms, displayParticipants), [displayPrograms, displayParticipants]);
+  const stats = useMemo(
+    () => computeStats(displayPrograms, displayParticipants),
+    [displayPrograms, displayParticipants],
+  );
   const monthlyHours = useMemo(() => computeMonthlyHours(programs), [programs]);
   const categoryDistribution = useMemo(
     () => computeCategoryDistribution(programs, config.trainingCategories),
     [programs, config.trainingCategories],
   );
+  const excludeIds = useMemo(
+    () =>
+      getProgramParticipants(
+        displayParticipants,
+        enrollment.selectedProgramForParticipants || "",
+      ).map((p) => p.employee_id),
+    [displayParticipants, enrollment.selectedProgramForParticipants],
+  );
 
-  const getEmployeeNameCb = useCallback((employeeId: string) => getEmployeeName(employees, employeeId), [employees]);
+  const getEmployeeNameCb = useCallback(
+    (employeeId: string) => getEmployeeName(employees, employeeId),
+    [employees],
+  );
 
   return (
     <div className="space-y-6">
@@ -164,7 +196,7 @@ const TrainingWorkspace = () => {
             form={enrollment.enrollForm}
             employees={employees}
             participantStatuses={config.participantStatuses}
-            excludeIds={getProgramParticipants(displayParticipants, enrollment.selectedProgramForParticipants || "").map((p) => p.employee_id)}
+            excludeIds={excludeIds}
             onFieldChange={enrollment.updateEnrollForm}
             onSave={enrollment.handleEnrollParticipant}
             onClose={enrollment.closeEnrollModal}
@@ -174,7 +206,9 @@ const TrainingWorkspace = () => {
 
       {programsLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">{arabicSource("common.loading")}</div>
+          <div className="text-muted-foreground">
+            {arabicSource("common.loading")}
+          </div>
         </div>
       )}
     </div>

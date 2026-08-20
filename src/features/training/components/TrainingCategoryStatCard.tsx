@@ -1,18 +1,31 @@
+import { memo } from "react";
 import { arabicSource } from "@/i18n/source";
-import { categoryCardBgColors, categoryCardIconColors, categoryCardIcons } from "../constants/training";
+import {
+  categoryCardBgColors,
+  categoryCardIconColors,
+  categoryCardIcons,
+} from "../constants/training";
 
-type TrainingCategoryStatCardProps = {
+interface ITrainingCategoryStatCardProps {
   category: string;
   index: number;
   count: number;
-};
+}
 
-const TrainingCategoryStatCard = ({ category, index, count }: TrainingCategoryStatCardProps) => {
+const TrainingCategoryStatCard = ({
+  category,
+  index,
+  count,
+}: ITrainingCategoryStatCardProps) => {
   const CatIcon = categoryCardIcons[index % categoryCardIcons.length];
   return (
-    <div className={`p-4 rounded-xl ${categoryCardBgColors[index % categoryCardBgColors.length]}`}>
+    <div
+      className={`p-4 rounded-xl ${categoryCardBgColors[index % categoryCardBgColors.length]}`}
+    >
       <div className="flex items-center gap-2 mb-2">
-        <CatIcon className={`w-5 h-5 ${categoryCardIconColors[index % categoryCardIconColors.length]}`} />
+        <CatIcon
+          className={`w-5 h-5 ${categoryCardIconColors[index % categoryCardIconColors.length]}`}
+        />
         <h4 className="text-foreground">{category}</h4>
       </div>
       <span className="text-gradient-gold" style={{ fontSize: 36 }}>
@@ -25,4 +38,4 @@ const TrainingCategoryStatCard = ({ category, index, count }: TrainingCategorySt
   );
 };
 
-export default TrainingCategoryStatCard;
+export default memo(TrainingCategoryStatCard);

@@ -1,15 +1,19 @@
 import { Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-type TrainingHeaderProps = {
+interface ITrainingHeaderProps {
   onNewProgram: () => void;
-};
+}
 
-const TrainingHeader = ({ onNewProgram }: TrainingHeaderProps) => (
+const TrainingHeader = ({ onNewProgram }: ITrainingHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
-      <h1 className="text-gradient-gold">{arabicSource("common.training_and_development")}</h1>
-      <p className="text-muted-foreground mt-1">{arabicSource("training.managing_training_programs_and_participants")}</p>
+      <h1 className="text-gradient-gold">
+        {arabicSource("common.training_and_development")}
+      </h1>
+      <p className="text-muted-foreground mt-1">
+        {arabicSource("training.managing_training_programs_and_participants")}
+      </p>
     </div>
     <button
       onClick={onNewProgram}

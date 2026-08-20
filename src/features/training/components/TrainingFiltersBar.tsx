@@ -2,15 +2,21 @@ import { Filter, Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import TrainingFilterChip from "./TrainingFilterChip";
 
-type TrainingFiltersBarProps = {
+interface ITrainingFiltersBarProps {
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
   filters: string[];
   filter: string;
   onFilterChange: (value: string) => void;
-};
+}
 
-const TrainingFiltersBar = ({ searchTerm, onSearchTermChange, filters, filter, onFilterChange }: TrainingFiltersBarProps) => (
+const TrainingFiltersBar = ({
+  searchTerm,
+  onSearchTermChange,
+  filters,
+  filter,
+  onFilterChange,
+}: ITrainingFiltersBarProps) => (
   <div className="flex items-center gap-4 flex-wrap">
     <div className="flex-1 min-w-64 relative">
       <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -24,8 +30,13 @@ const TrainingFiltersBar = ({ searchTerm, onSearchTermChange, filters, filter, o
     </div>
     <div className="flex items-center gap-2">
       <Filter className="w-4 h-4 text-muted-foreground" />
-      {filters.map((f) => (
-        <TrainingFilterChip key={f} label={f} isActive={filter === f} onClick={() => onFilterChange(f)} />
+      {filters?.map((f) => (
+        <TrainingFilterChip
+          key={f}
+          label={f}
+          isActive={filter === f}
+          onFilterChange={onFilterChange}
+        />
       ))}
     </div>
   </div>

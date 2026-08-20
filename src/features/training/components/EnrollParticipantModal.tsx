@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
@@ -8,7 +9,7 @@ import TrainingModalFooterActions from "./TrainingModalFooterActions";
 import TrainingModalHeader from "./TrainingModalHeader";
 import TrainingSelectField from "./TrainingSelectField";
 
-type EnrollParticipantModalProps = {
+type TEnrollParticipantModalProps = {
   form: EnrollParticipantForm;
   employees: DbEmployee[];
   participantStatuses: string[];
@@ -26,26 +27,40 @@ const EnrollParticipantModal = ({
   onFieldChange,
   onSave,
   onClose,
-}: EnrollParticipantModalProps) => (
-  <ModalOverlay
-    onClose={onClose}
-    closeOnBackdropClick={false}
-    overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    contentClassName="bg-card border border-border/40 rounded-xl p-6 max-w-md w-full"
-    contentMotionProps={{
-      initial: { scale: 0.95, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0.95, opacity: 0 },
-    }}
-  >
-      <TrainingModalHeader title={arabicSource("training.register_a_new_employee")} onClose={onClose} />
+}: TEnrollParticipantModalProps) => {
+  const employeeLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        employees?.map((e) => [String(e.id), empDisplayName(e)]),
+      ),
+    [employees],
+  );
+
+  return (
+    <ModalOverlay
+      onClose={onClose}
+      closeOnBackdropClick={false}
+      overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      contentClassName="bg-card border border-border/40 rounded-xl p-6 max-w-md w-full"
+      contentMotionProps={{
+        initial: { scale: 0.95, opacity: 0 },
+        animate: { scale: 1, opacity: 1 },
+        exit: { scale: 0.95, opacity: 0 },
+      }}
+    >
+      <TrainingModalHeader
+        title={arabicSource("training.register_a_new_employee")}
+        onClose={onClose}
+      />
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("common.employee_3")}</label>
+          <label className="block text-sm text-foreground mb-2">
+            {arabicSource("common.employee_3")}
+          </label>
           <EmployeeSelect
             employees={employees}
-            labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+            labels={employeeLabels}
             value={form.employee_id}
             onChange={(id) => onFieldChange({ employee_id: String(id) })}
             placeholder={arabicSource("training.select_employee")}
@@ -62,7 +77,9 @@ const EnrollParticipantModal = ({
 
         {form.completion_status === arabicSource("common.complete") && (
           <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("training.grade")}</label>
+            <label className="block text-sm text-foreground mb-2">
+              {arabicSource("training.grade")}
+            </label>
             <input
               type="number"
               value={form.score}
@@ -75,9 +92,14 @@ const EnrollParticipantModal = ({
           </div>
         )}
 
-        <TrainingModalFooterActions onSave={onSave} onClose={onClose} saveLabel={arabicSource("training.register")} />
+        <TrainingModalFooterActions
+          onSave={onSave}
+          onClose={onClose}
+          saveLabel={arabicSource("training.register")}
+        />
       </div>
-  </ModalOverlay>
-);
+    </ModalOverlay>
+  );
+};
 
 export default EnrollParticipantModal;
