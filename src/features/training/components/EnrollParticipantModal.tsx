@@ -1,10 +1,12 @@
-import { Save, X } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { fieldCls } from "../styles";
 import type { EnrollParticipantForm } from "../types";
+import TrainingModalFooterActions from "./TrainingModalFooterActions";
+import TrainingModalHeader from "./TrainingModalHeader";
+import TrainingSelectField from "./TrainingSelectField";
 
 type EnrollParticipantModalProps = {
   form: EnrollParticipantForm;
@@ -36,12 +38,7 @@ const EnrollParticipantModal = ({
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl text-foreground">{arabicSource("training.register_a_new_employee")}</h2>
-        <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
-          <X className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
+      <TrainingModalHeader title={arabicSource("training.register_a_new_employee")} onClose={onClose} />
 
       <div className="space-y-4">
         <div>
@@ -56,16 +53,12 @@ const EnrollParticipantModal = ({
           />
         </div>
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("training.join_status")}</label>
-          <select
-            value={form.completion_status}
-            onChange={(e) => onFieldChange({ completion_status: e.target.value })}
-            className={fieldCls}
-          >
-            {participantStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
+        <TrainingSelectField
+          label={arabicSource("training.join_status")}
+          value={form.completion_status}
+          onChange={(value) => onFieldChange({ completion_status: value })}
+          options={participantStatuses}
+        />
 
         {form.completion_status === arabicSource("common.complete") && (
           <div>
@@ -82,21 +75,7 @@ const EnrollParticipantModal = ({
           </div>
         )}
 
-        <div className="flex items-center gap-3 pt-4 border-t border-border/20">
-          <button
-            onClick={onSave}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            {arabicSource("training.register")}
-          </button>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-          >
-            {arabicSource("common.cancel")}
-          </button>
-        </div>
+        <TrainingModalFooterActions onSave={onSave} onClose={onClose} saveLabel={arabicSource("training.register")} />
       </div>
   </ModalOverlay>
 );

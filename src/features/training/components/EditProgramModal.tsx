@@ -1,8 +1,10 @@
-import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import { fieldCls } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
+import TrainingModalFooterActions from "./TrainingModalFooterActions";
+import TrainingModalHeader from "./TrainingModalHeader";
+import TrainingSelectField from "./TrainingSelectField";
 
 type EditProgramModalProps = {
   program: DbTrainingProgram;
@@ -24,12 +26,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl text-foreground">{arabicSource("training.modify_the_program")}</h2>
-        <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
-          <X className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
+      <TrainingModalHeader title={arabicSource("training.modify_the_program")} onClose={onClose} />
 
       <div className="space-y-4">
         <div>
@@ -53,16 +50,12 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("common.status")}</label>
-            <select
-              value={program.status}
-              onChange={(e) => onFieldChange({ status: e.target.value })}
-              className={fieldCls}
-            >
-              {trainingStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
+          <TrainingSelectField
+            label={arabicSource("common.status")}
+            value={program.status}
+            onChange={(value) => onFieldChange({ status: value })}
+            options={trainingStatuses}
+          />
 
           <div>
             <label className="block text-sm text-foreground mb-2">{arabicSource("training.completion_rate")}</label>
@@ -77,21 +70,7 @@ const EditProgramModal = ({ program, trainingStatuses, onFieldChange, onSave, on
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-4 border-t border-border/20">
-          <button
-            onClick={onSave}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            {arabicSource("common.save_changes")}
-          </button>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-          >
-            {arabicSource("common.cancel")}
-          </button>
-        </div>
+        <TrainingModalFooterActions onSave={onSave} onClose={onClose} saveLabel={arabicSource("common.save_changes")} />
       </div>
   </ModalOverlay>
 );

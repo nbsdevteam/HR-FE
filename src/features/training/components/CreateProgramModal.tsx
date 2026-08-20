@@ -1,8 +1,10 @@
-import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ModalOverlay } from "@/shared/components";
 import { fieldCls } from "../styles";
 import type { CreateProgramForm } from "../types";
+import TrainingModalFooterActions from "./TrainingModalFooterActions";
+import TrainingModalHeader from "./TrainingModalHeader";
+import TrainingSelectField from "./TrainingSelectField";
 
 type CreateProgramModalProps = {
   form: CreateProgramForm;
@@ -34,12 +36,7 @@ const CreateProgramModal = ({
       exit: { scale: 0.95, opacity: 0 },
     }}
   >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl text-foreground">{arabicSource("training.new_training_program")}</h2>
-        <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
-          <X className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
+      <TrainingModalHeader title={arabicSource("training.new_training_program")} onClose={onClose} />
 
       <div className="space-y-4">
         <div>
@@ -54,16 +51,12 @@ const CreateProgramModal = ({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-foreground mb-2">{arabicSource("training.category")}</label>
-            <select
-              value={form.category}
-              onChange={(e) => onFieldChange({ category: e.target.value })}
-              className={fieldCls}
-            >
-              {trainingCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-          </div>
+          <TrainingSelectField
+            label={arabicSource("training.category")}
+            value={form.category}
+            onChange={(value) => onFieldChange({ category: value })}
+            options={trainingCategories}
+          />
 
           <div>
             <label className="block text-sm text-foreground mb-2">{arabicSource("training.weight")}</label>
@@ -123,16 +116,12 @@ const CreateProgramModal = ({
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">{arabicSource("common.status")}</label>
-          <select
-            value={form.status}
-            onChange={(e) => onFieldChange({ status: e.target.value })}
-            className={fieldCls}
-          >
-            {trainingStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
+        <TrainingSelectField
+          label={arabicSource("common.status")}
+          value={form.status}
+          onChange={(value) => onFieldChange({ status: value })}
+          options={trainingStatuses}
+        />
 
         <div>
           <label className="block text-sm text-foreground mb-2">{arabicSource("training.maximum_participants")}</label>
@@ -156,21 +145,7 @@ const CreateProgramModal = ({
           />
         </div>
 
-        <div className="flex items-center gap-3 pt-4 border-t border-border/20">
-          <button
-            onClick={onSave}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            {arabicSource("training.save_the_program")}
-          </button>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-          >
-            {arabicSource("common.cancel")}
-          </button>
-        </div>
+        <TrainingModalFooterActions onSave={onSave} onClose={onClose} saveLabel={arabicSource("training.save_the_program")} />
       </div>
   </ModalOverlay>
 );
