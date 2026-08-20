@@ -578,7 +578,7 @@ function useAsyncList<T>(
   return { data, loading, error, refetch: fetchData };
 }
 
-export function useEmployees() {
+export const useEmployees = () => {
   const { data: employees, loading, error, refetch } = useAsyncList(
     () => odooData.fetchEmployees(),
     [],
@@ -592,7 +592,7 @@ export function useEmployees() {
  * - hr.employees.list succeeds → full roster dropdown
  * - list Forbidden → /api/hr/employees/me + selfOnly (agent self-leave)
  */
-export function useLeaveEmployeeScope() {
+export const useLeaveEmployeeScope = () => {
   const [employees, setEmployees] = useState<DbEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -631,7 +631,7 @@ export function useLeaveEmployeeScope() {
   };
 }
 
-export function useHierarchyData() {
+export const useHierarchyData = () => {
   const [employees, setEmployees] = useState<DbEmployee[]>([]);
   const [departments, setDepartments] = useState<DbDepartment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -663,7 +663,7 @@ export type AttendanceRecordsFilter = {
   employeeId?: string;
 };
 
-export function useAttendanceRecords(dateOrFilter?: string | AttendanceRecordsFilter) {
+export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFilter) => {
   const filter: AttendanceRecordsFilter =
     typeof dateOrFilter === "string" || dateOrFilter === undefined
       ? { date: dateOrFilter }
@@ -682,7 +682,7 @@ export function useAttendanceRecords(dateOrFilter?: string | AttendanceRecordsFi
   return { records, loading, refetch };
 }
 
-export function useMonthlyRecords(monthYear?: string) {
+export const useMonthlyRecords = (monthYear?: string) => {
   const { data: records, loading, refetch } = useAsyncList(
     () => odooData.fetchMonthlyRecords(monthYear),
     [monthYear]
@@ -690,7 +690,7 @@ export function useMonthlyRecords(monthYear?: string) {
   return { records, loading, refetch };
 }
 
-export function useMonthlyLedgers(monthYear?: string) {
+export const useMonthlyLedgers = (monthYear?: string) => {
   const { data: ledgers, loading, refetch } = useAsyncList(
     () => odooData.fetchMonthlyLedgers(monthYear),
     [monthYear]
@@ -753,7 +753,7 @@ const _mockShifts: DbShift[] = [
   },
 ];
 
-export function useShifts() {
+export const useShifts = () => {
   const { data: shifts, loading, refetch } = useAsyncList(async () => {
     try {
       const data = await odooData.fetchShifts();
@@ -778,7 +778,7 @@ const _mockPositions: DbPosition[] = [
   { id: "mock-pos-ops-mgr", title_ar: arabicSource("messages.operations_manager"), title_en: "Operations Manager", department_id: null, reports_to_position_id: "mock-pos-ceo", level: 1, max_headcount: 1, is_active: true, description: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
-export function usePositions() {
+export const usePositions = () => {
   const { data: positions, loading, refetch } = useAsyncList(async () => {
     try {
       const data = await odooData.fetchPositions();
@@ -791,14 +791,14 @@ export function usePositions() {
   return { positions, loading, refetch };
 }
 
-export function useEmployeeShiftAssignments() {
+export const useEmployeeShiftAssignments = () => {
   const { data: assignments, loading, refetch } = useAsyncList(
     () => odooData.fetchShiftAssignments()
   );
   return { assignments, loading, refetch };
 }
 
-export function useSystemModules() {
+export const useSystemModules = () => {
   const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules());
 
   const isEnabled = (moduleKey: string): boolean => {
@@ -809,7 +809,7 @@ export function useSystemModules() {
   return { modules, loading, refetch, isEnabled };
 }
 
-export function useConfigurations() {
+export const useConfigurations = () => {
   const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs());
 
   const getValue = (key: string, fallback: string = ""): string => {
@@ -831,7 +831,7 @@ export function useConfigurations() {
   return { configs, loading, refetch, getValue, getNumber, getBool };
 }
 
-export function usePublicHolidays(year?: number) {
+export const usePublicHolidays = (year?: number) => {
   const { data: holidays, loading, refetch } = useAsyncList(
     () => odooData.fetchHolidays(year),
     [year]
@@ -849,12 +849,12 @@ export function usePublicHolidays(year?: number) {
   return { holidays, loading, refetch, isHoliday, getHolidayName };
 }
 
-export function useAllowanceTypes() {
+export const useAllowanceTypes = () => {
   const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchAllowanceTypes());
   return { types, loading, refetch };
 }
 
-export function useEmployeeAllowances(employeeId?: string) {
+export const useEmployeeAllowances = (employeeId?: string) => {
   const { data: allowances, loading, refetch } = useAsyncList(
     () => odooData.fetchEmployeeAllowances(employeeId),
     [employeeId]
@@ -862,12 +862,12 @@ export function useEmployeeAllowances(employeeId?: string) {
   return { allowances, loading, refetch };
 }
 
-export function useDeductionTypes() {
+export const useDeductionTypes = () => {
   const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDeductionTypes());
   return { types, loading, refetch };
 }
 
-export function useEmployeeDeductions(employeeId?: string) {
+export const useEmployeeDeductions = (employeeId?: string) => {
   const { data: deductions, loading, refetch } = useAsyncList(
     () => odooData.fetchEmployeeDeductions(employeeId),
     [employeeId]
@@ -875,7 +875,7 @@ export function useEmployeeDeductions(employeeId?: string) {
   return { deductions, loading, refetch };
 }
 
-export function useLoans(employeeId?: string) {
+export const useLoans = (employeeId?: string) => {
   const { data: loans, loading, refetch } = useAsyncList(
     () => odooData.fetchLoans(employeeId),
     [employeeId]
@@ -885,17 +885,17 @@ export function useLoans(employeeId?: string) {
 
 // ——— Phase 3: Leave Management Hooks ———
 
-export function useLeaveTypes() {
+export const useLeaveTypes = () => {
   const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchLeaveTypes());
   return { types, loading, refetch };
 }
 
-export function useLeavePolicies() {
+export const useLeavePolicies = () => {
   const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchLeavePolicies());
   return { policies, loading, refetch };
 }
 
-export function useLeaveRequests(filters?: { employeeId?: string; status?: string; month?: string }) {
+export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
   const { data: requests, loading, refetch } = useAsyncList(
     () => odooData.fetchLeaveRequests(filters),
     [filters?.employeeId, filters?.status, filters?.month]
@@ -903,7 +903,7 @@ export function useLeaveRequests(filters?: { employeeId?: string; status?: strin
   return { requests, loading, refetch };
 }
 
-export function useLeaveBalances(year?: number) {
+export const useLeaveBalances = (year?: number) => {
   const { data: balances, loading, refetch } = useAsyncList(
     () => odooData.fetchLeaveBalances(year),
     [year]
@@ -911,7 +911,7 @@ export function useLeaveBalances(year?: number) {
   return { balances, loading, refetch };
 }
 
-export function useLeavePermissions(employeeId?: string) {
+export const useLeavePermissions = (employeeId?: string) => {
   const { data: permissions, loading, refetch } = useAsyncList(
     () => odooData.fetchLeavePermissions(employeeId),
     [employeeId]
@@ -920,12 +920,12 @@ export function useLeavePermissions(employeeId?: string) {
 }
 
 /** Resolve effective leave days for an employee considering policies (department/contract overrides) */
-export function resolveLeaveEntitlement(
+export const resolveLeaveEntitlement = (
   leaveType: DbLeaveType,
   policies: DbLeavePolicy[],
   department?: string,
   contractType?: string
-): number {
+): number => {
   // Priority: contract_type > department > global > default
   const contractPolicy = policies.find(p => p.leave_type_id === leaveType.id && p.scope === "contract_type" && p.scope_value === contractType);
   if (contractPolicy) return contractPolicy.days_per_year;
@@ -938,12 +938,12 @@ export function resolveLeaveEntitlement(
 
 // ——— Phase 4: Employee Lifecycle Hooks ———
 
-export function useContractTypes() {
+export const useContractTypes = () => {
   const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchContractTypes());
   return { types, loading, refetch };
 }
 
-export function useEmployeeContracts(employeeId?: string) {
+export const useEmployeeContracts = (employeeId?: string) => {
   const { data: contracts, loading, refetch } = useAsyncList(
     () => odooData.fetchContracts(employeeId),
     [employeeId]
@@ -951,12 +951,12 @@ export function useEmployeeContracts(employeeId?: string) {
   return { contracts, loading, refetch };
 }
 
-export function useDocumentTypes() {
+export const useDocumentTypes = () => {
   const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDocumentTypes());
   return { types, loading, refetch };
 }
 
-export function useEmployeeDocuments(employeeId?: string) {
+export const useEmployeeDocuments = (employeeId?: string) => {
   const { data: documents, loading, refetch } = useAsyncList(
     () => odooData.fetchDocuments(employeeId),
     [employeeId]
@@ -964,12 +964,12 @@ export function useEmployeeDocuments(employeeId?: string) {
   return { documents, loading, refetch };
 }
 
-export function useApprovalWorkflows() {
+export const useApprovalWorkflows = () => {
   const { data: workflows, loading, refetch } = useAsyncList(() => odooData.fetchApprovalWorkflows());
   return { workflows, loading, refetch };
 }
 
-export function useApprovalWorkflowSteps(workflowId?: string) {
+export const useApprovalWorkflowSteps = (workflowId?: string) => {
   const { data: steps, loading, refetch } = useAsyncList(async () => {
     const workflows = await odooData.fetchApprovalWorkflows();
     const wf = workflows.find((w: any) => String(w.id) === String(workflowId));
@@ -988,7 +988,7 @@ export function useApprovalWorkflowSteps(workflowId?: string) {
   return { steps, loading, refetch };
 }
 
-export function useApprovalRequests(filters?: { entityType?: string; status?: string }) {
+export const useApprovalRequests = (filters?: { entityType?: string; status?: string }) => {
   const { data: requests, loading, refetch } = useAsyncList(
     () => odooData.fetchApprovalRequests({
       entityType: filters?.entityType,
@@ -999,7 +999,7 @@ export function useApprovalRequests(filters?: { entityType?: string; status?: st
   return { requests, loading, refetch };
 }
 
-export function useIssues(filters?: { employeeId?: string; state?: string }) {
+export const useIssues = (filters?: { employeeId?: string; state?: string }) => {
   const { data: issues, loading, refetch } = useAsyncList(
     () => odooData.fetchIssues({
       employeeId: filters?.employeeId,
@@ -1010,12 +1010,12 @@ export function useIssues(filters?: { employeeId?: string; state?: string }) {
   return { issues, loading, refetch };
 }
 
-export function useExitChecklistItems() {
+export const useExitChecklistItems = () => {
   const { data: items, loading, refetch } = useAsyncList(() => odooData.fetchExitChecklistItems());
   return { items, loading, refetch };
 }
 
-export function useExitProcesses(employeeId?: string) {
+export const useExitProcesses = (employeeId?: string) => {
   const { data: processes, loading, refetch } = useAsyncList(
     async () => (await odooData.fetchExitProcesses(employeeId)).processes,
     [employeeId]
@@ -1023,7 +1023,7 @@ export function useExitProcesses(employeeId?: string) {
   return { processes, loading, refetch };
 }
 
-export function useExitChecklist(exitProcessId?: string) {
+export const useExitChecklist = (exitProcessId?: string) => {
   // Checklist lines are embedded in the exit processes payload.
   const { data: checklist, loading, refetch } = useAsyncList(async () => {
     const { checklist: rows } = await odooData.fetchExitProcesses();
@@ -1177,12 +1177,12 @@ export interface ApplicationLink {
   base_url_configured?: boolean;
 }
 
-export function useJobOpenings() {
+export const useJobOpenings = () => {
   const { data: jobs, loading, refetch } = useAsyncList(() => odooData.fetchJobOpenings());
   return { jobs, loading, refetch };
 }
 
-export function useApplicants() {
+export const useApplicants = () => {
   const { data: applicants, loading, refetch } = useAsyncList(() => odooData.fetchApplicants());
   return { applicants, loading, refetch };
 }
@@ -1194,7 +1194,7 @@ export function useApplicants() {
  * asynchronously on the backend cron and HR should watch scores land without
  * refreshing the page.
  */
-export function useJobRanking(jobId: string | null) {
+export const useJobRanking = (jobId: string | null) => {
   const [items, setItems] = useState<DbApplicant[]>([]);
   const [stats, setStats] = useState<JobRankingStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1302,7 +1302,7 @@ export interface DbPolicy {
   created_at: string;
 }
 
-export function useEvaluations(filters?: { employeeId?: string; period?: string }) {
+export const useEvaluations = (filters?: { employeeId?: string; period?: string }) => {
   const { data: evaluations, loading, refetch } = useAsyncList(
     () => odooData.fetchEvaluations(filters?.employeeId),
     [filters?.employeeId, filters?.period]
@@ -1310,7 +1310,7 @@ export function useEvaluations(filters?: { employeeId?: string; period?: string 
   return { evaluations, loading, refetch };
 }
 
-export function useWarnings(filters?: { employeeId?: string; status?: string }) {
+export const useWarnings = (filters?: { employeeId?: string; status?: string }) => {
   const { data: warnings, loading, refetch } = useAsyncList(
     () => odooData.fetchWarnings(filters?.employeeId),
     [filters?.employeeId, filters?.status]
@@ -1318,12 +1318,12 @@ export function useWarnings(filters?: { employeeId?: string; status?: string }) 
   return { warnings, loading, refetch };
 }
 
-export function useTrainingPrograms() {
+export const useTrainingPrograms = () => {
   const { data: programs, loading, refetch } = useAsyncList(() => odooData.fetchTrainingPrograms());
   return { programs, loading, refetch };
 }
 
-export function useTrainingParticipants(programId?: string) {
+export const useTrainingParticipants = (programId?: string) => {
   const { data: participants, loading, refetch } = useAsyncList(
     () => odooData.fetchTrainingParticipants(programId),
     [programId]
@@ -1331,7 +1331,7 @@ export function useTrainingParticipants(programId?: string) {
   return { participants, loading, refetch };
 }
 
-export function usePolicies() {
+export const usePolicies = () => {
   const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchPolicies());
   return { policies, loading, refetch };
 }
@@ -1394,7 +1394,7 @@ export interface DbReportHistory {
   generated_at: string;
 }
 
-export function useNotifications(employeeId?: string) {
+export const useNotifications = (employeeId?: string) => {
   const { data: notifications, loading, refetch } = useAsyncList(
     () => odooData.fetchNotifications(),
     [employeeId]
@@ -1403,7 +1403,7 @@ export function useNotifications(employeeId?: string) {
   return { notifications, unreadCount, loading, refetch };
 }
 
-export function useAuditLog(filters?: { entityType?: string; action?: string; limit?: number }) {
+export const useAuditLog = (filters?: { entityType?: string; action?: string; limit?: number }) => {
   const { data: logs, loading, refetch } = useAsyncList(
     () => odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }),
     [filters?.entityType, filters?.action, filters?.limit]
@@ -1411,18 +1411,18 @@ export function useAuditLog(filters?: { entityType?: string; action?: string; li
   return { logs, loading, refetch };
 }
 
-export function useReportTemplates() {
+export const useReportTemplates = () => {
   const { data: templates, loading, refetch } = useAsyncList(() => odooData.fetchReportTemplates());
   return { templates, loading, refetch };
 }
 
-export function useReportHistory() {
+export const useReportHistory = () => {
   const { data: history, loading, refetch } = useAsyncList(() => odooData.fetchReportHistory());
   return { history, loading, refetch };
 }
 
 /** Log an audit entry */
-export async function logAudit(entry: {
+export const logAudit = async (entry: {
   action: string;
   entity_type: string;
   entity_id?: string;
@@ -1430,7 +1430,7 @@ export async function logAudit(entry: {
   actor_name?: string;
   actor_employee_id?: string;
   details?: Record<string, any>;
-}) {
+}) => {
   try {
     await odooData.createAuditLog({
       action: entry.action,
@@ -1445,7 +1445,7 @@ export async function logAudit(entry: {
 }
 
 /** Create a notification */
-export async function createNotification(n: {
+export const createNotification = async (n: {
   title: string;
   body?: string;
   type?: 'info' | 'warning' | 'success' | 'error' | 'action';
@@ -1454,7 +1454,7 @@ export async function createNotification(n: {
   entity_id?: string;
   target_employee_id?: string;
   action_url?: string;
-}) {
+}) => {
   try {
     await odooData.createNotification({
       title: n.title,
@@ -1474,12 +1474,12 @@ export async function createNotification(n: {
 // ——— Helpers ———
 
 /** Map DB employee ID to a friendly EMP-XXXX number */
-export function empNumber(personId: number): string {
+export const empNumber = (personId: number): string => {
   return `EMP-${String(personId).padStart(4, "0")}`;
 }
 
 /** Get display name — prefer real Arabic/English names over login-style usernames. */
-export function empDisplayName(e: DbEmployee): string {
+export const empDisplayName = (e: DbEmployee): string => {
   const ar = (e.arabic_name || "").trim();
   const en = (e.name || "").trim();
   const looksLikeLogin = (s: string) =>
@@ -1492,7 +1492,7 @@ export function empDisplayName(e: DbEmployee): string {
 }
 
 /** Map attendance status from DB to Arabic display */
-export function mapAttendanceStatus(status: string, isLate: boolean): string | string | string | string {
+export const mapAttendanceStatus = (status: string, isLate: boolean): string | string | string | string => {
   if (status === "complete" && isLate) return arabicSource("common.late");
   if (status === "complete" || status === "missing_checkout" || status === "checked_in" || status === "missing_checkin" || status === "auto_checkout") return arabicSource("common.present");
   if (status === "absent") return arabicSource("common.absent");
@@ -1501,7 +1501,7 @@ export function mapAttendanceStatus(status: string, isLate: boolean): string | s
 }
 
 /** Format time string (HH:MM:SS) to 12-hour format (h:MM AM/PM) */
-export function formatTime(t: string | null): string {
+export const formatTime = (t: string | null): string => {
   if (!t) return "—";
   const parts = t.split(":");
   let h = parseInt(parts[0], 10);
@@ -1513,14 +1513,14 @@ export function formatTime(t: string | null): string {
 }
 
 /** Format working hours number to H:MM */
-export function formatWorkHours(h: number): string {
+export const formatWorkHours = (h: number): string => {
   const hrs = Math.floor(h);
   const mins = Math.round((h - hrs) * 60);
   return `${hrs}:${String(mins).padStart(2, "0")}`;
 }
 
 /** Convert DbShift to EmployeeSchedule format */
-export function shiftToSchedule(shift: DbShift): Record<string, { isWorkingDay: boolean; startTime: string; endTime: string }> {
+export const shiftToSchedule = (shift: DbShift): Record<string, { isWorkingDay: boolean; startTime: string; endTime: string }> => {
   return {
     sunday: { isWorkingDay: shift.sunday_is_working, startTime: shift.sunday_start, endTime: shift.sunday_end },
     monday: { isWorkingDay: shift.monday_is_working, startTime: shift.monday_start, endTime: shift.monday_end },
@@ -1533,11 +1533,11 @@ export function shiftToSchedule(shift: DbShift): Record<string, { isWorkingDay: 
 }
 
 /** Resolve the effective shift for an employee: employee override > department default > system default */
-export function resolveEmployeeShift(
+export const resolveEmployeeShift = (
   employee: DbEmployee,
   departments: DbDepartment[],
   shifts: DbShift[]
-): DbShift | null {
+): DbShift | null => {
   // 1. Employee-level override
   if (employee.shift_id) {
     const s = shifts.find(sh => sh.id === employee.shift_id);
@@ -1595,7 +1595,7 @@ function odooUtcMs(value: string | null | undefined): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
-export function useDeviceStatus() {
+export const useDeviceStatus = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>({
     devices: [], totalDevices: 0, activeDevices: 0,
     lastSyncAt: null, syncAgeMinutes: 999,
