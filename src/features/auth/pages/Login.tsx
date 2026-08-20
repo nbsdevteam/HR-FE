@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Lock, Mail, Loader2, Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/shared/auth";
 
-export function Login() {
+const Login = () => {
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -128,4 +128,6 @@ export function Login() {
       </motion.div>
     </div>
   );
-}
+};
+
+export default Login;

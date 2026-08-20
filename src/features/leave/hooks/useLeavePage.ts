@@ -15,6 +15,15 @@ import {
 import type { LeaveSortKey, LeaveTabId, LeaveViewMode } from "../types";
 
 export const useLeavePage = () => {
+  const [activeTab, setActiveTab] = useState<LeaveTabId>("requests");
+  const [filter, setFilter] = useState(arabicSource("common.all"));
+  const [search, setSearch] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [showPermForm, setShowPermForm] = useState(false);
+  const [viewMode, setViewMode] = useState<LeaveViewMode>("list");
+  const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>("start");
+  const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">("desc");
+
   const {
     employees,
     loading: empLoading,
@@ -27,15 +36,6 @@ export const useLeavePage = () => {
   const currentYear = new Date().getFullYear();
   const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(currentYear);
   const { permissions, loading: permLoading, refetch: refetchPermissions } = useLeavePermissions();
-
-  const [activeTab, setActiveTab] = useState<LeaveTabId>("requests");
-  const [filter, setFilter] = useState(arabicSource("common.all"));
-  const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [showPermForm, setShowPermForm] = useState(false);
-  const [viewMode, setViewMode] = useState<LeaveViewMode>("list");
-  const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>("start");
-  const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">("desc");
 
   const empMap = useMemo(() => {
     const mappedEmployees: Record<string, (typeof employees)[number]> = {};

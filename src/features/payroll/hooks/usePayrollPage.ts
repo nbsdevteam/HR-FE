@@ -16,6 +16,14 @@ import { arabicSource } from "@/i18n/source";
 import type { PayrollTabId } from "../types";
 
 export const usePayrollPage = () => {
+  const [activeTab, setActiveTab] = useState<PayrollTabId>("overview");
+  const [selectedMonth, setSelectedMonth] = useState("");
+
+  // Detail panel state
+  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
+  const [savingPayslips, setSavingPayslips] = useState(false);
+  const [payslipsSaved, setPayslipsSaved] = useState(false);
+
   const { employees, loading: empLoading } = useEmployees();
   const { settings: appSettings } = useAppSettings();
   const { shifts: dbShifts } = useShifts();
@@ -27,26 +35,20 @@ export const usePayrollPage = () => {
   const { types: deductionTypes } = useDeductionTypes();
   const { deductions: allEmployeeDeductions } = useEmployeeDeductions();
   const { loans: allLoans } = useLoans();
-  const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
-  const [activeTab, setActiveTab] = useState<PayrollTabId>("overview");
   const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
   const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
   const { records: attRecords, loading: attLoading } = useAttendanceRecords();
   const { requests: leaveReqRows, loading: lvLoading } = useLeaveRequests({ status: "مقبول" });
   const { types: leaveTypes } = useLeaveTypes();
+
+  const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
   const leaveRequests = leaveReqRows as LeaveRequest[];
+  const loading = empLoading || mrLoading || ledLoading || attLoading || lvLoading;
+
   const leaveTypeInfos = useMemo(
     () => leaveTypes.map((t) => ({ code: t.code || t.id, name_ar: t.name_ar || t.name_en || "", is_paid: Boolean(t.is_paid) })),
     [leaveTypes],
   );
-  const loading = empLoading || mrLoading || ledLoading || attLoading || lvLoading;
-  const [selectedMonth, setSelectedMonth] = useState("");
-
-  // Detail panel state
-  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
-  const [savingPayslips, setSavingPayslips] = useState(false);
-  const [payslipsSaved, setPayslipsSaved] = useState(false);
-
 
   const empMap = useMemo(() => {
     const m: Record<string, DbEmployee> = {};

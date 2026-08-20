@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Users, UserPlus, Clock, Briefcase, Target, UserX, Heart } from "lucide-react";
-import { CustomLineChart } from "@/shared/components/custom-line-chart";
+import CustomLineChart from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";

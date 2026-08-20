@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Loader2 } from "lucide-react";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
+import CustomBarChart from "@/shared/components/custom-bar-chart";
 import { arabicSource } from "@/i18n/source";
 import EvalDetailModal from "../components/EvalDetailModal";
 import EvaluationFilters from "../components/EvaluationFilters";
@@ -46,6 +47,9 @@ const EvaluationPage = () => {
     viewMode,
   } = useEvaluationPage();
 
+  const handleNewEvaluation = useCallback(() => setShowNewEval(true), [setShowNewEval]);
+  const handleCloseEvalDetail = useCallback(() => setSelectedEval(null), [setSelectedEval]);
+
   if (loading || empLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -60,7 +64,7 @@ const EvaluationPage = () => {
       <EvaluationHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onNewEvaluation={() => setShowNewEval(true)}
+        onNewEvaluation={handleNewEvaluation}
       />
 
       <EvaluationInfoCards />
@@ -111,7 +115,7 @@ const EvaluationPage = () => {
             evaluation={selectedEval}
             empMap={empMap}
             criteria={criteria.filter(criterion => criterion.evaluation_id === selectedEval.id)}
-            onClose={() => setSelectedEval(null)}
+            onClose={handleCloseEvalDetail}
             onUpdate={fetchData}
           />
         )}

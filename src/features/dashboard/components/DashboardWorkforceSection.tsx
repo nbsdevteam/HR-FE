@@ -6,8 +6,8 @@ import {
   Briefcase,
   CalendarDays,
 } from "lucide-react";
-import { DonutChart } from "@/shared/components/donut-chart";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
+import DonutChart from "@/shared/components/donut-chart";
+import CustomBarChart from "@/shared/components/custom-bar-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";

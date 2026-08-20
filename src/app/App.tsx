@@ -1,8 +1,8 @@
 import { RouterProvider } from "react-router";
 import { router } from "./router/routes";
 import { publicRouter, isPublicPath } from "./router/publicRoutes";
-import { AuthProvider, useAuth } from "@/shared/auth";
-import { Login } from "@/features/auth/pages/Login";
+import AuthProvider, { useAuth } from "@/shared/auth";
+import Login from "@/features/auth/pages/Login";
 import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 

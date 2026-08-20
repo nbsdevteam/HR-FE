@@ -1,4 +1,4 @@
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
+import CustomBarChart from "@/shared/components/custom-bar-chart";
 import { arabicSource } from "@/i18n/source";
 import DashboardChartCard from "./DashboardChartCard";
 

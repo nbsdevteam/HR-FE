@@ -14,9 +14,9 @@ export const HR_BUSINESS_TZ = "Asia/Baghdad";
  *
  * Time-only strings (no date) are returned as-is (cannot convert without a date).
  */
-export function odooUtcNaiveToBaghdadTime(
+export const odooUtcNaiveToBaghdadTime = (
   dt: string | null | undefined,
-): string | null {
+): string | null => {
   if (dt == null || dt === "") return null;
   const raw = String(dt).trim();
   if (!raw) return null;
@@ -56,4 +56,4 @@ export function odooUtcNaiveToBaghdadTime(
   if (hour === "24") hour = "00";
 
   return `${hour}:${get("minute")}:${get("second")}`;
-}
+};

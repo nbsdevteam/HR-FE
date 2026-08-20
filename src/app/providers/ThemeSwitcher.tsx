@@ -4,7 +4,7 @@ import { Palette, Check } from "lucide-react";
 import { useTheme, themes } from "./ThemeContext";
 import { arabicSource } from "@/i18n/source";
 
-export function ThemeSwitcher() {
+const ThemeSwitcher = () => {
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
@@ -97,4 +97,6 @@ export function ThemeSwitcher() {
       </AnimatePresence>
     </div>
   );
-}
+};
+
+export default ThemeSwitcher;

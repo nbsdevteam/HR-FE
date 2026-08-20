@@ -9,7 +9,7 @@ import i18n, {
   syncDocumentLocale,
 } from "./index";
 import { translateArabicSource } from "./legacy";
-import { LocalizationProvider } from "./LocalizationProvider";
+import LocalizationProvider from "./LocalizationProvider";
 import { employeeStatusKeys, translateBackendCode } from "./status";
 import { LanguageSwitcher } from "@/app/providers";
 import { localizedConfirm } from "./native";

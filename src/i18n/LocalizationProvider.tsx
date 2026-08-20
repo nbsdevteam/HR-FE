@@ -80,7 +80,7 @@ function localizeTree(root: Node, language: AppLanguage): void {
   }
 }
 
-export function LocalizationProvider({ children }: { children: ReactNode }) {
+const LocalizationProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<AppLanguage>(
     normalizeLanguage(i18n.resolvedLanguage ?? i18n.language),
   );
@@ -128,4 +128,6 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
       {localizedChildren}
     </I18nextProvider>
   );
-}
+};
+
+export default LocalizationProvider;

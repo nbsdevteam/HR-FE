@@ -2,7 +2,7 @@ import { ArrowLeft, FileQuestion } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-export function NotFound() {
+const NotFound = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -24,4 +24,6 @@ export function NotFound() {
       </div>
     </section>
   );
-}
+};
+
+export default NotFound;

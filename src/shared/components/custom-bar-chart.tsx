@@ -13,7 +13,7 @@ interface CustomBarChartProps {
   barLabel?: string;
 }
 
-export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) {
+const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const safeData = data
@@ -151,4 +151,6 @@ export function CustomBarChart({ data, color = "#D4AF37", height = 280, barLabel
       })()}
     </div>
   );
-}
+};
+
+export default CustomBarChart;

@@ -1,4 +1,4 @@
-import { CustomLineChart } from "@/shared/components/custom-line-chart";
+import CustomLineChart from "@/shared/components/custom-line-chart";
 import { arabicSource } from "@/i18n/source";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardTrendBadge from "./DashboardTrendBadge";

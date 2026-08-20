@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useChartTheme() {
+export const useChartTheme = () => {
   const [colors, setColors] = useState({
     primary: "#D4AF37",
     card: "#1A1A1A",
@@ -39,4 +39,4 @@ export function useChartTheme() {
   };
 
   return { colors, tooltipStyle };
-}
+};

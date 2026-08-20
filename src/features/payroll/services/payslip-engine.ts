@@ -172,10 +172,10 @@ export const DEFAULT_SCHEDULE: EmployeeSchedule = {
 
 /** Build PayslipSettings from a DbShift record (database-driven config).
  *  Optionally accepts a configGetter to pull remaining values from the configurations table. */
-export function buildSettingsFromShift(
+export const buildSettingsFromShift = (
   shift: { grace_minutes: number; late_to_absent_hours: number; target_hours_per_day: number },
   configGetter?: { getNumber: (key: string, fallback: number) => number; getBool: (key: string, fallback: boolean) => boolean; getValue: (key: string, fallback: string) => string }
-): PayslipSettings {
+): PayslipSettings => {
   const getNum = configGetter?.getNumber ?? ((_k: string, fb: number) => fb);
   const getBool = configGetter?.getBool ?? ((_k: string, fb: boolean) => fb);
   const getVal = configGetter?.getValue ?? ((_k: string, fb: string) => fb);
@@ -193,9 +193,9 @@ export function buildSettingsFromShift(
 
 /** Build PayslipSettings directly from configurations table (no shift record needed).
  *  Used when shift data is not available. */
-export function buildSettingsFromConfig(
+export const buildSettingsFromConfig = (
   configGetter: { getNumber: (key: string, fallback: number) => number; getBool: (key: string, fallback: boolean) => boolean; getValue: (key: string, fallback: string) => string }
-): PayslipSettings {
+): PayslipSettings => {
   return {
     targetWorkingHoursPerDay: configGetter.getNumber('attendance.target_hours_per_day', DEFAULT_SETTINGS.targetWorkingHoursPerDay),
     dailyAbsenceBasis: configGetter.getValue('attendance.absence_basis', DEFAULT_SETTINGS.dailyAbsenceBasis) as PayslipSettings['dailyAbsenceBasis'],
@@ -305,11 +305,11 @@ function excelSerialToDateTime(serial: number): string | null {
   return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
 }
 
-export function parseAttendanceFile(file: File): Promise<{
+export const parseAttendanceFile = (file: File): Promise<{
   records: RawAttendanceRecord[];
   errors: string[];
   totalRows: number;
-}> {
+}> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -450,13 +450,13 @@ function getMonthDates(monthYear: string): string[] {
   return dates;
 }
 
-export function processAttendanceRecords(
+export const processAttendanceRecords = (
   rawRecords: RawAttendanceRecord[],
   employeeConfig: EmployeePayConfig,
   monthYear: string,
   settings: PayslipSettings = DEFAULT_SETTINGS,
   holidays?: Set<string>
-): ProcessedAttendanceRecord[] {
+): ProcessedAttendanceRecord[] => {
   const monthDates = getMonthDates(monthYear);
   const schedule = employeeConfig.schedule;
 
@@ -678,13 +678,13 @@ export const DEFAULT_EOS_CONFIG: EOSConfig = {
  *  Formula is fully configurable through the EOSConfig parameter.
  *  Tier 1: first N years × tier1Rate × monthly salary
  *  Tier 2: remaining years × tier2Rate × monthly salary */
-export function calculateEOS(
+export const calculateEOS = (
   joinDate: string | null,
   monthlySalary: number,
   currency: string,
   eosConfig: EOSConfig = DEFAULT_EOS_CONFIG,
   asOfDate: string | Date = new Date(),
-): { years: number; months: number; amount: number; currency: string } | null {
+): { years: number; months: number; amount: number; currency: string } | null => {
   if (!joinDate) return null;
   const start = new Date(joinDate);
   const now = new Date(asOfDate);
@@ -700,14 +700,14 @@ export function calculateEOS(
   return { years, months, amount, currency };
 }
 
-export function calculateSalary(
+export const calculateSalary = (
   employee: EmployeePayConfig,
   records: ProcessedAttendanceRecord[],
   monthYear: string,
   ledger: MonthlyLedgerEntry,
   settings: PayslipSettings = DEFAULT_SETTINGS,
   holidays?: Set<string>
-): SalaryCalculation {
+): SalaryCalculation => {
   const scheduledDays = records.filter((r) => r.isScheduledWorkingDay);
   let scheduledWorkingDays = scheduledDays.length;
 
@@ -897,14 +897,14 @@ export function calculateSalary(
 
 // ──────────────────────── Helpers ────────────────────────
 
-export function formatCurrency(val: number, currency: string): string {
+export const formatCurrency = (val: number, currency: string): string => {
   if (/^[A-Z]{3}$/.test(currency)) {
     return formatIntlCurrency(val, currency);
   }
   return `${formatNumber(val)} ${currency}`;
 }
 
-export function formatHoursMinutes(hours: number): string {
+export const formatHoursMinutes = (hours: number): string => {
   const h = Math.floor(hours);
   const m = Math.round((hours - h) * 60);
   if (h === 0) return `${m} ${arabicSource("common.min")}`;
@@ -912,10 +912,10 @@ export function formatHoursMinutes(hours: number): string {
   return `${h} ${arabicSource("common.hours")} ${m} ${arabicSource("common.min")}`;
 }
 
-export function getShortfallRecords(
+export const getShortfallRecords = (
   records: ProcessedAttendanceRecord[],
   targetHours: number
-): ProcessedAttendanceRecord[] {
+): ProcessedAttendanceRecord[] => {
   return records.filter(
     (r) =>
       r.isScheduledWorkingDay &&
@@ -926,18 +926,18 @@ export function getShortfallRecords(
   );
 }
 
-export function getAbsenceRecords(
+export const getAbsenceRecords = (
   records: ProcessedAttendanceRecord[]
-): ProcessedAttendanceRecord[] {
+): ProcessedAttendanceRecord[] => {
   return records.filter(
     (r) => r.status === "absent" || r.status === "absent_due_to_late_threshold" ||
            (r.status === "leave" && r.isUnpaidLeave)
   );
 }
 
-export function getLeaveRecords(
+export const getLeaveRecords = (
   records: ProcessedAttendanceRecord[]
-): ProcessedAttendanceRecord[] {
+): ProcessedAttendanceRecord[] => {
   return records.filter((r) => r.status === "leave");
 }
 
@@ -972,12 +972,12 @@ export interface LeaveDateEntry {
 
 /** Build a map of dates → leave info for an employee's approved leaves in a given month.
  *  Now supports configurable leave types (is_paid) and half-day leaves. */
-export function buildLeaveDateMap(
+export const buildLeaveDateMap = (
   leaves: LeaveRequest[],
   employeeId: string,
   monthYear: string,
   leaveTypeInfos?: LeaveTypeInfo[]
-): Record<string, LeaveDateEntry> {
+): Record<string, LeaveDateEntry> => {
   const map: Record<string, LeaveDateEntry> = {};
   const [y, m] = monthYear.split("-").map(Number);
   const monthEnd = new Date(y, m, 0); // last day of month
@@ -1024,10 +1024,10 @@ export function buildLeaveDateMap(
  *  - Unpaid leave: mark as "leave" + isUnpaidLeave=true, excusedAbsence=false → WILL be deducted.
  *  - Half-day leave: mark partial leave, half the working hours count.
  */
-export function applyLeaveToRecords(
+export const applyLeaveToRecords = (
   records: ProcessedAttendanceRecord[],
   leaveDateMap: Record<string, string | LeaveDateEntry>
-): ProcessedAttendanceRecord[] {
+): ProcessedAttendanceRecord[] => {
   return records.map((rec) => {
     const entry = leaveDateMap[rec.date];
     if (!entry) return rec;

@@ -1,13 +1,13 @@
 import { Outlet } from "react-router";
-import { Sidebar } from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Sidebar";
 import TopBar from "@/app/components/TopBar";
 import { motion } from "motion/react";
 import { ThemeProvider } from "@/app/providers";
 import { SettingsProvider } from "@/app/providers";
-import { NavShellProvider } from "@/app/components/NavShellContext";
+import NavShellProvider from "@/app/components/NavShellContext";
 import { useTranslation } from "react-i18next";
 
-function LayoutInner() {
+const LayoutInner = () => {
   const { i18n } = useTranslation();
   return (
     <div
@@ -47,9 +47,9 @@ function LayoutInner() {
       </div>
     </div>
   );
-}
+};
 
-export function Layout() {
+const Layout = () => {
   return (
     <SettingsProvider>
       <ThemeProvider>
@@ -59,4 +59,6 @@ export function Layout() {
       </ThemeProvider>
     </SettingsProvider>
   );
-}
+};
+
+export default Layout;

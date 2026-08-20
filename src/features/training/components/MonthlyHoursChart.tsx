@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
+import CustomBarChart from "@/shared/components/custom-bar-chart";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
 

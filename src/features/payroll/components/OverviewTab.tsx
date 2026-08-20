@@ -1,9 +1,8 @@
 import { useState, useMemo, memo } from "react";
 import { Wallet, TrendingUp, Calculator, Users, Search } from "lucide-react";
 import StatCard from "@/shared/components/StatCard";
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import {
-  SortableHeaderRow,
+import CustomBarChart from "@/shared/components/custom-bar-chart";
+import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";

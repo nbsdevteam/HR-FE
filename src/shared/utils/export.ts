@@ -3,10 +3,10 @@
  * Excel opens UTF-8 CSV with BOM correctly.
  */
 
-export function downloadCsv(
+export const downloadCsv = (
   filename: string,
   rows: Record<string, unknown>[],
-): void {
+): void => {
   if (!rows.length) return;
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {
@@ -28,13 +28,13 @@ export function downloadCsv(
   a.download = filename.endsWith(".csv") ? filename : `${filename}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-}
+};
 
 /** Alias kept for Task 18 naming (Excel opens this CSV). */
-export function downloadExcelCsv(
+export const downloadExcelCsv = (
   filename: string,
   rows: Record<string, unknown>[],
-): void {
+): void => {
   const base = filename.replace(/\.xlsx$/i, "").replace(/\.csv$/i, "");
   downloadCsv(`${base}.csv`, rows);
-}
+};

@@ -13,7 +13,7 @@ interface CustomLineChartProps {
   valueLabel?: string;
 }
 
-export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) {
+const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const safeData = data
@@ -194,4 +194,6 @@ export function CustomLineChart({ data, color = "#D4AF37", height = 250, valueLa
       })()}
     </div>
   );
-}
+};
+
+export default CustomLineChart;

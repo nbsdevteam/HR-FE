@@ -9,7 +9,7 @@ import {
   type AppLanguage,
 } from "@/i18n";
 
-export function LanguageSwitcher() {
+const LanguageSwitcher = () => {
   const [open, setOpen] = useState(false);
   const { i18n, t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -96,4 +96,6 @@ export function LanguageSwitcher() {
       </AnimatePresence>
     </div>
   );
-}
+};
+
+export default LanguageSwitcher;

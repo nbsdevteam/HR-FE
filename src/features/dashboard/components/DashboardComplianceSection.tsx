@@ -1,5 +1,5 @@
 import { Shield, Zap } from "lucide-react";
-import { DonutChart } from "@/shared/components/donut-chart";
+import DonutChart from "@/shared/components/donut-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";

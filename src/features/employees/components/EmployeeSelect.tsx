@@ -63,10 +63,10 @@ const EmployeeSelect = ({
   excludeIds,
   labels,
 }: Props) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const rootRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const exclude = useMemo(
     () => new Set((excludeIds || []).map((id) => String(id))),

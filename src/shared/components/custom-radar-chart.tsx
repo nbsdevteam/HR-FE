@@ -13,7 +13,7 @@ interface CustomRadarChartProps {
   height?: number;
 }
 
-export function CustomRadarChart({ data, maxValue = 5, color = "#D4AF37", height = 280 }: CustomRadarChartProps) {
+const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 }: CustomRadarChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const size = 300;
@@ -173,4 +173,6 @@ export function CustomRadarChart({ data, maxValue = 5, color = "#D4AF37", height
       })()}
     </div>
   );
-}
+};
+
+export default CustomRadarChart;

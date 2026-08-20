@@ -10,15 +10,15 @@ const TOKEN_KEY = "lugal_hr_access_token";
 const REFRESH_KEY = "lugal_hr_refresh_token";
 const USER_KEY = "lugal_hr_user";
 
-export function isOdooBackend(): boolean {
+export const isOdooBackend = (): boolean => {
   return Boolean(BASE_URL);
 }
 
-export function getAccessToken(): string | null {
+export const getAccessToken = (): string | null => {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-export function getStoredUser(): HrAuthUser | null {
+export const getStoredUser = (): HrAuthUser | null => {
   try {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? (JSON.parse(raw) as HrAuthUser) : null;
@@ -27,11 +27,11 @@ export function getStoredUser(): HrAuthUser | null {
   }
 }
 
-export function setAuthSession(tokens: {
+export const setAuthSession = (tokens: {
   access_token: string;
   refresh_token?: string;
   user?: HrAuthUser;
-}) {
+}) => {
   localStorage.setItem(TOKEN_KEY, tokens.access_token);
   if (tokens.refresh_token) {
     localStorage.setItem(REFRESH_KEY, tokens.refresh_token);
@@ -41,7 +41,7 @@ export function setAuthSession(tokens: {
   }
 }
 
-export function clearAuthSession() {
+export const clearAuthSession = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
@@ -67,7 +67,7 @@ async function parseJsonrpc(res: Response) {
   return envelope.result ?? envelope;
 }
 
-export async function odooLogin(username: string, password: string) {
+export const odooLogin = async (username: string, password: string) => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -102,7 +102,7 @@ export async function odooLogin(username: string, password: string) {
   return { access_token: access, refresh_token: refresh, user };
 }
 
-export async function odooLogout() {
+export const odooLogout = async () => {
   const token = getAccessToken();
   try {
     if (token) {
@@ -114,10 +114,10 @@ export async function odooLogout() {
   clearAuthSession();
 }
 
-export async function hrCall<T = unknown>(
+export const hrCall = async <T = unknown>(
   path: string,
   params: Record<string, unknown> = {},
-): Promise<T> {
+): Promise<T> => {
   if (!BASE_URL) {
     throw new Error("VITE_API_BASE is not configured");
   }

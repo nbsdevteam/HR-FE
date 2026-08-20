@@ -1,8 +1,7 @@
 import { useState, memo } from "react";
 import { motion } from "motion/react";
 import { Users } from "lucide-react";
-import {
-  SortableHeaderRow,
+import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { type DbApplicant } from "@/shared/hooks";

@@ -1,5 +1,4 @@
-import {
-  SortableHeaderRow,
+import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import type { DbReportTemplate } from "@/shared/hooks";

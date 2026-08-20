@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { DonutChart } from "@/shared/components/donut-chart";
+import DonutChart from "@/shared/components/donut-chart";
 import { arabicSource } from "@/i18n/source";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardAttendanceMetricTile from "./DashboardAttendanceMetricTile";

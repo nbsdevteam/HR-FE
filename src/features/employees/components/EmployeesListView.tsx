@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";

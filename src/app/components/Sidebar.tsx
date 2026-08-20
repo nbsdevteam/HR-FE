@@ -29,13 +29,13 @@ const menuItems = [
   { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: "/settings" },
 ];
 
-function SidebarNav({
+const SidebarNav = ({
   collapsed,
   onNavigate,
 }: {
   collapsed: boolean;
   onNavigate?: () => void;
-}) {
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -71,9 +71,9 @@ function SidebarNav({
       })}
     </nav>
   );
-}
+};
 
-export function Sidebar() {
+const Sidebar = () => {
   const { mobileNavOpen, closeMobileNav, isDesktop } = useNavShell();
   const { i18n } = useTranslation();
   const isRtl = i18n.dir() === "rtl";
@@ -183,4 +183,6 @@ export function Sidebar() {
       )}
     </AnimatePresence>
   );
-}
+};
+
+export default Sidebar;

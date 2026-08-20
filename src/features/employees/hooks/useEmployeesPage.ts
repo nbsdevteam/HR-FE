@@ -24,9 +24,6 @@ const defaultAddForm: EmployeeAddForm = {
 };
 
 export const useEmployeesPage = () => {
-  const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
-  const { positions: designations } = usePositions();
-
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState(arabicSource("common.all"));
   const [showAddModal, setShowAddModal] = useState(false);
@@ -45,6 +42,10 @@ export const useEmployeesPage = () => {
   const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
   const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
   const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
+
+  const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
+  const { positions: designations } = usePositions();
+
   const closeAddTimeoutRef = useRef<number | null>(null);
 
   const designationOptions = useMemo(

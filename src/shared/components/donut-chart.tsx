@@ -8,7 +8,7 @@ interface DonutChartProps {
   outerRadius?: number;
 }
 
-export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 95 }: DonutChartProps) {
+const DonutChart = ({ data, size = 200, innerRadius = 60, outerRadius = 95 }: DonutChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const safeData = data
     .filter((item) => item.name)
@@ -107,4 +107,6 @@ export function DonutChart({ data, size = 200, innerRadius = 60, outerRadius = 9
       </div>
     </div>
   );
-}
+};
+
+export default DonutChart;

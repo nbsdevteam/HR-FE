@@ -8,7 +8,7 @@ import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { ModalOverlay, StatusBadge } from "@/shared/components";
-import { CustomRadarChart } from "@/shared/components/custom-radar-chart";
+import CustomRadarChart from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
 import {
   defaultCriteria as DEFAULT_CRITERIA,

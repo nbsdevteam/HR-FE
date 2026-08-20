@@ -70,11 +70,11 @@ async function publicCall<T>(path: string, params: Record<string, unknown>): Pro
   return (result?.data ?? result) as T;
 }
 
-export function fetchApplyLinkInfo(token: string): Promise<ApplyLinkInfo> {
+export const fetchApplyLinkInfo = (token: string): Promise<ApplyLinkInfo> => {
   return publicCall<ApplyLinkInfo>("/api/hr/public/apply/info", { token });
 }
 
-export function submitApplication(payload: {
+export const submitApplication = (payload: {
   token: string;
   job_opening_id?: number | null;
   name: string;
@@ -86,15 +86,15 @@ export function submitApplication(payload: {
   file_data: string;
   consent: boolean;
   hp?: string;
-}): Promise<ApplySubmitResult> {
+}): Promise<ApplySubmitResult> => {
   return publicCall<ApplySubmitResult>("/api/hr/public/apply/submit", payload);
 }
 
-export function fetchApplicationStatus(
+export const fetchApplicationStatus = (
   token: string,
   referenceCode: string,
   email: string,
-): Promise<{ reference_code: string; job_title: string; submitted_at: string | null; state: string }> {
+): Promise<{ reference_code: string; job_title: string; submitted_at: string | null; state: string }> => {
   return publicCall("/api/hr/public/apply/status", {
     token,
     reference_code: referenceCode,

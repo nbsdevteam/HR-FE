@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { DonutChart } from "@/shared/components/donut-chart";
+import DonutChart from "@/shared/components/donut-chart";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingProgram } from "@/shared/hooks";
 import { cardCls } from "../styles";

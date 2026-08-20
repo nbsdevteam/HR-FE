@@ -16,13 +16,13 @@ const NavShellContext = createContext<NavShellContextValue>({
   isDesktop: true,
 });
 
-export function useNavShell() {
+export const useNavShell = () => {
   return useContext(NavShellContext);
-}
+};
 
 const DESKTOP_MQ = "(min-width: 768px)";
 
-export function NavShellProvider({ children }: { children: ReactNode }) {
+const NavShellProvider = ({ children }: { children: ReactNode }) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia(DESKTOP_MQ).matches : true,
@@ -58,4 +58,6 @@ export function NavShellProvider({ children }: { children: ReactNode }) {
   }, [mobileNavOpen]);
 
   return <NavShellContext.Provider value={value}>{children}</NavShellContext.Provider>;
-}
+};
+
+export default NavShellProvider;

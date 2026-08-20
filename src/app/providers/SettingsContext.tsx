@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from "react";
 import { getIntlLocale } from "@/i18n";
 
 // ── Month format types ──
@@ -24,7 +24,7 @@ const SettingsContext = createContext<SettingsContextType>({
   updateSettings: () => {},
 });
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
+const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -33,24 +33,31 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return defaultSettings;
   });
 
+  const updateSettings = useCallback((patch: Partial<AppSettings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const value = useMemo(
+    () => ({ settings, updateSettings }),
+    [settings, updateSettings],
+  );
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  const updateSettings = (patch: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...patch }));
-  };
-
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings }}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );
-}
+};
 
-export function useAppSettings() {
+export default SettingsProvider;
+
+export const useAppSettings = () => {
   return useContext(SettingsContext);
-}
+};
 
 // ── Shared month formatting utility ──
 
@@ -59,7 +66,7 @@ export function useAppSettings() {
  * "name"    → localized long month and year
  * "numeric" → "2/2026"
  */
-export function formatMonthYear(monthYear: string, format: MonthFormat): string {
+export const formatMonthYear = (monthYear: string, format: MonthFormat): string => {
   if (!monthYear) return "—";
   const [y, mo] = monthYear.split("-");
   if (!y || !mo) return monthYear;
@@ -69,14 +76,14 @@ export function formatMonthYear(monthYear: string, format: MonthFormat): string 
     month: format === "numeric" ? "numeric" : "long",
     timeZone: "UTC",
   }).format(date);
-}
+};
 
 /**
  * Get just the month label (no year) based on format.
  * "name"    → localized long month
  * "numeric" → "2"
  */
-export function formatMonthOnly(monthNum: string, format: MonthFormat): string {
+export const formatMonthOnly = (monthNum: string, format: MonthFormat): string => {
   if (format === "numeric") {
     return new Intl.NumberFormat(getIntlLocale()).format(parseInt(monthNum, 10));
   }
@@ -85,4 +92,4 @@ export function formatMonthOnly(monthNum: string, format: MonthFormat): string {
     month: "long",
     timeZone: "UTC",
   }).format(date);
-}
+};

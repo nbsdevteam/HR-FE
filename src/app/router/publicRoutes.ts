@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import { PublicApply } from "@/features/recruitment/pages/PublicApply";
-import { NotFound } from "./NotFound";
+import NotFound from "./NotFound";
 
 /**
  * Routes served without authentication. Candidates reach /apply/<token> from a
@@ -9,7 +9,7 @@ import { NotFound } from "./NotFound";
  */
 export const PUBLIC_ROUTE_PREFIXES = ["/apply"] as const;
 
-export function isPublicPath(pathname: string): boolean {
+export const isPublicPath = (pathname: string): boolean => {
   return PUBLIC_ROUTE_PREFIXES.some(
     prefix => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

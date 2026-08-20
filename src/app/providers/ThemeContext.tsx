@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from "react";
 import { arabicSource } from "@/i18n/source";
 
 export type ThemeId = "dark-enhanced" | "light-turquoise";
@@ -37,17 +37,27 @@ const ThemeContext = createContext<ThemeContextType>({
   themeInfo: themes[0],
 });
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<ThemeId>(() => {
     const saved = localStorage.getItem("hr-theme");
     if (saved === "dark-enhanced" || saved === "light-turquoise") return saved;
     return "dark-enhanced";
   });
 
-  const setTheme = (newTheme: ThemeId) => {
+  const themeInfo = useMemo(
+    () => themes.find((t) => t.id === theme) || themes[0],
+    [theme],
+  );
+
+  const setTheme = useCallback((newTheme: ThemeId) => {
     setThemeState(newTheme);
     localStorage.setItem("hr-theme", newTheme);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ theme, setTheme, themeInfo }),
+    [theme, setTheme, themeInfo],
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -57,15 +67,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.classList.add(theme);
   }, [theme]);
 
-  const themeInfo = themes.find((t) => t.id === theme) || themes[0];
-
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, themeInfo }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
-export function useTheme() {
+export default ThemeProvider;
+
+export const useTheme = () => {
   return useContext(ThemeContext);
-}
+};

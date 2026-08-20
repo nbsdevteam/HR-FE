@@ -1,5 +1,5 @@
-import { CustomBarChart } from "@/shared/components/custom-bar-chart";
-import { CustomLineChart } from "@/shared/components/custom-line-chart";
+import CustomBarChart from "@/shared/components/custom-bar-chart";
+import CustomLineChart from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";

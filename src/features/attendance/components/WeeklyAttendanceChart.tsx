@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { BarChart3, ChevronDown, ChevronUp } from "lucide-react";
-import { CustomGroupedBarChart } from "@/shared/components/custom-grouped-bar-chart";
+import CustomGroupedBarChart from "@/shared/components/custom-grouped-bar-chart";
 import { arabicSource } from "@/i18n/source";
 import { attendanceSeries } from "@/features/attendance/styles";
 

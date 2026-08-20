@@ -13,12 +13,12 @@ interface SortableHeaderProps<K extends string> {
  * - Inactive sortable columns show a subtle ⇅ (ChevronsUpDown).
  * - Columns with key=null are not sortable (e.g. "actions").
  */
-export function SortableHeaderRow<K extends string>({
+const SortableHeaderRow = <K extends string,>({
   columns,
   sortBy,
   sortDir,
   onSort,
-}: SortableHeaderProps<K>) {
+}: SortableHeaderProps<K>) => {
   return (
     <tr className="bg-muted/20 border-b border-border/20">
       {columns.map((col, i) => {
@@ -57,20 +57,22 @@ export function SortableHeaderRow<K extends string>({
       })}
     </tr>
   );
-}
+};
+
+export default SortableHeaderRow;
 
 /** Helper hook-like toggle: call with current state to get next state */
-export function toggleSort<K extends string>(
+export const toggleSort = <K extends string,>(
   key: K,
   currentKey: K,
   currentDir: "asc" | "desc",
   setSortBy: (k: K) => void,
   setSortDir: (d: "asc" | "desc") => void,
-) {
+) => {
   if (key === currentKey) {
     setSortDir(currentDir === "asc" ? "desc" : "asc");
   } else {
     setSortBy(key);
     setSortDir("asc");
   }
-}
+};

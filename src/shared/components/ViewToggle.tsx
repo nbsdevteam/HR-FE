@@ -7,7 +7,7 @@ interface ViewToggleProps {
   onChange: (view: "list" | "kanban") => void;
 }
 
-export function ViewToggle({ view, onChange }: ViewToggleProps) {
+const ViewToggle = ({ view, onChange }: ViewToggleProps) => {
   return (
     <div className="flex items-center bg-secondary/60 border border-border/40 rounded-lg p-0.5">
       <button
@@ -40,4 +40,6 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
       </button>
     </div>
   );
-}
+};
+
+export default ViewToggle;

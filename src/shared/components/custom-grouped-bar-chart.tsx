@@ -13,12 +13,12 @@ interface CustomGroupedBarChartProps {
   height?: number;
 }
 
-export function CustomGroupedBarChart({
+const CustomGroupedBarChart = ({
   data,
   categoryKey,
   series,
   height = 280,
-}: CustomGroupedBarChartProps) {
+}: CustomGroupedBarChartProps) => {
   const [hovered, setHovered] = useState<{ groupIdx: number; seriesIdx: number } | null>(null);
 
   const maxValue = Math.max(
@@ -178,4 +178,6 @@ export function CustomGroupedBarChart({
       </div>
     </div>
   );
-}
+};
+
+export default CustomGroupedBarChart;

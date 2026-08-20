@@ -15,7 +15,7 @@ interface EmptyStateProps {
  * Shared empty-state placeholder with icon, message, and optional hint.
  * Use inside tables (wrap in <td colSpan>), card bodies, or standalone sections.
  */
-export function EmptyState({ icon: Icon = Inbox, message, hint, className = "py-12" }: EmptyStateProps) {
+const EmptyState = ({ icon: Icon = Inbox, message, hint, className = "py-12" }: EmptyStateProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -29,4 +29,6 @@ export function EmptyState({ icon: Icon = Inbox, message, hint, className = "py-
       {hint && <p className="text-muted-foreground/60" style={{ fontSize: 12 }}>{hint}</p>}
     </motion.div>
   );
-}
+};
+
+export default EmptyState;
