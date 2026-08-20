@@ -7,13 +7,15 @@ type PayrollTabContentProps = {
   page: ReturnType<typeof usePayrollPage>;
 };
 
-// UploadTab has no data to refetch upward from this container yet.
-const noop = () => {};
-
 const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
   <AnimatePresence mode="wait">
     {page.activeTab === "overview" && (
-      <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+      <motion.div
+        key="overview"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
         <OverviewTab
           payrollData={page.payrollData}
           totalBasic={page.totalBasic}
@@ -26,11 +28,13 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
       </motion.div>
     )}
     {page.activeTab === "upload" && (
-      <motion.div key="upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <UploadTab
-          employees={page.employees}
-          onComplete={noop}
-        />
+      <motion.div
+        key="upload"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <UploadTab employees={page.employees} />
       </motion.div>
     )}
   </AnimatePresence>

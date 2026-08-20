@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, memo } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import type { DbEmployee } from "@/shared/hooks";
@@ -14,10 +14,8 @@ import UploadSummaryDetails from "./UploadSummaryDetails";
 
 const UploadTab = ({
   employees,
-  onComplete,
 }: {
   employees: DbEmployee[];
-  onComplete: () => void;
 }) => {
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<{
@@ -36,8 +34,12 @@ const UploadTab = ({
     const { records } = parseResult;
     const uniqueEmployees = new Set(records.map((r) => r.personId));
     const uniqueDates = new Set(records.map((r) => r.time.substring(0, 10)));
-    const checkIns = records.filter((r) => r.attendanceStatus === "Check-in").length;
-    const checkOuts = records.filter((r) => r.attendanceStatus === "Check-out").length;
+    const checkIns = records.filter(
+      (r) => r.attendanceStatus === "Check-in",
+    ).length;
+    const checkOuts = records.filter(
+      (r) => r.attendanceStatus === "Check-out",
+    ).length;
     const nones = records.filter((r) => r.attendanceStatus === "None").length;
 
     // Match with system employees
@@ -91,8 +93,12 @@ const UploadTab = ({
         const emp = employees.find((e) => String(e.person_id) === personId);
         if (!emp) continue;
 
-        const checkIns = recs.filter((r) => r.attendanceStatus === "Check-in").sort((a, b) => a.time.localeCompare(b.time));
-        const checkOuts = recs.filter((r) => r.attendanceStatus === "Check-out").sort((a, b) => a.time.localeCompare(b.time));
+        const checkIns = recs
+          .filter((r) => r.attendanceStatus === "Check-in")
+          .sort((a, b) => a.time.localeCompare(b.time));
+        const checkOuts = recs
+          .filter((r) => r.attendanceStatus === "Check-out")
+          .sort((a, b) => a.time.localeCompare(b.time));
 
         let checkInTime: string | null = null;
         let checkOutTime: string | null = null;
@@ -148,7 +154,15 @@ const UploadTab = ({
         }
 
         const d = new Date(date + "T00:00:00Z");
-        const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        const dayNames = [
+          "sunday",
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+        ];
         const dayOfWeek = dayNames[d.getUTCDay()];
 
         attRows.push({
@@ -228,11 +242,21 @@ const UploadTab = ({
               style={{ fontSize: 14 }}
             >
               {saving ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> {arabicSource("payroll.saving_to_database")}</>
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />{" "}
+                  {arabicSource("payroll.saving_to_database")}
+                </>
               ) : saved ? (
-                <><CheckCircle className="w-5 h-5" /> {arabicSource("payroll.saved_successfully")}</>
+                <>
+                  <CheckCircle className="w-5 h-5" />{" "}
+                  {arabicSource("payroll.saved_successfully")}
+                </>
               ) : (
-                <><Download className="w-5 h-5" /> {arabicSource("common.save")} {summary.matched.length} {arabicSource("payroll.database_employee")}</>
+                <>
+                  <Download className="w-5 h-5" /> {arabicSource("common.save")}{" "}
+                  {summary.matched.length}{" "}
+                  {arabicSource("payroll.database_employee")}
+                </>
               )}
             </button>
           </div>
@@ -242,4 +266,4 @@ const UploadTab = ({
   );
 };
 
-export default UploadTab;
+export default memo(UploadTab);
