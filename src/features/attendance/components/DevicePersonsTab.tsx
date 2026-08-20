@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Users } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
 import { DEVICE_SYNC_API, filterDevicePersons } from "../utils/deviceManagement";

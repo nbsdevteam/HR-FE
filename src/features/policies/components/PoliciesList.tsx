@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react";
-import { EmptyState } from "@/shared/components/EmptyState";
+import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import { policiesPageSize } from "../constants/policies";
 import type { DisplayPolicy } from "../types";

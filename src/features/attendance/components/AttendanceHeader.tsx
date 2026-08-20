@@ -1,4 +1,4 @@
-import { ViewToggle } from "@/shared/components/ViewToggle";
+import ViewToggle from "@/shared/components/ViewToggle";
 import { arabicSource } from "@/i18n/source";
 
 type AttendanceHeaderProps = {

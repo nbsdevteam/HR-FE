@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { Plus, UserPlus } from "lucide-react";
-import { ViewToggle } from "@/shared/components/ViewToggle";
+import ViewToggle from "@/shared/components/ViewToggle";
 import { arabicSource } from "@/i18n/source";
 
 type RecruitmentHeaderProps = {

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Plus } from "lucide-react";
-import { ViewToggle } from "@/shared/components/ViewToggle";
+import ViewToggle from "@/shared/components/ViewToggle";
 import { arabicSource } from "@/i18n/source";
 import type { LeaveTabId, LeaveViewMode } from "../types";
 
