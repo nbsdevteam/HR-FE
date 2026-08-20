@@ -8,17 +8,27 @@ import { usePublicHolidayManagement } from "../hooks/usePublicHolidayManagement"
 import HolidayList from "./HolidayList";
 import NewHolidayForm from "./NewHolidayForm";
 
-type PublicHolidaysCardProps = {
+type TPublicHolidaysCardProps = {
   showToast: (message: string) => void;
 };
 
-const PublicHolidaysCard = ({ showToast }: PublicHolidaysCardProps) => {
-  const { holidays, loading: holidaysLoading, refetch: refetchHolidays } = usePublicHolidays();
+const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
   const {
-    holidayYear, setHolidayYear,
-    showNewHolidayForm, setShowNewHolidayForm,
-    newHoliday, updateNewHoliday, resetNewHolidayForm,
-    filteredHolidays, addHoliday, deleteHoliday,
+    holidays,
+    loading: holidaysLoading,
+    refetch: refetchHolidays,
+  } = usePublicHolidays();
+  const {
+    holidayYear,
+    setHolidayYear,
+    showNewHolidayForm,
+    setShowNewHolidayForm,
+    newHoliday,
+    updateNewHoliday,
+    resetNewHolidayForm,
+    filteredHolidays,
+    addHoliday,
+    deleteHoliday,
   } = usePublicHolidayManagement(holidays, refetchHolidays, showToast);
 
   return (
@@ -34,26 +44,38 @@ const PublicHolidaysCard = ({ showToast }: PublicHolidaysCardProps) => {
             <PartyPopper className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.public_holidays")}</h3>
-            <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.holidays_are_automatically_excluded_from_absence_and_tardiness_c")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.public_holidays")}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              {arabicSource(
+                "settings.holidays_are_automatically_excluded_from_absence_and_tardiness_c",
+              )}
+            </p>
           </div>
         </div>
       </div>
 
       {holidaysLoading ? (
-        <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
+        <div className="text-muted-foreground text-center py-6">
+          {arabicSource("common.loading")}
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <label className="text-foreground text-sm">{arabicSource("settings.year")}</label>
+              <label className="text-foreground text-sm">
+                {arabicSource("settings.year")}
+              </label>
               <select
                 value={holidayYear}
                 onChange={(e) => setHolidayYear(parseInt(e.target.value))}
                 className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
               >
                 {HOLIDAY_YEAR_OPTIONS.map((year) => (
-                  <option key={year} value={year}>{year}</option>
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
                 ))}
               </select>
             </div>

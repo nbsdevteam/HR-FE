@@ -1,4 +1,7 @@
-import { SortableHeaderRow, toggleSort } from "@/shared/components/SortableHeader";
+import {
+  SortableHeaderRow,
+  toggleSort,
+} from "@/shared/components/SortableHeader";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { reportTemplatesTableColumns } from "../data";
 import { cardCls } from "../styles";
@@ -30,12 +33,18 @@ const ReportTemplatesTable = ({
             columns={reportTemplatesTableColumns}
             sortBy={sortBy}
             sortDir={sortDir}
-            onSort={(key) => toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)}
+            onSort={(key) =>
+              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+            }
           />
         </thead>
         <tbody>
-          {templates.map(template => (
-            <ReportTemplateRow key={template.id} template={template} onSelect={onSelect} />
+          {templates?.map((template) => (
+            <ReportTemplateRow
+              key={template.id}
+              template={template}
+              onSelect={onSelect}
+            />
           ))}
         </tbody>
       </table>

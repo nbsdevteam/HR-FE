@@ -4,12 +4,12 @@ import RecruitmentTabButton from "./RecruitmentTabButton";
 
 type RecruitmentView = "jobs" | "applicants" | "pipeline" | "bank" | "ai";
 
-type RecruitmentTabsProps = {
+interface IRecruitmentTabsProps {
   view: RecruitmentView;
   onViewChange: (view: RecruitmentView) => void;
-};
+}
 
-const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) => {
+const RecruitmentTabs = ({ view, onViewChange }: IRecruitmentTabsProps) => {
   const handleSelect = useCallback(
     (id: string) => onViewChange(id as RecruitmentView),
     [onViewChange],
@@ -18,7 +18,13 @@ const RecruitmentTabs = ({ view, onViewChange }: RecruitmentTabsProps) => {
   return (
     <div className="flex gap-2 flex-wrap">
       {recruitmentTabsData.map((tab) => (
-        <RecruitmentTabButton key={tab.id} id={tab.id} label={tab.label} isActive={view === tab.id} onSelect={handleSelect} />
+        <RecruitmentTabButton
+          key={tab.id}
+          id={tab.id}
+          label={tab.label}
+          isActive={view === tab.id}
+          onSelect={handleSelect}
+        />
       ))}
     </div>
   );

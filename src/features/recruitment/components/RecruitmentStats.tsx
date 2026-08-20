@@ -2,7 +2,7 @@ import { useMemo, memo } from "react";
 import StatCard from "@/shared/components/StatCard";
 import { recruitmentStatFields } from "../data";
 
-type RecruitmentStatsProps = {
+interface IRecruitmentStatsProps {
   stats: {
     openJobs: number;
     totalApplicants: number;
@@ -10,11 +10,15 @@ type RecruitmentStatsProps = {
     hired: number;
     bookmarked: number;
   };
-};
+}
 
-const RecruitmentStats = ({ stats }: RecruitmentStatsProps) => {
+const RecruitmentStats = ({ stats }: IRecruitmentStatsProps) => {
   const items = useMemo(
-    () => recruitmentStatFields.map(field => ({ ...field, value: stats[field.key as keyof typeof stats] })),
+    () =>
+      recruitmentStatFields.map((field) => ({
+        ...field,
+        value: stats[field.key as keyof typeof stats],
+      })),
     [stats],
   );
 

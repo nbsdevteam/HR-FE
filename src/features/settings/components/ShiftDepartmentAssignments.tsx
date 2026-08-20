@@ -3,7 +3,7 @@ import { arabicSource } from "@/i18n/source";
 import type { DbDepartment, DbShift } from "@/shared/hooks";
 import ShiftDepartmentAssignmentRow from "./ShiftDepartmentAssignmentRow";
 
-type ShiftDepartmentAssignmentsProps = {
+type TShiftDepartmentAssignmentsProps = {
   departments: DbDepartment[];
   deptLoading: boolean;
   shifts: DbShift[];
@@ -21,7 +21,7 @@ const ShiftDepartmentAssignments = ({
   saving,
   onAssignmentChange,
   onSave,
-}: ShiftDepartmentAssignmentsProps) => (
+}: TShiftDepartmentAssignmentsProps) => (
   <div className="border-t border-border/20 pt-4">
     <h4 className="text-foreground flex items-center gap-2 mb-4">
       <Building2 className="w-4 h-4 text-primary" />
@@ -29,11 +29,15 @@ const ShiftDepartmentAssignments = ({
     </h4>
     <div className="space-y-3">
       {deptLoading ? (
-        <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
+        <div className="text-muted-foreground text-center py-6">
+          {arabicSource("common.loading")}
+        </div>
       ) : departments.length === 0 ? (
-        <div className="text-muted-foreground text-center py-6">{arabicSource("common.there_are_no_sections")}</div>
+        <div className="text-muted-foreground text-center py-6">
+          {arabicSource("common.there_are_no_sections")}
+        </div>
       ) : (
-        departments.map((dept) => (
+        departments?.map((dept) => (
           <ShiftDepartmentAssignmentRow
             key={dept.id}
             department={dept}
@@ -49,7 +53,9 @@ const ShiftDepartmentAssignments = ({
       disabled={saving}
       className="mt-4 w-full px-4 py-2 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
     >
-      {saving ? arabicSource("common.saving") : arabicSource("settings.save_partition_assignments")}
+      {saving
+        ? arabicSource("common.saving")
+        : arabicSource("settings.save_partition_assignments")}
     </button>
   </div>
 );

@@ -2,11 +2,24 @@ import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import {
-  useReportTemplates, useReportHistory, useEmployees, useHierarchyData,
-  useAttendanceRecords, useMonthlyRecords, useLeaveRequests, useLeaveTypes,
-  useLeaveBalances, useEmployeeContracts, useContractTypes, useEmployeeDocuments,
-  useDocumentTypes, useLoans, useAllowanceTypes, useEmployeeAllowances,
-  useDeductionTypes, useEmployeeDeductions,
+  useReportTemplates,
+  useReportHistory,
+  useEmployees,
+  useHierarchyData,
+  useAttendanceRecords,
+  useMonthlyRecords,
+  useLeaveRequests,
+  useLeaveTypes,
+  useLeaveBalances,
+  useEmployeeContracts,
+  useContractTypes,
+  useEmployeeDocuments,
+  useDocumentTypes,
+  useLoans,
+  useAllowanceTypes,
+  useEmployeeAllowances,
+  useDeductionTypes,
+  useEmployeeDeductions,
   type DbReportTemplate,
 } from "@/shared/hooks";
 import type { ReportSortBy, ReportSortDir, ReportViewMode } from "../types";
@@ -21,7 +34,8 @@ import ReportTemplatesTable from "./ReportTemplatesTable";
 import ReportViewerModal from "./ReportViewerModal";
 
 const ReportsWorkspace = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<DbReportTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<DbReportTemplate | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -33,7 +47,11 @@ const ReportsWorkspace = () => {
   const [rptSortDir, setRptSortDir] = useState<ReportSortDir>("asc");
 
   const { templates, loading: templatesLoading } = useReportTemplates();
-  const { history, loading: historyLoading, refetch: refetchHistory } = useReportHistory();
+  const {
+    history,
+    loading: historyLoading,
+    refetch: refetchHistory,
+  } = useReportHistory();
   const { employees } = useEmployees();
   const { departments } = useHierarchyData();
   const { records: attendanceRecords } = useAttendanceRecords();
@@ -51,32 +69,62 @@ const ReportsWorkspace = () => {
   useDeductionTypes();
   useEmployeeDeductions();
   const { empMap, empDeptMap } = useEmployeeLookups(employees);
-  const { generatedData, generating, generateReport, exportCSV, resetGeneratedData } = useReportGeneration({
-    attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
-    employees, contracts, contractTypes, empDocuments, documentTypes,
-    empMap, empDeptMap, dateFrom, dateTo, filterDept, refetchHistory,
+  const {
+    generatedData,
+    generating,
+    generateReport,
+    exportCSV,
+    resetGeneratedData,
+  } = useReportGeneration({
+    attendanceRecords,
+    monthlyRecords,
+    leaveRequests,
+    leaveTypes,
+    leaveBalances,
+    employees,
+    contracts,
+    contractTypes,
+    empDocuments,
+    documentTypes,
+    empMap,
+    empDeptMap,
+    dateFrom,
+    dateTo,
+    filterDept,
+    refetchHistory,
   });
 
   const filteredTemplates = useMemo(() => {
-    const list = templates.filter(t => {
-      if (filterCategory !== "all" && t.category !== filterCategory) return false;
-      if (searchQuery && !t.name_ar.includes(searchQuery) && !(t.name_en || "").toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    const list = templates.filter((t) => {
+      if (filterCategory !== "all" && t.category !== filterCategory)
+        return false;
+      if (
+        searchQuery &&
+        !t.name_ar.includes(searchQuery) &&
+        !(t.name_en || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+        return false;
       return true;
     });
     const dir = rptSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
-      if (rptSortBy === "name") return dir * (a.name_ar || "").localeCompare(b.name_ar || "", "ar");
-      if (rptSortBy === "category") return dir * (a.category || "").localeCompare(b.category || "", "ar");
+      if (rptSortBy === "name")
+        return dir * (a.name_ar || "").localeCompare(b.name_ar || "", "ar");
+      if (rptSortBy === "category")
+        return dir * (a.category || "").localeCompare(b.category || "", "ar");
       return 0;
     });
     return list;
   }, [templates, filterCategory, searchQuery, rptSortBy, rptSortDir]);
 
-  const handleToggleHistory = useCallback(() => setShowHistory(v => !v), []);
-  const handleSelectTemplate = useCallback((template: DbReportTemplate) => {
-    setSelectedTemplate(template);
-    resetGeneratedData();
-  }, [resetGeneratedData]);
+  const handleToggleHistory = useCallback(() => setShowHistory((v) => !v), []);
+  const handleSelectTemplate = useCallback(
+    (template: DbReportTemplate) => {
+      setSelectedTemplate(template);
+      resetGeneratedData();
+    },
+    [resetGeneratedData],
+  );
   const handleCloseViewer = useCallback(() => {
     setSelectedTemplate(null);
     resetGeneratedData();
@@ -84,12 +132,18 @@ const ReportsWorkspace = () => {
   const handleGenerate = useCallback(() => {
     if (selectedTemplate) generateReport(selectedTemplate);
   }, [selectedTemplate, generateReport]);
-  const handleExportCSV = useCallback(() => exportCSV(selectedTemplate), [exportCSV, selectedTemplate]);
+  const handleExportCSV = useCallback(
+    () => exportCSV(selectedTemplate),
+    [exportCSV, selectedTemplate],
+  );
   const handlePrint = useCallback(() => window.print(), []);
 
   return (
     <div className="space-y-6">
-      <ReportsHeader showHistory={showHistory} onToggleHistory={handleToggleHistory} />
+      <ReportsHeader
+        showHistory={showHistory}
+        onToggleHistory={handleToggleHistory}
+      />
 
       <ReportsStats
         templateCount={templates.length}
@@ -99,7 +153,9 @@ const ReportsWorkspace = () => {
       />
 
       <AnimatePresence>
-        {showHistory && <ReportHistoryPanel history={history} loading={historyLoading} />}
+        {showHistory && (
+          <ReportHistoryPanel history={history} loading={historyLoading} />
+        )}
       </AnimatePresence>
 
       <ReportFiltersBar
@@ -123,7 +179,10 @@ const ReportsWorkspace = () => {
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
         </div>
       ) : viewMode === "grid" ? (
-        <ReportTemplatesGrid templates={filteredTemplates} onSelect={handleSelectTemplate} />
+        <ReportTemplatesGrid
+          templates={filteredTemplates}
+          onSelect={handleSelectTemplate}
+        />
       ) : (
         <ReportTemplatesTable
           templates={filteredTemplates}

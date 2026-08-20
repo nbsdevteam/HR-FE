@@ -7,16 +7,24 @@ import { useLeaveTypeManagement } from "../hooks/useLeaveTypeManagement";
 import LeaveTypeList from "./LeaveTypeList";
 import NewLeaveTypeForm from "./NewLeaveTypeForm";
 
-type LeaveTypesCardProps = {
+type TLeaveTypesCardProps = {
   showToast: (message: string) => void;
 };
 
-const LeaveTypesCard = ({ showToast }: LeaveTypesCardProps) => {
-  const { types: leaveTypes, loading: leaveTypesLoading, refetch: refetchLeaveTypes } = useLeaveTypes();
+const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
   const {
-    showNewLeaveTypeForm, setShowNewLeaveTypeForm,
-    newLeaveType, updateNewLeaveType,
-    createLeaveType, toggleLeaveTypeActive, deleteLeaveTypeEntry,
+    types: leaveTypes,
+    loading: leaveTypesLoading,
+    refetch: refetchLeaveTypes,
+  } = useLeaveTypes();
+  const {
+    showNewLeaveTypeForm,
+    setShowNewLeaveTypeForm,
+    newLeaveType,
+    updateNewLeaveType,
+    createLeaveType,
+    toggleLeaveTypeActive,
+    deleteLeaveTypeEntry,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
   return (
@@ -32,8 +40,12 @@ const LeaveTypesCard = ({ showToast }: LeaveTypesCardProps) => {
             <Calendar className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.types_of_leave")}</h3>
-            <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.managing_leave_types_and_policies")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.types_of_leave")}
+            </h3>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              {arabicSource("settings.managing_leave_types_and_policies")}
+            </p>
           </div>
         </div>
         <button

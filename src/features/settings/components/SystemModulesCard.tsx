@@ -8,15 +8,22 @@ import { useSystemModuleToggle } from "../hooks/useSystemModuleToggle";
 import { groupByCategory } from "../utils/groupByCategory";
 import ModuleCategoryGroup from "./ModuleCategoryGroup";
 
-type SystemModulesCardProps = {
+type TSystemModulesCardProps = {
   showToast: (message: string) => void;
 };
 
-const SystemModulesCard = ({ showToast }: SystemModulesCardProps) => {
-  const { modules: sysModules, loading: modulesLoading, refetch: refetchModules } = useSystemModules();
+const SystemModulesCard = ({ showToast }: TSystemModulesCardProps) => {
+  const {
+    modules: sysModules,
+    loading: modulesLoading,
+    refetch: refetchModules,
+  } = useSystemModules();
   const { toggleModule } = useSystemModuleToggle(refetchModules, showToast);
 
-  const groupedModules = useMemo(() => groupByCategory(sysModules, "system"), [sysModules]);
+  const groupedModules = useMemo(
+    () => groupByCategory(sysModules, "system"),
+    [sysModules],
+  );
 
   return (
     <motion.div
@@ -31,20 +38,38 @@ const SystemModulesCard = ({ showToast }: SystemModulesCardProps) => {
             <Zap className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.units_and_features")}</h3>
-            <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.activate_or_disable_any_feature_in_the_system_disabled_features")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.units_and_features")}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              {arabicSource(
+                "settings.activate_or_disable_any_feature_in_the_system_disabled_features",
+              )}
+            </p>
           </div>
         </div>
       </div>
 
       {modulesLoading ? (
-        <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
+        <div className="text-muted-foreground text-center py-6">
+          {arabicSource("common.loading")}
+        </div>
       ) : !sysModules || Object.keys(groupedModules).length === 0 ? (
-        <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>{arabicSource("settings.no_units_turn_on_the_relay_first")}</div>
+        <div
+          className="text-muted-foreground text-center py-3"
+          style={{ fontSize: 13 }}
+        >
+          {arabicSource("settings.no_units_turn_on_the_relay_first")}
+        </div>
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedModules).map(([category, modules]) => (
-            <ModuleCategoryGroup key={category} category={category} modules={modules} onToggleModule={toggleModule} />
+            <ModuleCategoryGroup
+              key={category}
+              category={category}
+              modules={modules}
+              onToggleModule={toggleModule}
+            />
           ))}
         </div>
       )}

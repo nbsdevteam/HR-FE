@@ -1,6 +1,6 @@
 import type { DbDepartment } from "@/shared/hooks";
 
-type DepartmentColorChipProps = {
+type TDepartmentColorChipProps = {
   department: DbDepartment;
   currentColor: string;
   isOpen: boolean;
@@ -8,7 +8,13 @@ type DepartmentColorChipProps = {
   onClick: () => void;
 };
 
-const DepartmentColorChip = ({ department, currentColor, isOpen, isEdited, onClick }: DepartmentColorChipProps) => (
+const DepartmentColorChip = ({
+  department,
+  currentColor,
+  isOpen,
+  isEdited,
+  onClick,
+}: TDepartmentColorChipProps) => (
   <button
     type="button"
     onClick={onClick}
@@ -18,8 +24,16 @@ const DepartmentColorChip = ({ department, currentColor, isOpen, isEdited, onCli
         : "border-border/40 bg-card/50 hover:border-primary/30 hover:bg-muted/15"
     }`}
   >
-    <div className="w-3.5 h-3.5 rounded-full shrink-0 border border-white/20" style={{ background: currentColor }} />
-    <span className="text-foreground whitespace-nowrap" style={{ fontSize: 11 }}>{department.name}</span>
+    <div
+      className="w-3.5 h-3.5 rounded-full shrink-0 border border-white/20"
+      style={{ background: currentColor }}
+    />
+    <span
+      className="text-foreground whitespace-nowrap"
+      style={{ fontSize: 11 }}
+    >
+      {department.name}
+    </span>
     {isEdited && (
       <div className="absolute -top-0.5 -end-0.5 w-2 h-2 rounded-full bg-amber-400 border border-card" />
     )}

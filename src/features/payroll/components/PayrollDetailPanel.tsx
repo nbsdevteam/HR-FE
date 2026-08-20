@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
@@ -50,13 +50,34 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
     unpaidLeaveCount,
   } = usePayrollDetailPanel(props);
 
-  const handleShowShortfall = useCallback(() => setShowShortfall(true), [setShowShortfall]);
-  const handleShowAbsence = useCallback(() => setShowAbsence(true), [setShowAbsence]);
-  const handleToggleCalendar = useCallback(() => setShowCalendar((current) => !current), [setShowCalendar]);
-  const handleStartEditLedger = useCallback(() => setEditingLedger(true), [setEditingLedger]);
-  const handleCancelEditLedger = useCallback(() => setEditingLedger(false), [setEditingLedger]);
-  const handleCloseShortfall = useCallback(() => setShowShortfall(false), [setShowShortfall]);
-  const handleCloseAbsence = useCallback(() => setShowAbsence(false), [setShowAbsence]);
+  const handleShowShortfall = useCallback(
+    () => setShowShortfall(true),
+    [setShowShortfall],
+  );
+  const handleShowAbsence = useCallback(
+    () => setShowAbsence(true),
+    [setShowAbsence],
+  );
+  const handleToggleCalendar = useCallback(
+    () => setShowCalendar((current) => !current),
+    [setShowCalendar],
+  );
+  const handleStartEditLedger = useCallback(
+    () => setEditingLedger(true),
+    [setEditingLedger],
+  );
+  const handleCancelEditLedger = useCallback(
+    () => setEditingLedger(false),
+    [setEditingLedger],
+  );
+  const handleCloseShortfall = useCallback(
+    () => setShowShortfall(false),
+    [setShowShortfall],
+  );
+  const handleCloseAbsence = useCallback(
+    () => setShowAbsence(false),
+    [setShowAbsence],
+  );
 
   return (
     <AnimatePresence>
@@ -93,11 +114,16 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                 </button>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                    <span className="text-primary" style={{ fontSize: 18 }}>{selectedData.name.charAt(0)}</span>
+                    <span className="text-primary" style={{ fontSize: 18 }}>
+                      {selectedData.name.charAt(0)}
+                    </span>
                   </div>
                   <div>
                     <h2 className="text-foreground">{selectedData.name}</h2>
-                    <p className="text-muted-foreground" style={{ fontSize: 13 }}>
+                    <p
+                      className="text-muted-foreground"
+                      style={{ fontSize: 13 }}
+                    >
                       {selectedData.department} — {displayMonth(selectedMonth)}
                     </p>
                   </div>
@@ -138,18 +164,29 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                 />
 
                 {Object.values(calc.salaryByCurrency).map((sc) => (
-                  <PayrollSalaryBreakdownCard key={sc.currency} sc={sc} calc={calc} monthLabel={displayMonth(selectedMonth)} />
+                  <PayrollSalaryBreakdownCard
+                    key={sc.currency}
+                    sc={sc}
+                    calc={calc}
+                    monthLabel={displayMonth(selectedMonth)}
+                  />
                 ))}
               </div>
 
               {leaveRecs.length > 0 && (
-                <PayrollLeaveDaysCard leaveRecs={leaveRecs} paidLeaveCount={paidLeaveCount} unpaidLeaveCount={unpaidLeaveCount} />
+                <PayrollLeaveDaysCard
+                  leaveRecs={leaveRecs}
+                  paidLeaveCount={paidLeaveCount}
+                  unpaidLeaveCount={unpaidLeaveCount}
+                />
               )}
 
               <AnimatePresence>
                 {showCalendar && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
                     <CalendarView
@@ -193,4 +230,4 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
   );
 };
 
-export default PayrollDetailPanel;
+export default memo(PayrollDetailPanel);

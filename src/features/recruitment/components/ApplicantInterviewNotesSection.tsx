@@ -8,9 +8,17 @@ type ApplicantInterviewNotesSectionProps = {
   onSave: () => void;
 };
 
-const ApplicantInterviewNotesSection = ({ interviewNotes, saving, onNotesChange, onSave }: ApplicantInterviewNotesSectionProps) => (
+const ApplicantInterviewNotesSection = ({
+  interviewNotes,
+  saving,
+  onNotesChange,
+  onSave,
+}: ApplicantInterviewNotesSectionProps) => (
   <div>
-    <label className="text-muted-foreground block mb-1" style={{ fontSize: 12 }}>
+    <label
+      className="text-muted-foreground block mb-1"
+      style={{ fontSize: 12 }}
+    >
       {arabicSource("recruitment.interview_notes")}
     </label>
     <textarea
@@ -27,9 +35,11 @@ const ApplicantInterviewNotesSection = ({ interviewNotes, saving, onNotesChange,
       className="mt-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
       style={{ fontSize: 12 }}
     >
-      {saving ? arabicSource("common.saving") : arabicSource("recruitment.save_notes")}
+      {saving
+        ? arabicSource("common.saving")
+        : arabicSource("recruitment.save_notes")}
     </button>
   </div>
 );
 
-export default memo(ApplicantInterviewNotesSection);
+export default ApplicantInterviewNotesSection;

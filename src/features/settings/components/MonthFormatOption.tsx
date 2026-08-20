@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import type { MonthFormat } from "@/app/providers";
 
-type MonthFormatOptionProps = {
+type TMonthFormatOptionProps = {
   value: MonthFormat;
   label: string;
   example: string;
@@ -9,11 +9,18 @@ type MonthFormatOptionProps = {
   onSelect: () => void;
 };
 
-const MonthFormatOption = ({ label, example, isActive, onSelect }: MonthFormatOptionProps) => (
+const MonthFormatOption = ({
+  label,
+  example,
+  isActive,
+  onSelect,
+}: TMonthFormatOptionProps) => (
   <button
     onClick={onSelect}
     className={`relative p-3 rounded-lg border-2 transition-all cursor-pointer text-start ${
-      isActive ? "border-primary bg-primary/10" : "border-border/30 bg-muted/10 hover:border-border/60"
+      isActive
+        ? "border-primary bg-primary/10"
+        : "border-border/30 bg-muted/10 hover:border-border/60"
     }`}
   >
     {isActive && (
@@ -24,7 +31,11 @@ const MonthFormatOption = ({ label, example, isActive, onSelect }: MonthFormatOp
     <span className="text-foreground block" style={{ fontSize: 13 }}>
       {label}
     </span>
-    <span className="text-primary block mt-1" style={{ fontSize: 15 }} dir="ltr">
+    <span
+      className="text-primary block mt-1"
+      style={{ fontSize: 15 }}
+      dir="ltr"
+    >
       {example}
     </span>
   </button>

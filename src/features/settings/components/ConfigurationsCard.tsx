@@ -8,15 +8,25 @@ import { useConfigEdits } from "../hooks/useConfigEdits";
 import { groupByCategory } from "../utils/groupByCategory";
 import ConfigCategoryGroup from "./ConfigCategoryGroup";
 
-type ConfigurationsCardProps = {
+interface IConfigurationsCardProps {
   showToast: (message: string) => void;
-};
+}
 
-const ConfigurationsCard = ({ showToast }: ConfigurationsCardProps) => {
-  const { configs, loading: configsLoading, refetch: refetchConfigs } = useConfigurations();
-  const { configEdits, setConfigEdit, saveConfigValue } = useConfigEdits(refetchConfigs, showToast);
+const ConfigurationsCard = ({ showToast }: IConfigurationsCardProps) => {
+  const {
+    configs,
+    loading: configsLoading,
+    refetch: refetchConfigs,
+  } = useConfigurations();
+  const { configEdits, setConfigEdit, saveConfigValue } = useConfigEdits(
+    refetchConfigs,
+    showToast,
+  );
 
-  const groupedConfigs = useMemo(() => groupByCategory(configs, "general"), [configs]);
+  const groupedConfigs = useMemo(
+    () => groupByCategory(configs, "general"),
+    [configs],
+  );
 
   return (
     <motion.div
@@ -31,16 +41,29 @@ const ConfigurationsCard = ({ showToast }: ConfigurationsCardProps) => {
             <Settings2 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.rules_and_settings")}</h3>
-            <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.all_editable_values_applied_directly_to_calculations")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.rules_and_settings")}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              {arabicSource(
+                "settings.all_editable_values_applied_directly_to_calculations",
+              )}
+            </p>
           </div>
         </div>
       </div>
 
       {configsLoading ? (
-        <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
+        <div className="text-muted-foreground text-center py-6">
+          {arabicSource("common.loading")}
+        </div>
       ) : !configs || Object.keys(groupedConfigs).length === 0 ? (
-        <div className="text-muted-foreground text-center py-3" style={{ fontSize: 13 }}>{arabicSource("settings.no_settings_run_the_relay_first")}</div>
+        <div
+          className="text-muted-foreground text-center py-3"
+          style={{ fontSize: 13 }}
+        >
+          {arabicSource("settings.no_settings_run_the_relay_first")}
+        </div>
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedConfigs).map(([category, categoryConfigs]) => (

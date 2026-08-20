@@ -1,12 +1,12 @@
 import { Save, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-type ShiftFormActionsProps = {
+type TShiftFormActionsProps = {
   onSave: () => void;
   onCancel: () => void;
 };
 
-const ShiftFormActions = ({ onSave, onCancel }: ShiftFormActionsProps) => (
+const ShiftFormActions = ({ onSave, onCancel }: TShiftFormActionsProps) => (
   <div className="flex gap-2 pt-2">
     <button
       onClick={onSave}

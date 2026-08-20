@@ -3,18 +3,28 @@ import { X, Sparkles } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalOverlay } from "@/shared/components";
 import {
-  type DbJobOpening, type DbDepartment, type JobSkillRequirement,
+  type DbJobOpening,
+  type DbDepartment,
+  type JobSkillRequirement,
 } from "@/shared/hooks";
 import { DEPARTMENTS } from "@/shared/constants";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import {
-  EDUCATION_LEVELS, JOB_STATUSES, JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO,
+  EDUCATION_LEVELS,
+  JOB_STATUSES,
+  JOB_STATUS_TO_ODOO,
+  JOB_TYPE_TO_ODOO,
 } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
 import SkillTagInput from "./SkillTagInput";
 
-const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
+const JobFormModal = ({
+  jobs,
+  editingJob,
+  onClose,
+  onSaved,
+}: {
   jobs: DbJobOpening[];
   editingJob: DbJobOpening | null;
   onClose: () => void;
@@ -23,7 +33,8 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
   const isEdit = !!editingJob;
   const [form, setForm] = useState({
     title: editingJob?.title || "",
-    department: editingJob?.department || arabicSource("common.information_technology"),
+    department:
+      editingJob?.department || arabicSource("common.information_technology"),
     location: editingJob?.location || arabicSource("common.baghdad"),
     // `jobs` carries Arabic labels, so an editing job's type/status arrive
     // already translated and map straight onto the selects.
@@ -38,21 +49,24 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
     education_level: editingJob?.education_level || "none",
     ir_auto_shortlist: editingJob?.ir_auto_shortlist ?? 0,
   });
-  const [requiredSkills, setRequiredSkills] = useState<JobSkillRequirement[]>(editingJob?.required_skills || []);
-  const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(editingJob?.nice_to_have_skills || []);
+  const [requiredSkills, setRequiredSkills] = useState<JobSkillRequirement[]>(
+    editingJob?.required_skills || [],
+  );
+  const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(
+    editingJob?.nice_to_have_skills || [],
+  );
   const [saving, setSaving] = useState(false);
   const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
-
-  useEffect(() => {
-    odooData.fetchDepartments().then(setOdooDepartments).catch(() => {});
-  }, []);
 
   const handleSave = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
-    const reqs = form.requirements.split("\n").map(r => r.trim()).filter(Boolean);
+    const reqs = form.requirements
+      .split("\n")
+      .map((r) => r.trim())
+      .filter(Boolean);
 
-    const dept = odooDepartments.find(d => d.name === form.department);
+    const dept = odooDepartments.find((d) => d.name === form.department);
     const payload = {
       title: form.title,
       department_id: dept?.id || undefined,
@@ -83,126 +97,260 @@ const JobFormModal = ({ jobs, editingJob, onClose, onSaved }: {
     }
   };
 
+  useEffect(() => {
+    odooData
+      .fetchDepartments()
+      .then(setOdooDepartments)
+      .catch(() => {});
+  }, []);
+
   return (
     <ModalOverlay
       onClose={onClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto"
     >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">{isEdit ? arabicSource("recruitment.edit_vacancy") : arabicSource("common.new_vacancy")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer"><X className="w-5 h-5 text-muted-foreground" /></button>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-foreground">
+          {isEdit
+            ? arabicSource("recruitment.edit_vacancy")
+            : arabicSource("common.new_vacancy")}
+        </h2>
+        <button
+          onClick={onClose}
+          className="p-1 rounded hover:bg-secondary cursor-pointer"
+        >
+          <X className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label className={labelCls} style={{ fontSize: 13 }}>
+            {arabicSource("recruitment.job_title")}
+          </label>
+          <input
+            type="text"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder={arabicSource("recruitment.job_title_2")}
+            className={inputCls}
+          />
         </div>
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.job_title")}</label>
-            <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
-              placeholder={arabicSource("recruitment.job_title_2")} className={inputCls} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.section")}</label>
-              <select value={form.department} onChange={e => setForm({ ...form, department: e.target.value })} className={selectCls}>
-                {DEPARTMENTS.map(d => (
-                  <option key={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.location")}</label>
-              <input type="text" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className={inputCls} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.permanent_type")}</label>
-              <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectCls}>
-                <option>{arabicSource("common.full_time")}</option><option>{arabicSource("recruitment.part_time")}</option><option>{arabicSource("recruitment.temporary_contract")}</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.deadline")}</label>
-              <input type="date" value={form.deadline} onChange={e => setForm({ ...form, deadline: e.target.value })} className={inputCls} dir="ltr" />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.vacancy_status")}</label>
-            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={selectCls}>
-              {JOB_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            <label className={labelCls} style={{ fontSize: 13 }}>
+              {arabicSource("common.section")}
+            </label>
+            <select
+              value={form.department}
+              onChange={(e) => setForm({ ...form, department: e.target.value })}
+              className={selectCls}
+            >
+              {DEPARTMENTS.map((d) => (
+                <option key={d}>{d}</option>
+              ))}
             </select>
           </div>
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.salary_range")}</label>
-            <input type="text" value={form.salary_range} onChange={e => setForm({ ...form, salary_range: e.target.value })}
-              placeholder={arabicSource("recruitment.example_1_500_000_2_500_000_iqd")} className={inputCls} />
+            <label className={labelCls} style={{ fontSize: 13 }}>
+              {arabicSource("recruitment.location")}
+            </label>
+            <input
+              type="text"
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className={inputCls}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls} style={{ fontSize: 13 }}>
+              {arabicSource("recruitment.permanent_type")}
+            </label>
+            <select
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              className={selectCls}
+            >
+              <option>{arabicSource("common.full_time")}</option>
+              <option>{arabicSource("recruitment.part_time")}</option>
+              <option>{arabicSource("recruitment.temporary_contract")}</option>
+            </select>
           </div>
           <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.requirements_line_for_each_requirement")}</label>
-            <textarea value={form.requirements} onChange={e => setForm({ ...form, requirements: e.target.value })}
-              rows={3} placeholder={arabicSource("recruitment.5_years_experience")} className={`${inputCls} h-auto py-3 resize-none`} />
+            <label className={labelCls} style={{ fontSize: 13 }}>
+              {arabicSource("recruitment.deadline")}
+            </label>
+            <input
+              type="date"
+              value={form.deadline}
+              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              className={inputCls}
+              dir="ltr"
+            />
           </div>
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.description")}</label>
-            <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-              rows={3} placeholder={arabicSource("recruitment.job_description")} className={`${inputCls} h-auto py-3 resize-none`} />
-          </div>
+        </div>
+        <div>
+          <label className={labelCls} style={{ fontSize: 13 }}>
+            {arabicSource("recruitment.vacancy_status")}
+          </label>
+          <select
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            className={selectCls}
+          >
+            {JOB_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls} style={{ fontSize: 13 }}>
+            {arabicSource("recruitment.salary_range")}
+          </label>
+          <input
+            type="text"
+            value={form.salary_range}
+            onChange={(e) => setForm({ ...form, salary_range: e.target.value })}
+            placeholder={arabicSource(
+              "recruitment.example_1_500_000_2_500_000_iqd",
+            )}
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls} style={{ fontSize: 13 }}>
+            {arabicSource("recruitment.requirements_line_for_each_requirement")}
+          </label>
+          <textarea
+            value={form.requirements}
+            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+            rows={3}
+            placeholder={arabicSource("recruitment.5_years_experience")}
+            className={`${inputCls} h-auto py-3 resize-none`}
+          />
+        </div>
+        <div>
+          <label className={labelCls} style={{ fontSize: 13 }}>
+            {arabicSource("common.description")}
+          </label>
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+            placeholder={arabicSource("recruitment.job_description")}
+            className={`${inputCls} h-auto py-3 resize-none`}
+          />
+        </div>
 
-          {/* AI screening spec — drives the Initial Rating for every applicant */}
-          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-4">
-            <div className="flex items-center gap-2 text-primary" style={{ fontSize: 13 }}>
-              <Sparkles className="w-4 h-4" />{arabicSource("recruitment.screening_spec")}
-            </div>
-            <SkillTagInput
-              label={arabicSource("recruitment.required_skills")}
-              skills={requiredSkills}
-              onChange={setRequiredSkills}
-              weighted
-            />
-            <SkillTagInput
-              label={arabicSource("recruitment.nice_to_have")}
-              skills={niceToHave}
-              onChange={setNiceToHave}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.min_experience")}</label>
-                <input type="number" min={0} max={50} value={form.min_experience_years}
-                  onChange={e => setForm({ ...form, min_experience_years: Number(e.target.value) || 0 })}
-                  className={inputCls} dir="ltr" />
-              </div>
-              <div>
-                <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("recruitment.education_level")}</label>
-                <select value={form.education_level}
-                  onChange={e => setForm({ ...form, education_level: e.target.value })} className={selectCls}>
-                  {EDUCATION_LEVELS.map(level => (
-                    <option key={level.value} value={level.value}>{level.label}</option>
-                  ))}
-                </select>
-              </div>
+        {/* AI screening spec — drives the Initial Rating for every applicant */}
+        <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-4">
+          <div
+            className="flex items-center gap-2 text-primary"
+            style={{ fontSize: 13 }}
+          >
+            <Sparkles className="w-4 h-4" />
+            {arabicSource("recruitment.screening_spec")}
+          </div>
+          <SkillTagInput
+            label={arabicSource("recruitment.required_skills")}
+            skills={requiredSkills}
+            onChange={setRequiredSkills}
+            weighted
+          />
+          <SkillTagInput
+            label={arabicSource("recruitment.nice_to_have")}
+            skills={niceToHave}
+            onChange={setNiceToHave}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls} style={{ fontSize: 12 }}>
+                {arabicSource("recruitment.min_experience")}
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={50}
+                value={form.min_experience_years}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    min_experience_years: Number(e.target.value) || 0,
+                  })
+                }
+                className={inputCls}
+                dir="ltr"
+              />
             </div>
             <div>
               <label className={labelCls} style={{ fontSize: 12 }}>
-                {arabicSource("recruitment.auto_shortlist")}
-                {form.ir_auto_shortlist === 0 && ` — ${arabicSource("recruitment.auto_shortlist_off")}`}
+                {arabicSource("recruitment.education_level")}
               </label>
-              <input type="range" min={0} max={95} step={5} value={form.ir_auto_shortlist}
-                onChange={e => setForm({ ...form, ir_auto_shortlist: Number(e.target.value) })}
-                className="w-full cursor-pointer accent-current text-primary" dir="ltr" />
-              <div className="text-muted-foreground text-center" style={{ fontSize: 11 }}>
-                {form.ir_auto_shortlist > 0 ? `${form.ir_auto_shortlist}%` : ""}
-              </div>
+              <select
+                value={form.education_level}
+                onChange={(e) =>
+                  setForm({ ...form, education_level: e.target.value })
+                }
+                className={selectCls}
+              >
+                {EDUCATION_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>
+                    {level.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-
-          <div className="flex gap-3 pt-2">
-            <button onClick={handleSave} disabled={saving || !form.title.trim()}
-              className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50">
-              {saving ? arabicSource("common.saving")
-                : isEdit ? arabicSource("common.save")
-                : arabicSource("recruitment.job_posting")}
-            </button>
-            <button onClick={onClose} className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer">{arabicSource("common.cancel")}</button>
+          <div>
+            <label className={labelCls} style={{ fontSize: 12 }}>
+              {arabicSource("recruitment.auto_shortlist")}
+              {form.ir_auto_shortlist === 0 &&
+                ` — ${arabicSource("recruitment.auto_shortlist_off")}`}
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={95}
+              step={5}
+              value={form.ir_auto_shortlist}
+              onChange={(e) =>
+                setForm({ ...form, ir_auto_shortlist: Number(e.target.value) })
+              }
+              className="w-full cursor-pointer accent-current text-primary"
+              dir="ltr"
+            />
+            <div
+              className="text-muted-foreground text-center"
+              style={{ fontSize: 11 }}
+            >
+              {form.ir_auto_shortlist > 0 ? `${form.ir_auto_shortlist}%` : ""}
+            </div>
           </div>
         </div>
+
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={handleSave}
+            disabled={saving || !form.title.trim()}
+            className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50"
+          >
+            {saving
+              ? arabicSource("common.saving")
+              : isEdit
+                ? arabicSource("common.save")
+                : arabicSource("recruitment.job_posting")}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
+          >
+            {arabicSource("common.cancel")}
+          </button>
+        </div>
+      </div>
     </ModalOverlay>
   );
 };

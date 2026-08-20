@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import WarningOptionsSelect from "./WarningOptionsSelect";
 
-type WarningsFiltersBarProps = {
+type TWarningsFiltersBarProps = {
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
   filterType: string;
@@ -23,7 +23,7 @@ const WarningsFiltersBar = ({
   onFilterStatusChange,
   warningTypes,
   warningStatuses,
-}: WarningsFiltersBarProps) => (
+}: TWarningsFiltersBarProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

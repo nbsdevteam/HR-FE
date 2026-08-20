@@ -7,16 +7,24 @@ import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
 import ContractTypeList from "./ContractTypeList";
 import NewContractTypeForm from "./NewContractTypeForm";
 
-type ContractTypesCardProps = {
+type TContractTypesCardProps = {
   showToast: (message: string) => void;
 };
 
-const ContractTypesCard = ({ showToast }: ContractTypesCardProps) => {
-  const { types: contractTypes, loading: contractTypesLoading, refetch: refetchContractTypes } = useContractTypes();
+const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
   const {
-    showNewContractTypeForm, setShowNewContractTypeForm,
-    newContractType, updateNewContractType,
-    createContractTypeEntry, toggleContractTypeActive, deleteContractTypeEntry,
+    types: contractTypes,
+    loading: contractTypesLoading,
+    refetch: refetchContractTypes,
+  } = useContractTypes();
+  const {
+    showNewContractTypeForm,
+    setShowNewContractTypeForm,
+    newContractType,
+    updateNewContractType,
+    createContractTypeEntry,
+    toggleContractTypeActive,
+    deleteContractTypeEntry,
   } = useContractTypeManagement(refetchContractTypes, showToast);
 
   return (
@@ -32,20 +40,34 @@ const ContractTypesCard = ({ showToast }: ContractTypesCardProps) => {
             <Briefcase className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.types_of_contracts")}</h3>
-            <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.managing_employment_contract_types_and_settings")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.types_of_contracts")}
+            </h3>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              {arabicSource(
+                "settings.managing_employment_contract_types_and_settings",
+              )}
+            </p>
           </div>
         </div>
         <button
           onClick={() => setShowNewContractTypeForm(!showNewContractTypeForm)}
           className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
         >
-          {showNewContractTypeForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showNewContractTypeForm ? (
+            <X className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
         </button>
       </div>
 
       {showNewContractTypeForm && (
-        <NewContractTypeForm form={newContractType} onFieldChange={updateNewContractType} onSave={createContractTypeEntry} />
+        <NewContractTypeForm
+          form={newContractType}
+          onFieldChange={updateNewContractType}
+          onSave={createContractTypeEntry}
+        />
       )}
 
       <ContractTypeList

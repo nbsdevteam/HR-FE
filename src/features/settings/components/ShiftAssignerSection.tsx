@@ -14,10 +14,16 @@ const ShiftAssignerSection = () => {
       >
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
-          <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("settings.assigning_employees_to_shifts")}</h4>
-          <span className="text-muted-foreground text-xs">{arabicSource("settings.drag_and_drop")}</span>
+          <h4 className="text-foreground" style={{ fontSize: 14 }}>
+            {arabicSource("settings.assigning_employees_to_shifts")}
+          </h4>
+          <span className="text-muted-foreground text-xs">
+            {arabicSource("settings.drag_and_drop")}
+          </span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
       {isOpen && (
         <div className="mt-2">

@@ -1,32 +1,15 @@
 import { memo, useMemo } from "react";
 import { CalendarDays } from "lucide-react";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
-import type { ProcessedAttendanceRecord, PayslipSettings } from "@/features/payroll";
+import type {
+  ProcessedAttendanceRecord,
+  PayslipSettings,
+} from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarDayHeaderCell from "./CalendarDayHeaderCell";
 import CalendarLegendItem from "./CalendarLegendItem";
-
-const DAY_HEADERS = [
-  { label: arabicSource("common.sunday_2"), dow: 0 },
-  { label: arabicSource("common.monday"), dow: 1 },
-  { label: arabicSource("common.tuesday"), dow: 2 },
-  { label: arabicSource("common.wednesday"), dow: 3 },
-  { label: arabicSource("common.thursday"), dow: 4 },
-  { label: arabicSource("common.friday"), dow: 5 },
-  { label: arabicSource("common.saturday"), dow: 6 },
-];
-
-const LEGEND_ITEMS = [
-  { label: arabicSource("common.present"), dot: "bg-emerald-500" },
-  { label: arabicSource("payroll.shortage_of_hours_2"), dot: "bg-amber-400" },
-  { label: arabicSource("common.absence_2"), dot: "bg-destructive" },
-  { label: arabicSource("payroll.overtime_2"), dot: "bg-emerald-400" },
-  { label: arabicSource("payroll.excuse_me"), dot: "bg-emerald-400" },
-  { label: arabicSource("common.leave"), dot: "bg-blue-400" },
-  { label: arabicSource("common.without_salary"), dot: "bg-orange-400" },
-  { label: arabicSource("common.a_day_of_rest"), dot: "bg-muted-foreground/30" },
-];
+import { DAY_HEADERS, LEGEND_ITEMS } from "../data";
 
 const CalendarView = ({
   records,
@@ -42,11 +25,14 @@ const CalendarView = ({
   onExcuseShortfall?: (id: string) => void;
 }) => {
   const { settings: appSettings } = useAppSettings();
-  const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
+  const displayMonth = (m: string) =>
+    formatMonthYear(m, appSettings.monthFormat);
 
   const recordMap = useMemo(() => {
     const map: Record<string, ProcessedAttendanceRecord> = {};
-    records.forEach((r) => { map[r.date] = r; });
+    records.forEach((r) => {
+      map[r.date] = r;
+    });
     return map;
   }, [records]);
 
@@ -55,7 +41,11 @@ const CalendarView = ({
     const daysInMonth = new Date(y, m, 0).getDate();
     const firstDayIdx = new Date(y, m - 1, 1).getDay(); // 0=Sun
 
-    const result: Array<{ date: string; day: number; dayOfWeek: number } | null> = [];
+    const result: Array<{
+      date: string;
+      day: number;
+      dayOfWeek: number;
+    } | null> = [];
     for (let i = 0; i < firstDayIdx; i++) result.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -88,13 +78,19 @@ const CalendarView = ({
     <div className="bg-card border border-border/30 rounded-xl overflow-hidden shadow-lg">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/30">
         <CalendarDays className="w-5 h-5 text-primary" />
-        <h3 className="text-foreground text-lg">{arabicSource("payroll.calendar")} {displayMonth(monthYear)}</h3>
+        <h3 className="text-foreground text-lg">
+          {arabicSource("payroll.calendar")} {displayMonth(monthYear)}
+        </h3>
       </div>
 
       {/* Day headers — bold band */}
       <div className="grid grid-cols-7 border-b border-border/30 bg-muted/15">
         {DAY_HEADERS.map((d) => (
-          <CalendarDayHeaderCell key={d.label} label={d.label} isRestDay={restDowSet.has(d.dow)} />
+          <CalendarDayHeaderCell
+            key={d.label}
+            label={d.label}
+            isRestDay={restDowSet.has(d.dow)}
+          />
         ))}
       </div>
 
@@ -105,7 +101,13 @@ const CalendarView = ({
           const weekIdx = Math.floor(i / 7);
           const weekBg = weekIdx % 2 === 1 ? "bg-muted/[0.03]" : "";
 
-          if (!cell) return <div key={`empty-${i}`} className={`min-h-[68px] border-b border-e border-border/20 ${weekBg}`} />;
+          if (!cell)
+            return (
+              <div
+                key={`empty-${i}`}
+                className={`min-h-[68px] border-b border-e border-border/20 ${weekBg}`}
+              />
+            );
 
           const rec = recordMap[cell.date];
           const isRest = restDowSet.has(cell.dayOfWeek);
@@ -131,7 +133,11 @@ const CalendarView = ({
       {/* Legend — prominent bar */}
       <div className="flex flex-wrap items-center justify-center gap-5 px-5 py-3.5 border-t border-border/30 bg-muted/10">
         {LEGEND_ITEMS.map((l) => (
-          <CalendarLegendItem key={l.label} label={l.label} dotClassName={l.dot} />
+          <CalendarLegendItem
+            key={l.label}
+            label={l.label}
+            dotClassName={l.dot}
+          />
         ))}
       </div>
     </div>

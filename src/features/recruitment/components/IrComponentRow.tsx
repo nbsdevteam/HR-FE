@@ -10,7 +10,12 @@ type IrComponentRowProps = {
   onToggle: (key: string) => void;
 };
 
-const IrComponentRow = ({ componentKey, component, isOpen, onToggle }: IrComponentRowProps) => (
+const IrComponentRow = ({
+  componentKey,
+  component,
+  isOpen,
+  onToggle,
+}: IrComponentRowProps) => (
   <div>
     <button
       onClick={() => onToggle(componentKey)}
@@ -23,12 +28,17 @@ const IrComponentRow = ({ componentKey, component, isOpen, onToggle }: IrCompone
       />
     </button>
     {isOpen && component.evidence && (
-      <p className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2" style={{ fontSize: 11 }}>
-        <span className="text-primary">{arabicSource("recruitment.evidence")}: </span>
+      <p
+        className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2"
+        style={{ fontSize: 11 }}
+      >
+        <span className="text-primary">
+          {arabicSource("recruitment.evidence")}:{" "}
+        </span>
         <span data-i18n-ignore>{component.evidence}</span>
       </p>
     )}
   </div>
 );
 
-export default memo(IrComponentRow);
+export default IrComponentRow;

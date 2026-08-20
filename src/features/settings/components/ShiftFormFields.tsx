@@ -3,16 +3,22 @@ import { DAYS_OF_WEEK } from "../constants/settings";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
 import ShiftDayEditorRow from "./ShiftDayEditorRow";
 
-type ShiftFormFieldsProps = {
+type TShiftFormFieldsProps = {
   form: ShiftEditState;
   onFieldChange: (patch: Partial<ShiftEditState>) => void;
   onDayChange: (dayKey: string, patch: Partial<ShiftDaySchedule>) => void;
 };
 
-const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsProps) => (
+const ShiftFormFields = ({
+  form,
+  onFieldChange,
+  onDayChange,
+}: TShiftFormFieldsProps) => (
   <>
     <div>
-      <label className="block text-foreground text-sm mb-2">{arabicSource("common.name")}</label>
+      <label className="block text-foreground text-sm mb-2">
+        {arabicSource("common.name")}
+      </label>
       <input
         type="text"
         value={form.name}
@@ -23,7 +29,9 @@ const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsPr
     </div>
 
     <div>
-      <label className="block text-foreground text-sm mb-2">{arabicSource("common.description")}</label>
+      <label className="block text-foreground text-sm mb-2">
+        {arabicSource("common.description")}
+      </label>
       <input
         type="text"
         value={form.description}
@@ -35,29 +43,45 @@ const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsPr
 
     <div className="grid grid-cols-3 gap-4">
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("common.leniency_minutes")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("common.leniency_minutes")}
+        </label>
         <input
           type="number"
           value={form.grace_minutes}
-          onChange={(e) => onFieldChange({ grace_minutes: parseInt(e.target.value) || 0 })}
+          onChange={(e) =>
+            onFieldChange({ grace_minutes: parseInt(e.target.value) || 0 })
+          }
           className="w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary"
         />
       </div>
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("common.late_hours_for_absence")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("common.late_hours_for_absence")}
+        </label>
         <input
           type="number"
           value={form.late_to_absent_hours}
-          onChange={(e) => onFieldChange({ late_to_absent_hours: parseInt(e.target.value) || 0 })}
+          onChange={(e) =>
+            onFieldChange({
+              late_to_absent_hours: parseInt(e.target.value) || 0,
+            })
+          }
           className="w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary"
         />
       </div>
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("common.daily_working_hours")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("common.daily_working_hours")}
+        </label>
         <input
           type="number"
           value={form.target_hours_per_day}
-          onChange={(e) => onFieldChange({ target_hours_per_day: parseInt(e.target.value) || 0 })}
+          onChange={(e) =>
+            onFieldChange({
+              target_hours_per_day: parseInt(e.target.value) || 0,
+            })
+          }
           className="w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary"
           step="0.5"
         />
@@ -65,7 +89,9 @@ const ShiftFormFields = ({ form, onFieldChange, onDayChange }: ShiftFormFieldsPr
     </div>
 
     <div>
-      <label className="block text-foreground text-sm mb-3">{arabicSource("common.working_days")}</label>
+      <label className="block text-foreground text-sm mb-3">
+        {arabicSource("common.working_days")}
+      </label>
       <div className="space-y-3">
         {DAYS_OF_WEEK.map((d) => (
           <ShiftDayEditorRow

@@ -37,8 +37,16 @@ const SettingsWorkspace = () => {
       <SettingsPageHeader />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DepartmentColorsCard departments={departments} deptLoading={deptLoading} showToast={showToast} />
-        <ShiftsScheduleCard departments={departments} deptLoading={deptLoading} showToast={showToast} />
+        <DepartmentColorsCard
+          departments={departments}
+          deptLoading={deptLoading}
+          showToast={showToast}
+        />
+        <ShiftsScheduleCard
+          departments={departments}
+          deptLoading={deptLoading}
+          showToast={showToast}
+        />
         <SystemModulesCard showToast={showToast} />
         <ConfigurationsCard showToast={showToast} />
         <PublicHolidaysCard showToast={showToast} />

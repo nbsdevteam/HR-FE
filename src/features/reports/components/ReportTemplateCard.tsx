@@ -11,7 +11,11 @@ type ReportTemplateCardProps = {
   onSelect: (template: DbReportTemplate) => void;
 };
 
-const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplateCardProps) => {
+const ReportTemplateCard = ({
+  template,
+  index,
+  onSelect,
+}: ReportTemplateCardProps) => {
   const Icon = categoryIcons[template.category] || FileText;
   return (
     <motion.div
@@ -27,12 +31,17 @@ const ReportTemplateCard = ({ template, index, onSelect }: ReportTemplateCardPro
         </div>
         <div className="flex-1">
           <h3 className="text-foreground">{template.name_ar}</h3>
-          <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>{template.description}</p>
+          <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>
+            {template.description}
+          </p>
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <StatusBadge colorClassName="bg-primary/10 border-primary/20 text-primary" fontSize={11}>
+        <StatusBadge
+          colorClassName="bg-primary/10 border-primary/20 text-primary"
+          fontSize={11}
+        >
           {categoryLabels[template.category] || template.category}
         </StatusBadge>
         <span className="text-muted-foreground" style={{ fontSize: 11 }}>

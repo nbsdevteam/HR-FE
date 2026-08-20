@@ -3,7 +3,7 @@ import type { DbShift } from "@/shared/hooks";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
 import ShiftListItem from "./ShiftListItem";
 
-type ShiftListProps = {
+type TShiftListProps = {
   shifts: DbShift[];
   loading: boolean;
   expandedShift: string | null;
@@ -31,12 +31,26 @@ const ShiftList = ({
   onSaveEdit,
   onEditFieldChange,
   onEditDayChange,
-}: ShiftListProps) => {
+}: TShiftListProps) => {
   if (loading) {
-    return <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>{arabicSource("common.loading")}</div>;
+    return (
+      <div
+        className="text-muted-foreground text-center py-4"
+        style={{ fontSize: 13 }}
+      >
+        {arabicSource("common.loading")}
+      </div>
+    );
   }
   if (shifts.length === 0) {
-    return <div className="text-muted-foreground text-center py-4" style={{ fontSize: 13 }}>{arabicSource("settings.no_shifts")}</div>;
+    return (
+      <div
+        className="text-muted-foreground text-center py-4"
+        style={{ fontSize: 13 }}
+      >
+        {arabicSource("settings.no_shifts")}
+      </div>
+    );
   }
   return (
     <>

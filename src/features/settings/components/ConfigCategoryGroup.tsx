@@ -1,21 +1,31 @@
 import type { DbConfiguration } from "@/shared/hooks";
 import CategoryGroupHeader from "./CategoryGroupHeader";
 import ConfigRow from "./ConfigRow";
+import { memo } from "react";
 
-type ConfigCategoryGroupProps = {
+interface IConfigCategoryGroupProps {
   category: string;
   configs: DbConfiguration[];
   configEdits: Record<string, any>;
   onEdit: (configId: string, value: any) => void;
   onSave: (configId: string, value: any) => void;
-};
+}
 
-const ConfigCategoryGroup = ({ category, configs, configEdits, onEdit, onSave }: ConfigCategoryGroupProps) => (
+const ConfigCategoryGroup = ({
+  category,
+  configs,
+  configEdits,
+  onEdit,
+  onSave,
+}: IConfigCategoryGroupProps) => (
   <div>
     <CategoryGroupHeader category={category} />
     <div className="space-y-3">
-      {configs.map((config) => {
-        const currentValue = configEdits[config.id] !== undefined ? configEdits[config.id] : config.config_value;
+      {configs?.map((config) => {
+        const currentValue =
+          configEdits[config.id] !== undefined
+            ? configEdits[config.id]
+            : config.config_value;
         const hasChanged = configEdits[config.id] !== undefined;
         return (
           <ConfigRow
@@ -32,4 +42,4 @@ const ConfigCategoryGroup = ({ category, configs, configEdits, onEdit, onSave }:
   </div>
 );
 
-export default ConfigCategoryGroup;
+export default memo(ConfigCategoryGroup);

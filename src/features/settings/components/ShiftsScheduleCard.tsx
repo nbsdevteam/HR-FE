@@ -10,21 +10,46 @@ import ShiftAssignerSection from "./ShiftAssignerSection";
 import ShiftDepartmentAssignments from "./ShiftDepartmentAssignments";
 import ShiftList from "./ShiftList";
 
-type ShiftsScheduleCardProps = {
+type TShiftsScheduleCardProps = {
   departments: DbDepartment[];
   deptLoading: boolean;
   showToast: (message: string) => void;
 };
 
-const ShiftsScheduleCard = ({ departments, deptLoading, showToast }: ShiftsScheduleCardProps) => {
-  const { shifts, loading: shiftsLoading, refetch: refetchShifts } = useShifts();
+const ShiftsScheduleCard = ({
+  departments,
+  deptLoading,
+  showToast,
+}: TShiftsScheduleCardProps) => {
   const {
-    expandedShift, toggleExpandedShift,
-    editingShift, initEditShift, cancelEditShift, updateEditingShiftForm, updateEditingShiftDay,
-    showNewShiftForm, setShowNewShiftForm, newShiftForm, updateNewShiftForm, updateNewShiftDay,
-    saveShift, createShift, deleteShift, setAsDefault,
+    shifts,
+    loading: shiftsLoading,
+    refetch: refetchShifts,
+  } = useShifts();
+  const {
+    expandedShift,
+    toggleExpandedShift,
+    editingShift,
+    initEditShift,
+    cancelEditShift,
+    updateEditingShiftForm,
+    updateEditingShiftDay,
+    showNewShiftForm,
+    setShowNewShiftForm,
+    newShiftForm,
+    updateNewShiftForm,
+    updateNewShiftDay,
+    saveShift,
+    createShift,
+    deleteShift,
+    setAsDefault,
   } = useShiftManagement(refetchShifts, showToast);
-  const { deptShiftAssignments, setDeptShift, savingDepts, saveDeptAssignments } = useDepartmentShiftAssignments(departments, showToast);
+  const {
+    deptShiftAssignments,
+    setDeptShift,
+    savingDepts,
+    saveDeptAssignments,
+  } = useDepartmentShiftAssignments(departments, showToast);
 
   return (
     <motion.div
@@ -39,8 +64,14 @@ const ShiftsScheduleCard = ({ departments, deptLoading, showToast }: ShiftsSched
             <Clock className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-foreground">{arabicSource("settings.time_and_shift_schedules")}</h3>
-            <p className="text-muted-foreground text-sm mt-1">{arabicSource("settings.managing_work_times_and_shifts_application_priority_employee_dep")}</p>
+            <h3 className="text-foreground">
+              {arabicSource("settings.time_and_shift_schedules")}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              {arabicSource(
+                "settings.managing_work_times_and_shifts_application_priority_employee_dep",
+              )}
+            </p>
           </div>
         </div>
         {!showNewShiftForm && (

@@ -12,4 +12,4 @@ const IrPenaltyRow = ({ detail, amount }: IrPenaltyRowProps) => (
   </div>
 );
 
-export default memo(IrPenaltyRow);
+export default IrPenaltyRow;

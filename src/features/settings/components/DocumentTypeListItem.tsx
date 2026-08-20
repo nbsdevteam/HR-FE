@@ -3,20 +3,28 @@ import { arabicSource } from "@/i18n/source";
 import type { DbDocumentType } from "@/shared/hooks";
 import SettingsToggle from "./SettingsToggle";
 
-type DocumentTypeListItemProps = {
+type TDocumentTypeListItemProps = {
   documentType: DbDocumentType;
   onToggleActive: () => void;
   onDelete: () => void;
 };
 
-const DocumentTypeListItem = ({ documentType, onToggleActive, onDelete }: DocumentTypeListItemProps) => (
+const DocumentTypeListItem = ({
+  documentType,
+  onToggleActive,
+  onDelete,
+}: TDocumentTypeListItemProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
     <div className="flex items-center gap-3">
-      <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">{documentType.code}</span>
+      <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
+        {documentType.code}
+      </span>
       <div>
         <p className="text-sm text-foreground">{documentType.name_ar}</p>
         <p className="text-xs text-muted-foreground">
-          {documentType.has_expiry ? `${arabicSource("settings.warning_before")} ${documentType.expiry_warning_days} ${arabicSource("common.days_2")}` : arabicSource("settings.without_ending")}
+          {documentType.has_expiry
+            ? `${arabicSource("settings.warning_before")} ${documentType.expiry_warning_days} ${arabicSource("common.days_2")}`
+            : arabicSource("settings.without_ending")}
           {documentType.is_required && " " + arabicSource("settings.mandatory")}
         </p>
       </div>

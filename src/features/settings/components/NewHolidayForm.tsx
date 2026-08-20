@@ -4,19 +4,30 @@ import { arabicSource } from "@/i18n/source";
 import type { NewHolidayForm as NewHolidayFormState } from "../types";
 import SettingsToggle from "./SettingsToggle";
 
-type NewHolidayFormProps = {
+type TNewHolidayFormProps = {
   form: NewHolidayFormState;
   onFieldChange: (patch: Partial<NewHolidayFormState>) => void;
   onSave: () => void;
   onCancel: () => void;
 };
 
-const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFormProps) => (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-muted/20 rounded-lg border border-border/20 space-y-4">
+const NewHolidayForm = ({
+  form,
+  onFieldChange,
+  onSave,
+  onCancel,
+}: TNewHolidayFormProps) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="p-4 bg-muted/20 rounded-lg border border-border/20 space-y-4"
+  >
     <h4 className="text-foreground">{arabicSource("settings.new_holiday")}</h4>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("settings.name_arabic")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("settings.name_arabic")}
+        </label>
         <input
           type="text"
           value={form.name_ar}
@@ -26,7 +37,9 @@ const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFor
         />
       </div>
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("settings.name_english")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("settings.name_english")}
+        </label>
         <input
           type="text"
           value={form.name_en}
@@ -36,7 +49,9 @@ const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFor
         />
       </div>
       <div>
-        <label className="block text-foreground text-sm mb-2">{arabicSource("common.date_2")}</label>
+        <label className="block text-foreground text-sm mb-2">
+          {arabicSource("common.date_2")}
+        </label>
         <input
           type="date"
           value={form.date}
@@ -45,8 +60,13 @@ const NewHolidayForm = ({ form, onFieldChange, onSave, onCancel }: NewHolidayFor
         />
       </div>
       <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
-        <label className="text-foreground text-sm">{arabicSource("settings.annual_frequency_2")}</label>
-        <SettingsToggle on={form.is_recurring} onClick={() => onFieldChange({ is_recurring: !form.is_recurring })} />
+        <label className="text-foreground text-sm">
+          {arabicSource("settings.annual_frequency_2")}
+        </label>
+        <SettingsToggle
+          on={form.is_recurring}
+          onClick={() => onFieldChange({ is_recurring: !form.is_recurring })}
+        />
       </div>
     </div>
     <div className="flex gap-2 pt-2">

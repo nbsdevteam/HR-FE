@@ -1,13 +1,17 @@
 import type { ShiftDaySchedule } from "../types";
 
-type ShiftDayEditorRowProps = {
+type TShiftDayEditorRowProps = {
   dayKey: string;
   label: string;
   value: ShiftDaySchedule;
   onChange: (patch: Partial<ShiftDaySchedule>) => void;
 };
 
-const ShiftDayEditorRow = ({ label, value, onChange }: ShiftDayEditorRowProps) => (
+const ShiftDayEditorRow = ({
+  label,
+  value,
+  onChange,
+}: TShiftDayEditorRowProps) => (
   <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
     <input
       type="checkbox"

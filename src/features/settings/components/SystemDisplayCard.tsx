@@ -42,7 +42,10 @@ const SystemDisplayCard = () => {
 
         <div className="p-3 rounded-lg bg-muted/20 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-foreground flex items-center gap-2" style={{ fontSize: 13 }}>
+            <span
+              className="text-foreground flex items-center gap-2"
+              style={{ fontSize: 13 }}
+            >
               <Calendar className="w-4 h-4 text-primary" />
               {arabicSource("settings.month_display_format")}
             </span>

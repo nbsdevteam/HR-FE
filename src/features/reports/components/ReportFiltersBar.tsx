@@ -43,42 +43,48 @@ const ReportFiltersBar = ({
         <input
           placeholder={arabicSource("reports.search_reports")}
           value={searchQuery}
-          onChange={e => onSearchQueryChange(e.target.value)}
+          onChange={(e) => onSearchQueryChange(e.target.value)}
           className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
       <select
         value={filterCategory}
-        onChange={e => onFilterCategoryChange(e.target.value)}
+        onChange={(e) => onFilterCategoryChange(e.target.value)}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
       >
         <option value="all">{arabicSource("common.all_categories")}</option>
         {Object.entries(categoryLabels).map(([k, v]) => (
-          <option key={k} value={k}>{v}</option>
+          <option key={k} value={k}>
+            {v}
+          </option>
         ))}
       </select>
       <select
         value={filterDept}
-        onChange={e => onFilterDeptChange(e.target.value)}
+        onChange={(e) => onFilterDeptChange(e.target.value)}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
       >
         <option value="">{arabicSource("reports.all_sections")}</option>
-        {departments.map(d => (
-          <option key={d.id} value={d.name}>{d.name}</option>
+        {departments.map((d) => (
+          <option key={d.id} value={d.name}>
+            {d.name}
+          </option>
         ))}
       </select>
       <input
         type="date"
         value={dateFrom}
-        onChange={e => onDateFromChange(e.target.value)}
+        onChange={(e) => onDateFromChange(e.target.value)}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
         dir="ltr"
       />
-      <span className="text-muted-foreground text-sm">{arabicSource("common.to")}</span>
+      <span className="text-muted-foreground text-sm">
+        {arabicSource("common.to")}
+      </span>
       <input
         type="date"
         value={dateTo}
-        onChange={e => onDateToChange(e.target.value)}
+        onChange={(e) => onDateToChange(e.target.value)}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
         dir="ltr"
       />

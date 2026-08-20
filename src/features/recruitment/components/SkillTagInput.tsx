@@ -4,17 +4,27 @@ import { arabicSource } from "@/i18n/source";
 import { inputCls, labelCls } from "../styles";
 import SkillTagChip from "./SkillTagChip";
 
-const SkillTagInput = ({ label, skills, onChange, weighted = false }: {
+interface SkillTagInputProps {
   label: string;
   skills: JobSkillRequirement[];
   onChange: (skills: JobSkillRequirement[]) => void;
   weighted?: boolean;
-}) => {
+}
+
+const SkillTagInput = ({
+  label,
+  skills,
+  onChange,
+  weighted = false,
+}: SkillTagInputProps) => {
   const [draft, setDraft] = useState("");
 
   const add = () => {
     const name = draft.trim();
-    if (!name || skills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+    if (
+      !name ||
+      skills.some((s) => s.name.toLowerCase() === name.toLowerCase())
+    ) {
       setDraft("");
       return;
     }
@@ -24,12 +34,19 @@ const SkillTagInput = ({ label, skills, onChange, weighted = false }: {
 
   return (
     <div>
-      <label className={labelCls} style={{ fontSize: 12 }}>{label}</label>
+      <label className={labelCls} style={{ fontSize: 12 }}>
+        {label}
+      </label>
       <input
         type="text"
         value={draft}
-        onChange={e => setDraft(e.target.value)}
-        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            add();
+          }
+        }}
         onBlur={add}
         placeholder={arabicSource("recruitment.add_skill")}
         className={inputCls}
@@ -41,7 +58,11 @@ const SkillTagInput = ({ label, skills, onChange, weighted = false }: {
               key={`${skill.name}-${i}`}
               skill={skill}
               weighted={weighted}
-              onWeightChange={(weight) => onChange(skills.map((s, si) => (si === i ? { ...s, weight } : s)))}
+              onWeightChange={(weight) =>
+                onChange(
+                  skills.map((s, si) => (si === i ? { ...s, weight } : s)),
+                )
+              }
               onRemove={() => onChange(skills.filter((_, si) => si !== i))}
             />
           ))}

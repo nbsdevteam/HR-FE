@@ -2,14 +2,19 @@ import { memo } from "react";
 import { X } from "lucide-react";
 import { type JobSkillRequirement } from "@/shared/hooks";
 
-type SkillTagChipProps = {
+interface ISkillTagChipProps {
   skill: JobSkillRequirement;
   weighted: boolean;
   onWeightChange: (weight: number) => void;
   onRemove: () => void;
-};
+}
 
-const SkillTagChip = ({ skill, weighted, onWeightChange, onRemove }: SkillTagChipProps) => (
+const SkillTagChip = ({
+  skill,
+  weighted,
+  onWeightChange,
+  onRemove,
+}: ISkillTagChipProps) => (
   <span
     className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border/40 bg-muted/20 text-foreground"
     style={{ fontSize: 11 }}
@@ -28,7 +33,11 @@ const SkillTagChip = ({ skill, weighted, onWeightChange, onRemove }: SkillTagChi
         <option value={3}>3</option>
       </select>
     )}
-    <button type="button" onClick={onRemove} className="text-destructive cursor-pointer">
+    <button
+      type="button"
+      onClick={onRemove}
+      className="text-destructive cursor-pointer"
+    >
       <X className="w-3 h-3" />
     </button>
   </span>

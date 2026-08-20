@@ -5,12 +5,12 @@ import type { DbReportHistory } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import ReportHistoryItem from "./ReportHistoryItem";
 
-type ReportHistoryPanelProps = {
+interface IReportHistoryPanelProps {
   history: DbReportHistory[];
   loading: boolean;
-};
+}
 
-const ReportHistoryPanel = ({ history, loading }: ReportHistoryPanelProps) => (
+const ReportHistoryPanel = ({ history, loading }: IReportHistoryPanelProps) => (
   <motion.div
     initial={{ opacity: 0, height: 0 }}
     animate={{ opacity: 1, height: "auto" }}
@@ -26,10 +26,12 @@ const ReportHistoryPanel = ({ history, loading }: ReportHistoryPanelProps) => (
         <Loader2 className="w-6 h-6 text-primary animate-spin" />
       </div>
     ) : history.length === 0 ? (
-      <p className="text-muted-foreground text-sm text-center py-4">{arabicSource("reports.no_reports_have_been_generated_yet")}</p>
+      <p className="text-muted-foregsround text-sm text-center py-4">
+        {arabicSource("reports.no_reports_have_been_generated_yet")}
+      </p>
     ) : (
       <div className="space-y-2 max-h-64 overflow-y-auto">
-        {history.slice(0, 20).map(entry => (
+        {history.slice(0, 20).map((entry) => (
           <ReportHistoryItem key={entry.id} entry={entry} />
         ))}
       </div>

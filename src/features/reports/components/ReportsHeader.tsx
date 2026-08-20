@@ -1,16 +1,21 @@
 import { History } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-type ReportsHeaderProps = {
+interface IReportsHeaderProps {
   showHistory: boolean;
   onToggleHistory: () => void;
-};
+}
 
-const ReportsHeader = ({ showHistory, onToggleHistory }: ReportsHeaderProps) => (
+const ReportsHeader = ({
+  showHistory,
+  onToggleHistory,
+}: IReportsHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.reports")}</h1>
-      <p className="text-muted-foreground mt-1">{arabicSource("reports.reporting_engine_live_data_from_the_database")}</p>
+      <p className="text-muted-foreground mt-1">
+        {arabicSource("reports.reporting_engine_live_data_from_the_database")}
+      </p>
     </div>
     <div className="flex items-center gap-2">
       <button
