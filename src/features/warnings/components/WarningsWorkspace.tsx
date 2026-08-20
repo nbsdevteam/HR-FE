@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -163,4 +163,4 @@ const WarningsWorkspace = () => {
   );
 };
 
-export default WarningsWorkspace;
+export default memo(WarningsWorkspace);

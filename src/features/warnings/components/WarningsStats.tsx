@@ -1,14 +1,15 @@
+import { memo } from "react";
 import { AlertTriangle, FileWarning, ShieldAlert } from "lucide-react";
 import StatCard from "@/shared/components/StatCard";
 import { arabicSource } from "@/i18n/source";
 import type { WarningStats } from "../utils/warningsStats";
 
-type WarningsStatsProps = {
+type TWarningsStatsProps = {
   stats: WarningStats;
   typeColors: Record<string, string>;
 };
 
-const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
+const WarningsStats = ({ stats, typeColors }: TWarningsStatsProps) => (
   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
     <StatCard
       label={arabicSource("common.total")}
@@ -24,7 +25,7 @@ const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
       iconClassName="w-5 h-5"
     />
 
-    {stats.byType.map((item, i) => (
+    {stats.byType?.map((item, i) => (
       <StatCard
         key={item.type}
         label={item.type}
@@ -43,4 +44,4 @@ const WarningsStats = ({ stats, typeColors }: WarningsStatsProps) => (
   </div>
 );
 
-export default WarningsStats;
+export default memo(WarningsStats);

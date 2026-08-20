@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { ShieldAlert } from "lucide-react";
 import { EmptyState, TableHeaderRow } from "@/shared/components";
@@ -5,7 +6,7 @@ import { arabicSource } from "@/i18n/source";
 import type { WarningWithEmployee } from "../types";
 import WarningTableRow from "./WarningTableRow";
 
-type WarningsListViewProps = {
+type TWarningsListViewProps = {
   warnings: WarningWithEmployee[];
   typeColors: Record<string, string>;
   statusColors: Record<string, string>;
@@ -15,12 +16,24 @@ type WarningsListViewProps = {
 };
 
 const TABLE_HEADERS = [
-  arabicSource("common.employee"), arabicSource("common.section"), arabicSource("common.alarm_type"),
-  arabicSource("common.the_reason"), arabicSource("common.date"), arabicSource("warnings.issued_by"),
-  arabicSource("common.status"), arabicSource("common.procedures"),
+  arabicSource("common.employee"),
+  arabicSource("common.section"),
+  arabicSource("common.alarm_type"),
+  arabicSource("common.the_reason"),
+  arabicSource("common.date"),
+  arabicSource("warnings.issued_by"),
+  arabicSource("common.status"),
+  arabicSource("common.procedures"),
 ];
 
-const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, warningsByEmployee, onSelectWarning }: WarningsListViewProps) => (
+const WarningsListView = ({
+  warnings,
+  typeColors,
+  statusColors,
+  typeSeverity,
+  warningsByEmployee,
+  onSelectWarning,
+}: TWarningsListViewProps) => (
   <motion.div
     key="list"
     initial={{ opacity: 0, y: 10 }}
@@ -45,12 +58,17 @@ const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, wa
                 statusColors={statusColors}
                 typeSeverity={typeSeverity}
                 duplicateCount={warningsByEmployee[warning.employee_id]}
-                onSelect={() => onSelectWarning(warning)}
+                onSelect={onSelectWarning}
               />
             ))
           ) : (
             <tr>
-              <td colSpan={8}><EmptyState icon={ShieldAlert} message={arabicSource("common.no_alarms")} /></td>
+              <td colSpan={8}>
+                <EmptyState
+                  icon={ShieldAlert}
+                  message={arabicSource("common.no_alarms")}
+                />
+              </td>
             </tr>
           )}
         </tbody>
@@ -59,4 +77,4 @@ const WarningsListView = ({ warnings, typeColors, statusColors, typeSeverity, wa
   </motion.div>
 );
 
-export default WarningsListView;
+export default memo(WarningsListView);

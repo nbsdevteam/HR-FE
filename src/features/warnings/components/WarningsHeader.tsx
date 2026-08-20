@@ -1,20 +1,29 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { ViewToggle } from "@/shared/components/ViewToggle";
 import { arabicSource } from "@/i18n/source";
 import type { WarningViewMode } from "../types";
 
-type WarningsHeaderProps = {
+type TWarningsHeaderProps = {
   viewMode: WarningViewMode;
   onViewModeChange: (mode: WarningViewMode) => void;
   onNewWarning: () => void;
 };
 
-const WarningsHeader = ({ viewMode, onViewModeChange, onNewWarning }: WarningsHeaderProps) => (
+const WarningsHeader = ({
+  viewMode,
+  onViewModeChange,
+  onNewWarning,
+}: TWarningsHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.alarms")}</h1>
-      <p className="text-muted-foreground mt-1">{arabicSource("warnings.managing_and_following_up_on_administrative_warnings")}</p>
+      <p className="text-muted-foreground mt-1">
+        {arabicSource(
+          "warnings.managing_and_following_up_on_administrative_warnings",
+        )}
+      </p>
     </div>
     <div className="flex items-center gap-3">
       <ViewToggle view={viewMode} onChange={onViewModeChange} />
@@ -31,4 +40,4 @@ const WarningsHeader = ({ viewMode, onViewModeChange, onNewWarning }: WarningsHe
   </div>
 );
 
-export default WarningsHeader;
+export default memo(WarningsHeader);

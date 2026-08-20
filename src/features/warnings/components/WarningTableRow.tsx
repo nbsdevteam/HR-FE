@@ -1,20 +1,29 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
 
-type WarningTableRowProps = {
+type TWarningTableRowProps = {
   warning: WarningWithEmployee;
   index: number;
   typeColors: Record<string, string>;
   statusColors: Record<string, string>;
   typeSeverity: Record<string, number>;
   duplicateCount: number;
-  onSelect: () => void;
+  onSelect: (warning: WarningWithEmployee) => void;
 };
 
-const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverity, duplicateCount, onSelect }: WarningTableRowProps) => (
+const WarningTableRow = ({
+  warning,
+  index,
+  typeColors,
+  statusColors,
+  typeSeverity,
+  duplicateCount,
+  onSelect,
+}: TWarningTableRowProps) => (
   <motion.tr
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -23,7 +32,10 @@ const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverit
   >
     <td className="px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="w-1.5 h-8 rounded-full" style={{ backgroundColor: severityColor(typeSeverity, warning.type) }} />
+        <div
+          className="w-1.5 h-8 rounded-full"
+          style={{ backgroundColor: severityColor(typeSeverity, warning.type) }}
+        />
         <div>
           <span className="text-foreground">{warning.employeeName}</span>
           {duplicateCount > 1 && (
@@ -34,24 +46,42 @@ const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverit
         </div>
       </div>
     </td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{warning.employeeDepartment}</td>
+    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
+      {warning.employeeDepartment}
+    </td>
     <td className="px-4 py-3">
-      <span className={`px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`} style={{ fontSize: 12 }}>
+      <span
+        className={`px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`}
+        style={{ fontSize: 12 }}
+      >
         {warning.type}
       </span>
     </td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{warning.reason}</td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{warning.date}</td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{warning.issued_by || "—"}</td>
+    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
+      {warning.reason}
+    </td>
+    <td
+      className="px-4 py-3 text-muted-foreground"
+      style={{ fontSize: 13 }}
+      dir="ltr"
+    >
+      {warning.date}
+    </td>
+    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
+      {warning.issued_by || "—"}
+    </td>
     <td className="px-4 py-3">
-      <span className={`px-2 py-0.5 rounded-md border ${statusColors[warning.status]}`} style={{ fontSize: 12 }}>
+      <span
+        className={`px-2 py-0.5 rounded-md border ${statusColors[warning.status]}`}
+        style={{ fontSize: 12 }}
+      >
         {warning.status}
       </span>
     </td>
     <td className="px-4 py-3">
       <div className="flex items-center gap-2">
         <button
-          onClick={onSelect}
+          onClick={() => onSelect(warning)}
           className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
           title={arabicSource("common.show_details")}
         >
@@ -62,4 +92,4 @@ const WarningTableRow = ({ warning, index, typeColors, statusColors, typeSeverit
   </motion.tr>
 );
 
-export default WarningTableRow;
+export default memo(WarningTableRow);
