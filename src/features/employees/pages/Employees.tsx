@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { EmployeeDetailPanel } from "@/features/employees";
@@ -6,10 +7,14 @@ import AddEmployeeModal from "../components/AddEmployeeModal";
 import DeleteEmployeeModal from "../components/DeleteEmployeeModal";
 import EmployeesFilters from "../components/EmployeesFilters";
 import EmployeesHeader from "../components/EmployeesHeader";
-import EmployeesKanbanView from "../components/EmployeesKanbanView";
 import EmployeesListView from "../components/EmployeesListView";
 import EmployeesStats from "../components/EmployeesStats";
 import { useEmployeesPage } from "../hooks/useEmployeesPage";
+import LoadingState from "@/shared/components/LoadingState";
+
+const EmployeesKanbanView = lazy(
+  () => import("../components/EmployeesKanbanView"),
+);
 
 const Employees = () => {
   const {
@@ -106,13 +111,22 @@ const Employees = () => {
             onDeleteTargetChange={setDeleteConfirm}
           />
         ) : (
-          <EmployeesKanbanView
-            departments={kanbanDepts}
-            employees={filtered}
-            dbEmployees={dbEmployees}
-            selectedDept={selectedDept}
-            onSelectEmployee={setSelectedEmployee}
-          />
+          <Suspense
+            fallback={
+              <LoadingState
+                // Fix this (it shows wrong loading message)
+                message={arabicSource("dashboard.loading_control_panel")}
+              />
+            }
+          >
+            <EmployeesKanbanView
+              departments={kanbanDepts}
+              employees={filtered}
+              dbEmployees={dbEmployees}
+              selectedDept={selectedDept}
+              onSelectEmployee={setSelectedEmployee}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
