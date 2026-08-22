@@ -1,24 +1,26 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, lazy, Suspense } from "react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
-import AiScreeningView from "../components/AiScreeningView";
 import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
-import RecruitmentCandidateBankView from "./RecruitmentCandidateBankView";
 import RecruitmentHeader from "./RecruitmentHeader";
-import RecruitmentJobsView from "./RecruitmentJobsView";
 import LoadingState from "@/shared/components/LoadingState";
 import RecruitmentModals from "./RecruitmentModals";
-import RecruitmentPipelineView from "./RecruitmentPipelineView";
 import RecruitmentStats from "./RecruitmentStats";
 import RecruitmentTabs from "./RecruitmentTabs";
+import { sortTypes, viewType } from "../types";
+
+const AiScreeningView = lazy(() => import("../components/AiScreeningView"));
+const RecruitmentJobsView = lazy(() => import("./RecruitmentJobsView"));
+const RecruitmentPipelineView = lazy(() => import("./RecruitmentPipelineView"));
+const RecruitmentCandidateBankView = lazy(
+  () => import("./RecruitmentCandidateBankView"),
+);
 
 const RecruitmentWorkspace = () => {
-  const [view, setView] = useState<
-    "jobs" | "applicants" | "pipeline" | "bank" | "ai"
-  >("applicants");
+  const [view, setView] = useState<viewType>("applicants");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [showJobForm, setShowJobForm] = useState(false);
   const [showApplicantForm, setShowApplicantForm] = useState(false);
@@ -29,23 +31,25 @@ const RecruitmentWorkspace = () => {
   const [editingApplicant, setEditingApplicant] = useState<DbApplicant | null>(
     null,
   );
+
   const [editingJob, setEditingJob] = useState<DbJobOpening | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStage, setFilterStage] = useState<string>(
     arabicSource("common.all"),
   );
+
   const [filterJob, setFilterJob] = useState<string>(
     arabicSource("common.all"),
   );
-  const [sortBy, setSortBy] = useState<
-    "rank" | "rating" | "date" | "name" | "job" | "stage"
-  >("rank");
+
+  const [sortBy, setSortBy] = useState<sortTypes>("rank");
   const [recSortDir] = useState<"asc" | "desc">("desc");
   const {
     jobs: rawJobs,
     loading: jobsLoading,
     refetch: refetchJobs,
   } = useJobOpenings();
+
   const {
     applicants: rawApplicants,
     loading: appsLoading,
@@ -55,7 +59,13 @@ const RecruitmentWorkspace = () => {
 
   const { jobs, applicants, filteredApplicants, stats } =
     useRecruitmentWorkspaceData(
-      rawJobs, rawApplicants, searchTerm, filterStage, filterJob, sortBy, recSortDir,
+      rawJobs,
+      rawApplicants,
+      searchTerm,
+      filterStage,
+      filterJob,
+      sortBy,
+      recSortDir,
     );
 
   const {
@@ -69,7 +79,10 @@ const RecruitmentWorkspace = () => {
     handleConvertToEmployee,
   } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant);
 
-  const handleApplicantFormOpen = useCallback(() => setShowApplicantForm(true), []);
+  const handleApplicantFormOpen = useCallback(
+    () => setShowApplicantForm(true),
+    [],
+  );
   const handleJobFormOpen = useCallback(() => setShowJobForm(true), []);
 
   const handleAiScreeningOpen = useCallback((jobId: string) => {
@@ -94,7 +107,10 @@ const RecruitmentWorkspace = () => {
     refetchApps();
   }, [refetchApps]);
 
-  const handleApplicantSelectClose = useCallback(() => setSelectedApplicant(null), []);
+  const handleApplicantSelectClose = useCallback(
+    () => setSelectedApplicant(null),
+    [],
+  );
 
   const handleJobFormClose = useCallback(() => {
     setShowJobForm(false);
@@ -132,24 +148,28 @@ const RecruitmentWorkspace = () => {
       <RecruitmentTabs view={view} onViewChange={setView} />
 
       {view === "jobs" && (
-        <RecruitmentJobsView
-          jobs={jobs}
-          onAiScreeningOpen={handleAiScreeningOpen}
-          onDeleteJob={handleDeleteJob}
-          onEditJob={setEditingJob}
-          onJobStatusChange={handleJobStatusChange}
-          onLinkJob={setLinkJob}
-        />
+        <Suspense fallback={null}>
+          <RecruitmentJobsView
+            jobs={jobs}
+            onAiScreeningOpen={handleAiScreeningOpen}
+            onDeleteJob={handleDeleteJob}
+            onEditJob={setEditingJob}
+            onJobStatusChange={handleJobStatusChange}
+            onLinkJob={setLinkJob}
+          />
+        </Suspense>
       )}
 
       {view === "ai" && (
-        <AiScreeningView
-          jobs={jobs}
-          jobId={aiJobId}
-          setJobId={setAiJobId}
-          onSelect={setSelectedApplicant}
-          onUpdateStage={handleUpdateStage}
-        />
+        <Suspense fallback={null}>
+          <AiScreeningView
+            jobs={jobs}
+            jobId={aiJobId}
+            setJobId={setAiJobId}
+            onSelect={setSelectedApplicant}
+            onUpdateStage={handleUpdateStage}
+          />
+        </Suspense>
       )}
 
       {view === "applicants" && (
@@ -170,21 +190,25 @@ const RecruitmentWorkspace = () => {
       )}
 
       {view === "pipeline" && (
-        <RecruitmentPipelineView
-          applicants={applicants}
-          onSelectApplicant={setSelectedApplicant}
-        />
+        <Suspense fallback={null}>
+          <RecruitmentPipelineView
+            applicants={applicants}
+            onSelectApplicant={setSelectedApplicant}
+          />
+        </Suspense>
       )}
 
       {view === "bank" && (
-        <RecruitmentCandidateBankView
-          applicants={applicants}
-          sortBy={sortBy}
-          onSelectApplicant={setSelectedApplicant}
-          onSortChange={setSortBy}
-          onToggleBookmark={handleToggleBookmark}
-          onUpdateRating={handleUpdateRating}
-        />
+        <Suspense fallback={null}>
+          <RecruitmentCandidateBankView
+            applicants={applicants}
+            sortBy={sortBy}
+            onSelectApplicant={setSelectedApplicant}
+            onSortChange={setSortBy}
+            onToggleBookmark={handleToggleBookmark}
+            onUpdateRating={handleUpdateRating}
+          />
+        </Suspense>
       )}
 
       <RecruitmentModals

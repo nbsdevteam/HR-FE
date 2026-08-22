@@ -42,6 +42,7 @@ const ApplicantFormSalarySection = ({
           onChange={(e) => onFieldChange("expected_salary", e.target.value)}
           placeholder="0"
           className={inputCls}
+          min={1}
           dir="ltr"
         />
       </div>

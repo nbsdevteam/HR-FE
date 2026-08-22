@@ -1,10 +1,11 @@
-import { memo } from "react";
+import { lazy, memo, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
-import ApplicantDetailPanel from "./ApplicantDetailPanel";
-import ApplicantFormModal from "./ApplicantFormModal";
-import ApplyLinkModal from "./ApplyLinkModal";
-import JobFormModal from "./JobFormModal";
+
+const ApplicantDetailPanel = lazy(() => import("./ApplicantDetailPanel"));
+const ApplicantFormModal = lazy(() => import("./ApplicantFormModal"));
+const ApplyLinkModal = lazy(() => import("./ApplyLinkModal"));
+const JobFormModal = lazy(() => import("./JobFormModal"));
 
 type RecruitmentModalsProps = {
   editingApplicant: DbApplicant | null;
@@ -55,37 +56,46 @@ const RecruitmentModals = ({
 }: RecruitmentModalsProps) => (
   <AnimatePresence>
     {(showJobForm || editingJob) && (
-      <JobFormModal
-        editingJob={editingJob}
-        key={editingJob?.id || "new"}
-        onClose={onJobFormClose}
-        onSaved={onJobSaved}
-      />
+      <Suspense fallback={null}>
+        <JobFormModal
+          editingJob={editingJob}
+          key={editingJob?.id || "new"}
+          onClose={onJobFormClose}
+          onSaved={onJobSaved}
+        />
+      </Suspense>
     )}
     {showApplicantForm && (
-      <ApplicantFormModal
-        jobs={jobs}
-        editingApplicant={editingApplicant}
-        onClose={onApplicantFormClose}
-        onSaved={onApplicantSaved}
-      />
+      <Suspense fallback={null}>
+        <ApplicantFormModal
+          jobs={jobs}
+          editingApplicant={editingApplicant}
+          onClose={onApplicantFormClose}
+          onSaved={onApplicantSaved}
+        />
+      </Suspense>
     )}
+
     {linkJob && (
-      <ApplyLinkModal job={linkJob} onClose={onLinkJobClose} />
+      <Suspense fallback={null}>
+        <ApplyLinkModal job={linkJob} onClose={onLinkJobClose} />
+      </Suspense>
     )}
     {selectedApplicant && (
-      <ApplicantDetailPanel
-        applicant={selectedApplicant}
-        onClose={onApplicantSelectClose}
-        onEdit={onApplicantEdit}
-        onDelete={onApplicantDelete}
-        onUpdateStage={onApplicantStageUpdate}
-        onUpdateRating={onApplicantRatingUpdate}
-        onToggleBookmark={onApplicantBookmarkToggle}
-        onRefresh={onApplicantRefresh}
-        onConvertToEmployee={onConvertToEmployee}
-        onScreen={onApplicantScreen}
-      />
+      <Suspense fallback={null}>
+        <ApplicantDetailPanel
+          applicant={selectedApplicant}
+          onClose={onApplicantSelectClose}
+          onEdit={onApplicantEdit}
+          onDelete={onApplicantDelete}
+          onUpdateStage={onApplicantStageUpdate}
+          onUpdateRating={onApplicantRatingUpdate}
+          onToggleBookmark={onApplicantBookmarkToggle}
+          onRefresh={onApplicantRefresh}
+          onConvertToEmployee={onConvertToEmployee}
+          onScreen={onApplicantScreen}
+        />
+      </Suspense>
     )}
   </AnimatePresence>
 );

@@ -1,5 +1,12 @@
 ﻿import { useCallback, useMemo, useState } from "react";
-import { CheckCircle, Clock, Loader2, Search, Shield, Trash2 } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Loader2,
+  Search,
+  Shield,
+  Trash2,
+} from "lucide-react";
 import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import StatCard from "@/shared/components/StatCard";
@@ -31,10 +38,16 @@ const AuditTrailTab = () => {
     let todayCount = 0;
 
     for (const l of logs) {
-      if (new Date(l.created_at).toISOString().slice(0, 10) === todayStr) todayCount++;
+      if (new Date(l.created_at).toISOString().slice(0, 10) === todayStr)
+        todayCount++;
       counts[l.action] = (counts[l.action] || 0) + 1;
 
-      if (!q || l.entity_label?.includes(q) || l.actor_name.includes(q) || l.entity_type.includes(q)) {
+      if (
+        !q ||
+        l.entity_label?.includes(q) ||
+        l.actor_name.includes(q) ||
+        l.entity_type.includes(q)
+      ) {
         result.push(l);
       }
     }
@@ -42,16 +55,31 @@ const AuditTrailTab = () => {
     return { filtered: result, todayLogs: todayCount, actionCounts: counts };
   }, [logs, searchQuery]);
 
-  const displayedLogs = useMemo(() => filtered.slice(0, PAGE_LIMIT), [filtered]);
+  const displayedLogs = useMemo(
+    () => filtered.slice(0, PAGE_LIMIT),
+    [filtered],
+  );
 
   const stats = useMemo(
     () => [
-      { label: arabicSource("common.total_records"), value: logs.length, icon: Shield },
+      {
+        label: arabicSource("common.total_records"),
+        value: logs.length,
+        icon: Shield,
+      },
       { label: arabicSource("common.today"), value: todayLogs, icon: Clock },
-      { label: arabicSource("auditcenter.creation_operations"), value: actionCounts.create || 0, icon: CheckCircle },
-      { label: arabicSource("auditcenter.deletions"), value: actionCounts.delete || 0, icon: Trash2 },
+      {
+        label: arabicSource("auditcenter.creation_operations"),
+        value: actionCounts.create || 0,
+        icon: CheckCircle,
+      },
+      {
+        label: arabicSource("auditcenter.deletions"),
+        value: actionCounts.delete || 0,
+        icon: Trash2,
+      },
     ],
-    [logs.length, todayLogs, actionCounts]
+    [logs.length, todayLogs, actionCounts],
   );
 
   const toggleExpandedLog = useCallback((id: string) => {
@@ -87,27 +115,45 @@ const AuditTrailTab = () => {
               className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
-          <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)} className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm">
-            <option value="">{arabicSource("auditcenter.all_procedures")}</option>
+          <select
+            value={filterAction}
+            onChange={(e) => setFilterAction(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+          >
+            <option value="">
+              {arabicSource("auditcenter.all_procedures")}
+            </option>
             {Object.entries(actionLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>
+                {label}
+              </option>
             ))}
           </select>
-          <select value={filterEntity} onChange={(e) => setFilterEntity(e.target.value)} className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm">
+          <select
+            value={filterEntity}
+            onChange={(e) => setFilterEntity(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+          >
             <option value="">{arabicSource("auditcenter.all_entities")}</option>
             {Object.entries(entityLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
       ) : filtered.length === 0 ? (
         <div className={`${auditCardCls} text-center py-12`}>
           <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">{arabicSource("auditcenter.no_audit_logs_found")}</p>
+          <p className="text-muted-foreground">
+            {arabicSource("auditcenter.no_audit_logs_found")}
+          </p>
         </div>
       ) : (
         <div className={auditCardCls + " !p-0"}>
@@ -115,24 +161,44 @@ const AuditTrailTab = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/40 bg-muted/10">
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("auditcenter.procedure")}</th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("auditcenter.entity")}</th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("common.description")}</th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("auditcenter.port")}</th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("common.date")}</th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">{arabicSource("auditcenter.details")}</th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("auditcenter.procedure")}
+                  </th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("auditcenter.entity")}
+                  </th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("common.description")}
+                  </th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("auditcenter.port")}
+                  </th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("common.date")}
+                  </th>
+                  <th className="text-start p-3 text-muted-foreground font-medium">
+                    {arabicSource("auditcenter.details")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {displayedLogs.map((log) => (
-                  <AuditLogRow key={log.id} log={log} isExpanded={expandedLog === log.id} onToggleExpanded={toggleExpandedLog} />
+                  <AuditLogRow
+                    key={log.id}
+                    log={log}
+                    isExpanded={expandedLog === log.id}
+                    onToggleExpanded={toggleExpandedLog}
+                  />
                 ))}
               </tbody>
             </table>
           </div>
           {filtered.length > PAGE_LIMIT && (
             <p className="text-center text-muted-foreground text-xs py-3 border-t border-border/20">
-              {arabicSource("auditcenter.the_first_100_records_of_a_parent_are_displayed")} {filtered.length}
+              {arabicSource(
+                "auditcenter.the_first_100_records_of_a_parent_are_displayed",
+              )}{" "}
+              {filtered.length}
             </p>
           )}
         </div>

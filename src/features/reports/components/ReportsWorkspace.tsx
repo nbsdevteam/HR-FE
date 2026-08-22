@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
@@ -30,8 +31,9 @@ import ReportHistoryPanel from "./ReportHistoryPanel";
 import ReportsHeader from "./ReportsHeader";
 import ReportsStats from "./ReportsStats";
 import ReportTemplatesGrid from "./ReportTemplatesGrid";
-import ReportTemplatesTable from "./ReportTemplatesTable";
 import ReportViewerModal from "./ReportViewerModal";
+
+const ReportTemplatesTable = lazy(() => import("./ReportTemplatesTable"));
 
 const ReportsWorkspace = () => {
   const [selectedTemplate, setSelectedTemplate] =
@@ -106,6 +108,7 @@ const ReportsWorkspace = () => {
         return false;
       return true;
     });
+
     const dir = rptSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
       if (rptSortBy === "name")
@@ -118,6 +121,7 @@ const ReportsWorkspace = () => {
   }, [templates, filterCategory, searchQuery, rptSortBy, rptSortDir]);
 
   const handleToggleHistory = useCallback(() => setShowHistory((v) => !v), []);
+
   const handleSelectTemplate = useCallback(
     (template: DbReportTemplate) => {
       setSelectedTemplate(template);
@@ -125,13 +129,16 @@ const ReportsWorkspace = () => {
     },
     [resetGeneratedData],
   );
+
   const handleCloseViewer = useCallback(() => {
     setSelectedTemplate(null);
     resetGeneratedData();
   }, [resetGeneratedData]);
+
   const handleGenerate = useCallback(() => {
     if (selectedTemplate) generateReport(selectedTemplate);
   }, [selectedTemplate, generateReport]);
+
   const handleExportCSV = useCallback(
     () => exportCSV(selectedTemplate),
     [exportCSV, selectedTemplate],
@@ -184,14 +191,16 @@ const ReportsWorkspace = () => {
           onSelect={handleSelectTemplate}
         />
       ) : (
-        <ReportTemplatesTable
-          templates={filteredTemplates}
-          sortBy={rptSortBy}
-          sortDir={rptSortDir}
-          onSortByChange={setRptSortBy}
-          onSortDirChange={setRptSortDir}
-          onSelect={handleSelectTemplate}
-        />
+        <Suspense fallback={null}>
+          <ReportTemplatesTable
+            templates={filteredTemplates}
+            sortBy={rptSortBy}
+            sortDir={rptSortDir}
+            onSortByChange={setRptSortBy}
+            onSortDirChange={setRptSortDir}
+            onSelect={handleSelectTemplate}
+          />
+        </Suspense>
       )}
 
       <AnimatePresence>

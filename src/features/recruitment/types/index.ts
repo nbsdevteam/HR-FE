@@ -8,3 +8,6 @@ export type PublicApplyForm = {
   consent: boolean;
   hp: string;
 };
+
+export type viewType = "jobs" | "applicants" | "pipeline" | "bank" | "ai";
+export type sortTypes = "rank" | "rating" | "date" | "name" | "job" | "stage";

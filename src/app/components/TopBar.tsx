@@ -14,11 +14,21 @@ import NotificationsDropdown from "./NotificationsDropdown";
 import UserMenuDropdown from "./UserMenuDropdown";
 
 const quotes = [
-  arabicSource("shared.success_is_the_result_of_preparation_hard_work_and_learning_from"),
-  arabicSource("shared.investing_in_employees_is_the_best_investment_for_an_organizatio"),
-  arabicSource("shared.leadership_is_the_art_of_making_others_achieve_their_goals_by_th"),
-  arabicSource("shared.building_a_strong_team_starts_from_a_healthy_corporate_culture"),
-  arabicSource("shared.continuous_development_is_the_key_to_institutional_excellence"),
+  arabicSource(
+    "shared.success_is_the_result_of_preparation_hard_work_and_learning_from",
+  ),
+  arabicSource(
+    "shared.investing_in_employees_is_the_best_investment_for_an_organizatio",
+  ),
+  arabicSource(
+    "shared.leadership_is_the_art_of_making_others_achieve_their_goals_by_th",
+  ),
+  arabicSource(
+    "shared.building_a_strong_team_starts_from_a_healthy_corporate_culture",
+  ),
+  arabicSource(
+    "shared.continuous_development_is_the_key_to_institutional_excellence",
+  ),
 ];
 
 const TopBar = () => {
@@ -32,7 +42,11 @@ const TopBar = () => {
 
   const { toggleMobileNav, isDesktop } = useNavShell();
   const { user, signOut } = useAuth();
-  const { notifications, unreadCount, refetch: refetchNotifications } = useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    refetch: refetchNotifications,
+  } = useNotifications();
   const { deviceStatus, refresh: refreshDevice } = useDeviceStatus();
 
   const bellRef = useRef<HTMLDivElement>(null);
@@ -40,29 +54,42 @@ const TopBar = () => {
   const userRef = useRef<HTMLDivElement>(null);
 
   const quote = quotes[Math.floor(Date.now() / 3600000) % quotes.length];
-  const displayName = user?.name || user?.email || arabicSource("shared.hello_human_resources_manager");
+  const displayName =
+    user?.name ||
+    user?.email ||
+    arabicSource("shared.hello_human_resources_manager");
 
   const handleBellToggle = useCallback(() => setBellOpen((o) => !o), []);
   const handleBellClose = useCallback(() => setBellOpen(false), []);
   const handleDeviceToggle = useCallback(() => setDeviceOpen((o) => !o), []);
   const handleUserToggle = useCallback(() => setUserOpen((v) => !v), []);
-  const handleSearchOpenToggle = useCallback(() => setSearchOpen((v) => !v), []);
+  const handleSearchOpenToggle = useCallback(
+    () => setSearchOpen((v) => !v),
+    [],
+  );
 
   const handleMarkAllRead = useCallback(async () => {
     try {
       await odooData.markAllNotificationsRead();
       await refetchNotifications();
-    } catch { /* ignore */ }
-  }, [refetchNotifications]);
-
-  const handleSelectNotification = useCallback(async (n: { id: string; is_read: boolean }) => {
-    if (!n.is_read) {
-      try {
-        await odooData.markNotificationRead(n.id);
-        await refetchNotifications();
-      } catch { /* ignore */ }
+    } catch {
+      /* ignore */
     }
   }, [refetchNotifications]);
+
+  const handleSelectNotification = useCallback(
+    async (n: { id: string; is_read: boolean }) => {
+      if (!n.is_read) {
+        try {
+          await odooData.markNotificationRead(n.id);
+          await refetchNotifications();
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    [refetchNotifications],
+  );
 
   const triggerSync = useCallback(async () => {
     setSyncing(true);
@@ -91,9 +118,12 @@ const TopBar = () => {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
-      if (deviceRef.current && !deviceRef.current.contains(e.target as Node)) setDeviceOpen(false);
-      if (userRef.current && !userRef.current.contains(e.target as Node)) setUserOpen(false);
+      if (bellRef.current && !bellRef.current.contains(e.target as Node))
+        setBellOpen(false);
+      if (deviceRef.current && !deviceRef.current.contains(e.target as Node))
+        setDeviceOpen(false);
+      if (userRef.current && !userRef.current.contains(e.target as Node))
+        setUserOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -116,9 +146,14 @@ const TopBar = () => {
         <div className="min-w-0">
           <p className="text-foreground truncate" style={{ fontSize: 14 }}>
             <span className="md:hidden">{displayName}</span>
-            <span className="hidden md:inline">{arabicSource("shared.hello_human_resources_manager")}</span>
+            <span className="hidden md:inline">
+              {arabicSource("shared.hello_human_resources_manager")}
+            </span>
           </p>
-          <p className="text-muted-foreground hidden lg:block truncate" style={{ fontSize: 12 }}>
+          <p
+            className="text-muted-foreground hidden lg:block truncate"
+            style={{ fontSize: 12 }}
+          >
             {quote}
           </p>
         </div>
@@ -159,17 +194,6 @@ const TopBar = () => {
           />
         )}
 
-        <NotificationsDropdown
-          notifications={notifications}
-          unreadCount={unreadCount}
-          isOpen={bellOpen}
-          dropdownRef={bellRef}
-          onToggle={handleBellToggle}
-          onClose={handleBellClose}
-          onMarkAllRead={handleMarkAllRead}
-          onSelectNotification={handleSelectNotification}
-        />
-
         <motion.button
           type="button"
           whileHover={{ scale: 1.05 }}
@@ -183,14 +207,25 @@ const TopBar = () => {
           <ThemeSwitcher />
         </div>
 
-        <motion.button
+        {/* <motion.button
           type="button"
           whileHover={{ scale: 1.05 }}
           aria-label={arabicSource("common.settings")}
           className="hidden md:inline-flex p-2 rounded-lg hover:bg-secondary cursor-pointer"
         >
           <Settings className="w-5 h-5 text-muted-foreground" />
-        </motion.button>
+        </motion.button> */}
+
+        <NotificationsDropdown
+          notifications={notifications}
+          unreadCount={unreadCount}
+          isOpen={bellOpen}
+          dropdownRef={bellRef}
+          onToggle={handleBellToggle}
+          onClose={handleBellClose}
+          onMarkAllRead={handleMarkAllRead}
+          onSelectNotification={handleSelectNotification}
+        />
 
         {/* User menu + logout */}
         <UserMenuDropdown

@@ -2,20 +2,24 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, Loader2, UserCheck } from "lucide-react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
-import AddEmployeeModal from "../components/AddEmployeeModal";
-import CleanupDuplicatesModal from "../components/CleanupDuplicatesModal";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import EditEmployeeModal from "../components/EditEmployeeModal";
-import DetailPanel from "../components/DetailPanel";
 import HierarchyHeader from "../components/HierarchyHeader";
 import HierarchyTreeSection from "../components/HierarchyTreeSection";
 import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
 import SearchCountToast from "../components/SearchCountToast";
-import SetupHierarchyModal from "../components/SetupHierarchyModal";
-import UnlinkedPanel from "../components/UnlinkedPanel";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
 import { lazy, Suspense } from "react";
 const PositionsView = lazy(() => import("../components/PositionsView"));
+const SetupHierarchyModal = lazy(
+  () => import("../components/SetupHierarchyModal"),
+);
+const CleanupDuplicatesModal = lazy(
+  () => import("../components/CleanupDuplicatesModal"),
+);
+const UnlinkedPanel = lazy(() => import("../components/UnlinkedPanel"));
+const EditEmployeeModal = lazy(() => import("../components/EditEmployeeModal"));
+const AddEmployeeModal = lazy(() => import("../components/AddEmployeeModal"));
+const DetailPanel = lazy(() => import("../components/DetailPanel"));
 
 const Hierarchy = () => {
   const {
