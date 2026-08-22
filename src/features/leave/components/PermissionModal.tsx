@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { AlertCircle, Loader2, Send, Timer, X } from "lucide-react";
+import { AlertCircle, Loader2, Send, Timer } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -59,12 +59,7 @@ const PermissionModal = ({
       onClose={onClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg"
     >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-foreground">{arabicSource("leave.new_permission_request")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-secondary cursor-pointer">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+        <ModalHeader title={arabicSource("leave.new_permission_request")} onClose={onClose} />
 
         {error && (
           <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 13 }}>

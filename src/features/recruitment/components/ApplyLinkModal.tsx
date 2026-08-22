@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, memo } from "react";
 import {
-  X,
   Loader2,
   AlertCircle,
   Link2,
@@ -10,7 +9,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -78,18 +77,16 @@ const ApplyLinkModal = ({
       onClose={onClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg"
     >
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-foreground flex items-center gap-2">
-          <Link2 className="w-5 h-5 text-primary" />
-          {arabicSource("recruitment.apply_link")}
-        </h2>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-secondary cursor-pointer"
-        >
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </div>
+      <ModalHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Link2 className="w-5 h-5 text-primary" />
+            {arabicSource("recruitment.apply_link")}
+          </span>
+        }
+        onClose={onClose}
+        className="flex items-center justify-between mb-5"
+      />
 
       <p className="text-muted-foreground mb-4" style={{ fontSize: 13 }}>
         {job.title}
