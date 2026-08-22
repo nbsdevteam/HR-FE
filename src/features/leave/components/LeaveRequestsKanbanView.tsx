@@ -1,8 +1,12 @@
 import { useMemo } from "react";
+import { CalendarDays } from "lucide-react";
+import { KanbanColumn } from "@/shared/components";
+import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
+import { empDisplayName } from "@/shared/hooks";
 import type { DbLeaveRequest } from "@/shared/hooks";
 import { leaveKanbanColumns } from "../styles";
-import LeaveRequestsKanbanColumn from "./LeaveRequestsKanbanColumn";
+import LeaveRequestKanbanCard from "./LeaveRequestKanbanCard";
 
 type LeaveRequestsKanbanViewProps = {
   requests: DbLeaveRequest[];
@@ -31,16 +35,29 @@ const LeaveRequestsKanbanView = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {leaveKanbanColumns.map((column, columnIndex) => (
-        <LeaveRequestsKanbanColumn
+        <KanbanColumn
           key={column.key}
           label={column.label}
-          accent={column.accent}
-          dotColor={column.dotColor}
+          accentClassName={column.accent}
+          dotClassName={column.dotColor}
           index={columnIndex}
           items={requestsByStatus.get(column.key) || []}
-          empMap={empMap}
-          onApprove={onApprove}
-          onReject={onReject}
+          emptyIcon={CalendarDays}
+          emptyMessage={arabicSource("leave.no_requests")}
+          renderItem={(leave, i) => {
+            const employee = empMap[leave.employee_id];
+            const employeeName = employee ? empDisplayName(employee) : "—";
+            return (
+              <LeaveRequestKanbanCard
+                key={leave.id}
+                leave={leave}
+                index={i}
+                employeeName={employeeName}
+                onApprove={onApprove}
+                onReject={onReject}
+              />
+            );
+          }}
         />
       ))}
     </div>

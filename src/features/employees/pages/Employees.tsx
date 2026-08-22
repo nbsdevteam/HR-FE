@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import DeleteEmployeeModal from "../components/DeleteEmployeeModal";
+import { ConfirmDeleteModal } from "@/shared/components";
 import EmployeesFilters from "../components/EmployeesFilters";
 import EmployeesHeader from "../components/EmployeesHeader";
 import EmployeesListView from "../components/EmployeesListView";
@@ -173,10 +173,19 @@ const Employees = () => {
 
       <AnimatePresence>
         {deleteConfirm && (
-          <DeleteEmployeeModal
-            deleteConfirm={deleteConfirm}
-            deleting={deleting}
-            onDelete={handleDeleteEmployee}
+          <ConfirmDeleteModal
+            title={arabicSource("employees.confirm_deletion")}
+            message={
+              <>
+                {arabicSource("employees.are_you_sure_you_want_to_delete_the_employee")}{" "}
+                <span className="text-foreground font-medium">{deleteConfirm.name}</span>
+                {arabicSource("employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo")}
+              </>
+            }
+            confirmLabel={arabicSource("employees.delete_employee")}
+            loadingLabel={arabicSource("employees.deleting")}
+            loading={deleting}
+            onConfirm={handleDeleteEmployee}
             onClose={closeDeleteModal}
           />
         )}

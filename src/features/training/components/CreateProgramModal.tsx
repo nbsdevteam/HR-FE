@@ -1,8 +1,8 @@
+import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
-import { fieldCls } from "../styles";
+import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { CreateProgramForm } from "../types";
-import TrainingModalFooterActions from "./TrainingModalFooterActions";
 
 type TCreateProgramModalProps = {
   form: CreateProgramForm;
@@ -166,10 +166,14 @@ const CreateProgramModal = ({
         />
       </div>
 
-      <TrainingModalFooterActions
-        onSave={onSave}
-        onClose={onClose}
-        saveLabel={arabicSource("training.save_the_program")}
+      <ModalFooterActions
+        onCancel={onClose}
+        onConfirm={onSave}
+        confirmLabel={arabicSource("training.save_the_program")}
+        confirmIcon={Save}
+        reverseOrder
+        wrapperClassName={TRAINING_FOOTER_WRAPPER_CLASS}
+        cancelClassName={TRAINING_FOOTER_CANCEL_CLASS}
       />
     </div>
   </ModalOverlay>

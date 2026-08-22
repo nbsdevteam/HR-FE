@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
+import { KanbanColumn } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import EmployeesKanbanColumn from "./EmployeesKanbanColumn";
+import { accentColors, deptColors, deptDots } from "../styles";
+import EmployeeKanbanTile from "./EmployeeKanbanTile";
 
 type EmployeesKanbanViewProps = {
   departments: string[];
@@ -48,13 +50,28 @@ const EmployeesKanbanView = ({
         if (selectedDept !== arabicSource("common.all") && selectedDept !== dept) return null;
 
         return (
-          <EmployeesKanbanColumn
+          <KanbanColumn
             key={dept}
-            dept={dept}
+            label={dept}
             index={ci}
+            delayStep={0.08}
+            accentClassName={deptColors[dept] || "border-border/40"}
+            dotClassName={deptDots[dept] || "bg-primary"}
             items={employeesByDept.get(dept) || []}
-            dbEmpByPersonId={dbEmpByPersonId}
-            onSelectEmployee={onSelectEmployee}
+            emptyMessage={arabicSource("employees.there_are_no_employees")}
+            headerClassName="p-3 border-b border-border/20 flex items-center justify-between"
+            labelFontSize={13}
+            bodyClassName="p-3 space-y-8 min-h-[140px] pt-8"
+            renderItem={(emp, i) => (
+              <EmployeeKanbanTile
+                key={emp.dbId}
+                emp={emp}
+                index={i}
+                accent={accentColors[(emp.id - 1) % accentColors.length]}
+                dbEmp={dbEmpByPersonId.get(emp.id)}
+                onSelectEmployee={onSelectEmployee}
+              />
+            )}
           />
         );
       })}

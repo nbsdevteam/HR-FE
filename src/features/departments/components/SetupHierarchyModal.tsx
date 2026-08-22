@@ -1,9 +1,7 @@
 import { Briefcase, Crown } from "lucide-react";
-import { ModalOverlay } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import ModalHeader from "./ModalHeader";
-import ModalFooterActions from "./ModalFooterActions";
 import OrgPreviewNode from "./OrgPreviewNode";
 import IconBulletListItem from "./IconBulletListItem";
 

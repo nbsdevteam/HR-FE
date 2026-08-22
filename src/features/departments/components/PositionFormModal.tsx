@@ -1,11 +1,9 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Briefcase, Save } from "lucide-react";
-import { ModalOverlay } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
 import type { PositionNode } from "../types";
-import ModalHeader from "./ModalHeader";
-import ModalFooterActions from "./ModalFooterActions";
 import FieldLabel from "./FieldLabel";
 
 export type PositionFormState = {

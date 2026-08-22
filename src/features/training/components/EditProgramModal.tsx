@@ -1,8 +1,8 @@
+import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
-import { fieldCls } from "../styles";
+import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
-import TrainingModalFooterActions from "./TrainingModalFooterActions";
 
 type TEditProgramModalProps = {
   program: DbTrainingProgram;
@@ -86,10 +86,14 @@ const EditProgramModal = ({
         </div>
       </div>
 
-      <TrainingModalFooterActions
-        onSave={onSave}
-        onClose={onClose}
-        saveLabel={arabicSource("common.save_changes")}
+      <ModalFooterActions
+        onCancel={onClose}
+        onConfirm={onSave}
+        confirmLabel={arabicSource("common.save_changes")}
+        confirmIcon={Save}
+        reverseOrder
+        wrapperClassName={TRAINING_FOOTER_WRAPPER_CLASS}
+        cancelClassName={TRAINING_FOOTER_CANCEL_CLASS}
       />
     </div>
   </ModalOverlay>

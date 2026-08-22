@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
+import { ClipboardCheck } from "lucide-react";
+import { KanbanColumn } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbEmployee } from "@/shared/hooks";
 import { type DbEvaluation } from "../types";
-import EvaluationKanbanColumn from "./EvaluationKanbanColumn";
+import EvaluationKanbanCard from "./EvaluationKanbanCard";
 
 const COLUMNS = [
   { key: arabicSource("common.complete"), label: arabicSource("common.complete"), accent: "border-emerald-500/40", dotColor: "bg-emerald-500" },
@@ -39,15 +41,25 @@ const KanbanView = ({
       className="grid grid-cols-1 md:grid-cols-3 gap-4"
     >
       {COLUMNS.map((col, ci) => (
-        <EvaluationKanbanColumn
+        <KanbanColumn
           key={col.key}
           label={col.label}
-          accent={col.accent}
-          dotColor={col.dotColor}
+          accentClassName={col.accent}
+          dotClassName={col.dotColor}
           index={ci}
           items={evaluationsByStatus.get(col.key) || []}
-          empMap={empMap}
-          onSelect={onSelect}
+          emptyIcon={ClipboardCheck}
+          emptyMessage={arabicSource("evaluation.there_are_no_reviews")}
+          renderItem={(ev, i) => (
+            <EvaluationKanbanCard
+              key={ev.id}
+              evaluation={ev}
+              index={i}
+              employee={empMap[ev.employee_id]}
+              evaluator={ev.evaluator_id ? empMap[ev.evaluator_id] : null}
+              onSelect={onSelect}
+            />
+          )}
         />
       ))}
     </motion.div>

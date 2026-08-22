@@ -1,7 +1,10 @@
 import { memo, useMemo } from "react";
 import { motion } from "motion/react";
+import { ShieldAlert } from "lucide-react";
+import { KanbanColumn } from "@/shared/components";
+import { arabicSource } from "@/i18n/source";
 import type { KanbanStatusCol, WarningWithEmployee } from "../types";
-import WarningKanbanColumn from "./WarningKanbanColumn";
+import WarningKanbanCard from "./WarningKanbanCard";
 
 type TWarningsKanbanViewProps = {
   columns: KanbanStatusCol[];
@@ -38,14 +41,25 @@ const WarningsKanbanView = ({
       className="grid grid-cols-1 md:grid-cols-3 gap-4"
     >
       {columns.map((col, ci) => (
-        <WarningKanbanColumn
+        <KanbanColumn
           key={col.key}
-          column={col}
+          label={col.label}
+          accentClassName={col.accent}
+          dotClassName={col.dotColor}
           index={ci}
           items={warningsByStatus.get(col.key) || []}
-          typeColors={typeColors}
-          typeSeverity={typeSeverity}
-          onSelectWarning={onSelectWarning}
+          emptyIcon={ShieldAlert}
+          emptyMessage={arabicSource("common.no_alarms")}
+          renderItem={(w, i) => (
+            <WarningKanbanCard
+              key={w.id}
+              warning={w}
+              index={i}
+              typeColors={typeColors}
+              typeSeverity={typeSeverity}
+              onSelect={onSelectWarning}
+            />
+          )}
         />
       ))}
     </motion.div>

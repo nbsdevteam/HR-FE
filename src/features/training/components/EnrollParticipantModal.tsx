@@ -1,11 +1,11 @@
 import { useMemo } from "react";
+import { Save } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
-import { fieldCls } from "../styles";
+import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { EnrollParticipantForm } from "../types";
-import TrainingModalFooterActions from "./TrainingModalFooterActions";
 
 type TEnrollParticipantModalProps = {
   form: EnrollParticipantForm;
@@ -91,10 +91,14 @@ const EnrollParticipantModal = ({
           </div>
         )}
 
-        <TrainingModalFooterActions
-          onSave={onSave}
-          onClose={onClose}
-          saveLabel={arabicSource("training.register")}
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={onSave}
+          confirmLabel={arabicSource("training.register")}
+          confirmIcon={Save}
+          reverseOrder
+          wrapperClassName={TRAINING_FOOTER_WRAPPER_CLASS}
+          cancelClassName={TRAINING_FOOTER_CANCEL_CLASS}
         />
       </div>
     </ModalOverlay>

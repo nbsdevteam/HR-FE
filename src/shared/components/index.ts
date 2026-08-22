@@ -1,6 +1,9 @@
+export { default as ConfirmDeleteModal } from "./ConfirmDeleteModal";
 export { default as EmptyState } from "./EmptyState";
 export { default as FilterChip } from "./FilterChip";
 export { default as InputField } from "./InputField";
+export { default as KanbanColumn } from "./KanbanColumn";
+export { default as ModalFooterActions } from "./ModalFooterActions";
 export { default as ModalHeader } from "./ModalHeader";
 export { default as ModalOverlay } from "./ModalOverlay";
 export { default as NodeAvatar } from "./NodeAvatar";
