@@ -1,7 +1,17 @@
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
-import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
+import {
+  InputField,
+  ModalFooterActions,
+  ModalHeader,
+  ModalOverlay,
+  SelectField,
+} from "@/shared/components";
+import {
+  fieldCls,
+  TRAINING_FOOTER_CANCEL_CLASS,
+  TRAINING_FOOTER_WRAPPER_CLASS,
+} from "../styles";
 import type { CreateProgramForm } from "../types";
 
 type TCreateProgramModalProps = {
@@ -40,18 +50,13 @@ const CreateProgramModal = ({
     />
 
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm text-foreground mb-2">
-          {arabicSource("training.address")}
-        </label>
-        <input
-          type="text"
-          value={form.title}
-          onChange={(e) => onFieldChange({ title: e.target.value })}
-          className={fieldCls}
-          placeholder={arabicSource("training.program_title")}
-        />
-      </div>
+      <InputField
+        label={arabicSource("training.address")}
+        value={form.title}
+        onChange={(value) => onFieldChange({ title: value })}
+        className={fieldCls}
+        placeholder={arabicSource("training.program_title")}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <SelectField
@@ -62,72 +67,49 @@ const CreateProgramModal = ({
           className={fieldCls}
         />
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("training.weight")}
-          </label>
-          <input
-            type="text"
-            value={form.weight}
-            onChange={(e) => onFieldChange({ weight: e.target.value })}
-            className={fieldCls}
-            placeholder={`${defaultWeight}%`}
-          />
-        </div>
+        <InputField
+          label={arabicSource("training.weight")}
+          value={form.weight}
+          onChange={(value) => onFieldChange({ weight: value })}
+          className={fieldCls}
+          placeholder={`${defaultWeight}%`}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("common.coach")}
-          </label>
-          <input
-            type="text"
-            value={form.instructor}
-            onChange={(e) => onFieldChange({ instructor: e.target.value })}
-            className={fieldCls}
-            placeholder={arabicSource("training.name_of_coach")}
-          />
-        </div>
+        <InputField
+          label={arabicSource("common.coach")}
+          value={form.instructor}
+          onChange={(value) => onFieldChange({ instructor: value })}
+          className={fieldCls}
+          placeholder={arabicSource("training.name_of_coach")}
+        />
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("common.duration_hours")}
-          </label>
-          <input
-            type="text"
-            value={form.duration}
-            onChange={(e) => onFieldChange({ duration: e.target.value })}
-            className={fieldCls}
-            placeholder={arabicSource("training.20_hours")}
-          />
-        </div>
+        <InputField
+          label={arabicSource("common.duration_hours")}
+          value={form.duration}
+          onChange={(value) => onFieldChange({ duration: value })}
+          className={fieldCls}
+          placeholder={arabicSource("training.20_hours")}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("common.start_date")}
-          </label>
-          <input
-            type="date"
-            value={form.start_date}
-            onChange={(e) => onFieldChange({ start_date: e.target.value })}
-            className={fieldCls}
-          />
-        </div>
+        <InputField
+          label={arabicSource("common.start_date")}
+          type="date"
+          value={form.start_date}
+          onChange={(value) => onFieldChange({ start_date: value })}
+          className={fieldCls}
+        />
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("training.end_date")}
-          </label>
-          <input
-            type="date"
-            value={form.end_date}
-            onChange={(e) => onFieldChange({ end_date: e.target.value })}
-            className={fieldCls}
-          />
-        </div>
+        <InputField
+          label={arabicSource("training.end_date")}
+          type="date"
+          value={form.end_date}
+          onChange={(value) => onFieldChange({ end_date: value })}
+          className={fieldCls}
+        />
       </div>
 
       <SelectField
@@ -148,6 +130,7 @@ const CreateProgramModal = ({
           onChange={(e) => onFieldChange({ max_participants: e.target.value })}
           className={fieldCls}
           placeholder="30"
+          min={1}
         />
       </div>
 

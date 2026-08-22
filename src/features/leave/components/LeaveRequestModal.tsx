@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { AlertCircle, CalendarDays, FileText, Loader2, Send } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   empDisplayName,
@@ -226,7 +226,7 @@ const LeaveRequestModal = ({
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
                 {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
               </label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputCls} dir="ltr" />
+              <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
             </div>
             {!isHalfDay && (
               <div>

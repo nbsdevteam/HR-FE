@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { AlertCircle, Loader2, Send, Timer } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -82,17 +82,17 @@ const PermissionModal = ({
 
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.date_2")}</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} dir="ltr" />
+            <InputField type="date" value={date} onChange={setDate} className={inputCls} dir="ltr" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.of_the_hour")}</label>
-              <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className={inputCls} dir="ltr" />
+              <InputField type="time" value={startTime} onChange={setStartTime} className={inputCls} dir="ltr" />
             </div>
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_the_hour")}</label>
-              <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className={inputCls} dir="ltr" />
+              <InputField type="time" value={endTime} onChange={setEndTime} className={inputCls} dir="ltr" />
             </div>
           </div>
 

@@ -9,7 +9,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -151,15 +151,15 @@ const ApplyLinkModal = ({
               <label className={labelCls} style={{ fontSize: 12 }}>
                 {arabicSource("recruitment.link_expires")}
               </label>
-              <input
+              <InputField
                 type="date"
                 value={link.expires_on || ""}
                 dir="ltr"
                 className={inputCls}
-                onChange={async (e) => {
+                onChange={async (value) => {
                   setLink(
                     await odooData.updateApplicationLink(link.id, {
-                      expires_on: e.target.value || false,
+                      expires_on: value || false,
                     }),
                   );
                 }}

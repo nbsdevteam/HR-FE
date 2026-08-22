@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { Modal, SelectField } from "@/shared/components";
+import { InputField, Modal, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
@@ -82,11 +82,10 @@ const WarningFormModal = ({
         >
           {arabicSource("common.the_reason")}
         </label>
-        <input
-          type="text"
+        <InputField
           placeholder={arabicSource("warnings.cause_of_alarm")}
           value={form.reason}
-          onChange={(e) => onFieldChange({ reason: e.target.value })}
+          onChange={(reason) => onFieldChange({ reason })}
           className={inputCls}
         />
       </div>
@@ -114,10 +113,10 @@ const WarningFormModal = ({
         >
           {arabicSource("warnings.end_date_optional")}
         </label>
-        <input
+        <InputField
           type="date"
           value={form.expiryDate}
-          onChange={(e) => onFieldChange({ expiryDate: e.target.value })}
+          onChange={(expiryDate) => onFieldChange({ expiryDate })}
           className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
         />
       </div>

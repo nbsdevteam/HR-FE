@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { Modal, SelectField } from "@/shared/components";
+import { InputField, Modal, SelectField } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
@@ -125,10 +125,9 @@ const JobFormModal = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.job_title")}
           </label>
-          <input
-            type="text"
+          <InputField
             value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            onChange={(title) => setForm({ ...form, title })}
             placeholder={arabicSource("recruitment.job_title_2")}
             className={inputCls}
           />
@@ -149,10 +148,9 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("recruitment.location")}
             </label>
-            <input
-              type="text"
+            <InputField
               value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              onChange={(location) => setForm({ ...form, location })}
               className={inputCls}
             />
           </div>
@@ -177,10 +175,10 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("recruitment.deadline")}
             </label>
-            <input
+            <InputField
               type="date"
               value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              onChange={(deadline) => setForm({ ...form, deadline })}
               className={inputCls}
               dir="ltr"
             />
@@ -201,10 +199,9 @@ const JobFormModal = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.salary_range")}
           </label>
-          <input
-            type="text"
+          <InputField
             value={form.salary_range}
-            onChange={(e) => setForm({ ...form, salary_range: e.target.value })}
+            onChange={(salary_range) => setForm({ ...form, salary_range })}
             placeholder={arabicSource(
               "recruitment.example_1_500_000_2_500_000_iqd",
             )}

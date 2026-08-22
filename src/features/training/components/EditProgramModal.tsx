@@ -1,6 +1,6 @@
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { InputField, ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
 import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 
@@ -36,29 +36,19 @@ const EditProgramModal = ({
     />
 
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm text-foreground mb-2">
-          {arabicSource("common.coach")}
-        </label>
-        <input
-          type="text"
-          value={program.instructor || ""}
-          onChange={(e) => onFieldChange({ instructor: e.target.value })}
-          className={fieldCls}
-        />
-      </div>
+      <InputField
+        label={arabicSource("common.coach")}
+        value={program.instructor || ""}
+        onChange={(value) => onFieldChange({ instructor: value })}
+        className={fieldCls}
+      />
 
-      <div>
-        <label className="block text-sm text-foreground mb-2">
-          {arabicSource("common.duration_hours")}
-        </label>
-        <input
-          type="text"
-          value={program.duration || ""}
-          onChange={(e) => onFieldChange({ duration: e.target.value })}
-          className={fieldCls}
-        />
-      </div>
+      <InputField
+        label={arabicSource("common.duration_hours")}
+        value={program.duration || ""}
+        onChange={(value) => onFieldChange({ duration: value })}
+        className={fieldCls}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <SelectField
