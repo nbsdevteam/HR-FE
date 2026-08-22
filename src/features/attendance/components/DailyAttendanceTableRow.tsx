@@ -1,4 +1,5 @@
 import { formatTime, formatWorkHours, mapAttendanceStatus, type DbAttendanceRecord } from "@/shared/hooks";
+import { StatusBadge } from "@/shared/components";
 import { statusColors } from "@/features/attendance/styles";
 import { attendanceDayNamesShort } from "../data";
 
@@ -33,7 +34,7 @@ const DailyAttendanceTableRow = ({ record }: DailyAttendanceTableRowProps) => {
         )}
       </td>
       <td className="px-3 py-2 text-center">
-        <span className={`px-2 py-0.5 rounded-md border ${sColor}`} style={{ fontSize: 10 }}>{statusLabel}</span>
+        <StatusBadge colorClassName={sColor} fontSize={10}>{statusLabel}</StatusBadge>
       </td>
     </tr>
   );

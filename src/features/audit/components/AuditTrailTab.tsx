@@ -3,13 +3,14 @@ import {
   CheckCircle,
   Clock,
   Loader2,
-  Search,
   Shield,
   Trash2,
 } from "lucide-react";
 import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import StatCard from "@/shared/components/StatCard";
+import SearchInput from "@/shared/components/SearchInput";
+import SelectField from "@/shared/components/SelectField";
 import { actionLabels, entityLabels } from "../data/auditMeta";
 import { auditCardCls } from "../styles";
 import AuditLogRow from "./AuditLogRow";
@@ -106,41 +107,28 @@ const AuditTrailTab = () => {
 
       <div className={auditCardCls}>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-            <Search className="w-4 h-4 text-muted-foreground" />
-            <input
-              placeholder={arabicSource("auditcenter.search_records")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-          <select
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={arabicSource("auditcenter.search_records")}
+            wrapperClassName="flex items-center gap-2 flex-1 min-w-[200px]"
+            iconClassName="w-4 h-4 text-muted-foreground"
+            inputClassName="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <SelectField
             value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value)}
+            onChange={setFilterAction}
+            blankLabel={arabicSource("auditcenter.all_procedures")}
+            options={Object.entries(actionLabels).map(([value, label]) => ({ value, label }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-          >
-            <option value="">
-              {arabicSource("auditcenter.all_procedures")}
-            </option>
-            {Object.entries(actionLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <select
+          />
+          <SelectField
             value={filterEntity}
-            onChange={(e) => setFilterEntity(e.target.value)}
+            onChange={setFilterEntity}
+            blankLabel={arabicSource("auditcenter.all_entities")}
+            options={Object.entries(entityLabels).map(([value, label]) => ({ value, label }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-          >
-            <option value="">{arabicSource("auditcenter.all_entities")}</option>
-            {Object.entries(entityLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
 

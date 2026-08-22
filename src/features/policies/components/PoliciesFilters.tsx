@@ -1,5 +1,5 @@
-import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { SearchInput, SelectField } from "@/shared/components";
 import { policyCategories, policyStatusOptions } from "../constants/policies";
 import type { PolicySortKey } from "../types";
 
@@ -25,16 +25,12 @@ const PoliciesFilters = ({
   onStatusFilterChange,
 }: PoliciesFiltersProps) => (
   <div className="flex flex-col gap-4">
-    <div className="relative">
-      <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
-      <input
-        type="text"
-        placeholder={arabicSource("policies.policy_research")}
-        value={search}
-        onChange={(event) => onSearchChange(event.target.value)}
-        className="w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-      />
-    </div>
+    <SearchInput
+      value={search}
+      onChange={onSearchChange}
+      placeholder={arabicSource("policies.policy_research")}
+      inputClassName="w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+    />
     <div className="flex items-center gap-2 flex-wrap overflow-x-auto pb-1">
       {policyCategories.map((category) => (
         <button
@@ -64,16 +60,17 @@ const PoliciesFilters = ({
           </button>
         ))}
       </div>
-      <select
+      <SelectField
         value={sortBy}
-        onChange={(event) => onSortChange(event.target.value as PolicySortKey)}
+        onChange={(value) => onSortChange(value as PolicySortKey)}
+        options={[
+          { value: "updated", label: arabicSource("policies.latest_update") },
+          { value: "title", label: arabicSource("common.address") },
+          { value: "category", label: arabicSource("common.category") },
+          { value: "status", label: arabicSource("common.status") },
+        ]}
         className="h-9 px-3 rounded-lg border border-border bg-input-background text-foreground text-sm w-full sm:w-auto"
-      >
-        <option value="updated">{arabicSource("policies.latest_update")}</option>
-        <option value="title">{arabicSource("common.address")}</option>
-        <option value="category">{arabicSource("common.category")}</option>
-        <option value="status">{arabicSource("common.status")}</option>
-      </select>
+      />
     </div>
   </div>
 );

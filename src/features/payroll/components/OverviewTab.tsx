@@ -1,7 +1,8 @@
 import { useState, useMemo, memo } from "react";
-import { Wallet, TrendingUp, Calculator, Users, Search } from "lucide-react";
+import { Wallet, TrendingUp, Calculator, Users } from "lucide-react";
 import StatCard from "@/shared/components/StatCard";
 import CustomBarChart from "@/shared/components/custom-bar-chart";
+import SearchInput from "@/shared/components/SearchInput";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
@@ -146,16 +147,13 @@ const OverviewTab = ({
 
       {/* Search */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={arabicSource("common.search_by_name_or_department")}
-            className={`${inputCls} ps-10`}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder={arabicSource("common.search_by_name_or_department")}
+          wrapperClassName="relative flex-1 max-w-md"
+          inputClassName={`${inputCls} ps-10`}
+        />
       </div>
 
       {/* Table */}

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Fingerprint, ShieldCheck, Timer } from "lucide-react";
+import { StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, ExcuseForm } from "../types";
 import { statusColors, statusDotColors } from "../styles";
@@ -115,7 +116,7 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
       <td className="px-4 py-3">
         <div className="flex flex-col items-start gap-0.5">
           <div className="flex items-center gap-1.5">
-            <span className={`px-2 py-0.5 rounded-md border ${statusColors[record.status]}`} style={{ fontSize: 12 }}>{record.status}</span>
+            <StatusBadge colorClassName={statusColors[record.status]}>{record.status}</StatusBadge>
             {record.lateMinutes > 0 && <span className="text-primary/70" style={{ fontSize: 10 }}>({record.lateMinutes} {arabicSource("attendance.d_2")}</span>}
           </div>
           {statusDetail(record) && <span className="text-muted-foreground/50" style={{ fontSize: 9 }}>{statusDetail(record)}</span>}
