@@ -108,6 +108,9 @@ export interface DbLeaveRequest {
  * Employee roster for Leave pages (HR APIs only — no /api/crm permission probe).
  * - hr.employees.list succeeds → full roster dropdown
  * - list Forbidden → /api/hr/employees/me + selfOnly (agent self-leave)
+ *
+ * Returns a composite object (employees + selfOnly + linkError), not a plain
+ * list, so this doesn't fit useAsyncList's T[] contract.
  */
 export const useLeaveEmployeeScope = () => {
   const [employees, setEmployees] = useState<DbEmployee[]>([]);

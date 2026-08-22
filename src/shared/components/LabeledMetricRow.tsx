@@ -10,6 +10,7 @@ type LabeledMetricRowProps = {
   dir?: "ltr";
 };
 
+/** Inline label:value row for detail panels/lists. For a stat-grid card use StatCard; for a colored tile use ColorStatTile. */
 const LabeledMetricRow = ({
   label,
   value,

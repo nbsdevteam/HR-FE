@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
+import SortableHeaderRow from "./SortableHeader";
 
 type TableHeaderRowProps = {
   headings: ReactNode[];
 };
 
+/** Static (non-sortable) table header row — thin wrapper around SortableHeaderRow with every column non-sortable. */
 const TableHeaderRow = ({ headings }: TableHeaderRowProps) => (
-  <tr className="bg-muted/20 border-b border-border/20">
-    {headings.map((heading, i) => (
-      <th key={i} className="text-start px-4 py-3 text-muted-foreground" style={{ fontSize: 12 }}>{heading}</th>
-    ))}
-  </tr>
+  <SortableHeaderRow<string>
+    columns={headings.map((label) => ({ label, key: null }))}
+    sortBy=""
+    sortDir="asc"
+    onSort={() => {}}
+  />
 );
 
 export default TableHeaderRow;

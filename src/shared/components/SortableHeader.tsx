@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 interface SortableHeaderProps<K extends string> {
-  columns: ReadonlyArray<{ label: string; key: K | null; center?: boolean }>;
+  columns: ReadonlyArray<{ label: ReactNode; key: K | null; center?: boolean }>;
   sortBy: K;
   sortDir: "asc" | "desc";
   onSort: (key: K) => void;
@@ -26,7 +27,7 @@ const SortableHeaderRow = <K extends string,>({
         const isSortable = col.key !== null;
         return (
           <th
-            key={col.label || `_col_${i}`}
+            key={`_col_${i}`}
             className={`px-4 py-3 whitespace-nowrap select-none ${
               col.center ? "text-center" : "text-start"
             } ${isSortable ? "cursor-pointer hover:text-primary transition-colors" : ""} ${

@@ -42,6 +42,7 @@ function odooUtcMs(value: string | null | undefined): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
+/** Combines two fetches into one derived status object, so this doesn't fit useAsyncList's plain-T[] contract. */
 export const useDeviceStatus = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>({
     devices: [], totalDevices: 0, activeDevices: 0,

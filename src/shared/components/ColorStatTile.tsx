@@ -11,6 +11,7 @@ type ColorStatTileProps = {
   dir?: "ltr";
 };
 
+/** Static centered colored tile for compact stat groups. For an animated card use StatCard; for an inline label:value row use LabeledMetricRow. */
 const ColorStatTile = ({
   value,
   label,

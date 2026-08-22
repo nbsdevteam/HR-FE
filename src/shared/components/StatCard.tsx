@@ -31,6 +31,7 @@ type StatCardProps = {
   dir?: "ltr";
 };
 
+/** Animated icon+value card for stat grids. For a static colored tile use ColorStatTile; for an inline label:value row use LabeledMetricRow. */
 const StatCard = ({
   label,
   value,
