@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { InputField, Modal, SelectField } from "@/shared/components";
+import { InputField, Modal, Select } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
@@ -137,9 +137,9 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("common.section")}
             </label>
-            <SelectField
+            <Select
               value={form.department}
-              onChange={(department) => setForm({ ...form, department })}
+              onChange={(e) => setForm({ ...form, department: e.target.value })}
               options={DEPARTMENTS}
               className={selectCls}
             />
@@ -160,9 +160,9 @@ const JobFormModal = ({
             <label className={labelCls} style={{ fontSize: 13 }}>
               {arabicSource("recruitment.permanent_type")}
             </label>
-            <SelectField
+            <Select
               value={form.type}
-              onChange={(type) => setForm({ ...form, type })}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
               options={[
                 arabicSource("common.full_time"),
                 arabicSource("recruitment.part_time"),
@@ -188,9 +188,9 @@ const JobFormModal = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.vacancy_status")}
           </label>
-          <SelectField
+          <Select
             value={form.status}
-            onChange={(status) => setForm({ ...form, status })}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
             options={JOB_STATUSES}
             className={selectCls}
           />

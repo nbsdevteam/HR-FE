@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { EmployeeSelect } from "@/features/employees";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
@@ -49,9 +50,9 @@ const ExitProcessFormPanel = ({
     </div>
     <div>
       <FormFieldLabel>{arabicSource("lifecycle.termination_type_2")}</FormFieldLabel>
-      <select value={formData.exit_type} onChange={e => setFormData(p => ({ ...p, exit_type: e.target.value }))} className={inputCls}>
+      <Select value={formData.exit_type} onChange={e => setFormData(p => ({ ...p, exit_type: e.target.value }))} className={inputCls}>
         {Object.entries(exitTypeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-      </select>
+      </Select>
     </div>
     <div>
       <FormFieldLabel>{arabicSource("lifecycle.termination_date_2")}</FormFieldLabel>

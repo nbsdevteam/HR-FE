@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { AlertCircle, Loader2, Send } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { ApplyLinkInfo } from "@/features/recruitment/api/publicApi";
 import type { PublicApplyForm as PublicApplyFormState } from "../types";
@@ -55,7 +56,7 @@ const PublicApplyForm = ({
 
     {info.link_scope === "all_open" && (
       <PublicApplyField label={arabicSource("apply.select_position")} required>
-        <select
+        <Select
           value={form.job_opening_id}
           onChange={(event) => onUpdateForm({ job_opening_id: event.target.value })}
           className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none cursor-pointer"
@@ -67,7 +68,7 @@ const PublicApplyForm = ({
               {job.title}{job.department ? ` — ${job.department}` : ""}
             </option>
           ))}
-        </select>
+        </Select>
       </PublicApplyField>
     )}
 

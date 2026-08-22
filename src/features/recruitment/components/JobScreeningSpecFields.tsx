@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { SelectField } from "@/shared/components";
+import { Select } from "@/shared/components";
 import { type JobSkillRequirement } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { EDUCATION_LEVELS } from "../constants/recruitment";
@@ -72,9 +72,9 @@ const JobScreeningSpecFields = ({
         <label className={labelCls} style={{ fontSize: 12 }}>
           {arabicSource("recruitment.education_level")}
         </label>
-        <SelectField
+        <Select
           value={educationLevel}
-          onChange={onEducationLevelChange}
+          onChange={(e) => onEducationLevelChange(e.target.value)}
           options={EDUCATION_LEVELS}
           className={selectCls}
         />

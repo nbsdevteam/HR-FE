@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Save } from "lucide-react";
-import { InputField } from "@/shared/components";
+import { InputField, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewLeaveTypeForm as NewLeaveTypeFormState } from "../types";
 
@@ -105,7 +105,7 @@ const NewLeaveTypeForm = ({
         />{" "}
         {arabicSource("common.exchangeable")}
       </label>
-      <select
+      <Select
         value={form.accrual_method}
         onChange={(e) => onFieldChange({ accrual_method: e.target.value })}
         className="h-8 px-2 rounded border border-border bg-input-background text-foreground text-xs outline-none"
@@ -113,7 +113,7 @@ const NewLeaveTypeForm = ({
         <option value="annual">{arabicSource("common.annual")}</option>
         <option value="monthly">{arabicSource("common.monthly")}</option>
         <option value="none">{arabicSource("settings.without_merit")}</option>
-      </select>
+      </Select>
       <input
         type="color"
         value={form.color}

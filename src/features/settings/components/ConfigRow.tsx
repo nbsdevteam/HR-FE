@@ -1,3 +1,4 @@
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbConfiguration } from "@/shared/hooks";
 import SettingsToggle from "./SettingsToggle";
@@ -39,7 +40,7 @@ const ConfigRow = ({
       ) : config.value_type === "select" &&
         config.config_key === "attendance.absence_basis" ? (
         <div className="flex items-center gap-2">
-          <select
+          <Select
             value={currentValue || "30_days"}
             onChange={(e) => onEdit(e.target.value)}
             onBlur={() => onSave(currentValue)}
@@ -54,7 +55,7 @@ const ConfigRow = ({
             <option value="fixed_days_per_month">
               {arabicSource("settings.custom_fixed_days")}
             </option>
-          </select>
+          </Select>
           {hasChanged && (
             <button
               onClick={() => onSave(currentValue)}

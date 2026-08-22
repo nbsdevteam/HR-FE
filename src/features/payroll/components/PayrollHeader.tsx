@@ -1,4 +1,5 @@
 import { Download, Calculator, CheckCircle, Loader2 } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { payrollSelectClass } from "../styles";
 
@@ -36,7 +37,7 @@ const PayrollHeader = ({
       </p>
     </div>
     <div className="flex items-center gap-3">
-      <select
+      <Select
         value={selectedMonth}
         onChange={(event) => onMonthChange(event.target.value)}
         className={payrollSelectClass}
@@ -47,7 +48,7 @@ const PayrollHeader = ({
             {displayMonth(month)}
           </option>
         ))}
-      </select>
+      </Select>
       <button
         onClick={onSavePayslips}
         disabled={savingPayslips || payslipsSaved || payrollCount === 0}

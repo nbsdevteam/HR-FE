@@ -1,12 +1,11 @@
 import { Fingerprint, Loader2, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay, Select } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
 import LabeledInput from "./LabeledInput";
-import LabeledSelect from "./LabeledSelect";
 
 type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
@@ -107,7 +106,7 @@ const AddEmployeeModal = ({
             onChange={(e) => onFormChange({ companyPhone: e.target.value })}
             placeholder="07XXXXXXXXX"
           />
-          <LabeledSelect
+          <Select
             label={arabicSource("common.section")}
             value={addForm.departmentId}
             onChange={(e) =>
@@ -122,8 +121,8 @@ const AddEmployeeModal = ({
                 {d.name}
               </option>
             ))}
-          </LabeledSelect>
-          <LabeledSelect
+          </Select>
+          <Select
             label={arabicSource("employees.job_position")}
             value={addForm.designationId}
             onChange={(e) => onFormChange({ designationId: e.target.value })}
@@ -134,7 +133,7 @@ const AddEmployeeModal = ({
                 {p.title_ar || p.title_en || p.id}
               </option>
             ))}
-          </LabeledSelect>
+          </Select>
           <LabeledInput
             label={arabicSource("employees.salary_iqd")}
             type="number"

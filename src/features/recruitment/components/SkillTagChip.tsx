@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { X } from "lucide-react";
+import { Select } from "@/shared/components";
 import { type JobSkillRequirement } from "@/shared/hooks";
 
 interface ISkillTagChipProps {
@@ -21,7 +22,7 @@ const SkillTagChip = ({
   >
     {skill.name}
     {weighted && (
-      <select
+      <Select
         value={skill.weight || 2}
         onChange={(e) => onWeightChange(Number(e.target.value))}
         className="bg-transparent text-primary cursor-pointer outline-none"
@@ -31,7 +32,7 @@ const SkillTagChip = ({
         <option value={1}>1</option>
         <option value={2}>2</option>
         <option value={3}>3</option>
-      </select>
+      </Select>
     )}
     <button
       type="button"

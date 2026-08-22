@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Search } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
 import { ALL_STAGES } from "../constants/recruitment";
@@ -47,14 +48,14 @@ const RecruitmentApplicantsView = ({
           style={{ fontSize: 13 }}
         />
       </div>
-      <select value={filterStage} onChange={(event) => onFilterStageChange(event.target.value)} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
+      <Select value={filterStage} onChange={(event) => onFilterStageChange(event.target.value)} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
         <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_stages")}</option>
         {ALL_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-      </select>
-      <select value={filterJob} onChange={(event) => onFilterJobChange(event.target.value)} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
+      </Select>
+      <Select value={filterJob} onChange={(event) => onFilterJobChange(event.target.value)} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
         <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_jobs")}</option>
         {jobs.map((job) => <option key={job.id} value={job.id}>{job.title}</option>)}
-      </select>
+      </Select>
     </div>
 
     <ApplicantsTable

@@ -10,7 +10,7 @@ import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import StatCard from "@/shared/components/StatCard";
 import SearchInput from "@/shared/components/SearchInput";
-import SelectField from "@/shared/components/SelectField";
+import Select from "@/shared/components/Select";
 import { actionLabels, entityLabels } from "../data/auditMeta";
 import { auditCardCls } from "../styles";
 import AuditLogRow from "./AuditLogRow";
@@ -115,16 +115,16 @@ const AuditTrailTab = () => {
             iconClassName="w-4 h-4 text-muted-foreground"
             inputClassName="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
           />
-          <SelectField
+          <Select
             value={filterAction}
-            onChange={setFilterAction}
+            onChange={(e) => setFilterAction(e.target.value)}
             blankLabel={arabicSource("auditcenter.all_procedures")}
             options={Object.entries(actionLabels).map(([value, label]) => ({ value, label }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           />
-          <SelectField
+          <Select
             value={filterEntity}
-            onChange={setFilterEntity}
+            onChange={(e) => setFilterEntity(e.target.value)}
             blankLabel={arabicSource("auditcenter.all_entities")}
             options={Object.entries(entityLabels).map(([value, label]) => ({ value, label }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"

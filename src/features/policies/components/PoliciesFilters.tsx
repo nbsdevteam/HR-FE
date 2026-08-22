@@ -1,5 +1,5 @@
 import { arabicSource } from "@/i18n/source";
-import { SearchInput, SelectField } from "@/shared/components";
+import { SearchInput, Select } from "@/shared/components";
 import { policyCategories, policyStatusOptions } from "../constants/policies";
 import type { PolicySortKey } from "../types";
 
@@ -60,9 +60,9 @@ const PoliciesFilters = ({
           </button>
         ))}
       </div>
-      <SelectField
+      <Select
         value={sortBy}
-        onChange={(value) => onSortChange(value as PolicySortKey)}
+        onChange={(e) => onSortChange(e.target.value as PolicySortKey)}
         options={[
           { value: "updated", label: arabicSource("policies.latest_update") },
           { value: "title", label: arabicSource("common.address") },

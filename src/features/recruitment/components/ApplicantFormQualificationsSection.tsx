@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { GraduationCap } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { sourceOptions } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
@@ -34,7 +35,7 @@ const ApplicantFormQualificationsSection = ({
         <label className={labelCls} style={{ fontSize: 13 }}>
           {arabicSource("recruitment.academic_qualification")}
         </label>
-        <select
+        <Select
           value={education}
           onChange={(e) => onFieldChange("education", e.target.value)}
           className={selectCls}
@@ -45,7 +46,7 @@ const ApplicantFormQualificationsSection = ({
           <option>{arabicSource("recruitment.bachelor_s_degree")}</option>
           <option>{arabicSource("recruitment.master")}</option>
           <option>{arabicSource("recruitment.ph_d")}</option>
-        </select>
+        </Select>
       </div>
       <div>
         <label className={labelCls} style={{ fontSize: 13 }}>
@@ -79,7 +80,7 @@ const ApplicantFormQualificationsSection = ({
         <label className={labelCls} style={{ fontSize: 13 }}>
           {arabicSource("recruitment.submission_source")}
         </label>
-        <select
+        <Select
           value={source}
           onChange={(e) => onFieldChange("source", e.target.value)}
           className={selectCls}
@@ -87,7 +88,7 @@ const ApplicantFormQualificationsSection = ({
           {sourceOptions.map((s) => (
             <option key={s}>{s}</option>
           ))}
-        </select>
+        </Select>
       </div>
     </div>
     <div>

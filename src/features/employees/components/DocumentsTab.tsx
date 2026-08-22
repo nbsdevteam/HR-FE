@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { FileText, Plus } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState, FilterChip, TableHeaderRow } from "@/shared/components";
+import { EmptyState, FilterChip, Select, TableHeaderRow } from "@/shared/components";
 import { EmployeeSelect } from "@/features/employees";
 import {
   type DbDocumentType, type DbEmployeeDocument,
@@ -136,10 +136,10 @@ const DocumentsTab = ({
             </div>
             <div>
               <FormFieldLabel>{arabicSource("lifecycle.document_type_2")}</FormFieldLabel>
-              <select value={formData.document_type_id} onChange={e => setFormData(p => ({ ...p, document_type_id: e.target.value }))} className={inputCls}>
+              <Select value={formData.document_type_id} onChange={e => setFormData(p => ({ ...p, document_type_id: e.target.value }))} className={inputCls}>
                 <option value="">{arabicSource("common.choose")}</option>
                 {docTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
-              </select>
+              </Select>
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.document_number")}</FormFieldLabel>

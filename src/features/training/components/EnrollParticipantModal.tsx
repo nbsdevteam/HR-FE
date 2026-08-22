@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Save } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay, Select } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { EnrollParticipantForm } from "../types";
@@ -66,10 +66,10 @@ const EnrollParticipantModal = ({
           />
         </div>
 
-        <SelectField
+        <Select
           label={arabicSource("training.join_status")}
           value={form.completion_status}
-          onChange={(value) => onFieldChange({ completion_status: value })}
+          onChange={(e) => onFieldChange({ completion_status: e.target.value })}
           options={participantStatuses}
           className={fieldCls}
         />

@@ -1,6 +1,7 @@
 import { LayoutGrid, Search, Table } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
+import { Select } from "@/shared/components";
 import { categoryLabels } from "../constants/reports";
 import { cardCls } from "../styles";
 import type { ReportViewMode } from "../types";
@@ -47,30 +48,22 @@ const ReportFiltersBar = ({
           className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
-      <select
+      <Select
         value={filterCategory}
         onChange={(e) => onFilterCategoryChange(e.target.value)}
+        options={[
+          { value: "all", label: arabicSource("common.all_categories") },
+          ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+        ]}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-      >
-        <option value="all">{arabicSource("common.all_categories")}</option>
-        {Object.entries(categoryLabels).map(([k, v]) => (
-          <option key={k} value={k}>
-            {v}
-          </option>
-        ))}
-      </select>
-      <select
+      />
+      <Select
         value={filterDept}
         onChange={(e) => onFilterDeptChange(e.target.value)}
+        options={departments.map((d) => ({ value: d.name, label: d.name }))}
+        blankLabel={arabicSource("reports.all_sections")}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-      >
-        <option value="">{arabicSource("reports.all_sections")}</option>
-        {departments.map((d) => (
-          <option key={d.id} value={d.name}>
-            {d.name}
-          </option>
-        ))}
-      </select>
+      />
       <input
         type="date"
         value={dateFrom}

@@ -4,6 +4,7 @@ import {
   Hash, Briefcase, PhoneCall, Smartphone, FileText, ClipboardList, Users, Check, X,
 } from "lucide-react";
 import { formatCurrency } from "@/features/payroll/services/payslip-engine";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { Employee, EmployeeOption } from "../types";
 import EmployeeFieldRow from "./EmployeeFieldRow";
@@ -91,7 +92,7 @@ const EmployeeInfoTab = ({
             </button>
           </div>
         ) : (
-          <select
+          <Select
             value={editData.department}
             onChange={(e) => {
               if (e.target.value === "__NEW__") {
@@ -106,7 +107,7 @@ const EmployeeInfoTab = ({
             {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
             <option disabled style={{ borderTop: "1px solid var(--border)", fontSize: 11 }}>──────────</option>
             <option value="__NEW__">{arabicSource("shared.add_a_new_section")}</option>
-          </select>
+          </Select>
         )
       }
     />
@@ -206,25 +207,25 @@ const EmployeeInfoTab = ({
       icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType} dir="ltr"
       isEditing={isEditing}
       editElement={
-        <select value={editData.bloodType} onChange={(e) => onFieldChange("bloodType", e.target.value)}
+        <Select value={editData.bloodType} onChange={(e) => onFieldChange("bloodType", e.target.value)}
           className={inputClass} style={{ fontSize: 14 }}>
           {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bt => (
             <option key={bt} value={bt}>{bt}</option>
           ))}
-        </select>
+        </Select>
       }
     />
     <EmployeeFieldRow
       icon={Users} iconColor="text-primary" label={arabicSource("common.direct_manager")} value={editData.managerName}
       isEditing={isEditing}
       editElement={
-        <select value={editData.managerId || ""} onChange={(e) => onManagerChange(e.target.value || null)}
+        <Select value={editData.managerId || ""} onChange={(e) => onManagerChange(e.target.value || null)}
           className={inputClass} style={{ fontSize: 14 }}>
           <option value="">{arabicSource("shared.without_a_direct_manager")}</option>
           {allEmployees.map(emp => (
             <option key={emp.dbId} value={emp.dbId}>{emp.name} ({emp.position})</option>
           ))}
-        </select>
+        </Select>
       }
     />
   </motion.div>

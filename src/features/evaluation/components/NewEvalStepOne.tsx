@@ -1,5 +1,6 @@
 import { ChevronDown, UserCheck } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
+import { Select } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -123,7 +124,7 @@ const NewEvalStepOne = ({
     {/* Period */}
     <div>
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.period")}</label>
-      <select
+      <Select
         value={period}
         onChange={e => onPeriodChange(e.target.value)}
         className={inputCls}
@@ -131,7 +132,7 @@ const NewEvalStepOne = ({
         {periodOptions.map(p => (
           <option key={p} value={p}>{p}</option>
         ))}
-      </select>
+      </Select>
     </div>
 
     {/* Next */}

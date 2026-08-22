@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, ModalFooterActions, NodeAvatar } from "@/shared/components";
+import { Modal, ModalFooterActions, NodeAvatar, Select } from "@/shared/components";
 import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -93,11 +93,11 @@ const AddEmployeeModal = ({
             <FieldLabel icon={Building2}>{arabicSource("common.section")}</FieldLabel>
             {!showNewDept ? (
               <div className="space-y-2">
-                <select value={department} onChange={e => setDepartment(e.target.value)}
+                <Select value={department} onChange={e => setDepartment(e.target.value)}
                   className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   style={{ fontSize: 13 }}>
                   {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
+                </Select>
                 <button type="button" onClick={() => setShowNewDept(true)}
                   className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors" style={{ fontSize: 12 }}>
                   <Plus className="w-3.5 h-3.5" /> {arabicSource("hierarchy.add_a_new_section")}
@@ -129,11 +129,11 @@ const AddEmployeeModal = ({
 
           <div>
             <FieldLabel icon={Users}>{arabicSource("hierarchy.direct_supervisor_manager")}</FieldLabel>
-            <select value={managerId} onChange={e => setManagerId(Number(e.target.value))}
+            <Select value={managerId} onChange={e => setManagerId(Number(e.target.value))}
               className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
               style={{ fontSize: 13 }}>
               {allNodes.filter(n => n.dbId !== "__root__").map(n => <option key={n.dbId} value={n.id}>{n.name} — {n.position} ({n.department})</option>)}
-            </select>
+            </Select>
             {selectedManager && selectedManager.dbId !== "__root__" && (
               <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
                 <NodeAvatar photo={selectedManager.photo} name={selectedManager.name} color={selectedManager.color} initials={selectedManager.initials} sizeClassName="w-7 h-7" extraClassName="flex-shrink-0" fontSize={10} />

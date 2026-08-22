@@ -5,7 +5,7 @@ import {
   ModalFooterActions,
   ModalHeader,
   ModalOverlay,
-  SelectField,
+  Select,
 } from "@/shared/components";
 import {
   fieldCls,
@@ -59,10 +59,10 @@ const CreateProgramModal = ({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <SelectField
+        <Select
           label={arabicSource("training.category")}
           value={form.category}
-          onChange={(value) => onFieldChange({ category: value })}
+          onChange={(e) => onFieldChange({ category: e.target.value })}
           options={trainingCategories}
           className={fieldCls}
         />
@@ -112,10 +112,10 @@ const CreateProgramModal = ({
         />
       </div>
 
-      <SelectField
+      <Select
         label={arabicSource("common.status")}
         value={form.status}
-        onChange={(value) => onFieldChange({ status: value })}
+        onChange={(e) => onFieldChange({ status: e.target.value })}
         options={trainingStatuses}
         className={fieldCls}
       />

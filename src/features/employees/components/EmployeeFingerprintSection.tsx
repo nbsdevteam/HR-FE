@@ -1,8 +1,8 @@
 import { Fingerprint, Loader2, Upload, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { Select } from "@/shared/components";
 import type { EmployeeAddForm } from "../types";
 import { labelCls } from "../styles";
-import LabeledSelect from "./LabeledSelect";
 
 type EmployeeFingerprintSectionProps = {
   gender: EmployeeAddForm["gender"];
@@ -49,7 +49,7 @@ const EmployeeFingerprintSection = ({
           </span>
         </div>
       </div>
-      <LabeledSelect
+      <Select
         label={arabicSource("employees.gender")}
         value={gender}
         onChange={(e) =>
@@ -58,7 +58,7 @@ const EmployeeFingerprintSection = ({
       >
         <option value="male">{arabicSource("common.male")}</option>
         <option value="female">{arabicSource("common.female")}</option>
-      </LabeledSelect>
+      </Select>
     </div>
     <div className="mt-3">
       <label className={labelCls} style={{ fontSize: 12 }}>

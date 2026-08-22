@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Briefcase, Save } from "lucide-react";
-import { Modal, ModalFooterActions } from "@/shared/components";
+import { Modal, ModalFooterActions, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
 import type { PositionNode } from "../types";
@@ -63,12 +63,12 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
       </div>
       <div>
         <FieldLabel>{arabicSource("common.section")}</FieldLabel>
-        <select value={posForm.department_id} onChange={e => setPosForm(p => ({ ...p, department_id: e.target.value }))}
+        <Select value={posForm.department_id} onChange={e => setPosForm(p => ({ ...p, department_id: e.target.value }))}
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }}>
           <option value="">{arabicSource("common.no_section")}</option>
           {dbDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </select>
+        </Select>
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.maximum_number")}</FieldLabel>

@@ -1,3 +1,4 @@
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment, DbShift } from "@/shared/hooks";
 
@@ -20,7 +21,7 @@ const ShiftDepartmentAssignmentRow = ({
       style={{ backgroundColor: department.color }}
     />
     <span className="text-foreground flex-1">{department.name}</span>
-    <select
+    <Select
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="px-3 py-1 bg-muted/30 border border-border/40 rounded text-foreground text-sm focus:outline-none focus:border-primary"
@@ -31,7 +32,7 @@ const ShiftDepartmentAssignmentRow = ({
           {shift.name}
         </option>
       ))}
-    </select>
+    </Select>
   </div>
 );
 

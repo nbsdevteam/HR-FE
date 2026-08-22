@@ -1,6 +1,6 @@
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { InputField, ModalFooterActions, ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { InputField, ModalFooterActions, ModalHeader, ModalOverlay, Select } from "@/shared/components";
 import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 
@@ -51,10 +51,10 @@ const EditProgramModal = ({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <SelectField
+        <Select
           label={arabicSource("common.status")}
           value={program.status}
-          onChange={(value) => onFieldChange({ status: value })}
+          onChange={(e) => onFieldChange({ status: e.target.value })}
           options={trainingStatuses}
           className={fieldCls}
         />

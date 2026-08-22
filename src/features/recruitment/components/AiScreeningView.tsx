@@ -1,6 +1,7 @@
 import { useState, useMemo, memo } from "react";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import EmptyState from "@/shared/components/EmptyState";
+import { Select } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,
@@ -89,7 +90,7 @@ const AiScreeningView = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <select
+        <Select
           value={jobId || ""}
           onChange={(e) => setJobId(e.target.value || null)}
           className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer min-w-[220px]"
@@ -103,7 +104,7 @@ const AiScreeningView = ({
               {job.title}
             </option>
           ))}
-        </select>
+        </Select>
         {jobId && (
           <>
             <button

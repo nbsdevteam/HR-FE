@@ -10,6 +10,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbJobOpening } from "@/shared/hooks";
 import { JOB_STATUSES, statusColors } from "../constants/recruitment";
@@ -48,7 +49,7 @@ const JobCard = ({
           {job.department}
         </p>
       </div>
-      <select
+      <Select
         value={job.status}
         onChange={(event) => onJobStatusChange(job, event.target.value)}
         title={arabicSource("recruitment.vacancy_status")}
@@ -64,7 +65,7 @@ const JobCard = ({
             {status}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
     <div className="flex flex-wrap gap-3 mb-3">
       <span

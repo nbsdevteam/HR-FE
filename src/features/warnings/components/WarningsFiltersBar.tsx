@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { SelectField } from "@/shared/components";
+import { Select } from "@/shared/components";
 
 type TWarningsFiltersBarProps = {
   searchQuery: string;
@@ -42,17 +42,17 @@ const WarningsFiltersBar = ({
         />
       </div>
 
-      <SelectField
+      <Select
         value={filterType}
-        onChange={onFilterTypeChange}
+        onChange={(e) => onFilterTypeChange(e.target.value)}
         options={warningTypes}
         blankLabel={arabicSource("common.all_types")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
       />
 
-      <SelectField
+      <Select
         value={filterStatus}
-        onChange={onFilterStatusChange}
+        onChange={(e) => onFilterStatusChange(e.target.value)}
         options={warningStatuses}
         blankLabel={arabicSource("warnings.all_cases")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"

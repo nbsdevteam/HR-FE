@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import { Search, BookmarkCheck, Trophy, TrendingUp } from "lucide-react";
+import { Select } from "@/shared/components";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { effectiveScore } from "../utils/recruitmentRanking";
@@ -96,7 +97,7 @@ const CandidateBank = ({
               style={{ fontSize: 13 }}
             />
           </div>
-          <select
+          <Select
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
@@ -108,8 +109,8 @@ const CandidateBank = ({
                 {s}
               </option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
@@ -127,7 +128,7 @@ const CandidateBank = ({
             <option value="name">
               {arabicSource("recruitment.alphabetical_order")}
             </option>
-          </select>
+          </Select>
         </div>
       </div>
 

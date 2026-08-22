@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, Link2 } from "lucide-react";
-import { Modal } from "@/shared/components";
+import { Modal, Select } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -73,7 +73,7 @@ const UnlinkedPanel = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <select
+                <Select
                   value={selectedManager[emp.id] || ""}
                   onChange={(e) =>
                     setSelectedManager((p) => ({
@@ -94,7 +94,7 @@ const UnlinkedPanel = ({
                         {n.name} — {n.position}
                       </option>
                     ))}
-                </select>
+                </Select>
                 <button
                   onClick={() => {
                     if (selectedManager[emp.id])

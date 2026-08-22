@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { motion } from "motion/react";
 import { Loader2, Save } from "lucide-react";
 import { EmployeeSelect } from "@/features/employees";
+import { Select } from "@/shared/components";
 import type { DbContractType } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
@@ -67,7 +68,7 @@ const ContractFormPanel = ({
         <FormFieldLabel>
           {arabicSource("lifecycle.contract_type_2")}
         </FormFieldLabel>
-        <select
+        <Select
           value={formData?.contract_type_id}
           onChange={(e) =>
             setFormData((p) => ({ ...p, contract_type_id: e.target.value }))
@@ -82,7 +83,7 @@ const ContractFormPanel = ({
                 {t.name_ar}
               </option>
             ))}
-        </select>
+        </Select>
       </div>
       <div>
         <FormFieldLabel>
@@ -136,7 +137,7 @@ const ContractFormPanel = ({
             className={`${inputCls} flex-1`}
             dir="ltr"
           />
-          <select
+          <Select
             value={formData.salary_currency}
             onChange={(e) =>
               setFormData((p) => ({ ...p, salary_currency: e.target.value }))
@@ -145,7 +146,7 @@ const ContractFormPanel = ({
           >
             <option value="IQD">IQD</option>
             <option value="USD">USD</option>
-          </select>
+          </Select>
         </div>
       </div>
     </div>

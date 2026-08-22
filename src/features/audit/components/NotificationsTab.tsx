@@ -3,7 +3,7 @@ import { Bell, Check, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { useNotifications } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { SearchInput, SelectField } from "@/shared/components";
+import { SearchInput, Select } from "@/shared/components";
 import { auditCardCls } from "../styles";
 import NotificationItem from "./NotificationItem";
 
@@ -49,9 +49,9 @@ const NotificationsTab = () => {
             iconClassName="w-4 h-4 text-muted-foreground"
             inputClassName="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
           />
-          <SelectField
+          <Select
             value={filterType}
-            onChange={setFilterType}
+            onChange={(e) => setFilterType(e.target.value)}
             options={[
               { value: "all", label: arabicSource("common.all_types") },
               { value: "info", label: arabicSource("auditcenter.information") },
@@ -62,9 +62,9 @@ const NotificationsTab = () => {
             ]}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           />
-          <SelectField
+          <Select
             value={filterCategory}
-            onChange={setFilterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
             options={[
               { value: "all", label: arabicSource("common.all_categories") },
               { value: "system", label: arabicSource("common.system") },

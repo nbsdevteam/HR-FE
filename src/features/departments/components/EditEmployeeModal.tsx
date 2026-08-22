@@ -4,6 +4,7 @@ import {
   Modal,
   ModalFooterActions,
   NodeAvatar,
+  Select,
 } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -171,7 +172,7 @@ const EditEmployeeModal = ({
           <FieldLabel icon={Building2} accentColorClassName="text-blue-400">
             {arabicSource("common.section")}
           </FieldLabel>
-          <select
+          <Select
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
@@ -182,14 +183,14 @@ const EditEmployeeModal = ({
                 {d}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <FieldLabel icon={Users} accentColorClassName="text-blue-400">
             {arabicSource("hierarchy.direct_supervisor_optional")}
           </FieldLabel>
-          <select
+          <Select
             value={managerId ?? ""}
             onChange={(e) =>
               setManagerId(e.target.value ? Number(e.target.value) : null)
@@ -205,7 +206,7 @@ const EditEmployeeModal = ({
                 {n.name} — {n.position} ({n.department})
               </option>
             ))}
-          </select>
+          </Select>
           {selectedManager && (
             <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10">
               <NodeAvatar

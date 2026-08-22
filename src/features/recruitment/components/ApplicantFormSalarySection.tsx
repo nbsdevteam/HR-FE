@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Trophy } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { ALL_STAGES } from "../constants/recruitment";
 import { labelCls, selectCls, inputCls } from "../styles";
@@ -50,14 +51,14 @@ const ApplicantFormSalarySection = ({
         <label className={labelCls} style={{ fontSize: 13 }}>
           {arabicSource("recruitment.currency")}
         </label>
-        <select
+        <Select
           value={salaryCurrency}
           onChange={(e) => onFieldChange("salary_currency", e.target.value)}
           className={selectCls}
         >
           <option>IQD</option>
           <option>USD</option>
-        </select>
+        </Select>
       </div>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -73,7 +74,7 @@ const ApplicantFormSalarySection = ({
         <label className={labelCls} style={{ fontSize: 13 }}>
           {arabicSource("common.stage")}
         </label>
-        <select
+        <Select
           value={stage}
           onChange={(e) => onFieldChange("stage", e.target.value)}
           className={selectCls}
@@ -81,7 +82,7 @@ const ApplicantFormSalarySection = ({
           {ALL_STAGES.map((s) => (
             <Option key={s}>{s}</Option>
           ))}
-        </select>
+        </Select>
       </div>
     </div>
   </fieldset>

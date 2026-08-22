@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Users } from "lucide-react";
+import { Select } from "@/shared/components";
 import { type DbJobOpening } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { inputCls, labelCls, selectCls } from "../styles";
@@ -26,18 +27,18 @@ const ApplicantFormBasicSection = ({ name, jobOpeningId, gender, city, openJobs,
       </div>
       <div>
         <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.the_job_applied_for")}</label>
-        <select value={jobOpeningId} onChange={e => onFieldChange("job_opening_id", e.target.value)} className={selectCls}>
+        <Select value={jobOpeningId} onChange={e => onFieldChange("job_opening_id", e.target.value)} className={selectCls}>
           {openJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
           {openJobs.length === 0 && <option value="">{arabicSource("recruitment.there_are_no_open_positions")}</option>}
-        </select>
+        </Select>
       </div>
       <div>
         <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.sex")}</label>
-        <select value={gender} onChange={e => onFieldChange("gender", e.target.value)} className={selectCls}>
+        <Select value={gender} onChange={e => onFieldChange("gender", e.target.value)} className={selectCls}>
           <option value="">{arabicSource("common.select")}</option>
           <option>{arabicSource("common.male")}</option>
           <option>{arabicSource("common.female")}</option>
-        </select>
+        </Select>
       </div>
       <div>
         <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.city")}</label>

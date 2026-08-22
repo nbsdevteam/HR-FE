@@ -1,6 +1,6 @@
 import type { CreatePolicyForm, EditPolicyForm } from "../types";
 import { arabicSource } from "@/i18n/source";
-import { InputField, SelectField } from "@/shared/components";
+import { InputField, Select } from "@/shared/components";
 import { policyFormCategories, policyStatusOptions } from "../constants/policies";
 
 type PolicyFormFieldsProps = {
@@ -23,9 +23,9 @@ const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsProps) =
 
     <div>
       <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.category")}</label>
-      <SelectField
+      <Select
         value={form.category}
-        onChange={(category) => onFormChange({ ...form, category })}
+        onChange={(e) => onFormChange({ ...form, category: e.target.value })}
         options={policyFormCategories}
         className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
       />
@@ -44,9 +44,9 @@ const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsProps) =
     {mode === "edit" && "status" in form && (
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">{arabicSource("common.status")}</label>
-        <SelectField
+        <Select
           value={form.status}
-          onChange={(status) => onFormChange({ ...form, status })}
+          onChange={(e) => onFormChange({ ...form, status: e.target.value })}
           options={policyStatusOptions}
           className="w-full px-4 py-2 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
         />

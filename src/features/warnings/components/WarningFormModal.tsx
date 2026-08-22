@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { InputField, Modal, SelectField } from "@/shared/components";
+import { InputField, Modal, Select } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
@@ -66,9 +66,9 @@ const WarningFormModal = ({
         >
           {arabicSource("common.alarm_type")}
         </label>
-        <SelectField
+        <Select
           value={form.type}
-          onChange={(value) => onFieldChange({ type: value })}
+          onChange={(e) => onFieldChange({ type: e.target.value })}
           options={warningTypes}
           blankLabel={arabicSource("warnings.choose_the_alarm_type")}
           className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Plus, PartyPopper } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { usePublicHolidays } from "@/shared/hooks";
 import { cardCls } from "../styles";
@@ -67,7 +68,7 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
               <label className="text-foreground text-sm">
                 {arabicSource("settings.year")}
               </label>
-              <select
+              <Select
                 value={holidayYear}
                 onChange={(e) => setHolidayYear(parseInt(e.target.value))}
                 className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
@@ -77,7 +78,7 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
                     {year}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             {!showNewHolidayForm && (
               <button

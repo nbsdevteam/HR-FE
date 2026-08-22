@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { evaluationInputClass } from "../styles";
 
@@ -27,7 +28,7 @@ const EvaluationFilters = ({
         style={{ height: 38 }}
       />
     </div>
-    <select
+    <Select
       value={filterStatus}
       onChange={e => onFilterStatusChange(e.target.value)}
       aria-label={arabicSource("common.status")}
@@ -38,7 +39,7 @@ const EvaluationFilters = ({
       <option value={arabicSource("common.complete")}>{arabicSource("common.complete")}</option>
       <option value={arabicSource("common.under_evaluation")}>{arabicSource("common.under_evaluation")}</option>
       <option value={arabicSource("common.did_not_start")}>{arabicSource("common.did_not_start")}</option>
-    </select>
+    </Select>
   </div>
 );
 

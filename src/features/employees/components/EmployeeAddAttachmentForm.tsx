@@ -1,7 +1,7 @@
 import { arabicSource } from "@/i18n/source";
-import DashedAddRecordCard from "./shared/DashedAddRecordCard";
+import { Select } from "@/shared/components";
+import DashedAddRecordCard, { dashedRecordInputClass } from "./shared/DashedAddRecordCard";
 import DashedRecordField from "./shared/DashedRecordField";
-import DashedRecordSelectField from "./shared/DashedRecordSelectField";
 
 type NewAttachment = { name: string; type: string };
 
@@ -25,17 +25,21 @@ const EmployeeAddAttachmentForm = ({ newAttachment, onChange, onConfirm, onCance
       onChange={(e) => onChange({ name: e.target.value })}
       placeholder={arabicSource("shared.example_graduation_certificate")}
     />
-    <DashedRecordSelectField
+    <Select
       label={arabicSource("shared.file_type")}
+      labelClassName="text-muted-foreground block mb-1"
+      labelStyle={{ fontSize: 11 }}
       value={newAttachment.type}
       onChange={(e) => onChange({ type: e.target.value })}
+      className={dashedRecordInputClass}
+      style={{ fontSize: 13 }}
     >
       <option value="PDF">PDF</option>
       <option value={arabicSource("common.image")}>{arabicSource("common.image")}</option>
       <option value="Word">Word</option>
       <option value="Excel">Excel</option>
       <option value={arabicSource("common.other")}>{arabicSource("shared.i_see")}</option>
-    </DashedRecordSelectField>
+    </Select>
   </DashedAddRecordCard>
 );
 
