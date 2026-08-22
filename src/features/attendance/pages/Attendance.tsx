@@ -4,35 +4,63 @@ import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import * as odooData from "@/shared/api/odooData";
 import {
-  useEmployees, useAttendanceRecords, empDisplayName, formatTime, formatWorkHours,
-  mapAttendanceStatus, useShifts, useHierarchyData,
+  useEmployees,
+  useAttendanceRecords,
+  empDisplayName,
+  formatTime,
+  formatWorkHours,
+  mapAttendanceStatus,
+  useShifts,
+  useHierarchyData,
 } from "@/shared/hooks";
 import type { DbAttendanceRecord, DbEmployee } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { AttendanceRow, dayNames } from "@/features/attendance/types";
 import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
-import EmployeeAttendanceDetail from "../components/EmployeeAttendanceDetail";
 import AttendanceHeader from "../components/AttendanceHeader";
 import AttendanceStatsCards from "../components/AttendanceStatsCards";
 import AttendanceSourceIndicators from "../components/AttendanceSourceIndicators";
 import WeeklyAttendanceChart from "../components/WeeklyAttendanceChart";
 import AttendanceFilters from "../components/AttendanceFilters";
-import  AttendanceRecordsView  from "../components/AttendanceRecordsView";
+import AttendanceRecordsView from "../components/AttendanceRecordsView";
 import ExcuseModal from "../components/ExcuseModal";
+import { lazy, Suspense } from "react"; // add to existing react import
+const EmployeeAttendanceDetail = lazy(
+  () => import("../components/EmployeeAttendanceDetail"),
+);
 
 const Attendance = () => {
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(arabicSource("common.all"));
-  const [sortBy, setSortBy] = useState<"name" | "deviceNo" | "department" | "checkIn" | "checkOut" | "hours" | "status">("checkIn");
+  const [statusFilter, setStatusFilter] = useState<string>(
+    arabicSource("common.all"),
+  );
+  const [sortBy, setSortBy] = useState<
+    | "name"
+    | "deviceNo"
+    | "department"
+    | "checkIn"
+    | "checkOut"
+    | "hours"
+    | "status"
+  >("checkIn");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
+    null,
+  );
   const [chartExpanded, setChartExpanded] = useState(false);
-  const [excuseModal, setExcuseModal] = useState<{record: AttendanceRow} | null>(null);
-  const [excuseForm, setExcuseForm] = useState({late: false, absence: false, shortfall: false, note: ""});
+  const [excuseModal, setExcuseModal] = useState<{
+    record: AttendanceRow;
+  } | null>(null);
+  const [excuseForm, setExcuseForm] = useState({
+    late: false,
+    absence: false,
+    shortfall: false,
+    note: "",
+  });
   const [excuseSaving, setExcuseSaving] = useState(false);
 
   const { i18n } = useTranslation();
@@ -44,7 +72,11 @@ const Attendance = () => {
   const { employees } = useEmployees();
   const { shifts: dbShifts } = useShifts();
   const { departments: dbDepartments } = useHierarchyData();
-  const { records: hookRecords, loading, refetch: refetchAttendance } = useAttendanceRecords({
+  const {
+    records: hookRecords,
+    loading,
+    refetch: refetchAttendance,
+  } = useAttendanceRecords({
     date_from: thirtyDaysAgo,
   });
 
@@ -52,12 +84,24 @@ const Attendance = () => {
   // Department color map
   const deptColorMap = useMemo(() => {
     const m: Record<string, string> = {};
-    dbDepartments.forEach((d: any) => { if (d.color) m[d.name] = d.color; });
+    dbDepartments.forEach((d: any) => {
+      if (d.color) m[d.name] = d.color;
+    });
     return m;
   }, [dbDepartments]);
 
   const empMap = useMemo(() => {
-    const m: Record<string, { name: string; dept: string; deviceNo: string; photo: string | null; position: string | null; deptColor: string | null }> = {};
+    const m: Record<
+      string,
+      {
+        name: string;
+        dept: string;
+        deviceNo: string;
+        photo: string | null;
+        position: string | null;
+        deptColor: string | null;
+      }
+    > = {};
     employees.forEach((e: DbEmployee) => {
       m[e.id] = {
         name: empDisplayName(e),
@@ -74,9 +118,15 @@ const Attendance = () => {
   // Filter records for selected date and map to UI rows
   const attendanceRows: AttendanceRow[] = useMemo(() => {
     const rows = rawRecords
-      .filter(r => r.date === selectedDate)
-      .map(r => {
-        const emp = empMap[r.employee_id] || { name: r.employee_id.substring(0, 12), dept: "—", deviceNo: "—", photo: null, position: null };
+      .filter((r) => r.date === selectedDate)
+      .map((r) => {
+        const emp = empMap[r.employee_id] || {
+          name: r.employee_id.substring(0, 12),
+          dept: "—",
+          deviceNo: "—",
+          photo: null,
+          position: null,
+        };
         return {
           id: r.id,
           employeeId: r.employee_id,
@@ -109,39 +159,86 @@ const Attendance = () => {
     // Apply search filter
     let filtered = rows;
     if (searchTerm) {
-      filtered = filtered.filter(r =>
-        r.employee.includes(searchTerm) || r.deviceNo.includes(searchTerm) || r.department.includes(searchTerm)
+      filtered = filtered.filter(
+        (r) =>
+          r.employee.includes(searchTerm) ||
+          r.deviceNo.includes(searchTerm) ||
+          r.department.includes(searchTerm),
       );
     }
     if (statusFilter !== arabicSource("common.all")) {
-      filtered = filtered.filter(r => r.status === statusFilter);
+      filtered = filtered.filter((r) => r.status === statusFilter);
     }
 
     // Sort
     const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "name") filtered.sort((a, b) => dir * a.employee.localeCompare(b.employee, "ar"));
-    else if (sortBy === "deviceNo") filtered.sort((a, b) => dir * (parseInt(a.deviceNo || "0") - parseInt(b.deviceNo || "0")));
-    else if (sortBy === "department") filtered.sort((a, b) => dir * a.department.localeCompare(b.department, "ar"));
-    else if (sortBy === "checkIn") filtered.sort((a, b) => dir * (a.rawCheckIn || "99:99").localeCompare(b.rawCheckIn || "99:99"));
-    else if (sortBy === "checkOut") filtered.sort((a, b) => dir * (a.rawCheckOut || "99:99").localeCompare(b.rawCheckOut || "99:99"));
-    else if (sortBy === "hours") filtered.sort((a, b) => dir * (a.workHoursNum - b.workHoursNum));
-    else if (sortBy === "status") filtered.sort((a, b) => dir * a.status.localeCompare(b.status, "ar"));
+    if (sortBy === "name")
+      filtered.sort((a, b) => dir * a.employee.localeCompare(b.employee, "ar"));
+    else if (sortBy === "deviceNo")
+      filtered.sort(
+        (a, b) =>
+          dir * (parseInt(a.deviceNo || "0") - parseInt(b.deviceNo || "0")),
+      );
+    else if (sortBy === "department")
+      filtered.sort(
+        (a, b) => dir * a.department.localeCompare(b.department, "ar"),
+      );
+    else if (sortBy === "checkIn")
+      filtered.sort(
+        (a, b) =>
+          dir *
+          (a.rawCheckIn || "99:99").localeCompare(b.rawCheckIn || "99:99"),
+      );
+    else if (sortBy === "checkOut")
+      filtered.sort(
+        (a, b) =>
+          dir *
+          (a.rawCheckOut || "99:99").localeCompare(b.rawCheckOut || "99:99"),
+      );
+    else if (sortBy === "hours")
+      filtered.sort((a, b) => dir * (a.workHoursNum - b.workHoursNum));
+    else if (sortBy === "status")
+      filtered.sort((a, b) => dir * a.status.localeCompare(b.status, "ar"));
 
     return filtered;
-  }, [rawRecords, selectedDate, empMap, searchTerm, statusFilter, sortBy, sortDir]);
+  }, [
+    rawRecords,
+    selectedDate,
+    empMap,
+    searchTerm,
+    statusFilter,
+    sortBy,
+    sortDir,
+  ]);
 
   // Stats
   const todayStats = useMemo(
-    () => buildTodayAttendanceStats(rawRecords, selectedDate, i18n.resolvedLanguage),
+    () =>
+      buildTodayAttendanceStats(
+        rawRecords,
+        selectedDate,
+        i18n.resolvedLanguage,
+      ),
     [rawRecords, selectedDate, i18n.resolvedLanguage],
   );
 
   // Weekly chart
   const weeklyAttendance = useMemo(() => {
-    const dayMap: Record<string, { present: number; late: number; absent: number; leave: number }> = {};
-    const orderedDays = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
-    orderedDays.forEach(d => { dayMap[d] = { present: 0, late: 0, absent: 0, leave: 0 }; });
-    rawRecords.forEach(r => {
+    const dayMap: Record<
+      string,
+      { present: number; late: number; absent: number; leave: number }
+    > = {};
+    const orderedDays = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+    ];
+    orderedDays.forEach((d) => {
+      dayMap[d] = { present: 0, late: 0, absent: 0, leave: 0 };
+    });
+    rawRecords.forEach((r) => {
       const d = r.day_of_week?.toLowerCase();
       if (!dayMap[d]) return;
       const st = mapAttendanceStatus(r.status, r.is_late);
@@ -150,7 +247,9 @@ const Attendance = () => {
       else if (st === arabicSource("common.absent")) dayMap[d].absent++;
       else if (st === arabicSource("common.leave")) dayMap[d].leave++;
     });
-    return orderedDays.map(d => ({ day: dayNames[d] || d, ...dayMap[d] })).reverse();
+    return orderedDays
+      .map((d) => ({ day: dayNames[d] || d, ...dayMap[d] }))
+      .reverse();
   }, [rawRecords]);
 
   const handleSaveExcuse = useCallback(async () => {
@@ -164,13 +263,19 @@ const Attendance = () => {
         excused_shortfall: excuseForm.shortfall,
         excuse_note: excuseForm.note || null,
       });
-      setRawRecords((prev) => prev.map((r) => (r.id === excuseModal.record.id ? {
-        ...r,
-        excused_late: excuseForm.late,
-        excused_absence: excuseForm.absence,
-        excused_shortfall: excuseForm.shortfall,
-        excuse_note: excuseForm.note || null,
-      } : r)));
+      setRawRecords((prev) =>
+        prev.map((r) =>
+          r.id === excuseModal.record.id
+            ? {
+                ...r,
+                excused_late: excuseForm.late,
+                excused_absence: excuseForm.absence,
+                excused_shortfall: excuseForm.shortfall,
+                excuse_note: excuseForm.note || null,
+              }
+            : r,
+        ),
+      );
       setExcuseModal(null);
       await refetchAttendance();
     } catch (err) {
@@ -194,7 +299,9 @@ const Attendance = () => {
   useEffect(() => {
     setRawRecords(hookRecords);
     if (hookRecords.length > 0 && !selectedDate) {
-      const dates = [...new Set(hookRecords.map((r) => r.date))].sort().reverse();
+      const dates = [...new Set(hookRecords.map((r) => r.date))]
+        .sort()
+        .reverse();
       setSelectedDate(dates[0]);
     }
   }, [hookRecords, selectedDate]);
@@ -203,7 +310,9 @@ const Attendance = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">{arabicSource("attendance.loading_attendance_records")}</span>
+        <span className="text-muted-foreground ms-3">
+          {arabicSource("attendance.loading_attendance_records")}
+        </span>
       </div>
     );
   }
@@ -219,7 +328,11 @@ const Attendance = () => {
 
       <AttendanceStatsCards todayStats={todayStats} />
 
-      <AttendanceSourceIndicators todayStats={todayStats} rawRecords={rawRecords} selectedDate={selectedDate} />
+      <AttendanceSourceIndicators
+        todayStats={todayStats}
+        rawRecords={rawRecords}
+        selectedDate={selectedDate}
+      />
 
       <WeeklyAttendanceChart
         chartExpanded={chartExpanded}
@@ -239,21 +352,29 @@ const Attendance = () => {
       {/* Results count */}
       <div className="px-1">
         <span className="text-muted-foreground" style={{ fontSize: 12 }}>
-          {attendanceRows.length} {arabicSource("common.record")} {statusFilter !== arabicSource("common.all") ? `(${statusFilter})` : ""} {searchTerm ? `${arabicSource("attendance.search")}${searchTerm}"` : ""}
+          {attendanceRows.length} {arabicSource("common.record")}{" "}
+          {statusFilter !== arabicSource("common.all")
+            ? `(${statusFilter})`
+            : ""}{" "}
+          {searchTerm
+            ? `${arabicSource("attendance.search")}${searchTerm}"`
+            : ""}
         </span>
       </div>
 
       {/* Employee Attendance Detail Modal */}
       <AnimatePresence>
         {selectedEmployeeId && (
-          <EmployeeAttendanceDetail
-            employeeId={selectedEmployeeId}
-            employees={employees}
-            empMap={empMap}
-            dbShifts={dbShifts}
-            dbDepartments={dbDepartments}
-            onClose={handleCloseEmployeeDetail}
-          />
+          <Suspense fallback={null}>
+            <EmployeeAttendanceDetail
+              employeeId={selectedEmployeeId}
+              employees={employees}
+              empMap={empMap}
+              dbShifts={dbShifts}
+              dbDepartments={dbDepartments}
+              onClose={handleCloseEmployeeDetail}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 

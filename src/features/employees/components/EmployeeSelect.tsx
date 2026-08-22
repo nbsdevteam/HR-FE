@@ -42,7 +42,10 @@ function matchesQuery(emp: DbEmployee, q: string): boolean {
 }
 
 /** Resolve employee row for a controlled value (id is canonical). */
-function findEmployee(employees: DbEmployee[], valueKey: string): DbEmployee | null {
+function findEmployee(
+  employees: DbEmployee[],
+  valueKey: string,
+): DbEmployee | null {
   if (!valueKey) return null;
   return employees.find((e) => String(e.id) === valueKey) || null;
 }
@@ -98,6 +101,28 @@ const EmployeeSelect = ({
       .sort((a, b) => empDisplayName(a).localeCompare(empDisplayName(b), "ar"));
   }, [employees, exclude, filter, query]);
 
+  const label =
+    placeholder ||
+    arabicSource("training.select_employee") ||
+    arabicSource("common.search_for_an_employee");
+
+  const pick = (emp: DbEmployee) => {
+    // Always persist the Odoo hr.employee id (same key empMap / contracts use).
+    onChange(String(emp.id));
+    setOpen(false);
+    setQuery("");
+  };
+
+  const clear = () => {
+    onChange("");
+  };
+
+  function handleToggle() {
+    if (disabled) return;
+    setOpen((v) => !v);
+    setQuery("");
+  }
+
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (ev: MouseEvent) => {
@@ -122,33 +147,13 @@ const EmployeeSelect = ({
     };
   }, [open]);
 
-  const label =
-    placeholder ||
-    arabicSource("training.select_employee") ||
-    arabicSource("common.search_for_an_employee");
-
-  const pick = (emp: DbEmployee) => {
-    // Always persist the Odoo hr.employee id (same key empMap / contracts use).
-    onChange(String(emp.id));
-    setOpen(false);
-    setQuery("");
-  };
-
-  const clear = () => {
-    onChange("");
-  };
-
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <div
         className={`w-full h-10 px-3 rounded-lg border border-border bg-input-background flex items-center gap-2 ${
           disabled ? "opacity-50" : "cursor-pointer"
         } focus-within:ring-2 focus-within:ring-ring`}
-        onClick={() => {
-          if (disabled) return;
-          setOpen((v) => !v);
-          setQuery("");
-        }}
+        onClick={handleToggle}
       >
         {/*
           Readonly input guarantees the browser paints the value. A flex+truncate
@@ -166,9 +171,9 @@ const EmployeeSelect = ({
           dir="auto"
           aria-haspopup="listbox"
           aria-expanded={open}
-          onFocus={() => {
-            if (!disabled) setOpen(true);
-          }}
+          // onFocus={() => {
+          //   if (!disabled) setOpen(true);
+          // }}
         />
         <span className="flex items-center gap-1 shrink-0">
           {!!valueKey && !disabled && (
@@ -197,9 +202,9 @@ const EmployeeSelect = ({
         </span>
       </div>
 
-      {open && (
+      {open ? (
         <div
-          className="absolute z-[80] mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
+          className="absolute z-[800] mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
           onPointerDown={(e) => e.stopPropagation()}
         >
           <div className="p-2 border-b border-border/40 flex items-center gap-2">
@@ -215,13 +220,16 @@ const EmployeeSelect = ({
               style={{ fontSize: 13 }}
             />
           </div>
-          <div className="max-h-56 overflow-y-auto" role="listbox">
+          <div className="max-h-96 overflow-y-auto" role="listbox">
             {options.length === 0 ? (
-              <p className="px-3 py-3 text-muted-foreground" style={{ fontSize: 12 }}>
+              <p
+                className="px-3 py-3 text-muted-foreground"
+                style={{ fontSize: 12 }}
+              >
                 {arabicSource("common.no_results_found")}
               </p>
             ) : (
-              options.map((emp) => {
+              options?.map((emp) => {
                 const active = String(emp.id) === valueKey;
                 const name = empDisplayName(emp);
                 return (
@@ -244,24 +252,40 @@ const EmployeeSelect = ({
                     <div className="truncate font-medium" dir="auto">
                       {name}
                     </div>
-                    {showDepartment && (emp.department || emp.device_employee_no) && (
-                      <div className="text-muted-foreground truncate" style={{ fontSize: 11 }}>
-                        {[emp.department, emp.device_employee_no ? `#${emp.device_employee_no}` : ""]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </div>
-                    )}
+                    {showDepartment &&
+                      (emp.department || emp.device_employee_no) && (
+                        <div
+                          className="text-muted-foreground truncate"
+                          style={{ fontSize: 11 }}
+                        >
+                          {[
+                            emp.department,
+                            emp.device_employee_no
+                              ? `#${emp.device_employee_no}`
+                              : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
+                      )}
                   </button>
                 );
               })
             )}
           </div>
-          <div className="px-3 py-1.5 border-t border-border/40 text-muted-foreground" style={{ fontSize: 10 }}>
+          <div
+            className="px-3 py-1.5 border-t border-border/40 text-muted-foreground"
+            style={{ fontSize: 10 }}
+          >
             {options.length} /{" "}
-            {employees.filter((e) => !exclude.has(String(e.id)) && (!filter || filter(e))).length}
+            {
+              employees.filter(
+                (e) => !exclude.has(String(e.id)) && (!filter || filter(e)),
+              ).length
+            }
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

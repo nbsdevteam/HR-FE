@@ -55,10 +55,14 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     terminationResult,
   } = useEmployeeDetailPanel(props);
 
-  const handleNewCustodyChange = (patch: Partial<typeof newCustody>) => setNewCustody({ ...newCustody, ...patch });
-  const handleNewAttachmentChange = (patch: Partial<typeof newAttachment>) => setNewAttachment({ ...newAttachment, ...patch });
-  const handleToggleTerminationOption = (key: keyof typeof terminationOptions, checked: boolean) =>
-    setTerminationOptions(prev => ({ ...prev, [key]: checked }));
+  const handleNewCustodyChange = (patch: Partial<typeof newCustody>) =>
+    setNewCustody({ ...newCustody, ...patch });
+  const handleNewAttachmentChange = (patch: Partial<typeof newAttachment>) =>
+    setNewAttachment({ ...newAttachment, ...patch });
+  const handleToggleTerminationOption = (
+    key: keyof typeof terminationOptions,
+    checked: boolean,
+  ) => setTerminationOptions((prev) => ({ ...prev, [key]: checked }));
 
   return (
     <motion.div
@@ -79,7 +83,10 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         className="ms-auto w-full max-w-[680px] h-full bg-card shadow-2xl flex flex-col overflow-hidden"
         style={{ borderInlineStart: "1px solid var(--border)" }}
       >
-        <div className="shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+        <div
+          className="shrink-0 px-6 pt-5 pb-4"
+          style={{ borderBottom: "1px solid var(--border)" }}
+        >
           <EmployeeDetailHeader
             isEditing={isEditing}
             saving={saving}
@@ -92,11 +99,13 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         </div>
 
         {saveError && (
-          <div className="shrink-0 mx-6 mt-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive" style={{ fontSize: 13 }}>
+          <div
+            className="shrink-0 mx-6 mt-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive"
+            style={{ fontSize: 13 }}
+          >
             {arabicSource("shared.error_saving")} {saveError}
           </div>
         )}
-
         <EmployeeDetailTabs
           modalTab={modalTab}
           custodiesCount={editData.custodies.length}
@@ -104,7 +113,6 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           attachmentsCount={editData.attachments.length}
           onSelect={setModalTab}
         />
-
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             {modalTab === "info" && (
@@ -130,7 +138,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 isEditing={isEditing}
                 showAddCustody={showAddCustody}
                 newCustody={newCustody}
-                onToggleAddCustody={() => setShowAddCustody(prev => !prev)}
+                onToggleAddCustody={() => setShowAddCustody((prev) => !prev)}
                 onNewCustodyChange={handleNewCustodyChange}
                 onConfirmAddCustody={handleAddCustody}
                 onCancelAddCustody={handleCancelAddCustody}
@@ -148,7 +156,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 isEditing={isEditing}
                 showAddAttachment={showAddAttachment}
                 newAttachment={newAttachment}
-                onToggleAddAttachment={() => setShowAddAttachment(prev => !prev)}
+                onToggleAddAttachment={() =>
+                  setShowAddAttachment((prev) => !prev)
+                }
                 onNewAttachmentChange={handleNewAttachmentChange}
                 onConfirmAddAttachment={handleAddAttachment}
                 onCancelAddAttachment={handleCancelAddAttachment}

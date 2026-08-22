@@ -1,8 +1,12 @@
 import type { ElementType } from "react";
-import { Camera, Activity, Server, Users } from "lucide-react";
+import { Camera, Activity, Server } from "lucide-react";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
-import type { BiometricDevice, DeviceManagementTab, DevicePerson } from "../types";
+import type {
+  BiometricDevice,
+  DeviceManagementTab,
+  DevicePerson,
+} from "../types";
 
 export const DEVICE_SYNC_API = SYNC_API;
 
@@ -12,9 +16,17 @@ export const getDeviceManagementTabs = (): Array<{
   icon: ElementType;
 }> => [
   { key: "overview", label: arabicSource("common.overview"), icon: Server },
-  { key: "persons", label: arabicSource("devicemanagement.people_management"), icon: Users },
-  { key: "events", label: arabicSource("devicemanagement.event_log"), icon: Activity },
-  { key: "face", label: arabicSource("devicemanagement.face_pictures"), icon: Camera },
+  // { key: "persons", label: arabicSource("devicemanagement.people_management"), icon: Users },
+  {
+    key: "events",
+    label: arabicSource("devicemanagement.event_log"),
+    icon: Activity,
+  },
+  {
+    key: "face",
+    label: arabicSource("devicemanagement.face_pictures"),
+    icon: Camera,
+  },
 ];
 
 export const getDefaultBiometricDevice = (): BiometricDevice => ({
@@ -42,16 +54,23 @@ export const userTypeLabel = (type: string): string => {
 };
 
 export const userTypeColor = (type: string): string => {
-  if (type === "normal") return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-  if (type === "visitor") return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+  if (type === "normal")
+    return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+  if (type === "visitor")
+    return "bg-blue-500/20 text-blue-400 border-blue-500/30";
   return "bg-red-500/20 text-red-400 border-red-500/30";
 };
 
-export const filterDevicePersons = (persons: DevicePerson[], search: string): DevicePerson[] => {
+export const filterDevicePersons = (
+  persons: DevicePerson[],
+  search: string,
+): DevicePerson[] => {
   if (!search) return persons;
   const query = search.toLowerCase();
-  return persons.filter((person) =>
-    person.name.toLowerCase().includes(query) || person.employeeNo.includes(query),
+  return persons.filter(
+    (person) =>
+      person.name.toLowerCase().includes(query) ||
+      person.employeeNo.includes(query),
   );
 };
 

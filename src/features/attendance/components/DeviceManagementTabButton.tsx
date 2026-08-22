@@ -15,18 +15,24 @@ const DeviceManagementTabButton = ({
   icon: Icon,
   activeTab,
   onTabChange,
-}: DeviceManagementTabButtonProps) => (
-  <button
-    onClick={() => onTabChange(tabKey)}
-    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer ${
-      activeTab === tabKey
-        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-    }`}
-  >
-    <Icon className="w-4 h-4" />
-    {label}
-  </button>
-);
+}: DeviceManagementTabButtonProps) => {
+  function handleClick() {
+    onTabChange(tabKey);
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+        activeTab === tabKey
+          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+      {label}
+    </button>
+  );
+};
 
 export default DeviceManagementTabButton;

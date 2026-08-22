@@ -5,7 +5,9 @@ type DeviceSelectOptionProps = {
 };
 
 const DeviceSelectOption = ({ device }: DeviceSelectOptionProps) => (
-  <option value={device.id}>{device.name} — {device.model}</option>
+  <option className="text-red-600" value={device.id}>
+    {device.name} — {device.model}
+  </option>
 );
 
 export default DeviceSelectOption;

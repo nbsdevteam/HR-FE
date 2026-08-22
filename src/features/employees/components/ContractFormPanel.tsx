@@ -31,7 +31,16 @@ type ContractFormPanelProps = {
 };
 
 const ContractFormPanel = ({
-  formData, setFormData, employees, employeeLabels, contractTypes, onSave, onCancel, saving, cardCls, inputCls,
+  formData,
+  setFormData,
+  employees,
+  employeeLabels,
+  contractTypes,
+  onSave,
+  onCancel,
+  saving,
+  cardCls,
+  inputCls,
 }: ContractFormPanelProps) => (
   <motion.div
     initial={{ opacity: 0, height: 0 }}
@@ -39,7 +48,9 @@ const ContractFormPanel = ({
     exit={{ opacity: 0, height: 0 }}
     className={`${cardCls} p-5`}
   >
-    <h3 className="text-foreground mb-4">{arabicSource("common.new_contract")}</h3>
+    <h3 className="text-foreground mb-4">
+      {arabicSource("common.new_contract")}
+    </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div>
         <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
@@ -47,27 +58,41 @@ const ContractFormPanel = ({
           employees={employees}
           labels={employeeLabels}
           value={formData.employee_id}
-          onChange={(id) => setFormData((p) => ({ ...p, employee_id: String(id) }))}
+          onChange={(id) =>
+            setFormData((p) => ({ ...p, employee_id: String(id) }))
+          }
         />
       </div>
       <div>
-        <FormFieldLabel>{arabicSource("lifecycle.contract_type_2")}</FormFieldLabel>
+        <FormFieldLabel>
+          {arabicSource("lifecycle.contract_type_2")}
+        </FormFieldLabel>
         <select
           value={formData?.contract_type_id}
-          onChange={(e) => setFormData((p) => ({ ...p, contract_type_id: e.target.value }))}
+          onChange={(e) =>
+            setFormData((p) => ({ ...p, contract_type_id: e.target.value }))
+          }
           className={inputCls}
         >
           <option value="">{arabicSource("common.choose")}</option>
-          {contractTypes.filter((t) => t.is_active).map((t) => (
-            <option key={t.id} value={t.id}>{t.name_ar}</option>
-          ))}
+          {contractTypes
+            .filter((t) => t.is_active)
+            .map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name_ar}
+              </option>
+            ))}
         </select>
       </div>
       <div>
-        <FormFieldLabel>{arabicSource("common.contract_number")}</FormFieldLabel>
+        <FormFieldLabel>
+          {arabicSource("common.contract_number")}
+        </FormFieldLabel>
         <input
           value={formData.contract_number}
-          onChange={(e) => setFormData((p) => ({ ...p, contract_number: e.target.value }))}
+          onChange={(e) =>
+            setFormData((p) => ({ ...p, contract_number: e.target.value }))
+          }
           className={inputCls}
           dir="ltr"
         />
@@ -77,7 +102,9 @@ const ContractFormPanel = ({
         <input
           type="date"
           value={formData.start_date}
-          onChange={(e) => setFormData((p) => ({ ...p, start_date: e.target.value }))}
+          onChange={(e) =>
+            setFormData((p) => ({ ...p, start_date: e.target.value }))
+          }
           className={inputCls}
           dir="ltr"
         />
@@ -87,7 +114,9 @@ const ContractFormPanel = ({
         <input
           type="date"
           value={formData.end_date}
-          onChange={(e) => setFormData((p) => ({ ...p, end_date: e.target.value }))}
+          onChange={(e) =>
+            setFormData((p) => ({ ...p, end_date: e.target.value }))
+          }
           className={inputCls}
           dir="ltr"
         />
@@ -98,13 +127,20 @@ const ContractFormPanel = ({
           <input
             type="number"
             value={formData.salary_amount || ""}
-            onChange={(e) => setFormData((p) => ({ ...p, salary_amount: Number(e.target.value) }))}
+            onChange={(e) =>
+              setFormData((p) => ({
+                ...p,
+                salary_amount: Number(e.target.value),
+              }))
+            }
             className={`${inputCls} flex-1`}
             dir="ltr"
           />
           <select
             value={formData.salary_currency}
-            onChange={(e) => setFormData((p) => ({ ...p, salary_currency: e.target.value }))}
+            onChange={(e) =>
+              setFormData((p) => ({ ...p, salary_currency: e.target.value }))
+            }
             className="w-20 h-10 px-2 rounded-lg border border-border bg-input-background text-foreground text-xs outline-none"
           >
             <option value="IQD">IQD</option>
@@ -119,7 +155,12 @@ const ContractFormPanel = ({
         disabled={saving}
         className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs hover:bg-primary/90 cursor-pointer disabled:opacity-50"
       >
-        {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} {arabicSource("common.save")}
+        {saving ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Save className="w-3 h-3" />
+        )}{" "}
+        {arabicSource("common.save")}
       </button>
       <button
         onClick={onCancel}

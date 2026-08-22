@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import LeaveHeader from "../components/LeaveHeader";
-import LeaveModals from "../components/LeaveModals";
 import LeaveStats from "../components/LeaveStats";
 import LeaveTabContent from "../components/LeaveTabContent";
 import LeaveTabs from "../components/LeaveTabs";
@@ -8,18 +7,26 @@ import LoadingState from "@/shared/components/LoadingState";
 import { arabicSource } from "@/i18n/source";
 import { useLeavePage } from "../hooks/useLeavePage";
 import type { LeaveTabId, LeaveViewMode } from "../types";
+import { lazy, Suspense } from "react";
+const LeaveModals = lazy(() => import("../components/LeaveModals"));
 
 const Leave = () => {
   const page = useLeavePage();
   const { setActiveTab, setShowForm, setShowPermForm, setViewMode } = page;
 
-  const handleTabChange = useCallback((tabId: LeaveTabId) => {
-    setActiveTab(tabId);
-  }, [setActiveTab]);
+  const handleTabChange = useCallback(
+    (tabId: LeaveTabId) => {
+      setActiveTab(tabId);
+    },
+    [setActiveTab],
+  );
 
-  const handleViewModeChange = useCallback((nextViewMode: LeaveViewMode) => {
-    setViewMode(nextViewMode);
-  }, [setViewMode]);
+  const handleViewModeChange = useCallback(
+    (nextViewMode: LeaveViewMode) => {
+      setViewMode(nextViewMode);
+    },
+    [setViewMode],
+  );
 
   const handleShowLeaveForm = useCallback(() => {
     setShowForm(true);
@@ -30,7 +37,9 @@ const Leave = () => {
   }, [setShowPermForm]);
 
   if (page.loading) {
-    return <LoadingState message={arabicSource("leave.loading_vacation_data")} />;
+    return (
+      <LoadingState message={arabicSource("leave.loading_vacation_data")} />
+    );
   }
 
   return (
@@ -42,18 +51,16 @@ const Leave = () => {
         onShowLeaveForm={handleShowLeaveForm}
         onShowPermissionForm={handleShowPermissionForm}
       />
-
       <LeaveStats
         pendingCount={page.pendingCount}
         approvedCount={page.approvedCount}
         rejectedCount={page.rejectedCount}
       />
-
       <LeaveTabs activeTab={page.activeTab} onTabChange={handleTabChange} />
-
       <LeaveTabContent page={page} />
-
-      <LeaveModals page={page} />
+      <Suspense fallback={null}>
+        <LeaveModals page={page} />
+      </Suspense>{" "}
     </div>
   );
 };

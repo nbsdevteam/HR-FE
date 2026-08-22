@@ -12,12 +12,12 @@ import {
 } from "../utils/hierarchyTree";
 import { useHierarchyCrud } from "./useHierarchyCrud";
 import { useHierarchyExport } from "./useHierarchyExport";
+import { useHierarchyPanZoom } from "./useHierarchyPanZoom";
 
 export const useHierarchyPage = () => {
   const [viewMode, setViewMode] = useState<"tree" | "positions">("tree");
   const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
   const [selectedNode, setSelectedNode] = useState<OrgNode | null>(null);
-  const [zoom, setZoom] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
@@ -33,16 +33,24 @@ export const useHierarchyPage = () => {
 
   const [toast, setToast] = useState<string | null>(null);
 
-  const [isDragging, setIsDragging] = useState(false);
-  const [panEnabled, setPanEnabled] = useState(false);
-
   const { employees: dbEmployees, departments: dbDepartments, loading: dbLoading, refetch } = useHierarchyData();
   const { positions: dbPositions, loading: positionsLoading, refetch: refetchPositions } = usePositions();
+  const {
+    containerRef,
+    zoom,
+    isDragging,
+    panEnabled,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleTogglePan,
+    handleZoomOut,
+    handleZoomIn,
+    handleResetZoom,
+  } = useHierarchyPanZoom();
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const chartContentRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const dragStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // Build tree from POSITIONS (single source of truth)
   const { tree: orgTree, deptColors } = useMemo(() => {
@@ -127,22 +135,6 @@ export const useHierarchyPage = () => {
     setAddModalManagerId(managerId ?? null); setShowAddModal(true);
   }, []);
 
-  // Drag handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!panEnabled || !containerRef.current) return;
-    setIsDragging(true);
-    dragStartRef.current = { x: e.clientX, y: e.clientY, scrollLeft: containerRef.current.scrollLeft, scrollTop: containerRef.current.scrollTop };
-  }, [panEnabled]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    e.preventDefault();
-    containerRef.current.scrollLeft = dragStartRef.current.scrollLeft - (e.clientX - dragStartRef.current.x);
-    containerRef.current.scrollTop = dragStartRef.current.scrollTop - (e.clientY - dragStartRef.current.y);
-  }, [isDragging]);
-
-  const handleMouseUp = useCallback(() => { setIsDragging(false); }, []);
-
   const handleSearchSelect = useCallback((node: OrgNode) => { setFocusedNodeId(node.id); setSearchQuery(node.name); setShowSearchResults(false); }, []);
   const clearSearch = useCallback(() => { setSearchQuery(""); setFocusedNodeId(null); setShowSearchResults(false); }, []);
 
@@ -162,10 +154,6 @@ export const useHierarchyPage = () => {
   const handleShowSetupModal = useCallback(() => setShowSetupModal(true), []);
   const handleShowCleanupModal = useCallback(() => setShowCleanupModal(true), []);
   const handleCloseSearchResults = useCallback(() => setShowSearchResults(false), []);
-  const handleTogglePan = useCallback(() => setPanEnabled(current => !current), []);
-  const handleZoomOut = useCallback(() => setZoom(z => Math.max(0.3, +(z - 0.1).toFixed(1))), []);
-  const handleZoomIn = useCallback(() => setZoom(z => Math.min(1.5, +(z + 0.1).toFixed(1))), []);
-  const handleResetZoom = useCallback(() => setZoom(1), []);
   const handleSelectNode = useCallback((node: OrgNode) => setSelectedNode(node), []);
   const handleCloseSelectedNode = useCallback(() => setSelectedNode(null), []);
   const handleCloseAddModal = useCallback(() => {

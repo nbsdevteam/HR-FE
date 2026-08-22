@@ -1,10 +1,12 @@
+import { lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import BalancesTab from "./BalancesTab";
 import LeaveRequestFilters from "./LeaveRequestFilters";
-import LeaveRequestsKanbanView from "./LeaveRequestsKanbanView";
 import LeaveRequestsListView from "./LeaveRequestsListView";
-import PermissionsTab from "./PermissionsTab";
 import type { useLeavePage } from "../hooks/useLeavePage";
+
+const BalancesTab = lazy(() => import("./BalancesTab"));
+const LeaveRequestsKanbanView = lazy(() => import("./LeaveRequestsKanbanView"));
+const PermissionsTab = lazy(() => import("./PermissionsTab"));
 
 type LeaveTabContentProps = {
   page: ReturnType<typeof useLeavePage>;
@@ -13,7 +15,12 @@ type LeaveTabContentProps = {
 const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
   <AnimatePresence mode="wait">
     {page.activeTab === "requests" && (
-      <motion.div key="requests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+      <motion.div
+        key="requests"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
         <LeaveRequestFilters
           filter={page.filter}
           search={page.search}
@@ -35,37 +42,53 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             onDelete={page.handleDelete}
           />
         ) : (
-          <LeaveRequestsKanbanView
-            requests={page.filteredRequests}
-            empMap={page.empMap}
-            onApprove={page.handleApprove}
-            onReject={page.handleReject}
-          />
+          <Suspense fallback={null}>
+            <LeaveRequestsKanbanView
+              requests={page.filteredRequests}
+              empMap={page.empMap}
+              onApprove={page.handleApprove}
+              onReject={page.handleReject}
+            />
+          </Suspense>
         )}
       </motion.div>
     )}
 
     {page.activeTab === "balances" && (
-      <motion.div key="balances" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <BalancesTab
-          employees={page.employees}
-          leaveTypes={page.activeLeaveTypes}
-          balances={page.balances}
-          policies={page.policies}
-          loading={page.balLoading}
-          year={page.currentYear}
-        />
+      <motion.div
+        key="balances"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <Suspense fallback={null}>
+          <BalancesTab
+            employees={page.employees}
+            leaveTypes={page.activeLeaveTypes}
+            balances={page.balances}
+            policies={page.policies}
+            loading={page.balLoading}
+            year={page.currentYear}
+          />
+        </Suspense>
       </motion.div>
     )}
 
     {page.activeTab === "permissions" && (
-      <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <PermissionsTab
-          permissions={page.permissions}
-          empMap={page.empMap}
-          loading={page.permLoading}
-          refetch={page.refetchPermissions}
-        />
+      <motion.div
+        key="permissions"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <Suspense fallback={null}>
+          <PermissionsTab
+            permissions={page.permissions}
+            empMap={page.empMap}
+            loading={page.permLoading}
+            refetch={page.refetchPermissions}
+          />
+        </Suspense>
       </motion.div>
     )}
   </AnimatePresence>

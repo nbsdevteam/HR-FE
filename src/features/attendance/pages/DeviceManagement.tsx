@@ -1,17 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import * as odooData from "@/shared/api/odooData";
-import type { BiometricDevice, DeviceManagementTab } from "@/features/attendance/types";
+import type {
+  BiometricDevice,
+  DeviceManagementTab,
+} from "@/features/attendance/types";
 import {
   getDefaultBiometricDevice,
   mapBiometricDevices,
 } from "@/features/attendance/utils/deviceManagement";
-import DeviceEventsTab from "../components/DeviceEventsTab";
-import DeviceFaceTab from "../components/DeviceFaceTab";
 import DeviceManagementHeader from "../components/DeviceManagementHeader";
 import DeviceManagementTabs from "../components/DeviceManagementTabs";
-import DeviceOverviewTab from "../components/DeviceOverviewTab";
-import DevicePersonsTab from "../components/DevicePersonsTab";
+
+const DeviceOverviewTab = lazy(() => import("../components/DeviceOverviewTab"));
+// const DevicePersonsTab = lazy(() => import("../components/DevicePersonsTab"));
+const DeviceEventsTab = lazy(() => import("../components/DeviceEventsTab"));
+const DeviceFaceTab = lazy(() => import("../components/DeviceFaceTab"));
 
 const DeviceManagement = () => {
   const [tab, setTab] = useState<DeviceManagementTab>("overview");
@@ -63,10 +67,12 @@ const DeviceManagement = () => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {tab === "overview" && <DeviceOverviewTab />}
-          {tab === "persons" && <DevicePersonsTab />}
-          {tab === "events" && <DeviceEventsTab />}
-          {tab === "face" && <DeviceFaceTab />}
+          <Suspense fallback={null}>
+            {tab === "overview" && <DeviceOverviewTab />}
+            {/* {tab === "persons" && <DevicePersonsTab />} */}
+            {tab === "events" && <DeviceEventsTab />}
+            {tab === "face" && <DeviceFaceTab />}
+          </Suspense>
         </motion.div>
       </AnimatePresence>
     </div>

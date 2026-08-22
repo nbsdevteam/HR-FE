@@ -1,9 +1,7 @@
 import { lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
-import { EmployeeDetailPanel } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import AddEmployeeModal from "../components/AddEmployeeModal";
 import DeleteEmployeeModal from "../components/DeleteEmployeeModal";
 import EmployeesFilters from "../components/EmployeesFilters";
 import EmployeesHeader from "../components/EmployeesHeader";
@@ -14,6 +12,14 @@ import LoadingState from "@/shared/components/LoadingState";
 
 const EmployeesKanbanView = lazy(
   () => import("../components/EmployeesKanbanView"),
+);
+
+const AddEmployeeModal = lazy(() => import("../components/AddEmployeeModal"));
+
+const EmployeeDetailPanel = lazy(() =>
+  import("@/features/employees").then((module) => ({
+    default: module.EmployeeDetailPanel,
+  })),
 );
 
 const Employees = () => {
@@ -112,12 +118,7 @@ const Employees = () => {
           />
         ) : (
           <Suspense
-            fallback={
-              <LoadingState
-                // Fix this (it shows wrong loading message)
-                message={arabicSource("dashboard.loading_control_panel")}
-              />
-            }
+            fallback={<LoadingState message={arabicSource("common.loading")} />}
           >
             <EmployeesKanbanView
               departments={kanbanDepts}
@@ -132,33 +133,41 @@ const Employees = () => {
 
       <AnimatePresence>
         {selectedEmployee && (
-          <EmployeeDetailPanel
-            employee={selectedEmployee}
-            onClose={handleDetailClose}
-            onSave={handleDetailSave}
-            allEmployees={employeeOptions}
-          />
+          <Suspense
+            fallback={<LoadingState message={arabicSource("common.loading")} />}
+          >
+            <EmployeeDetailPanel
+              employee={selectedEmployee}
+              onClose={handleDetailClose}
+              onSave={handleDetailSave}
+              allEmployees={employeeOptions}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showAddModal && (
-          <AddEmployeeModal
-            addForm={addForm}
-            addSaving={addSaving}
-            addError={addError}
-            deviceSyncStatus={deviceSyncStatus}
-            nextEmployeeId={nextEmployeeId}
-            loadingNextId={loadingNextId}
-            facePhotoPreview={facePhotoPreview}
-            departmentOptions={dbDepartmentOptions}
-            designationOptions={designationOptions}
-            onFormChange={updateAddForm}
-            onFacePhotoChange={handleFacePhoto}
-            onClearFacePhoto={handleClearFacePhoto}
-            onAddEmployee={handleAddEmployee}
-            onClose={closeAddModal}
-          />
+          <Suspense
+            fallback={<LoadingState message={arabicSource("common.loading")} />}
+          >
+            <AddEmployeeModal
+              addForm={addForm}
+              addSaving={addSaving}
+              addError={addError}
+              deviceSyncStatus={deviceSyncStatus}
+              nextEmployeeId={nextEmployeeId}
+              loadingNextId={loadingNextId}
+              facePhotoPreview={facePhotoPreview}
+              departmentOptions={dbDepartmentOptions}
+              designationOptions={designationOptions}
+              onFormChange={updateAddForm}
+              onFacePhotoChange={handleFacePhoto}
+              onClearFacePhoto={handleClearFacePhoto}
+              onAddEmployee={handleAddEmployee}
+              onClose={closeAddModal}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 

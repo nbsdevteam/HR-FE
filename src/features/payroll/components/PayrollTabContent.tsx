@@ -1,7 +1,9 @@
+import { lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import OverviewTab from "./OverviewTab";
-import UploadTab from "./UploadTab";
 import type { usePayrollPage } from "../hooks/usePayrollPage";
+
+const UploadTab = lazy(() => import("./UploadTab"));
 
 type PayrollTabContentProps = {
   page: ReturnType<typeof usePayrollPage>;
@@ -33,7 +35,9 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
       >
-        <UploadTab employees={page.employees} />
+        <Suspense fallback={null}>
+          <UploadTab employees={page.employees} />
+        </Suspense>
       </motion.div>
     )}
   </AnimatePresence>

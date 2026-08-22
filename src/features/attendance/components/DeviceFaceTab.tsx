@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import type { DeviceFacePreview, DevicePerson } from "../types";
-import { DEVICE_SYNC_API, fileToBase64, filterDevicePersons } from "../utils/deviceManagement";
+import {
+  DEVICE_SYNC_API,
+  fileToBase64,
+  filterDevicePersons,
+} from "../utils/deviceManagement";
 import DeviceFaceModal from "./DeviceFaceModal";
 import DeviceFacePersonCard from "./DeviceFacePersonCard";
 import DeviceFaceToolbar from "./DeviceFaceToolbar";
@@ -14,7 +18,10 @@ const DeviceFaceTab = () => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [viewFace, setViewFace] = useState<DeviceFacePreview | null>(null);
 
-  const filtered = useMemo(() => filterDevicePersons(persons, search), [persons, search]);
+  const filtered = useMemo(
+    () => filterDevicePersons(persons, search),
+    [persons, search],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -38,7 +45,9 @@ const DeviceFaceTab = () => {
 
   const handleViewFace = useCallback(async (employeeNumber: string) => {
     try {
-      const response = await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`);
+      const response = await fetch(
+        `${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`,
+      );
       const data = await response.json();
       setViewFace({
         empNo: employeeNumber,
@@ -49,31 +58,43 @@ const DeviceFaceTab = () => {
     }
   }, []);
 
-  const handleUploadFace = useCallback(async (employeeNumber: string, file: File) => {
-    setUploading(employeeNumber);
-    try {
-      const base64 = await fileToBase64(file);
-      await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64 }),
-      });
-      await load();
-    } catch {
-      // Device can be offline.
-    }
-    setUploading(null);
-  }, [load]);
+  const handleUploadFace = useCallback(
+    async (employeeNumber: string, file: File) => {
+      setUploading(employeeNumber);
+      try {
+        const base64 = await fileToBase64(file);
+        await fetch(
+          `${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: base64 }),
+          },
+        );
+        await load();
+      } catch {
+        // Device can be offline.
+      }
+      setUploading(null);
+    },
+    [load],
+  );
 
-  const handleDeleteFace = useCallback(async (employeeNumber: string) => {
-    try {
-      await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, { method: "DELETE" });
-      setViewFace(null);
-      await load();
-    } catch {
-      // Device can be offline.
-    }
-  }, [load]);
+  const handleDeleteFace = useCallback(
+    async (employeeNumber: string) => {
+      try {
+        await fetch(
+          `${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`,
+          { method: "DELETE" },
+        );
+        setViewFace(null);
+        await load();
+      } catch {
+        // Device can be offline.
+      }
+    },
+    [load],
+  );
 
   useEffect(() => {
     load();
@@ -87,7 +108,6 @@ const DeviceFaceTab = () => {
         onSearchChange={handleSearchChange}
         onRefresh={load}
       />
-
       <AnimatePresence>
         {viewFace && (
           <DeviceFaceModal
