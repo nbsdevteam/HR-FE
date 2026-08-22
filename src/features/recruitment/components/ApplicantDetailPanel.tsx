@@ -41,14 +41,18 @@ const ApplicantDetailPanel = ({
   onConvertToEmployee,
   onScreen,
 }: ApplicantDetailPanelProps) => {
-  const [interviewNotes, setInterviewNotes] = useState(applicant.interview_notes || "");
+  const [interviewNotes, setInterviewNotes] = useState(
+    applicant.interview_notes || "",
+  );
   const [savingNotes, setSavingNotes] = useState(false);
   const score = effectiveScore(applicant);
   const rank = rankLabel(score, applicant.ir_band);
 
   const saveNotes = useCallback(async () => {
     setSavingNotes(true);
-    await odooData.updateApplicant(applicant.id, { interview_notes: interviewNotes });
+    await odooData.updateApplicant(applicant.id, {
+      interview_notes: interviewNotes,
+    });
     setSavingNotes(false);
     onRefresh();
   }, [applicant.id, interviewNotes, onRefresh]);
@@ -92,12 +96,20 @@ const ApplicantDetailPanel = ({
       <div className="p-6 space-y-5">
         {/* Stage */}
         <div>
-          <label className="text-muted-foreground block mb-2" style={{ fontSize: 12 }}>
+          <label
+            className="text-muted-foreground block mb-2"
+            style={{ fontSize: 12 }}
+          >
             {arabicSource("recruitment.current_phase")}
           </label>
           <div className="flex items-center gap-2 flex-wrap">
             {ALL_STAGES.map((s) => (
-              <ApplicantStageButton key={s} stage={s} isActive={applicant.stage === s} onSelect={handleStageSelect} />
+              <ApplicantStageButton
+                key={s}
+                stage={s}
+                isActive={applicant.stage === s}
+                // onSelect={handleStageSelect}
+              />
             ))}
           </div>
         </div>
@@ -105,14 +117,19 @@ const ApplicantDetailPanel = ({
         <ApplicantContactInfoGrid applicant={applicant} />
 
         {applicant.expected_salary && (
-          <ApplicantExpectedSalaryCard expectedSalary={applicant.expected_salary} salaryCurrency={applicant.salary_currency} />
+          <ApplicantExpectedSalaryCard
+            expectedSalary={applicant.expected_salary}
+            salaryCurrency={applicant.salary_currency}
+          />
         )}
 
         {applicant.skills && applicant.skills.length > 0 && (
           <ApplicantSkillsSection skills={applicant.skills} />
         )}
 
-        {applicant.resume_url && <ApplicantResumeCard applicantId={applicant.id} />}
+        {applicant.resume_url && (
+          <ApplicantResumeCard applicantId={applicant.id} />
+        )}
 
         {applicant.notes && <ApplicantNotesCard notes={applicant.notes} />}
 
