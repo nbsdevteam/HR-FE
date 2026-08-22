@@ -1,6 +1,6 @@
 # Code Rules
 
-1. No `.tsx` file should exceed 300 lines of code. If it does, break it down into smaller components and call them inside that file.
+1. No `.tsx` file should exceed 300 lines of code. If it does, break it down into smaller components and call them inside that file. Run `npm run size-check` to list any file over the limit.
 
 2. In each file you write or rewrite, order hooks as: `useState` → custom hooks → `useRef` → `useMemo` → `useCallback` → `useEffect`.
 
@@ -15,3 +15,5 @@
 7. Declare every component as `const ComponentName = (...) => { ... };` (arrow function, no inline `export`), and add `export default ComponentName;` as the last line of the file. Non-component named exports (types, constants, helpers) keep their normal `export`/`export const`.
 
 8. Whenever you write or touch a file, remove any unused imports in it.
+
+9. Before adding a new local Button, Modal, Table, KanbanColumn, or stat-tile component, check `src/shared/components/` first — a generic version likely already exists there (`Button`, `Modal`, `DataTable`, `KanbanColumn`, `StatCard`, `ConfirmDeleteModal`, `ModalHeader`, `ModalFooterActions`). Only build a local one-off if the shared component genuinely can't represent the needed shape.
