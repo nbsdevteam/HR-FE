@@ -11,12 +11,13 @@ import CustomBarChart from "@/shared/components/custom-bar-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
+import type { DashboardSectionData } from "../hooks/useDashboardData";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardStatGrid from "./DashboardStatGrid";
 
 type DashboardWorkforceSectionProps = {
-  data: any;
+  data: DashboardSectionData;
 };
 
 const DashboardWorkforceSection = ({

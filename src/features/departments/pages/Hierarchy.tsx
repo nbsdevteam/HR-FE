@@ -1,25 +1,16 @@
-import { motion, AnimatePresence } from "motion/react";
+import { lazy, Suspense } from "react";
+import { AnimatePresence } from "motion/react";
 import { AlertTriangle, Loader2, UserCheck } from "lucide-react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import HierarchyHeader from "../components/HierarchyHeader";
+import HierarchyModals from "../components/HierarchyModals";
 import HierarchyTreeSection from "../components/HierarchyTreeSection";
 import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
 import SearchCountToast from "../components/SearchCountToast";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
-import { lazy, Suspense } from "react";
+
 const PositionsView = lazy(() => import("../components/PositionsView"));
-const SetupHierarchyModal = lazy(
-  () => import("../components/SetupHierarchyModal"),
-);
-const CleanupDuplicatesModal = lazy(
-  () => import("../components/CleanupDuplicatesModal"),
-);
-const UnlinkedPanel = lazy(() => import("../components/UnlinkedPanel"));
-const EditEmployeeModal = lazy(() => import("../components/EditEmployeeModal"));
-const AddEmployeeModal = lazy(() => import("../components/AddEmployeeModal"));
-const DetailPanel = lazy(() => import("../components/DetailPanel"));
 
 const Hierarchy = () => {
   const {
@@ -213,106 +204,40 @@ const Hierarchy = () => {
           />
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {selectedNode && !deleteTarget && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-            onClick={handleCloseSelectedNode}
-          >
-            <button onClick={(e) => e.stopPropagation()}>
-              <Suspense fallback={null}>
-                <DetailPanel
-                  node={selectedNode}
-                  orgTree={orgTree}
-                  onClose={handleCloseSelectedNode}
-                  onAddChild={handleDetailAddChild}
-                  onDelete={handleDetailDelete}
-                  onEdit={handleDetailEdit}
-                />
-              </Suspense>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showAddModal && (
-          <Suspense fallback={null}>
-            <AddEmployeeModal
-              allNodes={allNodes}
-              departments={departments}
-              departmentColors={deptColors}
-              preselectedManagerId={addModalManagerId}
-              onAdd={handleAddEmployee}
-              onClose={handleCloseAddModal}
-              onAddDepartment={handleAddDepartment}
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {deleteTarget && (
-          <DeleteConfirmModal
-            node={deleteTarget}
-            orgTree={orgTree}
-            onDelete={handleDeleteEmployee}
-            onClose={handleCloseDeleteModal}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {editTarget && (
-          <Suspense fallback={null}>
-            <EditEmployeeModal
-              node={editTarget}
-              allNodes={allNodes}
-              departments={departments}
-              onSave={handleEditEmployee}
-              onClose={handleCloseEditModal}
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showUnlinked && unlinkedEmps.length > 0 && (
-          <Suspense fallback={null}>
-            <UnlinkedPanel
-              employees={unlinkedEmps}
-              allNodes={allNodes}
-              onLink={handleLinkEmployee}
-              onClose={handleCloseUnlinkedPanel}
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSetupModal && (
-          <Suspense fallback={null}>
-            <SetupHierarchyModal
-              dbEmployees={dbEmployees}
-              saving={saving}
-              onClose={handleCloseSetupModal}
-              onSetup={handleSetupHierarchy}
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showCleanupModal && (
-          <Suspense fallback={null}>
-            <CleanupDuplicatesModal
-              dbEmployees={dbEmployees}
-              saving={saving}
-              onClose={handleCloseCleanupModal}
-              onCleanup={handleCleanupDuplicates}
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
+      <HierarchyModals
+        dbEmployees={dbEmployees}
+        orgTree={orgTree}
+        allNodes={allNodes}
+        departments={departments}
+        deptColors={deptColors}
+        unlinkedEmps={unlinkedEmps}
+        saving={saving}
+        selectedNode={selectedNode}
+        showAddModal={showAddModal}
+        addModalManagerId={addModalManagerId}
+        deleteTarget={deleteTarget}
+        editTarget={editTarget}
+        showUnlinked={showUnlinked}
+        showSetupModal={showSetupModal}
+        showCleanupModal={showCleanupModal}
+        onAddEmployee={handleAddEmployee}
+        onDeleteEmployee={handleDeleteEmployee}
+        onEditEmployee={handleEditEmployee}
+        onLinkEmployee={handleLinkEmployee}
+        onAddDepartment={handleAddDepartment}
+        onSetupHierarchy={handleSetupHierarchy}
+        onCleanupDuplicates={handleCleanupDuplicates}
+        onCloseSelectedNode={handleCloseSelectedNode}
+        onCloseAddModal={handleCloseAddModal}
+        onCloseDeleteModal={handleCloseDeleteModal}
+        onCloseEditModal={handleCloseEditModal}
+        onCloseUnlinkedPanel={handleCloseUnlinkedPanel}
+        onCloseSetupModal={handleCloseSetupModal}
+        onCloseCleanupModal={handleCloseCleanupModal}
+        onDetailAddChild={handleDetailAddChild}
+        onDetailDelete={handleDetailDelete}
+        onDetailEdit={handleDetailEdit}
+      />
     </div>
   );
 };

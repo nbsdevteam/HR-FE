@@ -4,6 +4,7 @@ import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
 import { useDashboardComplianceData } from "../hooks/useDashboardComplianceData";
+import type { DashboardSectionData } from "../hooks/useDashboardData";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
@@ -11,7 +12,7 @@ import DashboardRatingLevelBar from "./DashboardRatingLevelBar";
 import { pct } from "../utils/dashboardFormat";
 
 type DashboardComplianceSectionProps = {
-  data: any;
+  data: DashboardSectionData;
 };
 
 const DashboardComplianceSection = ({

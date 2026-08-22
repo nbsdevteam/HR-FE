@@ -1,4 +1,5 @@
 import { useDashboardOverviewData } from "../hooks/useDashboardOverviewData";
+import type { DashboardSectionData } from "../hooks/useDashboardData";
 import DashboardStatGrid from "./DashboardStatGrid";
 import DashboardAlertBanner from "./DashboardAlertBanner";
 import DashboardDepartmentChart from "./DashboardDepartmentChart";
@@ -10,7 +11,7 @@ import DashboardRiskScorecard from "./DashboardRiskScorecard";
 import DashboardNotificationsPanel from "./DashboardNotificationsPanel";
 
 type DashboardOverviewSectionProps = {
-  data: any;
+  data: DashboardSectionData;
 };
 
 const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {

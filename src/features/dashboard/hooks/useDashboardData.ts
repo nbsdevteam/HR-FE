@@ -124,3 +124,7 @@ export const useDashboardData = () => {
     unreadCount,
   };
 };
+
+export type DashboardSectionData = ReturnType<
+  typeof useDashboardData
+>["dashboardSectionData"];

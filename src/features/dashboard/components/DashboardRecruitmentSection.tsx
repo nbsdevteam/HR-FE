@@ -4,13 +4,14 @@ import CustomLineChart from "@/shared/components/custom-line-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import LabeledMetricRow from "@/shared/components/LabeledMetricRow";
 import { arabicSource } from "@/i18n/source";
+import type { DashboardSectionData } from "../hooks/useDashboardData";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardSectionStatCard from "./DashboardSectionStatCard";
 import RecruitmentFunnelStageRow from "./RecruitmentFunnelStageRow";
 import { pct } from "../utils/dashboardFormat";
 
 type DashboardRecruitmentSectionProps = {
-  data: any;
+  data: DashboardSectionData;
 };
 
 const DashboardRecruitmentSection = ({ data }: DashboardRecruitmentSectionProps) => {

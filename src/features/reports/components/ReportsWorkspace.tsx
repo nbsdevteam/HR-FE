@@ -16,11 +16,6 @@ import {
   useContractTypes,
   useEmployeeDocuments,
   useDocumentTypes,
-  useLoans,
-  useAllowanceTypes,
-  useEmployeeAllowances,
-  useDeductionTypes,
-  useEmployeeDeductions,
   type DbReportTemplate,
 } from "@/shared/hooks";
 import type { ReportSortBy, ReportSortDir, ReportViewMode } from "../types";
@@ -65,11 +60,6 @@ const ReportsWorkspace = () => {
   const { types: contractTypes } = useContractTypes();
   const { documents: empDocuments } = useEmployeeDocuments();
   const { types: documentTypes } = useDocumentTypes();
-  useLoans();
-  useAllowanceTypes();
-  useEmployeeAllowances();
-  useDeductionTypes();
-  useEmployeeDeductions();
   const { empMap, empDeptMap } = useEmployeeLookups(employees);
   const {
     generatedData,
