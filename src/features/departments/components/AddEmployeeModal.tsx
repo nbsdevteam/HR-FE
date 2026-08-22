@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ModalFooterActions, ModalHeader, ModalOverlay, NodeAvatar } from "@/shared/components";
+import { Modal, ModalFooterActions, NodeAvatar } from "@/shared/components";
 import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -47,7 +47,7 @@ const AddEmployeeModal = ({
   };
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
@@ -57,15 +57,18 @@ const AddEmployeeModal = ({
         exit: { opacity: 0, scale: 0.92, y: 20 },
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
-    >
-        <ModalHeader
-          icon={UserPlus}
-          title={arabicSource("common.add_a_new_employee")}
-          subtitle={arabicSource("hierarchy.will_be_added_to_the_organizational_structure_and_database")}
-          onClose={onClose}
+      icon={UserPlus}
+      title={arabicSource("common.add_a_new_employee")}
+      subtitle={arabicSource("hierarchy.will_be_added_to_the_organizational_structure_and_database")}
+      footer={
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={handleSubmit}
+          confirmLabel={arabicSource("hierarchy.addition_to_the_structure")}
+          confirmIcon={UserPlus}
         />
-
-        <div className="p-6 space-y-4">
+      }
+    >
           <LabeledTextField
             icon={UserCheck}
             label={arabicSource("common.employee_name")}
@@ -141,15 +144,7 @@ const AddEmployeeModal = ({
               </div>
             )}
           </div>
-        </div>
-
-        <ModalFooterActions
-          onCancel={onClose}
-          onConfirm={handleSubmit}
-          confirmLabel={arabicSource("hierarchy.addition_to_the_structure")}
-          confirmIcon={UserPlus}
-        />
-    </ModalOverlay>
+    </Modal>
   );
 
 };

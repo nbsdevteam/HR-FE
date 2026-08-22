@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { Modal, SelectField } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
@@ -111,19 +111,16 @@ const JobFormModal = ({
   }, []);
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[80vh] overflow-y-auto"
+      title={
+        isEdit
+          ? arabicSource("recruitment.edit_vacancy")
+          : arabicSource("common.new_vacancy")
+      }
+      bodyClassName="space-y-4"
     >
-      <ModalHeader
-        title={
-          isEdit
-            ? arabicSource("recruitment.edit_vacancy")
-            : arabicSource("common.new_vacancy")
-        }
-        onClose={onClose}
-      />
-      <div className="space-y-4">
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.job_title")}
@@ -271,8 +268,7 @@ const JobFormModal = ({
             {arabicSource("common.cancel")}
           </button>
         </div>
-      </div>
-    </ModalOverlay>
+    </Modal>
   );
 };
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, Link2 } from "lucide-react";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { Modal } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -22,7 +22,7 @@ const UnlinkedPanel = ({
   >({});
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg mx-4 max-h-[80vh] flex flex-col"
@@ -30,20 +30,17 @@ const UnlinkedPanel = ({
         initial: { opacity: 0, scale: 0.92, y: 20 },
         animate: { opacity: 1, scale: 1, y: 0 },
       }}
+      icon={AlertTriangle}
+      title={arabicSource("hierarchy.employees_without_attachment")}
+      subtitle={arabicSource(
+        "hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di",
+      )}
+      headerClassName="bg-amber-500/10"
+      iconBadgeClassName="bg-amber-500/20"
+      iconColorClassName="text-amber-500"
+      headerWrapperClassName="shrink-0"
+      bodyClassName="p-4 space-y-3 overflow-y-auto flex-1"
     >
-      <ModalHeader
-        icon={AlertTriangle}
-        title={arabicSource("hierarchy.employees_without_attachment")}
-        subtitle={arabicSource(
-          "hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di",
-        )}
-        onClose={onClose}
-        headerClassName="bg-amber-500/10"
-        iconBadgeClassName="bg-amber-500/20"
-        iconColorClassName="text-amber-500"
-        wrapperClassName="shrink-0"
-      />
-      <div className="p-4 space-y-3 overflow-y-auto flex-1">
         {employees.map((emp) => {
           const name = empDisplayName(emp);
           return (
@@ -114,8 +111,7 @@ const UnlinkedPanel = ({
             </div>
           );
         })}
-      </div>
-    </ModalOverlay>
+    </Modal>
   );
 };
 

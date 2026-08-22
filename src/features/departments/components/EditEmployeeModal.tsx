@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Briefcase, Building2, Edit2, UserCheck, Users } from "lucide-react";
 import {
+  Modal,
   ModalFooterActions,
-  ModalHeader,
-  ModalOverlay,
   NodeAvatar,
 } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
@@ -112,7 +111,7 @@ const EditEmployeeModal = ({
   }, [node.id, allNodes]);
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
@@ -122,17 +121,22 @@ const EditEmployeeModal = ({
         exit: { opacity: 0, scale: 0.92, y: 20 },
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
+      icon={Edit2}
+      title={arabicSource("hierarchy.modifying_employee_data")}
+      subtitle={arabicSource("hierarchy.update_employee_information")}
+      headerClassName="bg-blue-500/10"
+      iconBadgeClassName="bg-blue-500/20"
+      iconColorClassName="text-blue-400"
+      footer={
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={handleSubmit}
+          confirmLabel={arabicSource("common.save_changes")}
+          confirmIcon={Edit2}
+          confirmClassName="bg-blue-500 text-white hover:bg-blue-500/90"
+        />
+      }
     >
-      <ModalHeader
-        icon={Edit2}
-        title={arabicSource("hierarchy.modifying_employee_data")}
-        subtitle={arabicSource("hierarchy.update_employee_information")}
-        onClose={onClose}
-        headerClassName="bg-blue-500/10"
-        iconBadgeClassName="bg-blue-500/20"
-        iconColorClassName="text-blue-400"
-      />
-      <div className="p-6 space-y-4">
         <LabeledTextField
           icon={UserCheck}
           label={arabicSource("common.employee_name")}
@@ -230,15 +234,7 @@ const EditEmployeeModal = ({
             </div>
           )}
         </div>
-      </div>
-      <ModalFooterActions
-        onCancel={onClose}
-        onConfirm={handleSubmit}
-        confirmLabel={arabicSource("common.save_changes")}
-        confirmIcon={Edit2}
-        confirmClassName="bg-blue-500 text-white hover:bg-blue-500/90"
-      />
-    </ModalOverlay>
+    </Modal>
   );
 };
 

@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { ModalFooterActions, ModalHeader, ModalOverlay } from "@/shared/components";
+import { Modal, ModalFooterActions } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import ChecklistItem from "./ChecklistItem";
@@ -17,7 +17,7 @@ const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: Cle
   const cooCount = dbEmployees.filter(e => e.position === "COO" && e.department === arabicSource("common.senior_management")).length;
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
@@ -27,18 +27,25 @@ const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: Cle
         exit: { opacity: 0, scale: 0.92, y: 20 },
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
-    >
-        <ModalHeader
-          icon={Trash2}
-          title={arabicSource("common.clean_up_duplicates")}
-          subtitle={arabicSource("hierarchy.delete_duplicate_entries_owner_ceo_coo")}
-          onClose={onClose}
-          headerClassName="bg-red-500/10"
-          iconBadgeClassName="bg-red-500/20"
-          iconColorClassName="text-red-400"
+      icon={Trash2}
+      title={arabicSource("common.clean_up_duplicates")}
+      subtitle={arabicSource("hierarchy.delete_duplicate_entries_owner_ceo_coo")}
+      headerClassName="bg-red-500/10"
+      iconBadgeClassName="bg-red-500/20"
+      iconColorClassName="text-red-400"
+      footer={
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={onCleanup}
+          confirmLabel={arabicSource("common.clean_up_duplicates")}
+          confirmIcon={Trash2}
+          confirmClassName="bg-red-500/90 hover:bg-red-500 text-white"
+          disabled={saving}
+          loading={saving}
+          loadingLabel={arabicSource("hierarchy.cleaning_in_progress")}
         />
-
-        <div className="p-6 space-y-4">
+      }
+    >
           <div className="bg-muted/20 border border-border/40 rounded-xl p-4 space-y-2">
             <p className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("hierarchy.the_system_will")}</p>
             <div className="space-y-1.5">
@@ -68,19 +75,7 @@ const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: Cle
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
             <p className="text-red-400" style={{ fontSize: 12 }}>{arabicSource("hierarchy.warning_this_action_cannot_be_undone_duplicate_entries_will_be_p")}</p>
           </div>
-        </div>
-
-        <ModalFooterActions
-          onCancel={onClose}
-          onConfirm={onCleanup}
-          confirmLabel={arabicSource("common.clean_up_duplicates")}
-          confirmIcon={Trash2}
-          confirmClassName="bg-red-500/90 hover:bg-red-500 text-white"
-          disabled={saving}
-          loading={saving}
-          loadingLabel={arabicSource("hierarchy.cleaning_in_progress")}
-        />
-    </ModalOverlay>
+    </Modal>
   );
 };
 

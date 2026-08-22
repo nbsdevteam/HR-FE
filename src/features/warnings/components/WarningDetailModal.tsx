@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { CheckCircle, Trash2, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { Modal } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import WarningDetailRow from "./WarningDetailRow";
 
@@ -27,12 +27,55 @@ const WarningDetailModal = ({
   onEnd,
   onDelete,
 }: TWarningDetailModalProps) => (
-  <ModalOverlay onClose={onClose}>
-    <ModalHeader
-      title={arabicSource("warnings.alarm_details")}
-      onClose={onClose}
-    />
-    <div className="space-y-3">
+  <Modal
+    onClose={onClose}
+    contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
+    title={arabicSource("warnings.alarm_details")}
+    bodyClassName="space-y-3"
+    footer={
+      <div className="flex gap-2 mt-6 pt-6 border-t border-border/20">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onEdit}
+          className="flex-1 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
+        >
+          {arabicSource("common.edit")}
+        </motion.button>
+        {warning.status !== arabicSource("common.is_active") && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onActivate}
+            className="flex-1 py-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4" />
+            {arabicSource("common.activate")}
+          </motion.button>
+        )}
+        {warning.status !== arabicSource("common.finished") && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onEnd}
+            className="flex-1 py-2 rounded-lg bg-muted/30 text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-center gap-2"
+          >
+            <XCircle className="w-4 h-4" />
+            {arabicSource("common.end")}
+          </motion.button>
+        )}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onDelete}
+          className="flex-1 py-2 rounded-lg bg-red-900/20 text-red-400 hover:bg-red-900/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
+        >
+          <Trash2 className="w-4 h-4" />
+          {arabicSource("common.delete")}
+        </motion.button>
+      </div>
+    }
+  >
       <WarningDetailRow label={arabicSource("warnings.employee")}>
         <span className="text-foreground">{warning.employeeName}</span>
       </WarningDetailRow>
@@ -78,50 +121,7 @@ const WarningDetailModal = ({
           {warning.status}
         </span>
       </WarningDetailRow>
-    </div>
-
-    <div className="flex gap-2 mt-6 pt-6 border-t border-border/20">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onEdit}
-        className="flex-1 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
-      >
-        {arabicSource("common.edit")}
-      </motion.button>
-      {warning.status !== arabicSource("common.is_active") && (
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onActivate}
-          className="flex-1 py-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
-        >
-          <CheckCircle className="w-4 h-4" />
-          {arabicSource("common.activate")}
-        </motion.button>
-      )}
-      {warning.status !== arabicSource("common.finished") && (
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onEnd}
-          className="flex-1 py-2 rounded-lg bg-muted/30 text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-center gap-2"
-        >
-          <XCircle className="w-4 h-4" />
-          {arabicSource("common.end")}
-        </motion.button>
-      )}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onDelete}
-        className="flex-1 py-2 rounded-lg bg-red-900/20 text-red-400 hover:bg-red-900/30 transition-colors cursor-pointer flex items-center justify-center gap-2"
-      >
-        <Trash2 className="w-4 h-4" />
-        {arabicSource("common.delete")}
-      </motion.button>
-    </div>
-  </ModalOverlay>
+  </Modal>
 );
 
 export default memo(WarningDetailModal);

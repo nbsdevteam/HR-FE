@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { EmployeeSelect } from "@/features/employees";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, SelectField } from "@/shared/components";
+import { Modal, SelectField } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
@@ -30,16 +30,16 @@ const WarningFormModal = ({
   onSubmit,
   onClose,
 }: TWarningFormModalProps) => (
-  <ModalOverlay onClose={onClose}>
-    <ModalHeader
-      title={
-        isEditing
-          ? arabicSource("warnings.alarm_adjustment")
-          : arabicSource("warnings.new_alarm_issued")
-      }
-      onClose={onClose}
-    />
-
+  <Modal
+    onClose={onClose}
+    contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
+    title={
+      isEditing
+        ? arabicSource("warnings.alarm_adjustment")
+        : arabicSource("warnings.new_alarm_issued")
+    }
+    bodyClassName=""
+  >
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label
@@ -147,7 +147,7 @@ const WarningFormModal = ({
         </motion.button>
       </div>
     </form>
-  </ModalOverlay>
+  </Modal>
 );
 
 export default memo(WarningFormModal);

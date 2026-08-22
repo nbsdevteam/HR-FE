@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Briefcase, Save } from "lucide-react";
-import { ModalFooterActions, ModalHeader, ModalOverlay } from "@/shared/components";
+import { Modal, ModalFooterActions } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
 import type { PositionNode } from "../types";
@@ -25,7 +25,7 @@ type PositionFormModalProps = {
 };
 
 const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments, onClose, onConfirm, saving }: PositionFormModalProps) => (
-  <ModalOverlay
+  <Modal
     onClose={onClose}
     overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
     contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
@@ -34,14 +34,19 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
       animate: { opacity: 1, scale: 1, y: 0 },
       exit: { opacity: 0, scale: 0.92, y: 20 },
     }}
+    icon={Briefcase}
+    title={editingPosition ? arabicSource("hierarchy.edit_position") : arabicSource("hierarchy.add_a_new_position")}
+    footer={
+      <ModalFooterActions
+        onCancel={onClose}
+        onConfirm={onConfirm}
+        confirmLabel={editingPosition ? arabicSource("common.save_changes") : arabicSource("hierarchy.create_position")}
+        confirmIcon={Save}
+        disabled={saving || !posForm.title_ar.trim()}
+        loading={saving}
+      />
+    }
   >
-    <ModalHeader
-      icon={Briefcase}
-      title={editingPosition ? arabicSource("hierarchy.edit_position") : arabicSource("hierarchy.add_a_new_position")}
-      onClose={onClose}
-    />
-
-    <div className="p-6 space-y-4">
       <div>
         <FieldLabel>{arabicSource("hierarchy.job_title_arabic")}</FieldLabel>
         <input type="text" value={posForm.title_ar} onChange={e => setPosForm(p => ({ ...p, title_ar: e.target.value }))}
@@ -79,17 +84,7 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground resize-none focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} />
       </div>
-    </div>
-
-    <ModalFooterActions
-      onCancel={onClose}
-      onConfirm={onConfirm}
-      confirmLabel={editingPosition ? arabicSource("common.save_changes") : arabicSource("hierarchy.create_position")}
-      confirmIcon={Save}
-      disabled={saving || !posForm.title_ar.trim()}
-      loading={saving}
-    />
-  </ModalOverlay>
+  </Modal>
 );
 
 export default PositionFormModal;

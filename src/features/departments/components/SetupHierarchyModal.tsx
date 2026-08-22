@@ -1,5 +1,5 @@
 import { Briefcase, Crown } from "lucide-react";
-import { ModalFooterActions, ModalHeader, ModalOverlay } from "@/shared/components";
+import { Modal, ModalFooterActions } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import OrgPreviewNode from "./OrgPreviewNode";
@@ -16,7 +16,7 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
   const rootEmployeeCount = dbEmployees.filter(e => !e.manager_id).length;
 
   return (
-    <ModalOverlay
+    <Modal
       onClose={onClose}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl overflow-hidden w-full max-w-md mx-4"
@@ -26,20 +26,28 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
         exit: { opacity: 0, scale: 0.92, y: 20 },
         transition: { type: "spring", stiffness: 400, damping: 30 },
       }}
-    >
-        <ModalHeader
-          icon={Crown}
-          title={arabicSource("hierarchy.preparing_the_organizational_structure")}
-          subtitle={arabicSource("hierarchy.create_a_structure_owner_ceo_coo")}
-          onClose={onClose}
-          headerClassName=""
-          headerStyle={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}
-          iconBadgeClassName=""
-          iconBadgeStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
-          iconColorClassName="text-white"
+      icon={Crown}
+      title={arabicSource("hierarchy.preparing_the_organizational_structure")}
+      subtitle={arabicSource("hierarchy.create_a_structure_owner_ceo_coo")}
+      headerClassName=""
+      headerStyle={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}
+      iconBadgeClassName=""
+      iconBadgeStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
+      iconColorClassName="text-white"
+      footer={
+        <ModalFooterActions
+          onCancel={onClose}
+          onConfirm={onSetup}
+          confirmLabel={arabicSource("common.chassis_initialization")}
+          confirmIcon={Crown}
+          confirmClassName="text-black"
+          confirmStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
+          disabled={saving}
+          loading={saving}
+          loadingLabel={arabicSource("hierarchy.initializing")}
         />
-
-        <div className="p-6 space-y-4">
+      }
+    >
           <div className="bg-muted/20 border border-border/40 rounded-xl p-4">
             <div className="flex flex-col items-center gap-3">
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-yellow-400/60" style={{ background: "linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))" }}>
@@ -85,20 +93,7 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
           <p className="text-muted-foreground" style={{ fontSize: 11 }}>
             {arabicSource("hierarchy.you_can_modify_the_names_and_data_later_by_clicking_on_the_card")}
           </p>
-        </div>
-
-        <ModalFooterActions
-          onCancel={onClose}
-          onConfirm={onSetup}
-          confirmLabel={arabicSource("common.chassis_initialization")}
-          confirmIcon={Crown}
-          confirmClassName="text-black"
-          confirmStyle={{ background: "linear-gradient(135deg, #FFD700, #FFA500)" }}
-          disabled={saving}
-          loading={saving}
-          loadingLabel={arabicSource("hierarchy.initializing")}
-        />
-    </ModalOverlay>
+    </Modal>
   );
 };
 
