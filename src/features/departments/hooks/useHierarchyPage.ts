@@ -1,180 +1,35 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useHierarchyData, usePositions } from "@/shared/hooks";
-import * as odooData from "@/shared/api/odooData";
-import { arabicSource } from "@/i18n/source";
-import type { OrgNode } from "../types";
-import { defaultDeptColorMap } from "../styles";
-import type { PositionFormState } from "../components/PositionFormModal";
-import {
-  buildOrgTree,
-  buildOrgTreeFromPositions,
-  findAncestorIds,
-  flattenTree,
-  getUnlinkedEmployees,
-} from "../utils/hierarchyTree";
+import { useState, useRef, useEffect } from "react";
+import { useAddPositionForm } from "./useAddPositionForm";
 import { useHierarchyCrud } from "./useHierarchyCrud";
 import { useHierarchyExport } from "./useHierarchyExport";
+import { useHierarchyModals } from "./useHierarchyModals";
 import { useHierarchyPanZoom } from "./useHierarchyPanZoom";
-import { EMPTY_POSITION_FORM } from "./usePositionsView";
+import { useHierarchyTreeData } from "./useHierarchyTreeData";
+import { useHierarchyView } from "./useHierarchyView";
 
+const TOAST_TIMEOUT_MS = 3000;
+
+/**
+ * Composition root for the hierarchy page. Every concern lives in a focused
+ * hook next to this one — this file only wires them together and exposes the
+ * flat shape the page's components consume.
+ */
 export const useHierarchyPage = () => {
-  const [viewMode, setViewMode] = useState<"tree" | "positions">("tree");
-  const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
-  const [selectedNode, setSelectedNode] = useState<OrgNode | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
-
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addModalManagerId, setAddModalManagerId] = useState<number | null>(
-    null,
-  );
-  const [deleteTarget, setDeleteTarget] = useState<OrgNode | null>(null);
-  const [editTarget, setEditTarget] = useState<OrgNode | null>(null);
-  const [showUnlinked, setShowUnlinked] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showSetupModal, setShowSetupModal] = useState(false);
-  const [showCleanupModal, setShowCleanupModal] = useState(false);
-  const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
-  const [showAddPositionModal, setShowAddPositionModal] = useState(false);
-  const [positionSaving, setPositionSaving] = useState(false);
-  const [posForm, setPosForm] = useState<PositionFormState>(
-    EMPTY_POSITION_FORM,
-  );
-
   const [toast, setToast] = useState<string | null>(null);
 
-  const {
-    employees: dbEmployees,
-    departments: dbDepartments,
-    loading: dbLoading,
-    refetch,
-  } = useHierarchyData();
-  const {
-    positions: dbPositions,
-    loading: positionsLoading,
-    refetch: refetchPositions,
-  } = usePositions();
-  const {
-    containerRef,
-    zoom,
-    isDragging,
-    panEnabled,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleTogglePan,
-    handleZoomOut,
-    handleZoomIn,
-    handleResetZoom,
-  } = useHierarchyPanZoom();
-
-  const chartContentRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Build tree from POSITIONS (single source of truth)
-  const { tree: orgTree, deptColors } = useMemo(() => {
-    // If positions exist, use position-based tree
-    if (dbPositions.length > 0) {
-      return buildOrgTreeFromPositions(dbPositions, dbEmployees, dbDepartments);
-    }
-    // Fallback to legacy manager_id tree for backward compatibility
-    if (dbEmployees.length === 0)
-      return {
-        tree: {
-          id: 0,
-          dbId: "__root__",
-          name: arabicSource("common.foundation"),
-          initials: arabicSource("common.m"),
-          position: arabicSource("common.senior_management"),
-          department: arabicSource("common.senior_management"),
-          color: "#8B5CF6",
-          photo: null,
-          email: null,
-          children: [],
-        } as OrgNode,
-        deptColors: defaultDeptColorMap,
-      };
-    return buildOrgTree(dbEmployees, dbDepartments);
-  }, [dbEmployees, dbDepartments, dbPositions]);
-
-  const unlinkedEmps = useMemo(
-    () => getUnlinkedEmployees(dbEmployees),
-    [dbEmployees],
-  );
-
-  const allNodes = useMemo(() => flattenTree(orgTree), [orgTree]);
-  const departments = useMemo(() => {
-    const s = new Set<string>();
-    allNodes.forEach((n) => s.add(n.department));
-    dbDepartments.forEach((d) => s.add(d.name));
-    return Array.from(s);
-  }, [allNodes, dbDepartments]);
-
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.trim().toLowerCase();
-    return allNodes.filter(
-      (n) =>
-        n.name.includes(q) ||
-        n.position.includes(q) ||
-        n.department.includes(q),
-    );
-  }, [searchQuery, allNodes]);
-
-  const { searchMatchIds, highlightedIds } = useMemo(() => {
-    const matchIds = new Set<number>();
-    const ancestorIds = new Set<number>();
-    if (focusedNodeId) {
-      matchIds.add(focusedNodeId);
-      findAncestorIds(orgTree, focusedNodeId).forEach((id) =>
-        ancestorIds.add(id),
-      );
-    } else if (searchQuery.trim() && searchResults.length > 0) {
-      searchResults.forEach((n) => {
-        matchIds.add(n.id);
-        findAncestorIds(orgTree, n.id).forEach((id) => ancestorIds.add(id));
-      });
-    }
-    return { searchMatchIds: matchIds, highlightedIds: ancestorIds };
-  }, [searchQuery, searchResults, focusedNodeId, orgTree]);
-
-  // Live stats from tree
-  const departmentStats = useMemo(() => {
-    const c: Record<string, number> = {};
-    allNodes
-      .filter((n) => n.dbId !== "__root__")
-      .forEach((n) => {
-        c[n.department] = (c[n.department] || 0) + 1;
-      });
-    return Object.entries(c).map(([name, count]) => ({ name, count }));
-  }, [allNodes]);
-
-  const toggleExpand = useCallback((id: number) => {
-    setExpandedMap((p) => ({ ...p, [id]: !p[id] }));
-  }, []);
-
-  const expandAll = useCallback(() => {
-    const a: Record<number, boolean> = {};
-    function walk(n: OrgNode) {
-      a[n.id] = true;
-      n.children.forEach(walk);
-    }
-    walk(orgTree);
-    setExpandedMap(a);
-  }, [orgTree]);
-
-  const collapseAll = useCallback(() => {
-    const a: Record<number, boolean> = {};
-    function walk(n: OrgNode) {
-      a[n.id] = false;
-      n.children.forEach(walk);
-    }
-    walk(orgTree);
-    a[orgTree.id] = true;
-    setExpandedMap(a);
-  }, [orgTree]);
-
+  const treeData = useHierarchyTreeData();
+  const panZoom = useHierarchyPanZoom();
+  const view = useHierarchyView({
+    orgTree: treeData.orgTree,
+    allNodes: treeData.allNodes,
+    containerRef: panZoom.containerRef,
+  });
+  const modals = useHierarchyModals();
+  const positionForm = useAddPositionForm({
+    refetchPositions: treeData.refetchPositions,
+    setToast,
+  });
   const {
     handleAddEmployee,
     handleDeleteEmployee,
@@ -184,229 +39,74 @@ export const useHierarchyPage = () => {
     handleSetupHierarchy,
     handleCleanupDuplicates,
   } = useHierarchyCrud(
-    dbEmployees,
-    dbDepartments,
-    dbPositions,
-    orgTree,
-    refetch,
+    treeData.dbEmployees,
+    treeData.dbDepartments,
+    treeData.dbPositions,
+    treeData.orgTree,
+    treeData.refetch,
     setSaving,
     setToast,
-    setDeleteTarget,
-    setSelectedNode,
-    setEditTarget,
-    setShowSetupModal,
-    setShowCleanupModal,
+    modals.setDeleteTarget,
+    modals.setSelectedNode,
+    modals.setEditTarget,
+    modals.setShowSetupModal,
+    modals.setShowCleanupModal,
   );
+  const { chartContentRef, handlePrint, handleExportPNG } =
+    useHierarchyExport();
 
-  const openAddModal = useCallback((managerId?: number) => {
-    setAddModalManagerId(managerId ?? null);
-    setShowAddModal(true);
-  }, []);
-
-  const openAddDepartmentModal = useCallback(() => {
-    setShowAddDepartmentModal(true);
-  }, []);
-
-  const openAddPositionModal = useCallback(() => {
-    setPosForm(EMPTY_POSITION_FORM);
-    setShowAddPositionModal(true);
-  }, []);
-
-  const closeAddPositionModal = useCallback(() => {
-    setShowAddPositionModal(false);
-  }, []);
-
-  const handleAddPositionSubmit = useCallback(async () => {
-    if (!posForm.title_ar.trim()) return;
-    setPositionSaving(true);
-    try {
-      await odooData.createDesignation({
-        title_ar: posForm.title_ar.trim(),
-        name: posForm.title_en.trim() || posForm.title_ar.trim(),
-        department_id: posForm.department_id || null,
-        reports_to_job_id: null,
-        max_headcount: parseInt(posForm.max_headcount) || 1,
-        description: posForm.description.trim() || null,
-        level: 0,
-      });
-      setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
-      setShowAddPositionModal(false);
-      setPosForm(EMPTY_POSITION_FORM);
-      await refetchPositions();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
-    }
-    setPositionSaving(false);
-  }, [posForm, refetchPositions]);
-
-  const handleSearchSelect = useCallback((node: OrgNode) => {
-    setFocusedNodeId(node.id);
-    setSearchQuery(node.name);
-    setShowSearchResults(false);
-  }, []);
-  const clearSearch = useCallback(() => {
-    setSearchQuery("");
-    setFocusedNodeId(null);
-    setShowSearchResults(false);
-  }, []);
-
-  const { handlePrint, handleExportPNG } = useHierarchyExport(chartContentRef);
-
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    setShowSearchResults(true);
-    setFocusedNodeId(null);
-  }, []);
-
-  const handleSearchFocus = useCallback(() => {
-    if (searchQuery.trim()) setShowSearchResults(true);
-  }, [searchQuery]);
-
-  const handleShowUnlinked = useCallback(() => setShowUnlinked(true), []);
-
-  const handleCloseSearchResults = useCallback(
-    () => setShowSearchResults(false),
-    [],
-  );
-  const handleSelectNode = useCallback(
-    (node: OrgNode) => setSelectedNode(node),
-    [],
-  );
-  const handleCloseSelectedNode = useCallback(() => setSelectedNode(null), []);
-  const handleCloseAddModal = useCallback(() => {
-    setShowAddModal(false);
-    setAddModalManagerId(null);
-  }, []);
-  const handleCloseDeleteModal = useCallback(() => setDeleteTarget(null), []);
-  const handleCloseEditModal = useCallback(() => setEditTarget(null), []);
-  const handleCloseUnlinkedPanel = useCallback(
-    () => setShowUnlinked(false),
-    [],
-  );
-  const handleCloseSetupModal = useCallback(() => setShowSetupModal(false), []);
-  const handleCloseCleanupModal = useCallback(
-    () => setShowCleanupModal(false),
-    [],
-  );
-  const handleCloseAddDepartmentModal = useCallback(
-    () => setShowAddDepartmentModal(false),
-    [],
-  );
-
-  const handleDetailAddChild = useCallback(
-    (id: number) => {
-      setSelectedNode(null);
-      openAddModal(id);
-    },
-    [openAddModal],
-  );
-
-  const handleDetailDelete = useCallback((node: OrgNode) => {
-    setSelectedNode(null);
-    setDeleteTarget(node);
-  }, []);
-
-  const handleDetailEdit = useCallback((node: OrgNode) => {
-    setSelectedNode(null);
-    setEditTarget(node);
-  }, []);
-
-  const refetchHierarchyAndPositions = useCallback(() => {
-    refetch();
-    refetchPositions();
-  }, [refetch, refetchPositions]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(t);
-    }
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), TOAST_TIMEOUT_MS);
+    return () => clearTimeout(timer);
   }, [toast]);
 
-  useEffect(() => {
-    if (highlightedIds.size > 0 || searchMatchIds.size > 0) {
-      setExpandedMap((prev) => {
-        const next = { ...prev };
-        highlightedIds.forEach((id) => {
-          next[id] = true;
-        });
-        searchMatchIds.forEach((id) => {
-          next[id] = true;
-        });
-        return next;
-      });
-      setTimeout(() => {
-        const first = searchMatchIds.values().next().value;
-        if (first && containerRef.current) {
-          const el = containerRef.current.querySelector(
-            `[data-node-id="${first}"]`,
-          );
-          if (el)
-            el.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-              inline: "center",
-            });
-        }
-      }, 350);
-    }
-  }, [highlightedIds, searchMatchIds]);
-
-  // Initialize expand map when tree changes
-  useEffect(() => {
-    const init: Record<number, boolean> = {};
-    function walk(n: OrgNode, d: number) {
-      init[n.id] = d < 2;
-      n.children.forEach((c) => walk(c, d + 1));
-    }
-    walk(orgTree, 0);
-    setExpandedMap(init);
-  }, [orgTree]);
-
   return {
-    dbEmployees,
-    dbDepartments,
-    dbPositions,
-    dbLoading,
-    positionsLoading,
-    orgTree,
-    deptColors,
-    unlinkedEmps,
-    viewMode,
-    setViewMode,
-    expandedMap,
-    selectedNode,
-    zoom,
-    searchQuery,
-    showSearchResults,
-    containerRef,
+    dbEmployees: treeData.dbEmployees,
+    dbDepartments: treeData.dbDepartments,
+    dbPositions: treeData.dbPositions,
+    dbLoading: treeData.dbLoading,
+    positionsLoading: treeData.positionsLoading,
+    orgTree: treeData.orgTree,
+    deptColors: treeData.deptColors,
+    unlinkedEmps: treeData.unlinkedEmps,
+    viewMode: view.viewMode,
+    setViewMode: view.setViewMode,
+    expandedMap: view.expandedMap,
+    selectedNode: modals.selectedNode,
+    zoom: panZoom.zoom,
+    searchQuery: view.searchQuery,
+    showSearchResults: view.showSearchResults,
+    containerRef: panZoom.containerRef,
     chartContentRef,
     searchInputRef,
-    showAddModal,
-    addModalManagerId,
-    deleteTarget,
-    editTarget,
-    showUnlinked,
+    showAddModal: modals.showAddModal,
+    addModalManagerId: modals.addModalManagerId,
+    deleteTarget: modals.deleteTarget,
+    editTarget: modals.editTarget,
+    showUnlinked: modals.showUnlinked,
     saving,
-    showSetupModal,
-    showCleanupModal,
-    showAddDepartmentModal,
-    showAddPositionModal,
-    positionSaving,
-    posForm,
-    setPosForm,
+    showSetupModal: modals.showSetupModal,
+    showCleanupModal: modals.showCleanupModal,
+    showAddDepartmentModal: modals.showAddDepartmentModal,
+    showAddPositionModal: positionForm.showAddPositionModal,
+    positionSaving: positionForm.positionSaving,
+    posForm: positionForm.posForm,
+    setPosForm: positionForm.setPosForm,
     toast,
-    isDragging,
-    panEnabled,
-    allNodes,
-    departments,
-    searchResults,
-    searchMatchIds,
-    highlightedIds,
-    departmentStats,
-    toggleExpand,
-    expandAll,
-    collapseAll,
+    isDragging: panZoom.isDragging,
+    panEnabled: panZoom.panEnabled,
+    allNodes: treeData.allNodes,
+    departments: treeData.departments,
+    searchResults: view.searchResults,
+    searchMatchIds: view.searchMatchIds,
+    highlightedIds: view.highlightedIds,
+    departmentStats: treeData.departmentStats,
+    toggleExpand: view.toggleExpand,
+    expandAll: view.expandAll,
+    collapseAll: view.collapseAll,
     handleAddEmployee,
     handleDeleteEmployee,
     handleEditEmployee,
@@ -414,38 +114,38 @@ export const useHierarchyPage = () => {
     handleAddDepartment,
     handleSetupHierarchy,
     handleCleanupDuplicates,
-    openAddModal,
-    openAddDepartmentModal,
-    openAddPositionModal,
-    closeAddPositionModal,
-    handleAddPositionSubmit,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleSearchSelect,
-    clearSearch,
+    openAddModal: modals.openAddModal,
+    openAddDepartmentModal: modals.openAddDepartmentModal,
+    openAddPositionModal: positionForm.openAddPositionModal,
+    closeAddPositionModal: positionForm.closeAddPositionModal,
+    handleAddPositionSubmit: positionForm.handleAddPositionSubmit,
+    handleMouseDown: panZoom.handleMouseDown,
+    handleMouseMove: panZoom.handleMouseMove,
+    handleMouseUp: panZoom.handleMouseUp,
+    handleSearchSelect: view.handleSearchSelect,
+    clearSearch: view.clearSearch,
     handlePrint,
     handleExportPNG,
-    handleSearchChange,
-    handleSearchFocus,
-    handleShowUnlinked,
-    handleCloseSearchResults,
-    handleTogglePan,
-    handleZoomOut,
-    handleZoomIn,
-    handleResetZoom,
-    handleSelectNode,
-    handleCloseSelectedNode,
-    handleCloseAddModal,
-    handleCloseDeleteModal,
-    handleCloseEditModal,
-    handleCloseUnlinkedPanel,
-    handleCloseSetupModal,
-    handleCloseCleanupModal,
-    handleCloseAddDepartmentModal,
-    handleDetailAddChild,
-    handleDetailDelete,
-    handleDetailEdit,
-    refetchHierarchyAndPositions,
+    handleSearchChange: view.handleSearchChange,
+    handleSearchFocus: view.handleSearchFocus,
+    handleShowUnlinked: modals.handleShowUnlinked,
+    handleCloseSearchResults: view.handleCloseSearchResults,
+    handleTogglePan: panZoom.handleTogglePan,
+    handleZoomOut: panZoom.handleZoomOut,
+    handleZoomIn: panZoom.handleZoomIn,
+    handleResetZoom: panZoom.handleResetZoom,
+    handleSelectNode: modals.handleSelectNode,
+    handleCloseSelectedNode: modals.handleCloseSelectedNode,
+    handleCloseAddModal: modals.handleCloseAddModal,
+    handleCloseDeleteModal: modals.handleCloseDeleteModal,
+    handleCloseEditModal: modals.handleCloseEditModal,
+    handleCloseUnlinkedPanel: modals.handleCloseUnlinkedPanel,
+    handleCloseSetupModal: modals.handleCloseSetupModal,
+    handleCloseCleanupModal: modals.handleCloseCleanupModal,
+    handleCloseAddDepartmentModal: modals.handleCloseAddDepartmentModal,
+    handleDetailAddChild: modals.handleDetailAddChild,
+    handleDetailDelete: modals.handleDetailDelete,
+    handleDetailEdit: modals.handleDetailEdit,
+    refetchHierarchyAndPositions: treeData.refetchHierarchyAndPositions,
   };
 };

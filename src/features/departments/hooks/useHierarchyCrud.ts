@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
+import type { DbDepartment, DbEmployee, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { findParentOf } from "../utils/hierarchyTree";
@@ -8,9 +9,9 @@ import { useHierarchySetupActions } from "./useHierarchySetupActions";
 
 // ── CRUD handlers — now with Supabase ──
 export const useHierarchyCrud = (
-  dbEmployees: any[],
-  dbDepartments: any[],
-  dbPositions: any[],
+  dbEmployees: DbEmployee[],
+  dbDepartments: DbDepartment[],
+  dbPositions: DbPosition[],
   orgTree: OrgNode,
   refetch: () => Promise<void>,
   setSaving: Dispatch<SetStateAction<boolean>>,
@@ -45,9 +46,9 @@ export const useHierarchyCrud = (
       });
       setToast(`${arabicSource("common.added")}${name}${arabicSource("hierarchy.successfully_completed_the_organizational_structure")}`);
       await refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Add employee error:", err);
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
   }, [refetch, dbDepartments, dbPositions, dbEmployees]);
@@ -81,7 +82,7 @@ export const useHierarchyCrud = (
   const handleEditEmployee = useCallback(async (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => {
     if (dbId === "__root__") return;
     setSaving(true);
-    const odooUpdates: Record<string, any> = {};
+    const odooUpdates: Record<string, string | null> = {};
     if (updates.name !== undefined) {
       odooUpdates.name = updates.name;
       odooUpdates.arabic_name = updates.name;
@@ -101,8 +102,8 @@ export const useHierarchyCrud = (
       setEditTarget(null);
       setSelectedNode(null);
       await refetch();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    } catch (err: unknown) {
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
   }, [refetch, dbDepartments, dbPositions]);
@@ -113,8 +114,8 @@ export const useHierarchyCrud = (
       await odooData.updateEmployee(empDbId, { manager_id: managerDbId });
       setToast(arabicSource("hierarchy.the_employee_has_been_successfully_linked_to_his_manager"));
       await refetch();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    } catch (err: unknown) {
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
   }, [refetch]);
@@ -130,11 +131,11 @@ export const useHierarchyCrud = (
       }
       setToast(arabicSource("hierarchy.the_department_was_added_successfully"));
       await refetch();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    } catch (err: unknown) {
+      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
-  }, [dbDepartments, refetch, setSaving, setToast]);
+  }, [dbDepartments, refetch]);
 
   return {
     handleAddEmployee,

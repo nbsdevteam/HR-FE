@@ -1,50 +1,90 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import type React from "react";
 import { motion } from "motion/react";
 import { Briefcase, Edit2, Plus, Trash2, ChevronDown } from "lucide-react";
-import { empDisplayName } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment } from "@/shared/hooks";
+import type { DbDepartment } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode } from "../types";
-import { NodeAvatar } from "@/shared/components";
+import PositionCardEmployeeRow from "./PositionCardEmployeeRow";
 
-const PositionCard = ({
-  node, depth, departments, employees, deptColors, onDrop, onAddPosition, onDeletePosition, onEditPosition, expandedPositions, togglePositionExpand,
-}: {
-  node: PositionNode; depth: number; departments: DbDepartment[];
-  employees: DbEmployee[]; deptColors: Record<string, string>;
+const FALLBACK_DEPT_COLOR = "#8B5CF6";
+/** Depth at which sub-positions start out collapsed. */
+const INITIAL_EXPANDED_DEPTH = 3;
+
+type PositionCardProps = {
+  node: PositionNode;
+  depth: number;
+  /** Prebuilt id → department lookup, so cards don't scan the list each render. */
+  departmentsById: Map<string, DbDepartment>;
+  deptColors: Record<string, string>;
   onDrop: (employeeId: string, positionId: string) => void;
   onAddPosition: (parentId: string | null) => void;
   onDeletePosition: (posId: string) => void;
   onEditPosition: (pos: PositionNode) => void;
   expandedPositions: Record<string, boolean>;
   togglePositionExpand: (id: string) => void;
-}) => {
+};
+
+const PositionCard = ({
+  node,
+  depth,
+  departmentsById,
+  deptColors,
+  onDrop,
+  onAddPosition,
+  onDeletePosition,
+  onEditPosition,
+  expandedPositions,
+  togglePositionExpand,
+}: PositionCardProps) => {
   const [dragOver, setDragOver] = useState(false);
-  const dept = departments.find(d => d.id === node.department_id);
-  const deptColor = dept ? (deptColors[dept.name] || dept.color || "#8B5CF6") : "#8B5CF6";
+
+  const dept = node.department_id
+    ? departmentsById.get(node.department_id)
+    : undefined;
+  const deptColor = dept
+    ? deptColors[dept.name] || dept.color || FALLBACK_DEPT_COLOR
+    : FALLBACK_DEPT_COLOR;
   const vacancies = node.max_headcount - node.assignedEmployees.length;
-  const isExpanded = expandedPositions[node.id] ?? depth < 3;
+  const isExpanded = expandedPositions[node.id] ?? depth < INITIAL_EXPANDED_DEPTH;
   const hasChildren = node.children.length > 0;
 
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOver(true); };
-  const handleDragLeave = () => setDragOver(false);
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false);
-    const empId = e.dataTransfer.getData("employee-id");
-    if (empId) onDrop(empId, node.id);
-  };
-  const handleEditPositionClick = (): void => {
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>): void => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setDragOver(true);
+    },
+    [],
+  );
+
+  const handleDragLeave = useCallback((): void => setDragOver(false), []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>): void => {
+      e.preventDefault();
+      setDragOver(false);
+      const empId = e.dataTransfer.getData("employee-id");
+      if (empId) onDrop(empId, node.id);
+    },
+    [node.id, onDrop],
+  );
+
+  const handleEditPositionClick = useCallback((): void => {
     onEditPosition(node);
-  };
-  const handleAddPositionClick = (): void => {
+  }, [node, onEditPosition]);
+
+  const handleAddPositionClick = useCallback((): void => {
     onAddPosition(node.id);
-  };
-  const handleDeletePositionClick = (): void => {
+  }, [node.id, onAddPosition]);
+
+  const handleDeletePositionClick = useCallback((): void => {
     onDeletePosition(node.id);
-  };
-  const handleToggleExpandClick = (): void => {
+  }, [node.id, onDeletePosition]);
+
+  const handleToggleExpandClick = useCallback((): void => {
     togglePositionExpand(node.id);
-  };
+  }, [node.id, togglePositionExpand]);
 
   return (
     <div className="flex flex-col items-center">
@@ -92,10 +132,7 @@ const PositionCard = ({
           {node.assignedEmployees.length > 0 && (
             <div className="space-y-1.5 mb-2">
               {node.assignedEmployees.map(emp => (
-                <div key={emp.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  <NodeAvatar photo={emp.profile_picture} name={empDisplayName(emp)} color={deptColor} initials={empDisplayName(emp).charAt(0)} sizeClassName="w-6 h-6" extraClassName="shrink-0" fontSize={9} />
-                  <span className="text-foreground truncate" style={{ fontSize: 11 }}>{empDisplayName(emp)}</span>
-                </div>
+                <PositionCardEmployeeRow key={emp.id} employee={emp} color={deptColor} />
               ))}
             </div>
           )}
@@ -130,8 +167,8 @@ const PositionCard = ({
       {hasChildren && isExpanded && (
         <div className="flex gap-4 pt-8">
           {node.children.map(child => (
-            <PositionCard key={child.id} node={child} depth={depth + 1} departments={departments}
-              employees={employees} deptColors={deptColors} onDrop={onDrop}
+            <PositionCard key={child.id} node={child} depth={depth + 1} departmentsById={departmentsById}
+              deptColors={deptColors} onDrop={onDrop}
               onAddPosition={onAddPosition} onDeletePosition={onDeletePosition} onEditPosition={onEditPosition}
               expandedPositions={expandedPositions} togglePositionExpand={togglePositionExpand} />
           ))}
@@ -139,7 +176,6 @@ const PositionCard = ({
       )}
     </div>
   );
-
 };
 
 export default PositionCard;

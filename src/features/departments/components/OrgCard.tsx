@@ -6,8 +6,8 @@ import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { CLEVEL_COLOR } from "../styles";
 import { countDescendants } from "../utils/hierarchyTree";
+import OrgCardExtraEmployee from "./OrgCardExtraEmployee";
 import TreeConnectors from "./TreeConnectors";
-import { NodeAvatar } from "@/shared/components";
 
 const OrgCard = ({
   node, depth = 0, expandedMap, toggleExpand, onSelect, selectedId, highlightedIds, searchMatchIds, deptColors,
@@ -100,10 +100,7 @@ const OrgCard = ({
             {extraEmps.length > 0 && (
               <div className="mt-2 pt-2 border-t border-border/20 space-y-1">
                 {extraEmps.map(emp => (
-                  <div key={emp.id} className="flex items-center gap-1.5">
-                    <NodeAvatar photo={emp.photo} name={emp.name} color={topColor} initials={emp.name.charAt(0)} sizeClassName="w-5 h-5" extraClassName="shrink-0" fontSize={8} />
-                    <span className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{emp.name}</span>
-                  </div>
+                  <OrgCardExtraEmployee key={emp.id} name={emp.name} photo={emp.photo} color={topColor} />
                 ))}
               </div>
             )}

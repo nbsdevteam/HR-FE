@@ -85,7 +85,6 @@ const PositionsView = ({
         <PositionTreePanel
           positionTree={positionTree}
           dbDepartments={dbDepartments}
-          dbEmployees={dbEmployees}
           deptColors={deptColors}
           saving={saving}
           onDrop={handleDrop}

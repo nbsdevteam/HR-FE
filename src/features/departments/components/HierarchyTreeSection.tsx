@@ -1,6 +1,7 @@
+import { memo } from "react";
+import type { MouseEventHandler, Ref } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Link2, Loader2, Maximize2, Minus, Move, Plus, Users } from "lucide-react";
-import type { MouseEventHandler, Ref } from "react";
 import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -161,4 +162,4 @@ const HierarchyTreeSection = ({
   </>
 );
 
-export default HierarchyTreeSection;
+export default memo(HierarchyTreeSection);

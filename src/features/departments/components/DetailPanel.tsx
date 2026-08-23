@@ -1,10 +1,12 @@
+import { useMemo, useCallback } from "react";
 import { motion } from "motion/react";
 import { UserPlus, Trash2, Edit2, X } from "lucide-react";
+import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
-import { NodeAvatar } from "@/shared/components";
+import DirectReportRow from "./DirectReportRow";
 import InfoRow from "./InfoRow";
 
 const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
@@ -12,22 +14,27 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   onAddChild: (parentId: number) => void; onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
 }) => {
+  const parentNode = useMemo(
+    () => findParentOf(orgTree, node.id),
+    [orgTree, node.id],
+  );
+  const teamSize = useMemo(() => countDescendants(node), [node]);
+
   const topColor = defaultDeptColorMap[node.department] || node.color;
-  const parentNode = findParentOf(orgTree, node.id);
   const isRoot = node.id === orgTree.id;
   const isVirtualRoot = node.dbId === "__root__";
 
-  const handleAddChildClick = (): void => {
+  const handleAddChildClick = useCallback((): void => {
     onAddChild(node.id);
-  };
+  }, [node.id, onAddChild]);
 
-  const handleEditClick = (): void => {
+  const handleEditClick = useCallback((): void => {
     onEdit(node);
-  };
+  }, [node, onEdit]);
 
-  const handleDeleteClick = (): void => {
+  const handleDeleteClick = useCallback((): void => {
     onDelete(node);
-  };
+  }, [node, onDelete]);
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -95,7 +102,7 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
               />
             )}
             <InfoRow label={arabicSource("common.direct_reports")} value={node.children.length} />
-            <InfoRow label={arabicSource("hierarchy.total_team")} value={countDescendants(node)} />
+            <InfoRow label={arabicSource("hierarchy.total_team")} value={teamSize} />
             {node.email && (
               <InfoRow label={arabicSource("common.post")} value={node.email} dir="ltr" />
             )}
@@ -107,13 +114,7 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
             <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>{arabicSource("common.direct_reports")}</p>
             <div className="space-y-2 max-h-[200px] overflow-y-auto">
               {node.children.map(child => (
-                <div key={child.dbId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <NodeAvatar photo={child.photo} name={child.name} color={child.color} initials={child.initials} sizeClassName="w-6 h-6" extraClassName="flex-shrink-0" fontSize={10} />
-                  <div className="min-w-0">
-                    <p className="text-foreground truncate" style={{ fontSize: 11 }}>{child.name}</p>
-                    <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{child.position}</p>
-                  </div>
-                </div>
+                <DirectReportRow key={child.dbId} node={child} />
               ))}
             </div>
           </div>

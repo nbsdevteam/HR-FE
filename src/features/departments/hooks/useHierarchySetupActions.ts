@@ -1,13 +1,14 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
+import type { DbDepartment, DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { CLEVEL_COLOR, OWNER_COLOR } from "../styles";
 
 // ── Owner/CEO/COO setup + duplicate cleanup — now with Supabase ──
 export const useHierarchySetupActions = (
-  dbEmployees: any[],
-  dbDepartments: any[],
+  dbEmployees: DbEmployee[],
+  dbDepartments: DbDepartment[],
   refetch: () => Promise<void>,
   setSaving: Dispatch<SetStateAction<boolean>>,
   setToast: Dispatch<SetStateAction<string | null>>,
@@ -48,7 +49,7 @@ export const useHierarchySetupActions = (
           manager_id: null, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
         });
         ownerId = String(r1?.data?.id);
-      } catch (e1: any) { console.error("Owner insert error:", e1); setToast(`${arabicSource("hierarchy.owner_creation_error")} ${e1?.message || ""}`); setSaving(false); return; }
+      } catch (e1: unknown) { console.error("Owner insert error:", e1); setToast(`${arabicSource("hierarchy.owner_creation_error")} ${e1 instanceof Error ? e1.message : ""}`); setSaving(false); return; }
 
       // 2. Insert CEO under Owner
       let ceoId: string;
@@ -59,7 +60,7 @@ export const useHierarchySetupActions = (
           manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
         });
         ceoId = String(r2?.data?.id);
-      } catch (e2: any) { console.error("CEO insert error:", e2); setToast(`${arabicSource("hierarchy.ceo_creation_error")} ${e2?.message || ""}`); setSaving(false); return; }
+      } catch (e2: unknown) { console.error("CEO insert error:", e2); setToast(`${arabicSource("hierarchy.ceo_creation_error")} ${e2 instanceof Error ? e2.message : ""}`); setSaving(false); return; }
 
       // 3. Insert COO under Owner
       let cooId: string;
@@ -70,7 +71,7 @@ export const useHierarchySetupActions = (
           manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
         });
         cooId = String(r3?.data?.id);
-      } catch (e3: any) { console.error("COO insert error:", e3); setToast(`${arabicSource("hierarchy.coo_creation_error")} ${e3?.message || ""}`); setSaving(false); return; }
+      } catch (e3: unknown) { console.error("COO insert error:", e3); setToast(`${arabicSource("hierarchy.coo_creation_error")} ${e3 instanceof Error ? e3.message : ""}`); setSaving(false); return; }
 
       // 4. Move all existing root employees (no manager) under CEO, EXCLUDING the newly created ones
       const newIds = new Set<string>([ownerId, ceoId, cooId]);
@@ -81,15 +82,16 @@ export const useHierarchySetupActions = (
       if (rootEmpIds.length > 0) {
         try {
           await Promise.all(rootEmpIds.map(id => odooData.updateEmployee(id, { manager_id: ceoId })));
-        } catch (e4: any) { console.error("Move root employees error:", e4); }
+        } catch (e4: unknown) { console.error("Move root employees error:", e4); }
       }
 
       setToast(arabicSource("hierarchy.structure_configured_owner_ceo_coo_edit_data_from_the_edit_butto"));
       setShowSetupModal(false);
       await refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Setup hierarchy error:", err);
-      setToast(`${arabicSource("common.error_2")} ${err?.message || arabicSource("hierarchy.failed_to_initialize_the_organizational_structure")}`);
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message || arabicSource("hierarchy.failed_to_initialize_the_organizational_structure")}`);
     }
     setSaving(false);
   }, [dbEmployees, dbDepartments, refetch]);
@@ -114,7 +116,7 @@ export const useHierarchySetupActions = (
 
       // Strategy: Keep the OLDEST entry of each type (first created), delete the rest
       // For each duplicate, reparent its children to the kept entry's equivalent
-      const sortByCreated = (a: typeof dbEmployees[0], b: typeof dbEmployees[0]) =>
+      const sortByCreated = (a: DbEmployee, b: DbEmployee) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 
       const keepOwner = owners.length > 0 ? [...owners].sort(sortByCreated)[0] : null;
@@ -184,9 +186,10 @@ export const useHierarchySetupActions = (
       setToast(`${arabicSource("hierarchy.the_structure_was_cleaned_deleted")} ${removedCount} ${arabicSource("hierarchy.duplicate_entry_and_employees_were_successfully_reconnected")}`);
       setShowCleanupModal(false);
       await refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Cleanup error:", err);
-      setToast(`${arabicSource("common.error_2")} ${err?.message || arabicSource("hierarchy.chassis_cleaning_failed")}`);
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message || arabicSource("hierarchy.chassis_cleaning_failed")}`);
     }
     setSaving(false);
   }, [dbEmployees, refetch]);

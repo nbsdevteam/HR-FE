@@ -1,3 +1,5 @@
+import { memo } from "react";
+import type { Ref } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   AlertTriangle,
@@ -7,11 +9,14 @@ import {
   Printer,
   UserPlus,
 } from "lucide-react";
-import type { Ref } from "react";
-import type { OrgNode } from "../types";
-import SearchResults from "./SearchResults";
-import { SearchInput } from "@/shared/components";
+import { Button, SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import type { OrgNode } from "../types";
+import HeaderActionButton from "./HeaderActionButton";
+import SearchResults from "./SearchResults";
+
+const UNLINKED_TONE =
+  "bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 shadow-sm";
 
 type HierarchyHeaderProps = {
   unlinkedCount: number;
@@ -63,42 +68,31 @@ const HierarchyHeader = ({
     </div>
     <div className="flex items-center gap-2 flex-wrap">
       {unlinkedCount > 0 && (
-        <button
+        <HeaderActionButton
+          icon={AlertTriangle}
           onClick={onShowUnlinked}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 transition-all shadow-sm"
-          style={{ fontSize: 13 }}
+          toneClassName={UNLINKED_TONE}
         >
-          <AlertTriangle className="w-4 h-4" />
           {unlinkedCount} {arabicSource("hierarchy.without_binding")}
-        </button>
+        </HeaderActionButton>
       )}
 
-      <button
+      <Button
+        icon={UserPlus}
         onClick={onAddEmployee}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md"
+        className="shadow-md"
         style={{ fontSize: 13 }}
       >
-        <UserPlus className="w-4 h-4" />{" "}
         {arabicSource("common.add_an_employee")}
-      </button>
+      </Button>
 
-      <button
-        onClick={onAddDepartment}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-foreground transition-all shadow-sm"
-        style={{ fontSize: 13 }}
-      >
-        <Building2 className="w-4 h-4" />{" "}
+      <HeaderActionButton icon={Building2} onClick={onAddDepartment}>
         {arabicSource("hierarchy.add_a_new_section")}
-      </button>
+      </HeaderActionButton>
 
-      <button
-        onClick={onAddPosition}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-foreground transition-all shadow-sm"
-        style={{ fontSize: 13 }}
-      >
-        <Briefcase className="w-4 h-4" />{" "}
+      <HeaderActionButton icon={Briefcase} onClick={onAddPosition}>
         {arabicSource("hierarchy.new_position")}
-      </button>
+      </HeaderActionButton>
 
       <SearchInput
         inputRef={searchInputRef}
@@ -139,28 +133,28 @@ const HierarchyHeader = ({
         </AnimatePresence>
       </SearchInput>
 
-      <button
+      <HeaderActionButton
+        icon={Printer}
         onClick={onPrint}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all"
-        style={{ fontSize: 13 }}
         title={arabicSource("common.print")}
+        toneClassName="bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground"
+        paddingClassName="px-3 py-2"
+        hideLabelOnMobile
       >
-        <Printer className="w-4 h-4" />
-        <span className="hidden sm:inline">{arabicSource("common.print")}</span>
-      </button>
-      <button
+        {arabicSource("common.print")}
+      </HeaderActionButton>
+      <HeaderActionButton
+        icon={Download}
         onClick={onExportPNG}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all"
-        style={{ fontSize: 13 }}
         title={arabicSource("hierarchy.export_png")}
+        toneClassName="bg-card border border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground"
+        paddingClassName="px-3 py-2"
+        hideLabelOnMobile
       >
-        <Download className="w-4 h-4" />
-        <span className="hidden sm:inline">
-          {arabicSource("common.export")}
-        </span>
-      </button>
+        {arabicSource("common.export")}
+      </HeaderActionButton>
     </div>
   </div>
 );
 
-export default HierarchyHeader;
+export default memo(HierarchyHeader);

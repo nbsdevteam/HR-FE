@@ -1,12 +1,19 @@
-import { OrgNode } from "../types";
+import { memo, useCallback } from "react";
 import { NodeAvatar } from "@/shared/components";
+import type { OrgNode } from "../types";
 
 interface SearchButtonProps {
   node: OrgNode;
-  handleClick: () => void;
+  onSelect: (node: OrgNode) => void;
+  onClose: () => void;
 }
 
-const SearchButton = ({ handleClick, node }: SearchButtonProps) => {
+const SearchButton = ({ node, onSelect, onClose }: SearchButtonProps) => {
+  const handleClick = useCallback((): void => {
+    onSelect(node);
+    onClose();
+  }, [node, onSelect, onClose]);
+
   return (
     <button
       onClick={handleClick}
@@ -33,4 +40,4 @@ const SearchButton = ({ handleClick, node }: SearchButtonProps) => {
   );
 };
 
-export default SearchButton;
+export default memo(SearchButton);

@@ -1,11 +1,16 @@
-import { useCallback } from "react";
-import type { RefObject } from "react";
+import { useCallback, useRef } from "react";
 import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
 import { formatDate } from "@/i18n/format";
 import { translateArabicSource } from "@/i18n/legacy";
 import { arabicSource } from "@/i18n/source";
 
-export const useHierarchyExport = (chartContentRef: RefObject<HTMLDivElement>) => {
+/**
+ * Owns the ref to the rendered chart plus the print / PNG exporters that read
+ * from it, so callers never have to wire the ref up themselves.
+ */
+export const useHierarchyExport = () => {
+  const chartContentRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = useCallback(() => {
     if (!chartContentRef.current) return;
     const w = window.open("", "_blank"); if (!w) return;
@@ -45,5 +50,5 @@ export const useHierarchyExport = (chartContentRef: RefObject<HTMLDivElement>) =
     } catch { handlePrint(); }
   }, [handlePrint]);
 
-  return { handlePrint, handleExportPNG };
+  return { chartContentRef, handlePrint, handleExportPNG };
 };

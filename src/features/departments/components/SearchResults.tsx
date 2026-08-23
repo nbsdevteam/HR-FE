@@ -22,11 +22,9 @@ const SearchResults = ({
       {results.map((node) => (
         <SearchButton
           key={node.dbId}
-          handleClick={() => {
-            onSelect(node);
-            onClose();
-          }}
           node={node}
+          onSelect={onSelect}
+          onClose={onClose}
         />
       ))}
     </motion.div>

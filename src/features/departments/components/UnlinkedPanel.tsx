@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { AlertTriangle, Link2 } from "lucide-react";
-import { Modal, TypeAhead } from "@/shared/components";
-import { empDisplayName } from "@/shared/hooks";
+import { useState, useMemo, useCallback } from "react";
+import { AlertTriangle } from "lucide-react";
+import { Modal } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
-
-const getManagerId = (n: OrgNode): string => n.dbId;
-const getManagerLabel = (n: OrgNode): string => `${n.name} — ${n.position}`;
+import UnlinkedEmployeeRow from "./UnlinkedEmployeeRow";
 
 const UnlinkedPanel = ({
   employees,
@@ -24,18 +21,28 @@ const UnlinkedPanel = ({
     Record<string, string>
   >({});
 
-  const handleManagerSelectChange =
-    (empId: string) =>
-    (value: string): void => {
-      setSelectedManager((p) => ({
-        ...p,
-        [empId]: value,
-      }));
-    };
+  const linkableNodes = useMemo(
+    () => allNodes.filter((node) => node.dbId !== "__root__"),
+    [allNodes],
+  );
 
-  const handleLinkButtonClick = (empId: string) => (): void => {
-    if (selectedManager[empId]) onLink(empId, selectedManager[empId]);
-  };
+  const handleSelectManager = useCallback(
+    (employeeId: string, managerDbId: string): void => {
+      setSelectedManager((previous) => ({
+        ...previous,
+        [employeeId]: managerDbId,
+      }));
+    },
+    [],
+  );
+
+  const handleLink = useCallback(
+    (employeeId: string): void => {
+      const managerDbId = selectedManager[employeeId];
+      if (managerDbId) onLink(employeeId, managerDbId);
+    },
+    [selectedManager, onLink],
+  );
 
   return (
     <Modal
@@ -57,60 +64,16 @@ const UnlinkedPanel = ({
       headerWrapperClassName="shrink-0"
       bodyClassName="p-4 space-y-3 overflow-y-auto flex-1"
     >
-        {employees.map((emp) => {
-          const name = empDisplayName(emp);
-          return (
-            <div
-              key={emp.id}
-              className="p-3 rounded-xl border border-border/40 bg-muted/5 space-y-2"
-            >
-              <div className="flex items-center gap-2.5">
-                {emp.profile_picture ? (
-                  <img
-                    src={emp.profile_picture}
-                    alt={name}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <span className="text-amber-500" style={{ fontSize: 13 }}>
-                      {name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <p className="text-foreground" style={{ fontSize: 13 }}>
-                    {name}
-                  </p>
-                  <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                    {emp.position || emp.department || "—"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <TypeAhead
-                  items={allNodes.filter((n) => n.dbId !== "__root__" && n.dbId !== emp.id)}
-                  getId={getManagerId}
-                  getLabel={getManagerLabel}
-                  value={selectedManager[emp.id] || ""}
-                  onChange={handleManagerSelectChange(emp.id)}
-                  placeholder={arabicSource("hierarchy.choose_the_direct_manager")}
-                  className="flex-1"
-                />
-                <button
-                  onClick={handleLinkButtonClick(emp.id)}
-                  disabled={!selectedManager[emp.id]}
-                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors flex items-center gap-1"
-                  style={{ fontSize: 12 }}
-                >
-                  <Link2 className="w-3.5 h-3.5" />{" "}
-                  {arabicSource("hierarchy.connect")}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+      {employees.map((employee) => (
+        <UnlinkedEmployeeRow
+          key={employee.id}
+          employee={employee}
+          linkableNodes={linkableNodes}
+          selectedManagerDbId={selectedManager[employee.id] || ""}
+          onSelectManager={handleSelectManager}
+          onLink={handleLink}
+        />
+      ))}
     </Modal>
   );
 };

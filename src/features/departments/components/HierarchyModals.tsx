@@ -1,10 +1,10 @@
 import { lazy, memo, Suspense } from "react";
-import type React from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import type { DbEmployee, DbDepartment } from "@/shared/hooks";
 import type { OrgNode } from "../types";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import DetailPanelModal from "./DetailPanelModal";
 import type { PositionFormState } from "./PositionFormModal";
 
 const SetupHierarchyModal = lazy(() => import("./SetupHierarchyModal"));
@@ -14,7 +14,6 @@ const EditEmployeeModal = lazy(() => import("./EditEmployeeModal"));
 const AddEmployeeModal = lazy(() => import("./AddEmployeeModal"));
 const AddDepartmentModal = lazy(() => import("./AddDepartmentModal"));
 const PositionFormModal = lazy(() => import("./PositionFormModal"));
-const DetailPanel = lazy(() => import("./DetailPanel"));
 
 type HierarchyModalsProps = {
   dbEmployees: DbEmployee[];
@@ -102,35 +101,18 @@ const HierarchyModals = ({
   onDetailAddChild,
   onDetailDelete,
   onDetailEdit,
-}: HierarchyModalsProps) => {
-  const handleDetailPanelButtonClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-    e.stopPropagation();
-  };
-
-  return (
+}: HierarchyModalsProps) => (
   <>
     <AnimatePresence>
       {selectedNode && !deleteTarget && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={onCloseSelectedNode}
-        >
-          <button onClick={handleDetailPanelButtonClick}>
-            <Suspense fallback={null}>
-              <DetailPanel
-                node={selectedNode}
-                orgTree={orgTree}
-                onClose={onCloseSelectedNode}
-                onAddChild={onDetailAddChild}
-                onDelete={onDetailDelete}
-                onEdit={onDetailEdit}
-              />
-            </Suspense>
-          </button>
-        </motion.div>
+        <DetailPanelModal
+          node={selectedNode}
+          orgTree={orgTree}
+          onClose={onCloseSelectedNode}
+          onAddChild={onDetailAddChild}
+          onDelete={onDetailDelete}
+          onEdit={onDetailEdit}
+        />
       )}
     </AnimatePresence>
     <AnimatePresence>
@@ -232,7 +214,6 @@ const HierarchyModals = ({
       )}
     </AnimatePresence>
   </>
-  );
-};
+);
 
 export default memo(HierarchyModals);

@@ -1,5 +1,6 @@
 import type { DbDepartment, DbEmployee, DbPosition } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
+import { groupBy, indexBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode, PositionNode } from "../types";
 import { avatarColors, defaultDeptColorMap, OWNER_COLOR } from "../styles";
@@ -93,8 +94,7 @@ export const buildOrgTreeFromPositions = (
 ): { tree: OrgNode; deptColors: Record<string, string> } => {
   const dColors: Record<string, string> = { ...defaultDeptColorMap };
   departments.forEach((department) => { if (department.color) dColors[department.name] = department.color; });
-  const deptById: Record<string, DbDepartment> = {};
-  departments.forEach((department) => { deptById[department.id] = department; });
+  const deptById = indexBy(departments, (department) => department.id);
 
   const usedColors = new Set<string>(Object.values(dColors));
   departments.forEach((department) => {
@@ -105,21 +105,16 @@ export const buildOrgTreeFromPositions = (
     }
   });
 
-  const empsByPos: Record<string, DbEmployee[]> = {};
-  employees.forEach((employee) => {
-    if (employee.position_id) {
-      if (!empsByPos[employee.position_id]) empsByPos[employee.position_id] = [];
-      empsByPos[employee.position_id].push(employee);
-    }
-  });
+  const empsByPos = groupBy(employees, (employee) => employee.position_id);
+  const activePositions = positions.filter((position) => position.is_active);
 
   let nodeCounter = 1;
   const posNodeMap = new Map<string, OrgNode>();
 
-  positions.filter((position) => position.is_active).forEach((position) => {
-    const dept = position.department_id ? deptById[position.department_id] : null;
+  activePositions.forEach((position) => {
+    const dept = position.department_id ? deptById.get(position.department_id) : null;
     const deptName = dept?.name || arabicSource("common.senior_management");
-    const assignedEmps = empsByPos[position.id] || [];
+    const assignedEmps = empsByPos.get(position.id) ?? [];
     const primaryEmp = assignedEmps[0];
     const isVacant = assignedEmps.length === 0;
     const isTopLevel = position.level === 0;
@@ -149,7 +144,7 @@ export const buildOrgTreeFromPositions = (
   });
 
   const roots: OrgNode[] = [];
-  positions.filter((position) => position.is_active).forEach((position) => {
+  activePositions.forEach((position) => {
     const node = posNodeMap.get(position.id);
     if (!node) return;
     if (position.reports_to_position_id && posNodeMap.has(position.reports_to_position_id)) {
@@ -182,15 +177,33 @@ export const getUnlinkedEmployees = (employees: DbEmployee[]): DbEmployee[] => {
   return employees.filter((employee) => employee.manager_id && !idSet.has(employee.manager_id));
 };
 
+/**
+ * Cache keyed on the node object itself. Trees are rebuilt (new objects) on
+ * every data change, so entries can never go stale; this turns the per-card
+ * subtree walk during render into an O(1) lookup after the first pass.
+ */
+const descendantCountCache = new WeakMap<OrgNode, number>();
+
 export const countDescendants = (node: OrgNode): number => {
+  const cached = descendantCountCache.get(node);
+  if (cached !== undefined) return cached;
   let count = node.children.length;
   for (const child of node.children) count += countDescendants(child);
+  descendantCountCache.set(node, count);
   return count;
 };
 
+/** Depth-first pre-order flatten, iterative so deep trees can't blow the stack. */
 export const flattenTree = (node: OrgNode): OrgNode[] => {
-  const result: OrgNode[] = [node];
-  for (const child of node.children) result.push(...flattenTree(child));
+  const result: OrgNode[] = [];
+  const stack: OrgNode[] = [node];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    result.push(current);
+    for (let i = current.children.length - 1; i >= 0; i -= 1) {
+      stack.push(current.children[i]);
+    }
+  }
   return result;
 };
 
@@ -237,10 +250,15 @@ export const buildPositionTree = (
 ): PositionNode[] => {
   const posMap = new Map<string, PositionNode>();
   const roots: PositionNode[] = [];
+  // One pass over employees instead of a full scan per position.
+  const empsByPosition = groupBy(employees, (employee) => employee.position_id);
 
   positions.forEach((position) => {
-    const assignedEmployees = employees.filter((employee) => employee.position_id === position.id);
-    posMap.set(position.id, { ...position, children: [], assignedEmployees });
+    posMap.set(position.id, {
+      ...position,
+      children: [],
+      assignedEmployees: empsByPosition.get(position.id) ?? [],
+    });
   });
 
   positions.forEach((position) => {

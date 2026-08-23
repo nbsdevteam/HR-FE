@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Trash2 } from "lucide-react";
 import { Modal, ModalFooterActions } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
@@ -12,9 +13,21 @@ type CleanupDuplicatesModalProps = {
 };
 
 const CleanupDuplicatesModal = ({ dbEmployees, saving, onClose, onCleanup }: CleanupDuplicatesModalProps) => {
-  const ownerCount = dbEmployees.filter(e => e.department === arabicSource("common.owner") || e.position === arabicSource("common.owner")).length;
-  const ceoCount = dbEmployees.filter(e => e.position === "CEO" && e.department === arabicSource("common.senior_management")).length;
-  const cooCount = dbEmployees.filter(e => e.position === "COO" && e.department === arabicSource("common.senior_management")).length;
+  // One pass over the employee list instead of three separate `.filter()` scans.
+  const { ownerCount, ceoCount, cooCount } = useMemo(() => {
+    const ownerLabel = arabicSource("common.owner");
+    const seniorLabel = arabicSource("common.senior_management");
+    let owners = 0;
+    let ceos = 0;
+    let coos = 0;
+    for (const employee of dbEmployees) {
+      if (employee.department === ownerLabel || employee.position === ownerLabel) owners += 1;
+      if (employee.department !== seniorLabel) continue;
+      if (employee.position === "CEO") ceos += 1;
+      else if (employee.position === "COO") coos += 1;
+    }
+    return { ownerCount: owners, ceoCount: ceos, cooCount: coos };
+  }, [dbEmployees]);
 
   return (
     <Modal

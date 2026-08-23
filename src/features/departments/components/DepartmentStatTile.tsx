@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 
 type DepartmentStatTileProps = {
@@ -18,4 +19,4 @@ const DepartmentStatTile = ({ name, count, color, delay }: DepartmentStatTilePro
   </motion.div>
 );
 
-export default DepartmentStatTile;
+export default memo(DepartmentStatTile);

@@ -1,10 +1,9 @@
 import { lazy, Suspense } from "react";
-import { AnimatePresence } from "motion/react";
-import { AlertTriangle, Loader2, UserCheck } from "lucide-react";
-import Toast from "@/shared/components/Toast";
+import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import HierarchyHeader from "../components/HierarchyHeader";
 import HierarchyModals from "../components/HierarchyModals";
+import HierarchyToast from "../components/HierarchyToast";
 import HierarchyTreeSection from "../components/HierarchyTreeSection";
 import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
 import SearchCountToast from "../components/SearchCountToast";
@@ -179,39 +178,7 @@ const Hierarchy = () => {
         matchCount={searchMatchIds.size}
         onClearSearch={clearSearch}
       />
-      <AnimatePresence>
-        {toast && (
-          <Toast
-            message={toast}
-            icon={
-              toast.startsWith(arabicSource("common.error"))
-                ? AlertTriangle
-                : UserCheck
-            }
-            position="bottom-center"
-            toneClassName={
-              toast.startsWith(arabicSource("common.error"))
-                ? "bg-card border-red-500/40"
-                : "bg-card border-green-500/40"
-            }
-            iconBoxClassName={
-              toast.startsWith(arabicSource("common.error"))
-                ? "bg-red-500/20"
-                : "bg-green-500/20"
-            }
-            iconClassName={
-              toast.startsWith(arabicSource("common.error"))
-                ? "w-3 h-3 text-red-400"
-                : "w-3 h-3 text-green-400"
-            }
-            textClassName="text-foreground"
-            textSize={12}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          />
-        )}
-      </AnimatePresence>
+      <HierarchyToast message={toast} />
       <HierarchyModals
         dbEmployees={dbEmployees}
         dbDepartments={dbDepartments}

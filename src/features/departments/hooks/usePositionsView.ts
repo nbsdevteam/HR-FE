@@ -52,18 +52,18 @@ export const usePositionsView = ({
   );
 
   // Unassigned employees (no position_id)
-  const unassignedEmployees = useMemo(() => {
-    const assigned = new Set(
-      dbEmployees.filter((e) => e.position_id).map((e) => e.id),
-    );
-    return dbEmployees.filter((e) => !assigned.has(e.id));
-  }, [dbEmployees]);
+  const unassignedEmployees = useMemo(
+    () => dbEmployees.filter((employee) => !employee.position_id),
+    [dbEmployees],
+  );
 
   const filteredUnassigned = useMemo(() => {
-    if (!empSearch.trim()) return unassignedEmployees;
-    const q = empSearch.trim().toLowerCase();
+    const query = empSearch.trim().toLowerCase();
+    if (!query) return unassignedEmployees;
     return unassignedEmployees.filter(
-      (e) => empDisplayName(e).includes(q) || (e.department || "").includes(q),
+      (employee) =>
+        empDisplayName(employee).toLowerCase().includes(query) ||
+        (employee.department || "").toLowerCase().includes(query),
     );
   }, [unassignedEmployees, empSearch]);
 
@@ -110,7 +110,7 @@ export const usePositionsView = ({
         if (parentHolder) managerId = parentHolder.id;
       }
 
-      const updates: Record<string, any> = { position_id: positionId };
+      const updates: Record<string, string> = { position_id: positionId };
       if (dept) updates.department_id = dept.id;
       if (managerId) updates.manager_id = managerId;
 
@@ -121,8 +121,9 @@ export const usePositionsView = ({
           `${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("hierarchy.in_position")}${pos.title_ar}${arabicSource("common.successfully")}`,
         );
         await Promise.all([refetch(), refetchPositions()]);
-      } catch (err: any) {
-        setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "";
+        setToast(`${arabicSource("common.error_2")} ${message}`);
       }
       setSaving(false);
     },
@@ -157,8 +158,9 @@ export const usePositionsView = ({
       setShowAddPositionModal(false);
       setPosForm(EMPTY_POSITION_FORM);
       await refetchPositions();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setSaving(false);
   }, [posForm, addParentId, positions, refetchPositions]);
@@ -179,8 +181,9 @@ export const usePositionsView = ({
       setEditingPosition(null);
       setPosForm(EMPTY_POSITION_FORM);
       await refetchPositions();
-    } catch (err: any) {
-      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setSaving(false);
   }, [editingPosition, posForm, refetchPositions]);
@@ -199,8 +202,9 @@ export const usePositionsView = ({
         await odooData.deleteDesignation(posId);
         setToast(arabicSource("hierarchy.position_deleted"));
         await refetchPositions();
-      } catch (err: any) {
-        setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "";
+        setToast(`${arabicSource("common.error_2")} ${message}`);
       }
       setSaving(false);
     },
