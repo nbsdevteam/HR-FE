@@ -82,6 +82,14 @@ const AuditTrailTab = () => {
     setExpandedLog((current) => (current === id ? null : id));
   }, []);
 
+  const handleFilterActionChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setFilterAction(e.target.value);
+  };
+
+  const handleFilterEntityChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setFilterEntity(e.target.value);
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -112,7 +120,7 @@ const AuditTrailTab = () => {
           />
           <Select
             value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value)}
+            onChange={handleFilterActionChange}
             blankLabel={arabicSource("auditcenter.all_procedures")}
             options={Object.entries(actionLabels).map(([value, label]) => ({
               value,
@@ -122,7 +130,7 @@ const AuditTrailTab = () => {
           />
           <Select
             value={filterEntity}
-            onChange={(e) => setFilterEntity(e.target.value)}
+            onChange={handleFilterEntityChange}
             blankLabel={arabicSource("auditcenter.all_entities")}
             options={Object.entries(entityLabels).map(([value, label]) => ({
               value,

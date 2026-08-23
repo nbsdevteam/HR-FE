@@ -37,6 +37,14 @@ const NotificationsTab = () => {
     refetch();
   };
 
+  const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setFilterType(e.target.value);
+  };
+
+  const handleFilterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setFilterCategory(e.target.value);
+  };
+
   return (
     <div className="space-y-4">
       <div className={auditCardCls}>
@@ -51,7 +59,7 @@ const NotificationsTab = () => {
           />
           <Select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            onChange={handleFilterTypeChange}
             options={[
               { value: "all", label: arabicSource("common.all_types") },
               { value: "info", label: arabicSource("auditcenter.information") },
@@ -64,7 +72,7 @@ const NotificationsTab = () => {
           />
           <Select
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+            onChange={handleFilterCategoryChange}
             options={[
               { value: "all", label: arabicSource("common.all_categories") },
               { value: "system", label: arabicSource("common.system") },

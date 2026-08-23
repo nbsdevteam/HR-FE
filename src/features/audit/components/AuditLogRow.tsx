@@ -16,6 +16,10 @@ const AuditLogRow = ({ log, isExpanded, onToggleExpanded }: AuditLogRowProps) =>
   const colorCls = actionColors[log.action] || "text-muted-foreground";
   const hasDetails = log.details && Object.keys(log.details).length > 0;
 
+  const handleToggleExpandedClick = (): void => {
+    onToggleExpanded(log.id);
+  };
+
   return (
     <Fragment>
       <tr className="border-b border-border/20 hover:bg-muted/10">
@@ -38,7 +42,7 @@ const AuditLogRow = ({ log, isExpanded, onToggleExpanded }: AuditLogRowProps) =>
         <td className="p-3">
           {hasDetails && (
             <button
-              onClick={() => onToggleExpanded(log.id)}
+              onClick={handleToggleExpandedClick}
               className="p-1 rounded text-muted-foreground hover:text-primary cursor-pointer"
             >
               <Eye className="w-4 h-4" />

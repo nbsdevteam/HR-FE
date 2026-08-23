@@ -14,9 +14,13 @@ type AuditTabButtonProps = {
 const AuditTabButton = ({ tab, isActive, onClick }: AuditTabButtonProps) => {
   const Icon = tab.icon;
 
+  const handleTabClick = (): void => {
+    onClick(tab.key);
+  };
+
   return (
     <button
-      onClick={() => onClick(tab.key)}
+      onClick={handleTabClick}
       className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
         isActive
           ? "bg-primary/10 border border-b-0 border-primary/30 text-primary"

@@ -21,6 +21,14 @@ const NotificationItem = ({
 }: NotificationItemProps) => {
   const TypeIcon = notifTypeIcons[notification.type] || Bell;
 
+  const handleMarkReadClick = (): void => {
+    onMarkRead(notification.id);
+  };
+
+  const handleDismissClick = (): void => {
+    onDismiss(notification.id);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -56,7 +64,7 @@ const NotificationItem = ({
           <div className="flex items-center gap-1 flex-shrink-0">
             {!notification.is_read && (
               <button
-                onClick={() => onMarkRead(notification.id)}
+                onClick={handleMarkReadClick}
                 className="p-1.5 rounded text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                 title={arabicSource("auditcenter.mark_as_read")}
               >
@@ -64,7 +72,7 @@ const NotificationItem = ({
               </button>
             )}
             <button
-              onClick={() => onDismiss(notification.id)}
+              onClick={handleDismissClick}
               className="p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
               title={arabicSource("auditcenter.remove")}
             >
