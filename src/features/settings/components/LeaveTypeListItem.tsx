@@ -22,9 +22,9 @@ const LeaveTypeListItem = ({
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-foreground text-sm">{leaveType.name_ar}</span>
+          <span className="text-foreground text-sm" data-i18n-ignore>{leaveType.name_ar}</span>
           {leaveType.name_en && (
-            <span className="text-muted-foreground text-xs" dir="ltr">
+            <span className="text-muted-foreground text-xs" dir="ltr" data-i18n-ignore>
               ({leaveType.name_en})
             </span>
           )}

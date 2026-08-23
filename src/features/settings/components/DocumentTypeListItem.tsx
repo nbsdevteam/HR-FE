@@ -20,7 +20,7 @@ const DocumentTypeListItem = ({
         {documentType.code}
       </span>
       <div>
-        <p className="text-sm text-foreground">{documentType.name_ar}</p>
+        <p className="text-sm text-foreground" data-i18n-ignore>{documentType.name_ar}</p>
         <p className="text-xs text-muted-foreground">
           {documentType.has_expiry
             ? `${arabicSource("settings.warning_before")} ${documentType.expiry_warning_days} ${arabicSource("common.days_2")}`

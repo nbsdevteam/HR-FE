@@ -11,7 +11,7 @@ type THolidayListItemProps = {
 const HolidayListItem = ({ holiday, onDelete }: THolidayListItemProps) => (
   <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
     <div className="flex-1">
-      <p className="text-foreground text-sm">{holiday.name_ar}</p>
+      <p className="text-foreground text-sm" data-i18n-ignore>{holiday.name_ar}</p>
       <p className="text-muted-foreground text-xs mt-1">
         {formatDate(holiday.date)}
         {holiday.is_recurring &&

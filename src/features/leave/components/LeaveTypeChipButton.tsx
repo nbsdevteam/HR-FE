@@ -21,7 +21,7 @@ const LeaveTypeChipButton = ({ leaveType, isSelected, onSelect }: LeaveTypeChipB
       }`}
       style={{ fontSize: 13, backgroundColor: isSelected ? leaveType.color + "15" : undefined }}
     >
-      {leaveType.name_ar}
+      <span data-i18n-ignore>{leaveType.name_ar}</span>
       {!leaveType.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.without_salary")}</span>}
     </button>
   );

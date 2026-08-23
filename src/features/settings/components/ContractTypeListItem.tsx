@@ -20,7 +20,7 @@ const ContractTypeListItem = ({
         {contractType.code}
       </span>
       <div>
-        <p className="text-sm text-foreground">{contractType.name_ar}</p>
+        <p className="text-sm text-foreground" data-i18n-ignore>{contractType.name_ar}</p>
         <p className="text-xs text-muted-foreground">
           {contractType.default_duration_months
             ? `${contractType.default_duration_months} ${arabicSource("settings.month")}`
