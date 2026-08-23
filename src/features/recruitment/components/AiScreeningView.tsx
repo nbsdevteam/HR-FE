@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import { Users, Loader2, Sparkles } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
 import { Select } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
@@ -197,61 +198,57 @@ const AiScreeningView = ({
               className="py-12"
             />
           ) : (
-            <div className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border/30 text-muted-foreground">
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      >
-                        {arabicSource("recruitment.rank_label")}
-                      </th>
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      >
-                        {arabicSource("recruitment.advanced")}
-                      </th>
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      >
-                        {arabicSource("recruitment.ir_score")}
-                      </th>
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      >
-                        {arabicSource("recruitment.matched_skills")}
-                      </th>
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      >
-                        {arabicSource("common.stage")}
-                      </th>
-                      <th
-                        className="px-4 py-3 text-start"
-                        style={{ fontSize: 12 }}
-                      ></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visible?.map((app, i) => (
-                      <AiScreeningTableRow
-                        key={app.id}
-                        app={app}
-                        index={i}
-                        onSelect={onSelect}
-                        onUpdateStage={onUpdateStage}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <DataTable
+              wrapperClassName="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
+              items={visible || []}
+              header={
+                <tr className="border-b border-border/30 text-muted-foreground">
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  >
+                    {arabicSource("recruitment.rank_label")}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  >
+                    {arabicSource("recruitment.advanced")}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  >
+                    {arabicSource("recruitment.ir_score")}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  >
+                    {arabicSource("recruitment.matched_skills")}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  >
+                    {arabicSource("common.stage")}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-start"
+                    style={{ fontSize: 12 }}
+                  ></th>
+                </tr>
+              }
+              renderRow={(app, i) => (
+                <AiScreeningTableRow
+                  key={app.id}
+                  app={app}
+                  index={i}
+                  onSelect={onSelect}
+                  onUpdateStage={onUpdateStage}
+                />
+              )}
+            />
           )}
         </>
       )}

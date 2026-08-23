@@ -1,4 +1,5 @@
 import { CalendarDays } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
 import SortableHeaderRow, {
   toggleSort,
@@ -39,59 +40,54 @@ const LeaveRequestsListView = ({
   onReject,
   onDelete,
 }: LeaveRequestsListViewProps) => (
-  <div className={leaveCardClass}>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <SortableHeaderRow
-            columns={leaveData}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={(key) =>
-              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-            }
-          />
-        </thead>
-        <tbody>
-          {requests.length > 0 ? (
-            requests.map((leave, index) => {
-              const employee = empMap[leave.employee_id];
-              const employeeName = employee
-                ? empDisplayName(employee)
-                : leave.employee_id;
-              const leaveType = leaveTypes.find(
-                (type) =>
-                  type.code === leave.leave_type ||
-                  type.name_ar === leave.leave_type,
-              );
+  <DataTable
+    wrapperClassName={leaveCardClass}
+    items={requests}
+    header={
+      <SortableHeaderRow
+        columns={leaveData}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={(key) =>
+          toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+        }
+      />
+    }
+    renderRow={(leave, index) => {
+      const employee = empMap[leave.employee_id];
+      const employeeName = employee
+        ? empDisplayName(employee)
+        : leave.employee_id;
+      const leaveType = leaveTypes.find(
+        (type) =>
+          type.code === leave.leave_type ||
+          type.name_ar === leave.leave_type,
+      );
 
-              return (
-                <LeaveRequestTableRow
-                  key={leave.id}
-                  leave={leave}
-                  index={index}
-                  employeeName={employeeName}
-                  leaveType={leaveType}
-                  onApprove={onApprove}
-                  onReject={onReject}
-                  onDelete={onDelete}
-                />
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan={8}>
-                <EmptyState
-                  icon={CalendarDays}
-                  message={arabicSource("leave.there_are_no_leave_requests")}
-                />
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
+      return (
+        <LeaveRequestTableRow
+          key={leave.id}
+          leave={leave}
+          index={index}
+          employeeName={employeeName}
+          leaveType={leaveType}
+          onApprove={onApprove}
+          onReject={onReject}
+          onDelete={onDelete}
+        />
+      );
+    }}
+    emptyRow={
+      <tr>
+        <td colSpan={8}>
+          <EmptyState
+            icon={CalendarDays}
+            message={arabicSource("leave.there_are_no_leave_requests")}
+          />
+        </td>
+      </tr>
+    }
+  />
 );
 
 export default LeaveRequestsListView;

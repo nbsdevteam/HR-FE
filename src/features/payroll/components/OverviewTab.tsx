@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import { Wallet, TrendingUp, Calculator, Users } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import StatCard from "@/shared/components/StatCard";
 import CustomBarChart from "@/shared/components/custom-bar-chart";
 import SearchInput from "@/shared/components/SearchInput";
@@ -157,51 +158,46 @@ const OverviewTab = ({
       </div>
 
       {/* Table */}
-      <div className={cardCls}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <SortableHeaderRow
-                columns={sortByData}
-                sortBy={paySortBy}
-                sortDir={paySortDir}
-                onSort={(key) =>
-                  toggleSort(
-                    key,
-                    paySortBy,
-                    paySortDir,
-                    setPaySortBy,
-                    setPaySortDir,
-                  )
-                }
-              />
-            </thead>
-            <tbody>
-              {filtered.length > 0 ? (
-                filtered.map((r: any, i: number) => (
-                  <PayrollOverviewRow
-                    key={r.empId}
-                    row={r}
-                    index={i}
-                    onViewPayslip={onViewPayslip}
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    {arabicSource(
-                      "payroll.there_are_no_payroll_records_for_this_month",
-                    )}
-                  </td>
-                </tr>
+      <DataTable
+        wrapperClassName={cardCls}
+        items={filtered}
+        header={
+          <SortableHeaderRow
+            columns={sortByData}
+            sortBy={paySortBy}
+            sortDir={paySortDir}
+            onSort={(key) =>
+              toggleSort(
+                key,
+                paySortBy,
+                paySortDir,
+                setPaySortBy,
+                setPaySortDir,
+              )
+            }
+          />
+        }
+        renderRow={(r: any, i: number) => (
+          <PayrollOverviewRow
+            key={r.empId}
+            row={r}
+            index={i}
+            onViewPayslip={onViewPayslip}
+          />
+        )}
+        emptyRow={
+          <tr>
+            <td
+              colSpan={9}
+              className="px-4 py-12 text-center text-muted-foreground"
+            >
+              {arabicSource(
+                "payroll.there_are_no_payroll_records_for_this_month",
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </td>
+          </tr>
+        }
+      />
     </div>
   );
 };

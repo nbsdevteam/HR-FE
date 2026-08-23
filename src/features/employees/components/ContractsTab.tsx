@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { Plus, Search, Briefcase } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState, TableHeaderRow } from "@/shared/components";
+import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import {
   empDisplayName,
   type DbContractType,
@@ -190,41 +190,34 @@ const ContractsTab = ({
       </AnimatePresence>
 
       {/* Contracts List */}
-      <div className={cardCls}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <TableHeaderRow headings={CONTRACTS_TABLE_HEADINGS} />
-            </thead>
-            <tbody>
-              {filtered.length > 0 ? (
-                filtered.map((c, i) => (
-                  <ContractTableRow
-                    key={c.id}
-                    contract={c}
-                    index={i}
-                    emp={empMap[c.employee_id]}
-                    contractType={contractTypeById.get(c.contract_type_id)}
-                    statusLabels={statusLabels}
-                    statusColors={statusColors}
-                    onProbationUpdate={handleProbation}
-                    onTerminate={handleTerminate}
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8}>
-                    <EmptyState
-                      icon={Briefcase}
-                      message={arabicSource("lifecycle.no_contracts")}
-                    />
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        wrapperClassName={cardCls}
+        items={filtered}
+        header={<TableHeaderRow headings={CONTRACTS_TABLE_HEADINGS} />}
+        renderRow={(c, i) => (
+          <ContractTableRow
+            key={c.id}
+            contract={c}
+            index={i}
+            emp={empMap[c.employee_id]}
+            contractType={contractTypeById.get(c.contract_type_id)}
+            statusLabels={statusLabels}
+            statusColors={statusColors}
+            onProbationUpdate={handleProbation}
+            onTerminate={handleTerminate}
+          />
+        )}
+        emptyRow={
+          <tr>
+            <td colSpan={8}>
+              <EmptyState
+                icon={Briefcase}
+                message={arabicSource("lifecycle.no_contracts")}
+              />
+            </td>
+          </tr>
+        }
+      />
     </div>
   );
 };

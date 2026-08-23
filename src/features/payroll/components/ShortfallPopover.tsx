@@ -4,7 +4,7 @@ import {
   type ProcessedAttendanceRecord,
 } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { DataTable, ModalOverlay } from "@/shared/components";
 import PopoverHeader from "./shared/PopoverHeader";
 import PopoverFooterBar from "./shared/PopoverFooterBar";
 import ShortfallTableHeaderRow from "./ShortfallTableHeaderRow";
@@ -44,23 +44,20 @@ const ShortfallPopover = ({
         onClose={onClose}
       />
 
-      <div className="flex-1 overflow-y-auto">
-        <table className="w-full">
-          <thead>
-            <ShortfallTableHeaderRow headings={SHORTFALL_TABLE_HEADINGS} />
-          </thead>
-          <tbody>
-            {records.map((rec) => (
-              <ShortfallTableRow
-                key={rec.id}
-                rec={rec}
-                targetHours={targetHours}
-                onExcuse={onExcuse}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        wrapperClassName={null}
+        scrollClassName="flex-1 overflow-y-auto"
+        items={records}
+        header={<ShortfallTableHeaderRow headings={SHORTFALL_TABLE_HEADINGS} />}
+        renderRow={(rec) => (
+          <ShortfallTableRow
+            key={rec.id}
+            rec={rec}
+            targetHours={targetHours}
+            onExcuse={onExcuse}
+          />
+        )}
+      />
 
       <PopoverFooterBar>
         <span className="text-muted-foreground" style={{ fontSize: 12 }}>

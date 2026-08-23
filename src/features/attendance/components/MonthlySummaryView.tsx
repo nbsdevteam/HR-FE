@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Timer, TrendingUp, XCircle } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import { formatWorkHours, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "@/features/attendance/styles";
@@ -56,28 +57,27 @@ const MonthlySummaryView = ({ stats, monthLabel, records, onPrev, onNext }: Mont
         <div className="px-4 py-3 border-b border-border/20">
           <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("attendance.days_details")}</h4>
         </div>
-        <div className="overflow-x-auto max-h-[350px] overflow-y-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-card/90 backdrop-blur-sm">
-              <tr className="border-b border-border/20">
-                {dailyRecordsTableHeadings.map(h => (
-                  <AttendanceTableHeaderCell key={h} heading={h} />
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedRecords.length > 0 ? sortedRecords.map(r => (
-                <DailyAttendanceTableRow key={r.id} record={r} />
-              )) : (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground" style={{ fontSize: 13 }}>
-                    {arabicSource("attendance.there_are_no_records_for_this_month")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          wrapperClassName={null}
+          scrollClassName="overflow-x-auto max-h-[350px] overflow-y-auto"
+          theadClassName="sticky top-0 bg-card/90 backdrop-blur-sm"
+          items={sortedRecords}
+          header={
+            <tr className="border-b border-border/20">
+              {dailyRecordsTableHeadings.map(h => (
+                <AttendanceTableHeaderCell key={h} heading={h} />
+              ))}
+            </tr>
+          }
+          renderRow={(r) => <DailyAttendanceTableRow key={r.id} record={r} />}
+          emptyRow={
+            <tr>
+              <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground" style={{ fontSize: 13 }}>
+                {arabicSource("attendance.there_are_no_records_for_this_month")}
+              </td>
+            </tr>
+          }
+        />
       </div>
     </div>
   );

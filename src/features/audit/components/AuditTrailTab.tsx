@@ -1,13 +1,8 @@
 ﻿import { useCallback, useMemo, useState } from "react";
-import {
-  CheckCircle,
-  Clock,
-  Loader2,
-  Shield,
-  Trash2,
-} from "lucide-react";
+import { CheckCircle, Clock, Loader2, Shield, Trash2 } from "lucide-react";
 import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import DataTable from "@/shared/components/DataTable";
 import StatCard from "@/shared/components/StatCard";
 import SearchInput from "@/shared/components/SearchInput";
 import Select from "@/shared/components/Select";
@@ -90,7 +85,7 @@ const AuditTrailTab = () => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
+        {stats?.map((stat, index) => (
           <StatCard
             key={stat.label}
             label={stat.label}
@@ -119,14 +114,20 @@ const AuditTrailTab = () => {
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
             blankLabel={arabicSource("auditcenter.all_procedures")}
-            options={Object.entries(actionLabels).map(([value, label]) => ({ value, label }))}
+            options={Object.entries(actionLabels).map(([value, label]) => ({
+              value,
+              label,
+            }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           />
           <Select
             value={filterEntity}
             onChange={(e) => setFilterEntity(e.target.value)}
             blankLabel={arabicSource("auditcenter.all_entities")}
-            options={Object.entries(entityLabels).map(([value, label]) => ({ value, label }))}
+            options={Object.entries(entityLabels).map(([value, label]) => ({
+              value,
+              label,
+            }))}
             className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
           />
         </div>
@@ -145,42 +146,41 @@ const AuditTrailTab = () => {
         </div>
       ) : (
         <div className={auditCardCls + " !p-0"}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/40 bg-muted/10">
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("auditcenter.procedure")}
-                  </th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("auditcenter.entity")}
-                  </th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("common.description")}
-                  </th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("auditcenter.port")}
-                  </th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("common.date")}
-                  </th>
-                  <th className="text-start p-3 text-muted-foreground font-medium">
-                    {arabicSource("auditcenter.details")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedLogs.map((log) => (
-                  <AuditLogRow
-                    key={log.id}
-                    log={log}
-                    isExpanded={expandedLog === log.id}
-                    onToggleExpanded={toggleExpandedLog}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            wrapperClassName={null}
+            tableClassName="w-full text-sm"
+            items={displayedLogs}
+            header={
+              <tr className="border-b border-border/40 bg-muted/10">
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("auditcenter.procedure")}
+                </th>
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("auditcenter.entity")}
+                </th>
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("common.description")}
+                </th>
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("auditcenter.port")}
+                </th>
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("common.date")}
+                </th>
+                <th className="text-start p-3 text-muted-foreground font-medium">
+                  {arabicSource("auditcenter.details")}
+                </th>
+              </tr>
+            }
+            renderRow={(log) => (
+              <AuditLogRow
+                key={log.id}
+                log={log}
+                isExpanded={expandedLog === log.id}
+                onToggleExpanded={toggleExpandedLog}
+              />
+            )}
+          />
           {filtered.length > PAGE_LIMIT && (
             <p className="text-center text-muted-foreground text-xs py-3 border-t border-border/20">
               {arabicSource(

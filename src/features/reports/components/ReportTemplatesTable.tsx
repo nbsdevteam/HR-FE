@@ -1,3 +1,4 @@
+import DataTable from "@/shared/components/DataTable";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
@@ -24,31 +25,28 @@ const ReportTemplatesTable = ({
   onSortDirChange,
   onSelect,
 }: ReportTemplatesTableProps) => (
-  <div className={cardCls}>
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <SortableHeaderRow
-            columns={reportTemplatesTableColumns}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={(key) =>
-              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-            }
-          />
-        </thead>
-        <tbody>
-          {templates?.map((template) => (
-            <ReportTemplateRow
-              key={template.id}
-              template={template}
-              onSelect={onSelect}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <DataTable
+    wrapperClassName={cardCls}
+    tableClassName="w-full text-sm"
+    items={templates || []}
+    header={
+      <SortableHeaderRow
+        columns={reportTemplatesTableColumns}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={(key) =>
+          toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+        }
+      />
+    }
+    renderRow={(template) => (
+      <ReportTemplateRow
+        key={template.id}
+        template={template}
+        onSelect={onSelect}
+      />
+    )}
+  />
 );
 
 export default ReportTemplatesTable;

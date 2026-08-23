@@ -1,4 +1,5 @@
 ﻿import { motion } from "motion/react";
+import DataTable from "@/shared/components/DataTable";
 import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm } from "@/features/attendance/types";
@@ -96,44 +97,43 @@ const AttendanceRecordsView = ({
       transition={{ delay: 0.4 }}
       className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
     >
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <SortableHeaderRow
-              columns={[
-                { label: arabicSource("common.employee"), key: "name" },
-                { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
-                { label: arabicSource("common.section"), key: "department" },
-                { label: arabicSource("common.attendance"), key: "checkIn", center: true },
-                { label: arabicSource("common.dismissal"), key: "checkOut", center: true },
-                { label: arabicSource("common.working_hours"), key: "hours", center: true },
-                { label: arabicSource("common.source"), key: null },
-                { label: arabicSource("common.status"), key: "status" },
-              ]}
-              sortBy={sortBy}
-              sortDir={sortDir}
-              onSort={(key) => toggleSort(key, sortBy, sortDir, setSortBy, setSortDir)}
-            />
-          </thead>
-          <tbody>
-            {attendanceRows.length > 0 ? attendanceRows.map((record, index) => (
-              <AttendanceTableRow
-                key={record.id}
-                record={record}
-                index={index}
-                onSelectEmployee={setSelectedEmployeeId}
-                onOpenExcuse={openExcuse}
-              />
-            )) : (
-              <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-                  {arabicSource("attendance.there_are_no_attendance_records_for_this_date")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        wrapperClassName={null}
+        items={attendanceRows}
+        header={
+          <SortableHeaderRow
+            columns={[
+              { label: arabicSource("common.employee"), key: "name" },
+              { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
+              { label: arabicSource("common.section"), key: "department" },
+              { label: arabicSource("common.attendance"), key: "checkIn", center: true },
+              { label: arabicSource("common.dismissal"), key: "checkOut", center: true },
+              { label: arabicSource("common.working_hours"), key: "hours", center: true },
+              { label: arabicSource("common.source"), key: null },
+              { label: arabicSource("common.status"), key: "status" },
+            ]}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={(key) => toggleSort(key, sortBy, sortDir, setSortBy, setSortDir)}
+          />
+        }
+        renderRow={(record, index) => (
+          <AttendanceTableRow
+            key={record.id}
+            record={record}
+            index={index}
+            onSelectEmployee={setSelectedEmployeeId}
+            onOpenExcuse={openExcuse}
+          />
+        )}
+        emptyRow={
+          <tr>
+            <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+              {arabicSource("attendance.there_are_no_attendance_records_for_this_date")}
+            </td>
+          </tr>
+        }
+      />
     </motion.div>
   );
 }

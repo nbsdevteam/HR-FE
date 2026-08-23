@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Calendar, CalendarDays, Clock, Award } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import { formatWorkHours } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "@/features/attendance/styles";
@@ -61,22 +62,20 @@ const OverallSummaryView = ({ stats, breakdown }: OverallSummaryViewProps) => {
         <div className="px-4 py-3 border-b border-border/20">
           <h4 className="text-foreground" style={{ fontSize: 14 }}>{arabicSource("attendance.months_details")}</h4>
         </div>
-        <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-card/90 backdrop-blur-sm">
-              <tr className="border-b border-border/20">
-                {monthlyBreakdownTableHeadings.map(heading => (
-                  <AttendanceTableHeaderCell key={heading} heading={heading} />
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {breakdown.map(row => (
-                <MonthlyBreakdownTableRow key={row.month} row={row} />
+        <DataTable
+          wrapperClassName={null}
+          scrollClassName="overflow-x-auto max-h-[300px] overflow-y-auto"
+          theadClassName="sticky top-0 bg-card/90 backdrop-blur-sm"
+          items={breakdown}
+          header={
+            <tr className="border-b border-border/20">
+              {monthlyBreakdownTableHeadings.map(heading => (
+                <AttendanceTableHeaderCell key={heading} heading={heading} />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          }
+          renderRow={(row) => <MonthlyBreakdownTableRow key={row.month} row={row} />}
+        />
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import { arabicSource } from "@/i18n/source";
+import DataTable from "@/shared/components/DataTable";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
 import ReportResultRow from "./ReportResultRow";
+import ReportResultsHeaderCell from "./ReportResultsHeaderCell";
 
 interface IReportResultsTableProps {
   data: ReportRow[];
@@ -27,39 +29,28 @@ const ReportResultsTable = ({
         {dateTo && ` ${arabicSource("reports.to")} ${dateTo}`}
       </p>
     </div>
-    <div className="overflow-x-auto border border-border/30 rounded-xl">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-muted/30 border-b border-border/40">
-            <th
-              className="p-3 text-start text-muted-foreground font-medium"
-              style={{ fontSize: 12 }}
-            >
-              #
-            </th>
-            {template.columns.map((col) => (
-              <th
-                key={col.key}
-                className="p-3 text-start text-muted-foreground font-medium"
-                style={{ fontSize: 12 }}
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.slice(0, 200).map((row, idx) => (
-            <ReportResultRow
-              key={idx}
-              row={row}
-              index={idx}
-              columns={template.columns}
-            />
+    <DataTable
+      wrapperClassName="overflow-x-auto border border-border/30 rounded-xl"
+      scrollClassName=""
+      tableClassName="w-full text-sm"
+      items={data.slice(0, 200)}
+      header={
+        <tr className="bg-muted/30 border-b border-border/40">
+          <ReportResultsHeaderCell label="#" />
+          {template.columns.map((col) => (
+            <ReportResultsHeaderCell key={col.key} label={col.label} />
           ))}
-        </tbody>
-      </table>
-    </div>
+        </tr>
+      }
+      renderRow={(row, idx) => (
+        <ReportResultRow
+          key={idx}
+          row={row}
+          index={idx}
+          columns={template.columns}
+        />
+      )}
+    />
     {data.length > 200 && (
       <p className="text-center text-muted-foreground text-xs mt-3">
         {arabicSource(

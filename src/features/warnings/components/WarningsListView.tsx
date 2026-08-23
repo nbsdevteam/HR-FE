@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { ShieldAlert } from "lucide-react";
-import { EmptyState, TableHeaderRow } from "@/shared/components";
+import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { WarningWithEmployee } from "../types";
 import WarningTableRow from "./WarningTableRow";
@@ -42,38 +42,33 @@ const WarningsListView = ({
     transition={{ duration: 0.2, delay: 0.7 }}
     className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
   >
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <TableHeaderRow headings={TABLE_HEADERS} />
-        </thead>
-        <tbody>
-          {warnings.length > 0 ? (
-            warnings.map((warning, i) => (
-              <WarningTableRow
-                key={warning.id}
-                warning={warning}
-                index={i}
-                typeColors={typeColors}
-                statusColors={statusColors}
-                typeSeverity={typeSeverity}
-                duplicateCount={warningsByEmployee[warning.employee_id]}
-                onSelect={onSelectWarning}
-              />
-            ))
-          ) : (
-            <tr>
-              <td colSpan={8}>
-                <EmptyState
-                  icon={ShieldAlert}
-                  message={arabicSource("common.no_alarms")}
-                />
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      wrapperClassName={null}
+      items={warnings}
+      header={<TableHeaderRow headings={TABLE_HEADERS} />}
+      renderRow={(warning, i) => (
+        <WarningTableRow
+          key={warning.id}
+          warning={warning}
+          index={i}
+          typeColors={typeColors}
+          statusColors={statusColors}
+          typeSeverity={typeSeverity}
+          duplicateCount={warningsByEmployee[warning.employee_id]}
+          onSelect={onSelectWarning}
+        />
+      )}
+      emptyRow={
+        <tr>
+          <td colSpan={8}>
+            <EmptyState
+              icon={ShieldAlert}
+              message={arabicSource("common.no_alarms")}
+            />
+          </td>
+        </tr>
+      }
+    />
   </motion.div>
 );
 

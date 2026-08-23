@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { FileText, Plus } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState, FilterChip, Select, TableHeaderRow } from "@/shared/components";
+import { DataTable, EmptyState, FilterChip, Select, TableHeaderRow } from "@/shared/components";
 import { EmployeeSelect } from "@/features/employees";
 import {
   type DbDocumentType, type DbEmployeeDocument,
@@ -158,31 +158,24 @@ const DocumentsTab = ({
       </AnimatePresence>
 
       {/* Documents List */}
-      <div className={cardCls}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")]} />
-            </thead>
-            <tbody>
-              {filtered.length > 0 ? filtered.map((d, i) => (
-                <DocumentTableRow
-                  key={d.id}
-                  doc={d}
-                  index={i}
-                  emp={empMap[d.employee_id]}
-                  docType={docTypeById.get(d.document_type_id)}
-                  statusLabels={statusLabels}
-                  statusColors={statusColors}
-                  onDelete={handleDelete}
-                />
-              )) : (
-                <tr><td colSpan={7}><EmptyState icon={FileText} message={arabicSource("lifecycle.no_documents")} /></td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        wrapperClassName={cardCls}
+        items={filtered}
+        header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")]} />}
+        renderRow={(d, i) => (
+          <DocumentTableRow
+            key={d.id}
+            doc={d}
+            index={i}
+            emp={empMap[d.employee_id]}
+            docType={docTypeById.get(d.document_type_id)}
+            statusLabels={statusLabels}
+            statusColors={statusColors}
+            onDelete={handleDelete}
+          />
+        )}
+        emptyRow={<tr><td colSpan={7}><EmptyState icon={FileText} message={arabicSource("lifecycle.no_documents")} /></td></tr>}
+      />
     </div>
   );
 };

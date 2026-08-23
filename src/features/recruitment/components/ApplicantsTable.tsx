@@ -1,6 +1,7 @@
 import { useState, memo } from "react";
 import { motion } from "motion/react";
 import { Users } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
@@ -47,33 +48,31 @@ const ApplicantsTable = ({
       animate={{ opacity: 1, y: 0 }}
       className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
     >
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <SortableHeaderRow
-              columns={applicantsTableColumns}
-              sortBy={sortBy}
-              sortDir={recSortDir}
-              onSort={(key) =>
-                toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir)
-              }
-            />
-          </thead>
-          <tbody>
-            {applicants.map((app, i) => (
-              <ApplicantTableRow
-                key={app.id}
-                app={app}
-                index={i}
-                onSelect={onSelect}
-                onToggleBookmark={onToggleBookmark}
-                onUpdateRating={onUpdateRating}
-                onUpdateStage={onUpdateStage}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        wrapperClassName={null}
+        items={applicants}
+        header={
+          <SortableHeaderRow
+            columns={applicantsTableColumns}
+            sortBy={sortBy}
+            sortDir={recSortDir}
+            onSort={(key) =>
+              toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir)
+            }
+          />
+        }
+        renderRow={(app, i) => (
+          <ApplicantTableRow
+            key={app.id}
+            app={app}
+            index={i}
+            onSelect={onSelect}
+            onToggleBookmark={onToggleBookmark}
+            onUpdateRating={onUpdateRating}
+            onUpdateStage={onUpdateStage}
+          />
+        )}
+      />
     </motion.div>
   );
 };

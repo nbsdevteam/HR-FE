@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Plus, UserX } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { EmptyState, TableHeaderRow } from "@/shared/components";
+import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import {
   useExitChecklist,
   type DbExitProcess, type DbExitChecklistItem,
@@ -180,31 +180,24 @@ const ExitTab = ({
       </AnimatePresence>
 
       {/* Exit Processes List */}
-      <div className={cardCls}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")]} />
-            </thead>
-            <tbody>
-              {processes.length > 0 ? processes.map((p, i) => (
-                <ExitProcessTableRow
-                  key={p.id}
-                  process={p}
-                  index={i}
-                  emp={empMap[p.employee_id]}
-                  exitTypeLabels={exitTypeLabels}
-                  statusLabels={statusLabels}
-                  statusColors={statusColors}
-                  onView={openDetail}
-                />
-              )) : (
-                <tr><td colSpan={6}><EmptyState icon={UserX} message={arabicSource("lifecycle.no_termination_procedures")} /></td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        wrapperClassName={cardCls}
+        items={processes}
+        header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")]} />}
+        renderRow={(p, i) => (
+          <ExitProcessTableRow
+            key={p.id}
+            process={p}
+            index={i}
+            emp={empMap[p.employee_id]}
+            exitTypeLabels={exitTypeLabels}
+            statusLabels={statusLabels}
+            statusColors={statusColors}
+            onView={openDetail}
+          />
+        )}
+        emptyRow={<tr><td colSpan={6}><EmptyState icon={UserX} message={arabicSource("lifecycle.no_termination_procedures")} /></td></tr>}
+      />
     </div>
   );
 };

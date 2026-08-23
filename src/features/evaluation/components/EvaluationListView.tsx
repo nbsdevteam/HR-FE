@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
+import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
 import SortableHeaderRow, {
   toggleSort,
@@ -39,60 +40,57 @@ const EvaluationListView = ({
     exit={{ opacity: 0, y: -10 }}
     className={evaluationCardClass}
   >
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <SortableHeaderRow
-            columns={sortData}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={(key) =>
-              toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-            }
-          />
-        </thead>
-        <tbody>
-          {evaluations.length === 0 ? (
-            <tr>
-              <td colSpan={7}>
-                <EmptyState
-                  icon={ClipboardCheck}
-                  message={
-                    allEvaluationsCount === 0
-                      ? arabicSource("evaluation.there_are_no_reviews_yet")
-                      : arabicSource(
-                          "evaluation.there_are_no_results_matching_your_search",
-                        )
-                  }
-                  hint={
-                    allEvaluationsCount === 0
-                      ? arabicSource(
-                          "evaluation.start_creating_a_new_assessment",
-                        )
-                      : undefined
-                  }
-                />
-              </td>
-            </tr>
-          ) : (
-            evaluations.map((evaluation, i) => (
-              <EvaluationTableRow
-                key={evaluation.id}
-                evaluation={evaluation}
-                index={i}
-                employee={empMap[evaluation.employee_id]}
-                evaluator={
-                  evaluation.evaluator_id
-                    ? empMap[evaluation.evaluator_id]
-                    : null
-                }
-                onSelectEvaluation={onSelectEvaluation}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      wrapperClassName={null}
+      items={evaluations}
+      header={
+        <SortableHeaderRow
+          columns={sortData}
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSort={(key) =>
+            toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
+          }
+        />
+      }
+      renderRow={(evaluation, i) => (
+        <EvaluationTableRow
+          key={evaluation.id}
+          evaluation={evaluation}
+          index={i}
+          employee={empMap[evaluation.employee_id]}
+          evaluator={
+            evaluation.evaluator_id
+              ? empMap[evaluation.evaluator_id]
+              : null
+          }
+          onSelectEvaluation={onSelectEvaluation}
+        />
+      )}
+      emptyRow={
+        <tr>
+          <td colSpan={7}>
+            <EmptyState
+              icon={ClipboardCheck}
+              message={
+                allEvaluationsCount === 0
+                  ? arabicSource("evaluation.there_are_no_reviews_yet")
+                  : arabicSource(
+                      "evaluation.there_are_no_results_matching_your_search",
+                    )
+              }
+              hint={
+                allEvaluationsCount === 0
+                  ? arabicSource(
+                      "evaluation.start_creating_a_new_assessment",
+                    )
+                  : undefined
+              }
+            />
+          </td>
+        </tr>
+      }
+    />
   </motion.div>
 );
 
