@@ -1,7 +1,12 @@
 import { useState, useRef, useCallback, useEffect, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { ChevronsUpDown } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import SelectOptionRow from "./SelectOption";
+
+const POPUP_GAP_PX = 4;
+
+type PopupRect = { top: number; left: number; width: number };
 
 export type SelectOption =
   | string
@@ -52,6 +57,7 @@ const Select = ({
   onBlur,
 }: SelectProps) => {
   const [open, setOpen] = useState(false);
+  const [popupRect, setPopupRect] = useState<PopupRect | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const normalized = options.map(normalizeOption);
@@ -94,6 +100,12 @@ const Select = ({
 
   useEffect(() => {
     if (!open) return;
+    const updatePosition = (): void => {
+      const rect = rootRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPopupRect({ top: rect.bottom + POPUP_GAP_PX, left: rect.left, width: rect.width });
+    };
+    updatePosition();
     const onPointerDown = (ev: MouseEvent) => {
       if (!rootRef.current?.contains(ev.target as Node)) {
         setOpen(false);
@@ -104,14 +116,18 @@ const Select = ({
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [open]);
 
   const boxClassName = twMerge(
-    "w-full h-11 px-4 rounded-lg border border-border bg-input-background focus-within:ring-2 focus-within:ring-ring",
+    "h-11 px-4 rounded-lg border border-border bg-input-background focus-within:ring-2 focus-within:ring-ring",
     disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
     className,
   );
@@ -138,34 +154,38 @@ const Select = ({
         <ChevronsUpDown className="w-4 h-4 text-muted-foreground shrink-0" />
       </button>
 
-      {open && !disabled ? (
-        <div
-          className="absolute z-[800] mt-1 w-full max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
-          role="listbox"
-          onPointerDown={handleDropdownPointerDown}
-        >
-          {blankLabel !== undefined && (
-            <SelectOptionRow
-              label={blankLabel}
-              active={value === ""}
-              onMouseDown={handleOptionMouseDown("")}
-            />
-          )}
-          {normalized.map((opt, i) =>
-            "divider" in opt ? (
-              <div key={`divider-${i}`} className="my-1 border-t border-border/40" />
-            ) : (
-              <SelectOptionRow
-                key={opt.value}
-                label={opt.label}
-                active={opt.value === value}
-                disabled={opt.disabled}
-                onMouseDown={handleOptionMouseDown(opt.value)}
-              />
-            ),
-          )}
-        </div>
-      ) : null}
+      {open && !disabled && popupRect
+        ? createPortal(
+            <div
+              className="fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
+              style={{ top: popupRect.top, left: popupRect.left, width: popupRect.width }}
+              role="listbox"
+              onPointerDown={handleDropdownPointerDown}
+            >
+              {blankLabel !== undefined && (
+                <SelectOptionRow
+                  label={blankLabel}
+                  active={value === ""}
+                  onMouseDown={handleOptionMouseDown("")}
+                />
+              )}
+              {normalized.map((opt, i) =>
+                "divider" in opt ? (
+                  <div key={`divider-${i}`} className="my-1 border-t border-border/40" />
+                ) : (
+                  <SelectOptionRow
+                    key={opt.value}
+                    label={opt.label}
+                    active={opt.value === value}
+                    disabled={opt.disabled}
+                    onMouseDown={handleOptionMouseDown(opt.value)}
+                  />
+                ),
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 

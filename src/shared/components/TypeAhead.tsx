@@ -1,7 +1,12 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import { ChevronsUpDown, Search, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronsUpDown, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import TypeAheadOption from "./TypeAheadOption";
+import TypeAheadPopup from "./TypeAheadPopup";
+
+const POPUP_GAP_PX = 4;
+
+type PopupRect = { top: number; left: number; width: number };
 
 type TypeAheadProps<T> = {
   items: T[];
@@ -47,6 +52,7 @@ const TypeAhead = <T,>({
 }: TypeAheadProps<T>) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [popupRect, setPopupRect] = useState<PopupRect | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -155,6 +161,12 @@ const TypeAhead = <T,>({
 
   useEffect(() => {
     if (!open) return;
+    const updatePosition = (): void => {
+      const rect = rootRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPopupRect({ top: rect.bottom + POPUP_GAP_PX, left: rect.left, width: rect.width });
+    };
+    updatePosition();
     const onPointerDown = (ev: MouseEvent) => {
       if (!rootRef.current?.contains(ev.target as Node)) {
         setOpen(false);
@@ -170,10 +182,14 @@ const TypeAhead = <T,>({
     // pointerdown bubble (not capture-click) avoids racing option selection.
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
     requestAnimationFrame(() => searchRef.current?.focus());
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [open]);
 
@@ -219,64 +235,36 @@ const TypeAhead = <T,>({
         </span>
       </div>
 
-      {open ? (
-        <div
-          className="absolute z-[800] mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
-          onPointerDown={handleDropdownPointerDown}
-        >
-          <div className="p-2 border-b border-border/40 flex items-center gap-2">
-            <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={query}
-              onChange={handleQueryChange}
-              onClick={handleSearchInputClick}
-              placeholder={searchBoxPlaceholder}
-              className="w-full h-8 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-              style={{ fontSize: 13 }}
-            />
-          </div>
-          <div className="max-h-96 overflow-y-auto" role="listbox">
-            {showBlankOption && (
-              <TypeAheadOption
-                label={blankLabel as string}
-                active={valueKey === ""}
-                onMouseDown={handleBlankMouseDown}
-              />
-            )}
-            {options.length === 0 && !showBlankOption ? (
-              <p
-                className="px-3 py-3 text-muted-foreground"
-                style={{ fontSize: 12 }}
-              >
-                {arabicSource("common.no_results_found")}
-              </p>
-            ) : (
-              options.map((item) => (
-                <TypeAheadOption
-                  key={getId(item)}
-                  label={getLabel(item)}
-                  description={showDescription ? getDescription?.(item) : undefined}
-                  active={getId(item) === valueKey}
-                  onMouseDown={handleOptionMouseDown(item)}
-                />
-              ))
-            )}
-          </div>
-          <div
-            className="px-3 py-1.5 border-t border-border/40 text-muted-foreground"
-            style={{ fontSize: 10 }}
-          >
-            {options.length} /{" "}
-            {
-              items.filter(
-                (item) => !exclude.has(getId(item)) && (!filter || filter(item)),
-              ).length
-            }
-          </div>
-        </div>
-      ) : null}
+      {open && popupRect
+        ? createPortal(
+            <TypeAheadPopup
+              rect={popupRect}
+              query={query}
+              onQueryChange={handleQueryChange}
+              onSearchInputClick={handleSearchInputClick}
+              searchRef={searchRef}
+              searchPlaceholder={searchBoxPlaceholder}
+              onPointerDown={handleDropdownPointerDown}
+              showBlankOption={showBlankOption}
+              blankLabel={blankLabel}
+              isBlankActive={valueKey === ""}
+              onBlankMouseDown={handleBlankMouseDown}
+              options={options}
+              getId={getId}
+              getLabel={getLabel}
+              getDescription={getDescription}
+              showDescription={showDescription}
+              activeId={valueKey}
+              onOptionMouseDown={handleOptionMouseDown}
+              visibleCount={options.length}
+              totalCount={
+                items.filter((item) => !exclude.has(getId(item)) && (!filter || filter(item)))
+                  .length
+              }
+            />,
+            document.body,
+          )
+        : null}
     </div>
   );
 };
