@@ -23,6 +23,14 @@ const LeaveRequestFilters = ({
     arabicSource("common.rejected_3"),
   ];
 
+  const handleFilterClick = (filterOption: string) => (): void => {
+    onFilterChange(filterOption);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchChange(e.target.value);
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-3 mb-4">
       <Filter className="w-4 h-4 text-muted-foreground" />
@@ -31,7 +39,7 @@ const LeaveRequestFilters = ({
           key={filterOption}
           label={filterOption}
           active={filter === filterOption}
-          onClick={() => onFilterChange(filterOption)}
+          onClick={handleFilterClick(filterOption)}
           fontSize={13}
         />
       ))}
@@ -40,7 +48,7 @@ const LeaveRequestFilters = ({
         <input
           type="text"
           value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onChange={handleSearchChange}
           placeholder={arabicSource("common.search")}
           className={`${leaveInputClass} ps-10`}
         />

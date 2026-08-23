@@ -1,16 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { AlertCircle, CalendarDays, FileText, Loader2, Send } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
 import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
-  empDisplayName,
   type DbLeaveType, type DbLeaveBalance,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
-import LeaveTypeChipButton from "./LeaveTypeChipButton";
 import HalfDayPeriodButton from "./HalfDayPeriodButton";
+import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
+import LeaveTypeChipButton from "./LeaveTypeChipButton";
 
 const HALF_DAY_PERIODS = [
   ["morning", arabicSource("leave.morning")],
@@ -86,6 +85,22 @@ const LeaveRequestModal = ({
     }
   }, [selfOnly, selfEmployeeId]);
 
+  const handleEmployeeChange = (id: string): void => {
+    setEmployeeId(String(id));
+  };
+
+  const handleIsHalfDayChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setIsHalfDay(e.target.checked);
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setEndDate(e.target.value);
+  };
+
+  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setReason(e.target.value);
+  };
+
   const handleSubmit = async () => {
     if (selfOnly && (linkError || !selfEmployee)) {
       setError(linkError || "Your user account is not linked to an employee. Please contact HR.");
@@ -147,36 +162,15 @@ const LeaveRequestModal = ({
           {/* Employee Selection */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
-            {selfOnly ? (
-              employeesLoading ? (
-                <div className={`${inputCls} flex items-center text-muted-foreground`} style={{ fontSize: 13 }}>
-                  <Loader2 className="w-4 h-4 animate-spin me-2" />
-                </div>
-              ) : linkError || !selfEmployee ? (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 13 }}>
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {linkError || "Your user account is not linked to an employee. Please contact HR."}
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  readOnly
-                  disabled
-                  value={empDisplayName(selfEmployee)}
-                  className={`${inputCls} opacity-80 cursor-not-allowed`}
-                  style={{ fontSize: 13 }}
-                  dir="auto"
-                  aria-label="My employee"
-                />
-              )
-            ) : (
-              <EmployeeSelect
-                employees={employees}
-                labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
-                value={employeeId}
-                onChange={(id) => setEmployeeId(String(id))}
-              />
-            )}
+            <LeaveRequestEmployeeField
+              employees={employees}
+              employeeId={employeeId}
+              onEmployeeChange={handleEmployeeChange}
+              selfOnly={selfOnly}
+              employeesLoading={employeesLoading}
+              linkError={linkError}
+              selfEmployee={selfEmployee}
+            />
           </div>
 
           {/* Leave Type */}
@@ -199,7 +193,7 @@ const LeaveRequestModal = ({
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  type="checkbox" checked={isHalfDay} onChange={e => setIsHalfDay(e.target.checked)}
+                  type="checkbox" checked={isHalfDay} onChange={handleIsHalfDayChange}
                   className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 />
                 <span className="text-foreground" style={{ fontSize: 13 }}>{arabicSource("common.half_a_day")}</span>
@@ -231,7 +225,7 @@ const LeaveRequestModal = ({
             {!isHalfDay && (
               <div>
                 <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputCls} dir="ltr" min={startDate} />
+                <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate} />
               </div>
             )}
           </div>
@@ -254,7 +248,7 @@ const LeaveRequestModal = ({
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.the_reason")}</label>
             <textarea
-              value={reason} onChange={e => setReason(e.target.value)}
+              value={reason} onChange={handleReasonChange}
               rows={2} placeholder={arabicSource("leave.reason_for_leave")}
               className="w-full px-3 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />

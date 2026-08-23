@@ -39,6 +39,14 @@ const BalancesTab = ({
     [employees, search],
   );
 
+  const handleBackToList = (): void => {
+    setSelectedEmp(null);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearch(e.target.value);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
@@ -55,7 +63,7 @@ const BalancesTab = ({
     return (
       <div className="space-y-4">
         <button
-          onClick={() => setSelectedEmp(null)}
+          onClick={handleBackToList}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
@@ -90,7 +98,7 @@ const BalancesTab = ({
       <div className="relative max-w-md">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
-          type="text" value={search} onChange={e => setSearch(e.target.value)}
+          type="text" value={search} onChange={handleSearchChange}
           placeholder={arabicSource("common.search_by_name_or_department")}
           className={`${inputCls} ps-10`}
         />

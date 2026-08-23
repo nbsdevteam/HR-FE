@@ -39,7 +39,12 @@ const LeaveRequestsListView = ({
   onApprove,
   onReject,
   onDelete,
-}: LeaveRequestsListViewProps) => (
+}: LeaveRequestsListViewProps) => {
+  const handleSort = (key: LeaveSortKey): void => {
+    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+  };
+
+  return (
   <DataTable
     wrapperClassName={leaveCardClass}
     items={requests}
@@ -48,9 +53,7 @@ const LeaveRequestsListView = ({
         columns={leaveData}
         sortBy={sortBy}
         sortDir={sortDir}
-        onSort={(key) =>
-          toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-        }
+        onSort={handleSort}
       />
     }
     renderRow={(leave, index) => {
@@ -88,6 +91,7 @@ const LeaveRequestsListView = ({
       </tr>
     }
   />
-);
+  );
+};
 
 export default LeaveRequestsListView;

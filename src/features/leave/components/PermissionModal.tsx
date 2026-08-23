@@ -29,6 +29,14 @@ const PermissionModal = ({
     return Math.max(0, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 100) / 100);
   }, [startTime, endTime]);
 
+  const handleEmployeeChange = (id: string): void => {
+    setEmployeeId(String(id));
+  };
+
+  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setReason(e.target.value);
+  };
+
   const handleSubmit = async () => {
     if (!employeeId || !date || !startTime || !endTime) {
       setError(arabicSource("common.please_fill_out_all_required_fields"));
@@ -76,7 +84,7 @@ const PermissionModal = ({
               employees={employees}
               labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
               value={employeeId}
-              onChange={(id) => setEmployeeId(String(id))}
+              onChange={handleEmployeeChange}
             />
           </div>
 
@@ -106,7 +114,7 @@ const PermissionModal = ({
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.the_reason")}</label>
             <textarea
-              value={reason} onChange={e => setReason(e.target.value)}
+              value={reason} onChange={handleReasonChange}
               rows={2} placeholder={arabicSource("leave.the_reason_for_asking_permission")}
               className="w-full px-3 py-2 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />
