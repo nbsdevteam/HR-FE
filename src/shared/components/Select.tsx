@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, type CSSProperties } from "react";
 import { ChevronsUpDown } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 import SelectOptionRow from "./SelectOption";
 
 export type SelectOption =
@@ -109,17 +110,20 @@ const Select = ({
     };
   }, [open]);
 
+  const boxClassName = twMerge(
+    "w-full h-11 px-4 rounded-lg border border-border bg-input-background focus-within:ring-2 focus-within:ring-ring",
+    disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+    className,
+  );
+
   const field = (
-    <div ref={rootRef} className={`relative ${className}`} dir={dir}>
+    <div ref={rootRef} className={`relative ${boxClassName}`} style={style} dir={dir}>
       <button
         type="button"
         disabled={disabled}
         onClick={handleToggle}
         onBlur={handleTriggerBlur}
-        className={`w-full h-11 px-4 rounded-lg border border-border bg-input-background flex items-center justify-between gap-2 text-start ${
-          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        } focus:outline-none focus:ring-2 focus:ring-ring`}
-        style={style}
+        className="w-full h-full flex items-center justify-between gap-2 text-start focus:outline-none"
         title={title}
         aria-haspopup="listbox"
         aria-expanded={open}
