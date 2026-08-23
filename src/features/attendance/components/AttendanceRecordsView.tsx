@@ -16,6 +16,8 @@ import AttendanceKanbanColumn from "./AttendanceKanbanColumn";
 import AttendanceTableRow from "./AttendanceTableRow";
 import { kanbanColumns } from "../data";
 
+const ATTENDANCE_ROW_VIRTUALIZATION = { rowHeight: 49 } as const;
+
 type AttendanceRecordsViewProps = {
   viewMode: AttendanceViewMode;
   attendanceRows: AttendanceRow[];
@@ -146,6 +148,9 @@ const AttendanceRecordsView = ({
         }
         renderRow={renderRow}
         emptyRow={EMPTY_ROW}
+        // A month of records across the whole roster runs to thousands of rows;
+        // render only the ones near the viewport.
+        virtualization={ATTENDANCE_ROW_VIRTUALIZATION}
       />
     </motion.div>
   );

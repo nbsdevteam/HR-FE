@@ -9,6 +9,8 @@ import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
 
+const EMPLOYEE_ROW_VIRTUALIZATION = { rowHeight: 61 } as const;
+
 const EMPLOYEE_COLUMNS: ReadonlyArray<{
   label: string;
   key: EmployeeSortKey | null;
@@ -100,6 +102,9 @@ const EmployeesListView = ({
           />
         }
         renderRow={renderEmployeeRow}
+        // The roster loads up to 5000 employees; only render the rows near the
+        // viewport. Row height = 36px avatar + py-3 + 1px border.
+        virtualization={EMPLOYEE_ROW_VIRTUALIZATION}
       />
     </motion.div>
   );

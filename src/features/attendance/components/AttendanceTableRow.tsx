@@ -36,7 +36,9 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
     <motion.tr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: index * 0.02 }}
+      // Capped: uncapped index-scaled delay hides far rows for many seconds
+      // on a large result set, and windowing can mount a high index at once.
+      transition={{ delay: Math.min(index * 0.02, 0.4) }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors group cursor-pointer"
       onClick={handleRowClick}
     >

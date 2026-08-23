@@ -35,7 +35,9 @@ const EmployeesTableRow = ({
     <motion.tr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: index * 0.05 }}
+      // Capped: uncapped `index * 0.05` left row 500 invisible for 25 seconds
+      // on a large roster, and windowing can mount a high index immediately.
+      transition={{ delay: Math.min(index * 0.05, 0.4) }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors"
     >
       <td className="px-4 py-3">
