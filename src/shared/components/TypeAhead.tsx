@@ -184,7 +184,6 @@ const TypeAhead = <T,>({
     document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("resize", updatePosition);
-    requestAnimationFrame(() => searchRef.current?.focus());
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
@@ -192,6 +191,13 @@ const TypeAhead = <T,>({
       window.removeEventListener("resize", updatePosition);
     };
   }, [open]);
+
+  useEffect(() => {
+    // The search input only exists once the portaled popup has actually
+    // mounted (gated on popupRect being computed) — focusing eagerly via
+    // rAF could fire before that commit lands.
+    if (open && popupRect) searchRef.current?.focus();
+  }, [open, popupRect]);
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
