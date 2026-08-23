@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { AnimatePresence } from "motion/react";
+import type { LucideIcon } from "lucide-react";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
+import { groupBy } from "@/shared/utils/collections";
 import TrainingProgramCard from "./TrainingProgramCard";
 
 interface ITrainingProgramsGridProps {
@@ -8,7 +10,7 @@ interface ITrainingProgramsGridProps {
   participants: DbTrainingParticipant[];
   trainingCategories: string[];
   statusColors: Record<string, string>;
-  statusIcons: Record<string, any>;
+  statusIcons: Record<string, LucideIcon>;
   participantStatusColors: Record<string, string>;
   getEmployeeName: (employeeId: string) => string;
   onEditProgram: (program: DbTrainingProgram) => void;
@@ -34,15 +36,10 @@ const TrainingProgramsGrid = ({
   onMarkParticipantCompleted,
   onDeleteParticipant,
 }: ITrainingProgramsGridProps) => {
-  const participantsByProgram = useMemo(() => {
-    const map = new Map<string, DbTrainingParticipant[]>();
-    participants.forEach((p) => {
-      const list = map.get(p.training_program_id);
-      if (list) list.push(p);
-      else map.set(p.training_program_id, [p]);
-    });
-    return map;
-  }, [participants]);
+  const participantsByProgram = useMemo(
+    () => groupBy(participants, (p) => p.training_program_id),
+    [participants],
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

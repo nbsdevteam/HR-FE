@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { formatCurrency } from "@/features/payroll";
+import { formatCurrency } from "@/shared/utils/currency";
 
 type PayrollLedgerRowProps = {
   label: string;

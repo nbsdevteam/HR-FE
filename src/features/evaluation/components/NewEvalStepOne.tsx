@@ -4,7 +4,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import { Button, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";

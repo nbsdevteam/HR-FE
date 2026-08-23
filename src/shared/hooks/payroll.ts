@@ -75,27 +75,33 @@ export interface DbLoan {
 }
 
 export const useAllowanceTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchAllowanceTypes());
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchAllowanceTypes(), [], "Failed to load allowance types", undefined, { cacheKey: "allowanceTypes" });
   return { types, loading, refetch };
 }
 
 export const useEmployeeAllowances = (employeeId?: string) => {
   const { data: allowances, loading, refetch } = useAsyncList(
     () => odooData.fetchEmployeeAllowances(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load allowances",
+    undefined,
+    { cacheKey: "employeeAllowances" }
   );
   return { allowances, loading, refetch };
 }
 
 export const useDeductionTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDeductionTypes());
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDeductionTypes(), [], "Failed to load deduction types", undefined, { cacheKey: "deductionTypes" });
   return { types, loading, refetch };
 }
 
 export const useEmployeeDeductions = (employeeId?: string) => {
   const { data: deductions, loading, refetch } = useAsyncList(
     () => odooData.fetchEmployeeDeductions(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load deductions",
+    undefined,
+    { cacheKey: "employeeDeductions" }
   );
   return { deductions, loading, refetch };
 }
@@ -103,7 +109,10 @@ export const useEmployeeDeductions = (employeeId?: string) => {
 export const useLoans = (employeeId?: string) => {
   const { data: loans, loading, refetch } = useAsyncList(
     () => odooData.fetchLoans(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load loans",
+    undefined,
+    { cacheKey: "loans" }
   );
   return { loans, loading, refetch };
 }

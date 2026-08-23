@@ -2,6 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { Plus, UserPlus } from "lucide-react";
 import ViewToggle from "@/shared/components/ViewToggle";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type RecruitmentHeaderProps = {
@@ -41,15 +42,17 @@ const RecruitmentHeader = ({
         {arabicSource("recruitment.add_advanced_2")}
       </motion.button>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onJobFormOpen}
-        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
-        style={{ fontSize: 13 }}
-      >
-        <Plus className="w-4 h-4" /> {arabicSource("common.new_vacancy")}
-      </motion.button>
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          size="lg"
+          icon={Plus}
+          onClick={onJobFormOpen}
+          className="shadow-lg shadow-primary/20 cursor-pointer"
+          style={{ fontSize: 13 }}
+        >
+          {arabicSource("common.new_vacancy")}
+        </Button>
+      </motion.div>
     </div>
   </div>
 );

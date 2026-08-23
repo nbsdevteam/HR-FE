@@ -13,6 +13,7 @@ import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { stageColors } from "../constants/recruitment";
 import { effectiveScore, hasIr, rankLabel } from "../utils/recruitmentRanking";
+import CandidateSkillChip from "./CandidateSkillChip";
 import StarRating from "./StarRating";
 
 type ICandidateCardProps = {
@@ -126,13 +127,7 @@ const CandidateCard = ({
         {app.skills && app.skills.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {app.skills.slice(0, 4).map((s) => (
-              <span
-                key={s}
-                className="px-1.5 py-0.5 rounded bg-primary/10 text-primary"
-                style={{ fontSize: 10 }}
-              >
-                {s}
-              </span>
+              <CandidateSkillChip key={s} skill={s} />
             ))}
             {app.skills.length > 4 && (
               <span

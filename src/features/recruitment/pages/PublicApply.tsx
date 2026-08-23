@@ -11,7 +11,7 @@ import { usePublicApplyPage } from "../hooks/usePublicApplyPage";
  * no sidebar, mobile-first, because candidates arrive from a shared link
  * (usually on a phone) and are not users of the HR system.
  */
-export const PublicApply = () => {
+const PublicApply = () => {
   const page = usePublicApplyPage();
 
   if (page.loading) {
@@ -79,3 +79,7 @@ export const PublicApply = () => {
     </PublicApplyShell>
   );
 };
+
+// Named export kept for the public route table in `src/app/router/publicRoutes.ts`.
+export { PublicApply };
+export default PublicApply;

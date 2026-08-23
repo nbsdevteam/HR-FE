@@ -152,19 +152,22 @@ export const useLeaveEmployeeScope = () => {
 }
 
 export const useLeaveTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchLeaveTypes());
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchLeaveTypes(), [], "Failed to load leave types", undefined, { cacheKey: "leaveTypes" });
   return { types, loading, refetch };
 }
 
 export const useLeavePolicies = () => {
-  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchLeavePolicies());
+  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchLeavePolicies(), [], "Failed to load leave policies", undefined, { cacheKey: "leavePolicies" });
   return { policies, loading, refetch };
 }
 
 export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
   const { data: requests, loading, refetch } = useAsyncList(
     () => odooData.fetchLeaveRequests(filters),
-    [filters?.employeeId, filters?.status, filters?.month]
+    [filters?.employeeId, filters?.status, filters?.month],
+    "Failed to load leave requests",
+    undefined,
+    { cacheKey: "leaveRequests" }
   );
   return { requests, loading, refetch };
 }
@@ -172,7 +175,10 @@ export const useLeaveRequests = (filters?: { employeeId?: string; status?: strin
 export const useLeaveBalances = (year?: number) => {
   const { data: balances, loading, refetch } = useAsyncList(
     () => odooData.fetchLeaveBalances(year),
-    [year]
+    [year],
+    "Failed to load leave balances",
+    undefined,
+    { cacheKey: "leaveBalances" }
   );
   return { balances, loading, refetch };
 }
@@ -180,7 +186,10 @@ export const useLeaveBalances = (year?: number) => {
 export const useLeavePermissions = (employeeId?: string) => {
   const { data: permissions, loading, refetch } = useAsyncList(
     () => odooData.fetchLeavePermissions(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load leave permissions",
+    undefined,
+    { cacheKey: "leavePermissions" }
   );
   return { permissions, loading, refetch };
 }

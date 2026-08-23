@@ -1,7 +1,10 @@
 import { useMemo, memo } from "react";
 import type { DbApplicant } from "@/shared/hooks";
+import { groupBy } from "@/shared/utils/collections";
 import { STAGES } from "../constants/recruitment";
 import PipelineColumn from "./PipelineColumn";
+
+const EMPTY_APPLICANTS: DbApplicant[] = [];
 
 type RecruitmentPipelineViewProps = {
   applicants: DbApplicant[];
@@ -9,15 +12,10 @@ type RecruitmentPipelineViewProps = {
 };
 
 const RecruitmentPipelineView = ({ applicants, onSelectApplicant }: RecruitmentPipelineViewProps) => {
-  const applicantsByStage = useMemo(() => {
-    const map = new Map<string, DbApplicant[]>();
-    for (const applicant of applicants) {
-      const list = map.get(applicant.stage);
-      if (list) list.push(applicant);
-      else map.set(applicant.stage, [applicant]);
-    }
-    return map;
-  }, [applicants]);
+  const applicantsByStage = useMemo(
+    () => groupBy(applicants, (applicant) => applicant.stage),
+    [applicants],
+  );
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -26,7 +24,7 @@ const RecruitmentPipelineView = ({ applicants, onSelectApplicant }: RecruitmentP
           key={stage}
           stage={stage}
           index={stageIndex}
-          applicants={applicantsByStage.get(stage) || []}
+          applicants={applicantsByStage.get(stage) || EMPTY_APPLICANTS}
           onSelectApplicant={onSelectApplicant}
         />
       ))}

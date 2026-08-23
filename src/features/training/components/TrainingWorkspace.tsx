@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import Toast from "@/shared/components/Toast";
@@ -13,7 +13,7 @@ import { useProgramForm } from "../hooks/useProgramForm";
 import { useTrainingConfig } from "../hooks/useTrainingConfig";
 import { useTrainingToasts } from "../hooks/useTrainingToasts";
 import {
-  getEmployeeName,
+  buildEmployeeNameLookup,
   getProgramParticipants,
   filterPrograms,
   mapParticipantsToDisplay,
@@ -102,9 +102,8 @@ const TrainingWorkspace = () => {
       ).map((p) => p.employee_id),
     [displayParticipants, enrollment.selectedProgramForParticipants],
   );
-
-  const getEmployeeNameCb = useCallback(
-    (employeeId: string) => getEmployeeName(employees, employeeId),
+  const getEmployeeNameCb = useMemo(
+    () => buildEmployeeNameLookup(employees),
     [employees],
   );
 

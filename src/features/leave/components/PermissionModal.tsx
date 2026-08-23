@@ -4,7 +4,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import { InputField, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";

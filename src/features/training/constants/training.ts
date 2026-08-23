@@ -8,6 +8,8 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { STATUS_TONES } from "@/shared/utils/statusColors";
 import { ToastType } from "../types";
 
 // Odoo's lugal.hr.training.* models use fixed English selections; the FE
@@ -38,19 +40,24 @@ export const ODOO_TO_PARTICIPANT_STATUS: Record<string, string> = {
   withdrawn: "منسحب",
 };
 
-// Color palettes for dynamic status/participant status assignment
-export const statusColorPalette = [
-  "bg-blue-500/10 border-blue-500/20 text-blue-400",
-  "bg-primary/10 border-primary/20 text-primary",
-  "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  "bg-muted/30 border-border text-muted-foreground",
+// Ordered palettes walked against the configured status lists (upcoming →
+// ongoing → completed → cancelled). Built from the shared semantic tones so the
+// Tailwind strings live in exactly one place app-wide.
+export const statusColorPalette: readonly string[] = [
+  STATUS_TONES.info,
+  STATUS_TONES.accent,
+  STATUS_TONES.success,
+  STATUS_TONES.neutral,
 ];
-export const statusIconPalette = [Calendar, Play, CheckCircle, AlertCircle];
+export const statusIconPalette: readonly LucideIcon[] = [Calendar, Play, CheckCircle, AlertCircle];
 
-export const participantStatusColorPalette = [
-  "bg-blue-500/10 border-blue-500/20 text-blue-400",
-  "bg-primary/10 border-primary/20 text-primary",
-  "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+export const participantStatusColorPalette: readonly string[] = [
+  STATUS_TONES.info,
+  STATUS_TONES.accent,
+  STATUS_TONES.success,
+  // No shared tone matches red-500 exactly (`redSoft` is red-400, `danger` is
+  // the destructive token), so the withdrawn tone stays a literal to keep the
+  // rendered colour pixel-identical.
   "bg-red-500/10 border-red-500/20 text-red-400",
 ];
 

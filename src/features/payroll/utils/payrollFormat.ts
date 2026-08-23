@@ -1,3 +1,3 @@
-import { formatCurrency } from "@/features/payroll";
-
-export const formatIQD = (value: number) => formatCurrency(value, "IQD");
+// Re-exported from shared so payroll components keep a local import path while
+// the implementation stays in one place for the features that also show money.
+export { formatIQD } from "@/shared/utils/currency";

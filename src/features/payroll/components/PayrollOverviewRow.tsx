@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { NodeAvatar } from "@/shared/components";
-import { formatCurrency } from "@/features/payroll";
+import { formatCurrency } from "@/shared/utils/currency";
 import { arabicSource } from "@/i18n/source";
 
 type PayrollOverviewRowProps = {

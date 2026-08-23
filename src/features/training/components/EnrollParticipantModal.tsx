@@ -4,7 +4,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
 import { ModalFooterActions, ModalHeader, ModalOverlay, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";

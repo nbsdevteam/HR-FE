@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -9,8 +9,9 @@ import {
 import { useTranslation } from "react-i18next";
 import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
+import SidebarNavItem, { type SidebarMenuItem } from "./SidebarNavItem";
 
-const menuItems = [
+const menuItems: SidebarMenuItem[] = [
   { id: "dashboard", label: arabicSource("common.control_panel"), icon: Home, path: "/" },
   { id: "employees", label: arabicSource("common.employees"), icon: Users, path: "/employees" },
   { id: "attendance", label: arabicSource("common.attendance_and_departure"), icon: Clock, path: "/attendance" },
@@ -39,36 +40,26 @@ const SidebarNav = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleSelect = useCallback(
+    (path: string): void => {
+      navigate(path);
+      onNavigate?.();
+    },
+    [navigate, onNavigate]
+  );
+
   return (
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto relative z-10">
-      {menuItems.map((item, index) => {
-        const isActive = location.pathname === item.path;
-        const Icon = item.icon;
-        return (
-          <motion.button
-            key={item.id}
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.2 }}
-            onClick={() => {
-              navigate(item.path);
-              onNavigate?.();
-            }}
-            className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 rounded-lg transition-all cursor-pointer ${
-              isActive
-                ? "bg-gradient-to-r from-primary via-primary to-gold-dark text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-sidebar-foreground hover:bg-sidebar-accent"
-            }`}
-          >
-            <Icon className="w-5 h-5 flex-shrink-0" />
-            {!collapsed && (
-              <span className="truncate text-start" style={{ fontSize: 14 }}>
-                {item.label}
-              </span>
-            )}
-          </motion.button>
-        );
-      })}
+      {menuItems.map((item, index) => (
+        <SidebarNavItem
+          key={item.id}
+          item={item}
+          index={index}
+          isActive={location.pathname === item.path}
+          collapsed={collapsed}
+          onSelect={handleSelect}
+        />
+      ))}
     </nav>
   );
 };
@@ -79,6 +70,10 @@ const Sidebar = () => {
   const isRtl = i18n.dir() === "rtl";
   const [collapsed, setCollapsed] = useState(false);
   const offscreenX = isRtl ? "100%" : "-100%";
+
+  const handleToggleCollapsed = useCallback((): void => {
+    setCollapsed((value) => !value);
+  }, []);
 
   // Escape closes mobile drawer
   useEffect(() => {
@@ -119,7 +114,7 @@ const Sidebar = () => {
         <SidebarNav collapsed={collapsed} />
 
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={handleToggleCollapsed}
           className="p-3 border-t border-sidebar-border text-muted-foreground hover:text-foreground transition-colors relative z-10 flex items-center justify-center cursor-pointer"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >

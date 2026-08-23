@@ -3,7 +3,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import { TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import { leaveInputClass as inputCls } from "../styles";

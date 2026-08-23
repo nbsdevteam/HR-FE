@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import DonutChart from "@/shared/components/donut-chart";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingProgram } from "@/shared/hooks";
+import { countBy } from "@/shared/utils/collections";
 import { cardCls } from "../styles";
 import TrainingCategoryStatCard from "./TrainingCategoryStatCard";
 
@@ -17,13 +18,10 @@ const WeightDistributionCard = ({
   trainingCategories,
   categoryDistribution,
 }: TWeightDistributionCardProps) => {
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    programs.forEach((p) => {
-      counts.set(p.category, (counts.get(p.category) || 0) + 1);
-    });
-    return counts;
-  }, [programs]);
+  const categoryCounts = useMemo(
+    () => countBy(programs, (p) => p.category),
+    [programs],
+  );
 
   return (
     <motion.div

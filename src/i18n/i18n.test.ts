@@ -15,6 +15,18 @@ import { LanguageSwitcher } from "@/app/providers";
 import { localizedConfirm } from "./native";
 import { arabicSource } from "./source";
 
+/**
+ * The switcher's accessible name deliberately announces both purpose and
+ * current value ("Language selector: Arabic"), so match on the label prefix
+ * rather than the bare label.
+ */
+const selectorTrigger = (language: "ar" | "en" | "ku"): HTMLElement => {
+  const label = i18n.getFixedT(language)("languages.selector_label");
+  // No `\b` anchor — it is ASCII-word based and never matches after Arabic script.
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return screen.getByRole("button", { name: new RegExp(`^${escaped}`) });
+};
+
 describe("application localization", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -119,11 +131,7 @@ describe("application localization", () => {
         createElement(LanguageSwitcher),
       ),
     );
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: i18n.getFixedT("ar")("languages.selector_label"),
-      }),
-    );
+    fireEvent.click(selectorTrigger("ar"));
     expect(screen.getAllByRole("menuitemradio")).toHaveLength(3);
     fireEvent.click(
       screen.getByRole("menuitemradio", {
@@ -135,11 +143,7 @@ describe("application localization", () => {
       expect(document.documentElement.dir).toBe("ltr");
     });
 
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: i18n.getFixedT("en")("languages.selector_label"),
-      }),
-    );
+    fireEvent.click(selectorTrigger("en"));
     fireEvent.click(
       screen.getByRole("menuitemradio", {
         name: i18n.getFixedT("ku")("languages.self_name"),
@@ -150,11 +154,7 @@ describe("application localization", () => {
       expect(document.documentElement.dir).toBe("rtl");
     });
 
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: i18n.getFixedT("ku")("languages.selector_label"),
-      }),
-    );
+    fireEvent.click(selectorTrigger("ku"));
     fireEvent.click(
       screen.getByRole("menuitemradio", {
         name: i18n.getFixedT("ar")("languages.self_name"),

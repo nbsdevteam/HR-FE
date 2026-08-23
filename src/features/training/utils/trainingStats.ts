@@ -1,5 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
+import { countBy } from "@/shared/utils/collections";
 import { categoryColorPalette } from "../constants/training";
 
 export interface TrainingStats {
@@ -28,22 +29,29 @@ const MONTHLY_HOURS_MONTHS = () => [
   arabicSource("common.april"), arabicSource("common.may"), arabicSource("common.jun"),
 ];
 
-export const computeMonthlyHours = (programs: DbTrainingProgram[]) => (
-  MONTHLY_HOURS_MONTHS().map((month, idx) => {
-    const programsInMonth = programs.filter((p) => {
-      if (!p.start_date) return false;
-      return new Date(p.start_date).getMonth() === idx;
-    });
-    const totalHours = programsInMonth.reduce((sum, p) => sum + (p.duration ? parseInt(p.duration) : 0), 0);
-    return { month, hours: totalHours || programsInMonth.length * 20 };
-  })
-);
+/** Bucket programs by start month in a single pass instead of one filter per month. */
+export const computeMonthlyHours = (programs: DbTrainingProgram[]) => {
+  const months = MONTHLY_HOURS_MONTHS();
+  const counts = new Array<number>(months.length).fill(0);
+  const hours = new Array<number>(months.length).fill(0);
+
+  for (const p of programs) {
+    if (!p.start_date) continue;
+    const monthIndex = new Date(p.start_date).getMonth();
+    if (monthIndex < 0 || monthIndex >= months.length) continue;
+    counts[monthIndex] += 1;
+    hours[monthIndex] += p.duration ? parseInt(p.duration) || 0 : 0;
+  }
+
+  return months.map((month, idx) => ({
+    month,
+    hours: hours[idx] || counts[idx] * 20,
+  }));
+};
 
 export const computeCategoryDistribution = (programs: DbTrainingProgram[], trainingCategories: string[]) => {
-  const counts = trainingCategories.map((cat) => ({
-    cat,
-    count: programs.filter((p) => p.category === cat).length,
-  }));
+  const countsByCategory = countBy(programs, (p) => p.category);
+  const counts = trainingCategories.map((cat) => ({ cat, count: countsByCategory.get(cat) ?? 0 }));
   const total = counts.reduce((s, c) => s + c.count, 0) || 1;
   return counts.map((c, i) => ({
     name: `${c.cat} (${Math.round((c.count / total) * 100)}%)`,

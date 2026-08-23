@@ -5,7 +5,7 @@ export const calcRankScore = function calcRankScore(a: DbApplicant): number {
   // Rating weight: 40%
   const ratingScore = (a.rating / 5) * 40;
   // Stage progress weight: 20%
-  const stageIdx = STAGES.indexOf(a.stage as any);
+  const stageIdx = (STAGES as readonly string[]).indexOf(a.stage);
   const stageScore = stageIdx >= 0 ? (stageIdx / (STAGES.length - 1)) * 20 : 0;
   // Experience weight: 25%
   const expScore = Math.min(a.experience_years / 15, 1) * 25;

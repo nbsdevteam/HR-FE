@@ -1,6 +1,6 @@
-import { Filter, Search } from "lucide-react";
+import { Filter } from "lucide-react";
+import { FilterChip, SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import TrainingFilterChip from "./TrainingFilterChip";
 
 interface ITrainingFiltersBarProps {
   searchTerm: string;
@@ -17,34 +17,33 @@ const TrainingFiltersBar = ({
   filter,
   onFilterChange,
 }: ITrainingFiltersBarProps) => {
-  const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onSearchTermChange(e.target.value);
+  const handleFilterClick = (value: string) => (): void => {
+    onFilterChange(value);
   };
 
   return (
-  <div className="flex items-center gap-4 flex-wrap">
-    <div className="flex-1 min-w-64 relative">
-      <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-      <input
-        type="text"
+    <div className="flex items-center gap-4 flex-wrap">
+      <SearchInput
+        wrapperClassName="flex-1 min-w-64 relative"
+        iconClassName="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground"
+        inputClassName="w-full ps-4 pe-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
         placeholder={arabicSource("training.searching_for_a_program")}
         value={searchTerm}
-        onChange={handleSearchTermChange}
-        className="w-full ps-4 pe-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
+        onChange={onSearchTermChange}
       />
+      <div className="flex items-center gap-2">
+        <Filter className="w-4 h-4 text-muted-foreground" />
+        {filters?.map((f) => (
+          <FilterChip
+            key={f}
+            label={f}
+            active={filter === f}
+            onClick={handleFilterClick(f)}
+            fontSize={13}
+          />
+        ))}
+      </div>
     </div>
-    <div className="flex items-center gap-2">
-      <Filter className="w-4 h-4 text-muted-foreground" />
-      {filters?.map((f) => (
-        <TrainingFilterChip
-          key={f}
-          label={f}
-          isActive={filter === f}
-          onFilterChange={onFilterChange}
-        />
-      ))}
-    </div>
-  </div>
   );
 };
 

@@ -1,5 +1,7 @@
 import { Calendar, Clock, FileText, Shield, Users, Wallet } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { STATUS_TONES } from "@/shared/utils/statusColors";
 
 export const POLICY_STATUS_TO_ODOO: Record<string, string> = {
   "نشط": "active",
@@ -13,7 +15,7 @@ export const ODOO_STATUS_TO_POLICY: Record<string, string> = {
   archived: "مؤرشف",
 };
 
-export const POLICY_CATEGORY_ICONS: Record<string, any> = {
+export const POLICY_CATEGORY_ICONS: Record<string, LucideIcon> = {
   [arabicSource("common.vacations_2")]: Calendar,
   [arabicSource("common.attendance_2")]: Clock,
   [arabicSource("common.salaries_2")]: Wallet,
@@ -35,9 +37,9 @@ export const policyCategories = [
 export const policyFormCategories = policyCategories.filter((category) => category !== arabicSource("common.all"));
 
 export const policyStatusColors: Record<string, string> = {
-  [arabicSource("common.is_active")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  [arabicSource("common.is_under_review")]: "bg-primary/10 border-primary/20 text-primary",
-  [arabicSource("common.archived")]: "bg-muted/30 border-border text-muted-foreground",
+  [arabicSource("common.is_active")]: STATUS_TONES.success,
+  [arabicSource("common.is_under_review")]: STATUS_TONES.accent,
+  [arabicSource("common.archived")]: STATUS_TONES.neutral,
 };
 
 export const policyStatusOptions = [

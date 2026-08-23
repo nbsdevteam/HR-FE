@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { CheckCircle, AlertTriangle, CalendarDays } from "lucide-react";
 import type { DbNotification } from "@/shared/hooks";
 
@@ -24,9 +25,13 @@ const notificationColor = (type: string) => {
 const NotificationItem = ({ notification, onSelect }: NotificationItemProps) => {
   const Icon = notificationIcon(notification.type);
 
+  const handleSelect = useCallback((): void => {
+    onSelect(notification);
+  }, [onSelect, notification]);
+
   return (
     <div
-      onClick={() => onSelect(notification)}
+      onClick={handleSelect}
       className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20 transition-colors border-b border-border/10 last:border-b-0 cursor-pointer"
     >
       <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5 flex-shrink-0">
@@ -42,4 +47,4 @@ const NotificationItem = ({ notification, onSelect }: NotificationItemProps) => 
   );
 };
 
-export default NotificationItem;
+export default memo(NotificationItem);

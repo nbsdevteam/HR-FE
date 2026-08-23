@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 interface InputFieldProps {
   /** When set, wraps the input in a labeled block; omit for a bare input. */
   label?: string;
@@ -29,11 +31,18 @@ const InputField = ({
   min,
   max,
 }: InputFieldProps) => {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      onChange(e.target.value);
+    },
+    [onChange]
+  );
+
   const input = (
     <input
       type={type}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={handleChange}
       placeholder={placeholder}
       className={className}
       dir={dir}

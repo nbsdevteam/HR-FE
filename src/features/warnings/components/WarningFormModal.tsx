@@ -3,7 +3,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
 import { Button, InputField, Modal, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";

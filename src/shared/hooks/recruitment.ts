@@ -148,12 +148,12 @@ export interface ApplicationLink {
 }
 
 export const useJobOpenings = () => {
-  const { data: jobs, loading, refetch } = useAsyncList(() => odooData.fetchJobOpenings());
+  const { data: jobs, loading, refetch } = useAsyncList(() => odooData.fetchJobOpenings(), [], "Failed to load job openings", undefined, { cacheKey: "jobOpenings" });
   return { jobs, loading, refetch };
 }
 
 export const useApplicants = () => {
-  const { data: applicants, loading, refetch } = useAsyncList(() => odooData.fetchApplicants());
+  const { data: applicants, loading, refetch } = useAsyncList(() => odooData.fetchApplicants(), [], "Failed to load applicants", undefined, { cacheKey: "applicants" });
   return { applicants, loading, refetch };
 }
 

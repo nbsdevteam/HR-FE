@@ -1,6 +1,8 @@
 import { useMemo } from "react";
+import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useConfigurations } from "@/shared/hooks";
+import { buildStatusColorMap, buildStatusValueMap } from "@/shared/utils/statusColors";
 import { participantStatusColorPalette, statusColorPalette, statusIconPalette } from "../constants/training";
 
 // Training categories, statuses, and participant statuses — all from configurations table
@@ -18,29 +20,20 @@ export const useTrainingConfig = () => {
   ), [getValue]);
   const defaultWeight = getNumber("training.default_weight", 70);
 
-  const statusColors = useMemo(() => {
-    const map: Record<string, string> = {};
-    trainingStatuses.forEach((s, i) => {
-      map[s] = statusColorPalette[Math.min(i, statusColorPalette.length - 1)];
-    });
-    return map;
-  }, [trainingStatuses]);
+  const statusColors = useMemo(
+    () => buildStatusColorMap(trainingStatuses, statusColorPalette),
+    [trainingStatuses],
+  );
 
-  const statusIcons = useMemo(() => {
-    const map: Record<string, any> = {};
-    trainingStatuses.forEach((s, i) => {
-      map[s] = statusIconPalette[Math.min(i, statusIconPalette.length - 1)];
-    });
-    return map;
-  }, [trainingStatuses]);
+  const statusIcons = useMemo(
+    () => buildStatusValueMap<LucideIcon>(trainingStatuses, statusIconPalette),
+    [trainingStatuses],
+  );
 
-  const participantStatusColors = useMemo(() => {
-    const map: Record<string, string> = {};
-    participantStatuses.forEach((s, i) => {
-      map[s] = participantStatusColorPalette[Math.min(i, participantStatusColorPalette.length - 1)];
-    });
-    return map;
-  }, [participantStatuses]);
+  const participantStatusColors = useMemo(
+    () => buildStatusColorMap(participantStatuses, participantStatusColorPalette),
+    [participantStatuses],
+  );
 
   const filters = useMemo(() => [arabicSource("common.all"), ...trainingCategories], [trainingCategories]);
 

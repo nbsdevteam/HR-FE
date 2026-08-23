@@ -59,6 +59,12 @@ const TopBar = () => {
     user?.email ||
     arabicSource("shared.hello_human_resources_manager");
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      setSearchQuery(e.target.value);
+    },
+    []
+  );
   const handleBellToggle = useCallback(() => setBellOpen((o) => !o), []);
   const handleBellClose = useCallback(() => setBellOpen(false), []);
   const handleDeviceToggle = useCallback(() => setDeviceOpen((o) => !o), []);
@@ -170,7 +176,7 @@ const TopBar = () => {
             type="text"
             placeholder={arabicSource("common.search")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none w-[160px] lg:w-[220px]"
           />
         </div>
@@ -255,7 +261,7 @@ const TopBar = () => {
                 type="text"
                 placeholder={arabicSource("common.search")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground outline-none focus:ring-2 focus:ring-ring"
               />
             </div>

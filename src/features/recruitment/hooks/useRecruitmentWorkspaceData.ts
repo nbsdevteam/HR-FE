@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
+import { countBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 import {
   ODOO_TO_GENDER,
@@ -78,21 +79,18 @@ export const useRecruitmentWorkspaceData = (
     return list;
   }, [applicants, searchTerm, filterStage, filterJob, sortBy, recSortDir]);
 
-  const stats = useMemo(
-    () => ({
-      openJobs: jobs.filter((j) => j.status === arabicSource("common.is_open"))
-        .length,
+  const stats = useMemo(() => {
+    const byStage = countBy(applicants, (a) => a.stage);
+    let bookmarked = 0;
+    for (const applicant of applicants) if (applicant.is_bookmarked) bookmarked += 1;
+    return {
+      openJobs: jobs.filter((j) => j.status === arabicSource("common.is_open")).length,
       totalApplicants: applicants.length,
-      interviewing: applicants.filter(
-        (a) => a.stage === arabicSource("common.interview"),
-      ).length,
-      hired: applicants.filter(
-        (a) => a.stage === arabicSource("common.accepted"),
-      ).length,
-      bookmarked: applicants.filter((a) => a.is_bookmarked).length,
-    }),
-    [jobs, applicants],
-  );
+      interviewing: byStage.get(arabicSource("common.interview")) ?? 0,
+      hired: byStage.get(arabicSource("common.accepted")) ?? 0,
+      bookmarked,
+    };
+  }, [jobs, applicants]);
 
   return { jobs, applicants, filteredApplicants, stats };
 };

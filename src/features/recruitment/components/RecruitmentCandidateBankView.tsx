@@ -1,12 +1,13 @@
 import { memo } from "react";
 import type { DbApplicant } from "@/shared/hooks";
+import type { sortTypes } from "../types";
 import CandidateBank from "./CandidateBank";
 
 type RecruitmentCandidateBankViewProps = {
   applicants: DbApplicant[];
-  sortBy: "rank" | "rating" | "date" | "name" | "job" | "stage";
+  sortBy: sortTypes;
   onSelectApplicant: (applicant: DbApplicant) => void;
-  onSortChange: (sortBy: "rank" | "rating" | "date" | "name" | "job" | "stage") => void;
+  onSortChange: (sortBy: sortTypes) => void;
   onToggleBookmark: (applicant: DbApplicant) => void;
   onUpdateRating: (id: string, rating: number) => void;
 };

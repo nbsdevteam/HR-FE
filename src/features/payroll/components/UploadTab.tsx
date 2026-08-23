@@ -2,10 +2,8 @@ import { useState, useMemo, useRef, useCallback, memo } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import type { DbEmployee } from "@/shared/hooks";
-import {
-  parseAttendanceFile,
-  type RawAttendanceRecord,
-} from "@/features/payroll";
+import { parseAttendanceFile } from "@/features/payroll/services/payslip-parsing";
+import type { RawAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import UploadDropzone from "./UploadDropzone";
 import UploadErrorsPanel from "./UploadErrorsPanel";

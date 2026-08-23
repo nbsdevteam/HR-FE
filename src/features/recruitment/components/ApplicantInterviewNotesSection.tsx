@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type ApplicantInterviewNotesSectionProps = {
@@ -37,16 +38,14 @@ const ApplicantInterviewNotesSection = ({
         className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
         style={{ fontSize: 13 }}
       />
-      <button
+      <Button
         onClick={onSave}
         disabled={saving}
-        className="mt-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+        className="mt-2 cursor-pointer"
         style={{ fontSize: 12 }}
       >
-        {saving
-          ? arabicSource("common.saving")
-          : arabicSource("recruitment.save_notes")}
-      </button>
+        {saving ? arabicSource("common.saving") : arabicSource("recruitment.save_notes")}
+      </Button>
     </div>
   );
 };

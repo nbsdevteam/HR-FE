@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ChevronDown,
@@ -196,4 +197,4 @@ const PolicyListItem = ({
   );
 };
 
-export default PolicyListItem;
+export default memo(PolicyListItem);

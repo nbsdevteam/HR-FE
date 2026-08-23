@@ -81,7 +81,10 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
       date_to: filter.date_to,
       employee_id: filter.employeeId,
     }),
-    [filter.date, filter.date_from, filter.date_to, filter.employeeId]
+    [filter.date, filter.date_from, filter.date_to, filter.employeeId],
+    "Failed to load attendance",
+    undefined,
+    { cacheKey: "attendance" }
   );
 
   return { records, loading, refetch };
@@ -90,7 +93,10 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
 export const useMonthlyRecords = (monthYear?: string) => {
   const { data: records, loading, refetch } = useAsyncList(
     () => odooData.fetchMonthlyRecords(monthYear),
-    [monthYear]
+    [monthYear],
+    "Failed to load monthly records",
+    undefined,
+    { cacheKey: "monthlyRecords" }
   );
   return { records, loading, refetch };
 }
@@ -98,7 +104,10 @@ export const useMonthlyRecords = (monthYear?: string) => {
 export const useMonthlyLedgers = (monthYear?: string) => {
   const { data: ledgers, loading, refetch } = useAsyncList(
     () => odooData.fetchMonthlyLedgers(monthYear),
-    [monthYear]
+    [monthYear],
+    "Failed to load monthly ledgers",
+    undefined,
+    { cacheKey: "monthlyLedgers" }
   );
   return { ledgers, loading, refetch };
 }

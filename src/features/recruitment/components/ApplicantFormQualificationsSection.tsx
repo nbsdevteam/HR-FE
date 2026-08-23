@@ -1,9 +1,10 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { GraduationCap } from "lucide-react";
 import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { sourceOptions } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
+import ApplicantFormSkillChip from "./ApplicantFormSkillChip";
 
 type ApplicantFormQualificationsSectionProps = {
   education: string;
@@ -37,6 +38,11 @@ const ApplicantFormQualificationsSection = ({
   const handleSourceChange = (value: string): void => {
     onFieldChange("source", value);
   };
+
+  const skillPreview = useMemo(
+    () => skills.split(",").map((s) => s.trim()).filter(Boolean),
+    [skills],
+  );
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("skills", e.target.value);
@@ -121,21 +127,11 @@ const ApplicantFormQualificationsSection = ({
           )}
           className={inputCls}
         />
-        {skills && (
+        {skillPreview.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {skills
-              ?.split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .map((s, i) => (
-                <span
-                  key={i}
-                  className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary"
-                  style={{ fontSize: 11 }}
-                >
-                  {s}
-                </span>
-              ))}
+            {skillPreview.map((s, i) => (
+              <ApplicantFormSkillChip key={`${s}-${i}`} skill={s} />
+            ))}
           </div>
         )}
       </div>

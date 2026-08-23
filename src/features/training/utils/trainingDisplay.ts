@@ -1,4 +1,5 @@
 import { empDisplayName, type DbEmployee, type DbTrainingParticipant, type DbTrainingProgram } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import { ODOO_TO_PARTICIPANT_STATUS, ODOO_TO_TRAINING_STATUS } from "../constants/training";
 
 export const mapProgramsToDisplay = (programs: DbTrainingProgram[]): DbTrainingProgram[] => (
@@ -33,7 +34,16 @@ export const getProgramParticipants = (
   programId: string,
 ): DbTrainingParticipant[] => participants.filter((p) => p.training_program_id === programId);
 
-export const getEmployeeName = (employees: DbEmployee[], employeeId: string): string => {
-  const emp = employees.find((e) => e.id === employeeId);
-  return emp ? empDisplayName(emp) : employeeId;
+/**
+ * Build the employee-name lookup once per employee list instead of rescanning
+ * the whole array for every participant row (was O(rows x employees)).
+ */
+export const buildEmployeeNameLookup = (
+  employees: DbEmployee[],
+): ((employeeId: string) => string) => {
+  const byId = indexBy(employees, (e) => e.id);
+  return (employeeId: string): string => {
+    const emp = byId.get(employeeId);
+    return emp ? empDisplayName(emp) : employeeId;
+  };
 };

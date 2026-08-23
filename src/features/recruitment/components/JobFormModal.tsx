@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { Modal } from "@/shared/components";
+import { Button, Modal } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
@@ -147,23 +147,24 @@ const JobFormModal = ({
         />
 
         <div className="flex gap-3 pt-2">
-          <button
+          <Button
             onClick={handleSave}
             disabled={saving || !form.title.trim()}
-            className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50"
+            className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
           >
             {saving
               ? arabicSource("common.saving")
               : isEdit
                 ? arabicSource("common.save")
                 : arabicSource("recruitment.job_posting")}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
+            className="flex-1 h-11 cursor-pointer"
           >
             {arabicSource("common.cancel")}
-          </button>
+          </Button>
         </div>
     </Modal>
   );

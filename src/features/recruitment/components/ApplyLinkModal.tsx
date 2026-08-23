@@ -9,7 +9,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
+import { Button, InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -136,20 +136,16 @@ const ApplyLinkModal = ({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               onClick={copy}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer"
+              icon={copied ? Check : Copy}
+              className="cursor-pointer"
               style={{ fontSize: 13 }}
             >
-              {copied ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
               {copied
                 ? arabicSource("recruitment.link_copied")
                 : arabicSource("recruitment.copy_link")}
-            </button>
+            </Button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(`${job.title}\n${applyUrl}`)}`}
               target="_blank"
@@ -160,14 +156,15 @@ const ApplyLinkModal = ({
               <MessageCircle className="w-4 h-4" />
               {arabicSource("recruitment.share_whatsapp")}
             </a>
-            <button
+            <Button
+              variant="ghost"
               onClick={rotate}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors cursor-pointer"
+              icon={RefreshCw}
+              className="border border-border cursor-pointer"
               style={{ fontSize: 13 }}
             >
-              <RefreshCw className="w-4 h-4" />
               {arabicSource("recruitment.rotate_token")}
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

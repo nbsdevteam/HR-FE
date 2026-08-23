@@ -1,7 +1,7 @@
 import { Minus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { formatCurrency } from "@/features/payroll";
+import { formatCurrency } from "@/shared/utils/currency";
 
 type PayrollDeductionRowProps = {
   name: ReactNode;

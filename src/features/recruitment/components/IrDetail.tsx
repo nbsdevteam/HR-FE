@@ -121,7 +121,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.matched_skills!.map((skill, i) => (
-                  <SkillTag key={i} skill={skill} variant="matched" />
+                  <SkillTag key={`${skill}-${i}`} skill={skill} variant="matched" />
                 ))}
               </div>
             </div>
@@ -133,7 +133,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.missing_skills!.map((skill, i) => (
-                  <SkillTag key={i} skill={skill} variant="missing" />
+                  <SkillTag key={`${skill}-${i}`} skill={skill} variant="missing" />
                 ))}
               </div>
             </div>
@@ -162,8 +162,8 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
             {arabicSource("recruitment.missing_info")}
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {applicant.ir_missing_info!.map((info, i) => (
-              <MissingInfoTag key={i} info={info} label={MISSING_INFO_LABELS[info]} />
+            {applicant.ir_missing_info!.map((info) => (
+              <MissingInfoTag key={info} info={info} label={MISSING_INFO_LABELS[info]} />
             ))}
           </div>
         </div>

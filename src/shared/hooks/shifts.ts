@@ -97,7 +97,7 @@ export const useShifts = () => {
       console.error(e);
       return _mockShifts;
     }
-  });
+  }, [], "Failed to load shifts", undefined, { cacheKey: "shifts" });
   return { shifts, loading, refetch };
 }
 

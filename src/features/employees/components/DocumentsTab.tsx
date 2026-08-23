@@ -7,7 +7,7 @@ import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
-} from "@/features/employees/utils/employeeTypeAhead";
+} from "@/shared/utils/employeeTypeAhead";
 import {
   empDisplayName,
   type DbDocumentType, type DbEmployee, type DbEmployeeDocument,

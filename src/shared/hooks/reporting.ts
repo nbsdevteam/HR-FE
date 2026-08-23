@@ -62,7 +62,10 @@ export interface DbReportHistory {
 export const useNotifications = (employeeId?: string) => {
   const { data: notifications, loading, refetch } = useAsyncList(
     () => odooData.fetchNotifications(),
-    [employeeId]
+    [employeeId],
+    "Failed to load notifications",
+    undefined,
+    { cacheKey: "notifications" }
   );
   const unreadCount = notifications.filter(n => !n.is_read).length;
   return { notifications, unreadCount, loading, refetch };
@@ -71,18 +74,21 @@ export const useNotifications = (employeeId?: string) => {
 export const useAuditLog = (filters?: { entityType?: string; action?: string; limit?: number }) => {
   const { data: logs, loading, refetch } = useAsyncList(
     () => odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }),
-    [filters?.entityType, filters?.action, filters?.limit]
+    [filters?.entityType, filters?.action, filters?.limit],
+    "Failed to load audit log",
+    undefined,
+    { cacheKey: "auditLog" }
   );
   return { logs, loading, refetch };
 }
 
 export const useReportTemplates = () => {
-  const { data: templates, loading, refetch } = useAsyncList(() => odooData.fetchReportTemplates());
+  const { data: templates, loading, refetch } = useAsyncList(() => odooData.fetchReportTemplates(), [], "Failed to load report templates", undefined, { cacheKey: "reportTemplates" });
   return { templates, loading, refetch };
 }
 
 export const useReportHistory = () => {
-  const { data: history, loading, refetch } = useAsyncList(() => odooData.fetchReportHistory());
+  const { data: history, loading, refetch } = useAsyncList(() => odooData.fetchReportHistory(), [], "Failed to load report history", undefined, { cacheKey: "reportHistory" });
   return { history, loading, refetch };
 }
 

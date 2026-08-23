@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, Ref } from "react";
+import { useCallback, type CSSProperties, type ChangeEvent, type ReactNode, type Ref } from "react";
 import { Search, X } from "lucide-react";
 
 interface SearchInputProps {
@@ -40,29 +40,38 @@ const SearchInput = ({
   onFocus,
   onClear,
   children,
-}: SearchInputProps) => (
-  <div className={wrapperClassName ?? DEFAULT_WRAPPER_CLASS}>
-    <Search className={iconClassName ?? DEFAULT_ICON_CLASS} />
-    <input
-      ref={inputRef}
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onFocus={onFocus}
-      placeholder={placeholder}
-      className={inputClassName}
-      style={style}
-    />
-    {onClear && value && (
-      <button
-        onClick={onClear}
-        className="absolute end-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <X className="w-3 h-3" />
-      </button>
-    )}
-    {children}
-  </div>
-);
+}: SearchInputProps) => {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>): void => {
+      onChange(e.target.value);
+    },
+    [onChange]
+  );
+
+  return (
+    <div className={wrapperClassName ?? DEFAULT_WRAPPER_CLASS}>
+      <Search className={iconClassName ?? DEFAULT_ICON_CLASS} />
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onFocus={onFocus}
+        placeholder={placeholder}
+        className={inputClassName}
+        style={style}
+      />
+      {onClear && value && (
+        <button
+          onClick={onClear}
+          className="absolute end-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      )}
+      {children}
+    </div>
+  );
+};
 
 export default SearchInput;

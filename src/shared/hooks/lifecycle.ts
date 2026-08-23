@@ -146,33 +146,39 @@ export interface DbApprovalRequest {
 }
 
 export const useContractTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchContractTypes());
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchContractTypes(), [], "Failed to load contract types", undefined, { cacheKey: "contractTypes" });
   return { types, loading, refetch };
 }
 
 export const useEmployeeContracts = (employeeId?: string) => {
   const { data: contracts, loading, refetch } = useAsyncList(
     () => odooData.fetchContracts(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load contracts",
+    undefined,
+    { cacheKey: "contracts" }
   );
   return { contracts, loading, refetch };
 }
 
 export const useDocumentTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDocumentTypes());
+  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDocumentTypes(), [], "Failed to load document types", undefined, { cacheKey: "documentTypes" });
   return { types, loading, refetch };
 }
 
 export const useEmployeeDocuments = (employeeId?: string) => {
   const { data: documents, loading, refetch } = useAsyncList(
     () => odooData.fetchDocuments(employeeId),
-    [employeeId]
+    [employeeId],
+    "Failed to load documents",
+    undefined,
+    { cacheKey: "documents" }
   );
   return { documents, loading, refetch };
 }
 
 export const useApprovalWorkflows = () => {
-  const { data: workflows, loading, refetch } = useAsyncList(() => odooData.fetchApprovalWorkflows());
+  const { data: workflows, loading, refetch } = useAsyncList(() => odooData.fetchApprovalWorkflows(), [], "Failed to load approval workflows", undefined, { cacheKey: "approvalWorkflows" });
   return { workflows, loading, refetch };
 }
 
@@ -191,7 +197,7 @@ export const useApprovalWorkflowSteps = (workflowId?: string) => {
       auto_approve_after_days: s.auto_approve_after_days || null,
       created_at: "",
     }));
-  }, [workflowId]);
+  }, [workflowId], "Failed to load workflow steps", undefined, { cacheKey: "approvalWorkflowSteps" });
   return { steps, loading, refetch };
 }
 
@@ -201,7 +207,10 @@ export const useApprovalRequests = (filters?: { entityType?: string; status?: st
       entityType: filters?.entityType,
       status: filters?.status,
     }),
-    [filters?.entityType, filters?.status]
+    [filters?.entityType, filters?.status],
+    "Failed to load approval requests",
+    undefined,
+    { cacheKey: "approvalRequests" }
   );
   return { requests, loading, refetch };
 }
@@ -212,20 +221,26 @@ export const useIssues = (filters?: { employeeId?: string; state?: string }) => 
       employeeId: filters?.employeeId,
       state: filters?.state,
     }),
-    [filters?.employeeId, filters?.state]
+    [filters?.employeeId, filters?.state],
+    "Failed to load issues",
+    undefined,
+    { cacheKey: "issues" }
   );
   return { issues, loading, refetch };
 }
 
 export const useExitChecklistItems = () => {
-  const { data: items, loading, refetch } = useAsyncList(() => odooData.fetchExitChecklistItems());
+  const { data: items, loading, refetch } = useAsyncList(() => odooData.fetchExitChecklistItems(), [], "Failed to load exit checklist items", undefined, { cacheKey: "exitChecklistItems" });
   return { items, loading, refetch };
 }
 
 export const useExitProcesses = (employeeId?: string) => {
   const { data: processes, loading, refetch } = useAsyncList(
     async () => (await odooData.fetchExitProcesses(employeeId)).processes,
-    [employeeId]
+    [employeeId],
+    "Failed to load exit processes",
+    undefined,
+    { cacheKey: "exitProcesses" }
   );
   return { processes, loading, refetch };
 }
@@ -235,6 +250,6 @@ export const useExitChecklist = (exitProcessId?: string) => {
   const { data: checklist, loading, refetch } = useAsyncList(async () => {
     const { checklist: rows } = await odooData.fetchExitProcesses();
     return exitProcessId ? rows.filter(c => c.exit_process_id === exitProcessId) : rows;
-  }, [exitProcessId]);
+  }, [exitProcessId], "Failed to load exit checklist", undefined, { cacheKey: "exitChecklist" });
   return { checklist, loading, refetch };
 }

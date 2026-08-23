@@ -8,7 +8,7 @@ import PoliciesList from "../components/PoliciesList";
 import PoliciesLoadingState from "../components/PoliciesLoadingState";
 import PoliciesStats from "../components/PoliciesStats";
 import { usePoliciesPage } from "../hooks/usePoliciesPage";
-import type { CreatePolicyForm, EditPolicyForm, PolicySortKey } from "../types";
+import type { PolicyFormPatch, PolicySortKey } from "../types";
 const PolicyModals = lazy(() => import("../components/PolicyModals"));
 
 const Policies = () => {
@@ -28,15 +28,15 @@ const Policies = () => {
   }, [setShowCreateModal]);
 
   const handleCreateFormChange = useCallback(
-    (form: CreatePolicyForm) => {
-      setCreateForm(form);
+    (patch: PolicyFormPatch) => {
+      setCreateForm((prev) => ({ ...prev, ...patch }));
     },
     [setCreateForm],
   );
 
   const handleEditFormChange = useCallback(
-    (form: EditPolicyForm) => {
-      setEditingPolicy(form);
+    (patch: PolicyFormPatch) => {
+      setEditingPolicy((prev) => (prev ? { ...prev, ...patch } : prev));
     },
     [setEditingPolicy],
   );

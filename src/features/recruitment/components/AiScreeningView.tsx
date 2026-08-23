@@ -1,8 +1,8 @@
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
-import { TypeAhead } from "@/shared/components";
+import { Button, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,
@@ -48,14 +48,11 @@ const AiScreeningView = ({
     return aiScreeningStatFields.map((field) => ({
       key: field.key,
       label: field.label,
-      value:
-        "suffix" in field
-          ? `${(stats as any)[field.key]}${field.suffix}`
-          : (stats as any)[field.key],
+      value: "suffix" in field ? `${stats[field.key]}${field.suffix}` : stats[field.key],
     }));
   }, [stats]);
 
-  const screenAll = async () => {
+  const screenAll = useCallback(async (): Promise<void> => {
     if (!jobId) return;
     setBusy(true);
     try {
@@ -73,17 +70,20 @@ const AiScreeningView = ({
       );
     }
     setBusy(false);
-  };
+  }, [jobId, refetch]);
 
-  const handleJobIdChange = (value: string): void => {
-    setJobId(value || null);
-  };
+  const handleJobIdChange = useCallback(
+    (value: string): void => {
+      setJobId(value || null);
+    },
+    [setJobId],
+  );
 
-  const handleMinIrChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleMinIrChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     setMinIr(Number(e.target.value));
-  };
+  }, []);
 
-  const shortlistAbove = async () => {
+  const shortlistAbove = useCallback(async (): Promise<void> => {
     const targets = items.filter(
       (a) =>
         hasIr(a) &&
@@ -97,7 +97,7 @@ const AiScreeningView = ({
     }
     await refetch();
     setBusy(false);
-  };
+  }, [items, minIr, refetch]);
 
   return (
     <div className="space-y-4">
@@ -113,19 +113,15 @@ const AiScreeningView = ({
         />
         {jobId && (
           <>
-            <button
+            <Button
               onClick={screenAll}
-              disabled={busy}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+              loading={busy}
+              icon={Sparkles}
+              className="cursor-pointer"
               style={{ fontSize: 13 }}
             >
-              {busy ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Sparkles className="w-4 h-4" />
-              )}
               {arabicSource("recruitment.screen_all")}
-            </button>
+            </Button>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground" style={{ fontSize: 12 }}>
                 {arabicSource("recruitment.min_ir_filter")}

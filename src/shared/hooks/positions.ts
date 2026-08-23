@@ -37,6 +37,6 @@ export const usePositions = () => {
       console.error(e);
       return _mockPositions;
     }
-  });
+  }, [], "Failed to load positions", undefined, { cacheKey: "positions" });
   return { positions, loading, refetch };
 }

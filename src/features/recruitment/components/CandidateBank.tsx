@@ -1,10 +1,28 @@
 import { useState, useMemo, memo } from "react";
 import { Search, BookmarkCheck, Trophy, TrendingUp } from "lucide-react";
-import { Select } from "@/shared/components";
+import EmptyState from "@/shared/components/EmptyState";
+import { SearchInput, Select } from "@/shared/components";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { effectiveScore } from "../utils/recruitmentRanking";
+import type { sortTypes } from "../types";
 import CandidateCard from "./CandidateCard";
+
+const BANK_SORT_OPTIONS = [
+  { value: "rank", label: arabicSource("recruitment.sort_by_efficiency") },
+  { value: "rating", label: arabicSource("recruitment.sort_by_rating") },
+  { value: "date", label: arabicSource("recruitment.sort_by_date") },
+  { value: "name", label: arabicSource("recruitment.alphabetical_order") },
+];
+
+type CandidateBankProps = {
+  applicants: DbApplicant[];
+  sortBy: sortTypes;
+  setSortBy: (s: sortTypes) => void;
+  onSelect: (a: DbApplicant) => void;
+  onToggleBookmark: (a: DbApplicant) => void;
+  onUpdateRating: (id: string, r: number) => void;
+};
 
 const CandidateBank = ({
   applicants,
@@ -13,14 +31,7 @@ const CandidateBank = ({
   onUpdateRating,
   sortBy,
   setSortBy,
-}: {
-  applicants: DbApplicant[];
-  onSelect: (a: DbApplicant) => void;
-  onToggleBookmark: (a: DbApplicant) => void;
-  onUpdateRating: (id: string, r: number) => void;
-  sortBy: string;
-  setSortBy: (s: any) => void;
-}) => {
+}: CandidateBankProps) => {
   const [bankSearch, setBankSearch] = useState("");
   const [onlyBookmarked, setOnlyBookmarked] = useState(false);
   const [skillFilter, setSkillFilter] = useState("");
@@ -65,18 +76,12 @@ const CandidateBank = ({
     setOnlyBookmarked(!onlyBookmarked);
   };
 
-  const handleBankSearchChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    setBankSearch(e.target.value);
-  };
-
   const handleSkillFilterChange = (value: string): void => {
     setSkillFilter(value);
   };
 
   const handleSortByChange = (value: string): void => {
-    setSortBy(value);
+    setSortBy(value as sortTypes);
   };
 
   return (
@@ -102,19 +107,17 @@ const CandidateBank = ({
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder={arabicSource(
-                "recruitment.search_by_name_skills_company_education",
-              )}
-              value={bankSearch}
-              onChange={handleBankSearchChange}
-              className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
-              style={{ fontSize: 13 }}
-            />
-          </div>
+          <SearchInput
+            wrapperClassName="relative flex-1 min-w-[200px]"
+            iconClassName="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+            inputClassName="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+            placeholder={arabicSource(
+              "recruitment.search_by_name_skills_company_education",
+            )}
+            value={bankSearch}
+            onChange={setBankSearch}
+            style={{ fontSize: 13 }}
+          />
           <Select
             value={skillFilter}
             onChange={handleSkillFilterChange}
@@ -126,12 +129,7 @@ const CandidateBank = ({
           <Select
             value={sortBy}
             onChange={handleSortByChange}
-            options={[
-              { value: "rank", label: arabicSource("recruitment.sort_by_efficiency") },
-              { value: "rating", label: arabicSource("recruitment.sort_by_rating") },
-              { value: "date", label: arabicSource("recruitment.sort_by_date") },
-              { value: "name", label: arabicSource("recruitment.alphabetical_order") },
-            ]}
+            options={BANK_SORT_OPTIONS}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
             style={{ fontSize: 13 }}
           />
@@ -154,12 +152,11 @@ const CandidateBank = ({
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.length === 0 ? (
-          <div className="col-span-full text-center py-16 text-muted-foreground">
-            <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>
-              {arabicSource("recruitment.there_are_no_matching_candidates")}
-            </p>
-          </div>
+          <EmptyState
+            icon={Search}
+            message={arabicSource("recruitment.there_are_no_matching_candidates")}
+            className="col-span-full py-16"
+          />
         ) : (
           filtered.map((app, i) => (
             <CandidateCard

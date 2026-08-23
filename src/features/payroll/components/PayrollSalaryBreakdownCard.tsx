@@ -1,6 +1,6 @@
 import { Banknote, ArrowUpRight, Clock, ArrowDownRight, XCircle, CreditCard } from "lucide-react";
 import type { SalaryCalculation, SalaryCalculationPerCurrency } from "@/features/payroll";
-import { formatCurrency, formatHoursMinutes } from "@/features/payroll";
+import { formatCurrency, formatHoursMinutes } from "@/shared/utils/currency";
 import { arabicSource } from "@/i18n/source";
 import { payrollCardClass as cardCls } from "../styles";
 import PayrollAllowanceRow from "./PayrollAllowanceRow";

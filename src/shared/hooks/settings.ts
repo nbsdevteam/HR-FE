@@ -1,4 +1,6 @@
+import { useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { indexBy } from "@/shared/utils/collections";
 import { useAsyncList } from "./useAsyncList";
 
 export interface DbSystemModule {
@@ -76,40 +78,63 @@ export interface DbWeeklySchedule {
 
 export const useEmployeeShiftAssignments = () => {
   const { data: assignments, loading, refetch } = useAsyncList(
-    () => odooData.fetchShiftAssignments()
+    () => odooData.fetchShiftAssignments(),
+    [],
+    "Failed to load shift assignments",
+    undefined,
+    { cacheKey: "shiftAssignments" }
   );
   return { assignments, loading, refetch };
 }
 
-export const useSystemModules = () => {
-  const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules());
+/*
+ * The lookup helpers below are `useCallback`-stable and index their data once.
+ *
+ * They used to be plain closures rebuilt on every render, which silently broke
+ * every consumer that memoized on them — a `useMemo` keyed on `getValue` re-ran
+ * on each render, cascading through whole dashboards. They also did a linear
+ * `.find()` per lookup, and these hooks are queried dozens of times per screen.
+ */
 
-  const isEnabled = (moduleKey: string): boolean => {
-    const m = modules.find(mod => mod.module_key === moduleKey);
-    return m?.is_enabled ?? false;
-  };
+export const useSystemModules = () => {
+  const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules(), [], "Failed to load modules", undefined, { cacheKey: "systemModules" });
+
+  const moduleIndex = useMemo(() => indexBy(modules, (m) => m.module_key), [modules]);
+
+  const isEnabled = useCallback(
+    (moduleKey: string): boolean => moduleIndex.get(moduleKey)?.is_enabled ?? false,
+    [moduleIndex]
+  );
 
   return { modules, loading, refetch, isEnabled };
 }
 
 export const useConfigurations = () => {
-  const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs());
+  const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs(), [], "Failed to load configurations", undefined, { cacheKey: "configurations" });
 
-  const getValue = (key: string, fallback: string = ""): string => {
-    const c = configs.find(cfg => cfg.config_key === key);
-    return c?.config_value ?? fallback;
-  };
+  const configIndex = useMemo(() => indexBy(configs, (c) => c.config_key), [configs]);
 
-  const getNumber = (key: string, fallback: number = 0): number => {
-    const val = getValue(key, String(fallback));
-    const n = parseFloat(val);
-    return isNaN(n) ? fallback : n;
-  };
+  const getValue = useCallback(
+    (key: string, fallback: string = ""): string => configIndex.get(key)?.config_value ?? fallback,
+    [configIndex]
+  );
 
-  const getBool = (key: string, fallback: boolean = false): boolean => {
-    const val = getValue(key, String(fallback));
-    return val === "true" || val === "1";
-  };
+  const getNumber = useCallback(
+    (key: string, fallback: number = 0): number => {
+      const val = getValue(key, String(fallback));
+      const n = parseFloat(val);
+      return isNaN(n) ? fallback : n;
+    },
+    [getValue]
+  );
+
+  const getBool = useCallback(
+    (key: string, fallback: boolean = false): boolean => {
+      const val = getValue(key, String(fallback));
+      return val === "true" || val === "1";
+    },
+    [getValue]
+  );
 
   return { configs, loading, refetch, getValue, getNumber, getBool };
 }
@@ -117,17 +142,23 @@ export const useConfigurations = () => {
 export const usePublicHolidays = (year?: number) => {
   const { data: holidays, loading, refetch } = useAsyncList(
     () => odooData.fetchHolidays(year),
-    [year]
+    [year],
+    "Failed to load holidays",
+    undefined,
+    { cacheKey: "holidays" }
   );
 
-  const isHoliday = (dateStr: string): boolean => {
-    return holidays.some(h => h.date === dateStr);
-  };
+  const holidayIndex = useMemo(() => indexBy(holidays, (h) => h.date), [holidays]);
 
-  const getHolidayName = (dateStr: string): string | null => {
-    const h = holidays.find(hol => hol.date === dateStr);
-    return h?.name_ar ?? null;
-  };
+  const isHoliday = useCallback(
+    (dateStr: string): boolean => holidayIndex.has(dateStr),
+    [holidayIndex]
+  );
+
+  const getHolidayName = useCallback(
+    (dateStr: string): string | null => holidayIndex.get(dateStr)?.name_ar ?? null,
+    [holidayIndex]
+  );
 
   return { holidays, loading, refetch, isHoliday, getHolidayName };
 }

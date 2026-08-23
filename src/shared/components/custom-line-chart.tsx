@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { arabicSource } from "@/i18n/source";
+import ChartGridLine from "./charts/ChartGridLine";
+import ChartLinePoint from "./charts/ChartLinePoint";
+import ChartTooltip from "./charts/ChartTooltip";
 
 interface LineChartItem {
   label: string;
@@ -13,55 +17,89 @@ interface CustomLineChartProps {
   valueLabel?: string;
 }
 
+const PADDING_TOP = 30;
+const PADDING_BOTTOM = 50;
+const PADDING_LEFT = 50;
+const PADDING_RIGHT = 16;
+const CHART_WIDTH = 600;
+const PLOT_WIDTH = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+const TICK_COUNT = 5;
+const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
+
 const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const safeData = data
-    .filter((item) => item.label)
-    .map((item) => ({
-      ...item,
-      value: Number.isFinite(item.value) ? item.value : 0,
-    }));
+  const safeData = useMemo(
+    () =>
+      data
+        .filter((item) => item.label)
+        .map((item) => ({
+          ...item,
+          value: Number.isFinite(item.value) ? item.value : 0,
+        })),
+    [data],
+  );
+
   const hasData = safeData.length > 0;
-  const maxValue = hasData ? Math.max(...safeData.map((item) => item.value)) : 0;
-  const minValue = hasData ? Math.min(...safeData.map((item) => item.value)) : 0;
-  const paddingTop = 30;
-  const paddingBottom = 50;
-  const paddingLeft = 50;
-  const paddingRight = 16;
-  const chartWidth = 600;
-  const chartHeight = height;
-  const plotHeight = chartHeight - paddingTop - paddingBottom;
-  const plotWidth = chartWidth - paddingLeft - paddingRight;
+  const plotHeight = height - PADDING_TOP - PADDING_BOTTOM;
 
-  // Nice axis range
-  const range = maxValue - minValue;
-  const niceMin = Math.floor(minValue / 10) * 10 - Math.max(10, Math.ceil(range * 0.1));
-  const niceMax = Math.ceil(maxValue / 10) * 10 + Math.max(10, Math.ceil(range * 0.1));
-  const span = Math.max(1, niceMax - niceMin);
+  const { yTicks, points, pathD, areaD, hoverZoneWidth } = useMemo(() => {
+    const maxValue = safeData.length > 0 ? Math.max(...safeData.map((item) => item.value)) : 0;
+    const minValue = safeData.length > 0 ? Math.min(...safeData.map((item) => item.value)) : 0;
 
-  const tickCount = 5;
-  const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => Math.round(niceMin + (span / tickCount) * i));
+    // Nice axis range
+    const range = maxValue - minValue;
+    const niceMin = Math.floor(minValue / 10) * 10 - Math.max(10, Math.ceil(range * 0.1));
+    const niceMax = Math.ceil(maxValue / 10) * 10 + Math.max(10, Math.ceil(range * 0.1));
+    const span = Math.max(1, niceMax - niceMin);
 
-  const getX = (i: number) => safeData.length <= 1 ? paddingLeft + plotWidth / 2 : paddingLeft + (plotWidth / (safeData.length - 1)) * i;
-  const getY = (val: number) => paddingTop + plotHeight - ((val - niceMin) / span) * plotHeight;
+    const getX = (index: number) =>
+      safeData.length <= 1 ? PADDING_LEFT + PLOT_WIDTH / 2 : PADDING_LEFT + (PLOT_WIDTH / (safeData.length - 1)) * index;
+    const getY = (value: number) => PADDING_TOP + plotHeight - ((value - niceMin) / span) * plotHeight;
 
-  // Build path
-  const pathD = safeData.map((item, i) => {
-    const x = getX(i);
-    const y = getY(item.value);
-    return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-  }).join(" ");
+    const ticks = Array.from({ length: TICK_COUNT + 1 }, (_, index) => {
+      const value = Math.round(niceMin + (span / TICK_COUNT) * index);
+      return { value, y: getY(value) };
+    });
 
-  // Area path
-  const areaD = hasData ? `${pathD} L ${getX(safeData.length - 1)} ${paddingTop + plotHeight} L ${getX(0)} ${paddingTop + plotHeight} Z` : "";
+    const nextPoints = safeData.map((item, index) => ({
+      label: item.label,
+      value: item.value,
+      x: getX(index),
+      y: getY(item.value),
+    }));
+
+    // Build path
+    const nextPathD = nextPoints.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+
+    // Area path
+    const plotBottom = PADDING_TOP + plotHeight;
+    const nextAreaD = nextPoints.length > 0
+      ? `${nextPathD} L ${nextPoints[nextPoints.length - 1].x} ${plotBottom} L ${nextPoints[0].x} ${plotBottom} Z`
+      : "";
+
+    return {
+      yTicks: ticks,
+      points: nextPoints,
+      pathD: nextPathD,
+      areaD: nextAreaD,
+      hoverZoneWidth: PLOT_WIDTH / Math.max(1, safeData.length),
+    };
+  }, [safeData, plotHeight]);
+
+  const hoveredPoint = hoveredIndex !== null ? points[hoveredIndex] : undefined;
+  const labelY = PADDING_TOP + plotHeight + 20;
+
+  const handleHover = useCallback((index: number | null): void => {
+    setHoveredIndex(index);
+  }, []);
 
   return (
-    <div className="relative w-full" style={{ direction: "ltr" }}>
+    <div className="relative w-full" style={CONTAINER_STYLE}>
       <svg
-        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         width="100%"
-        height={chartHeight}
+        height={height}
         className="overflow-visible"
       >
         <defs>
@@ -72,31 +110,16 @@ const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = a
         </defs>
 
         {/* Grid lines */}
-        {yTicks.map((tick, index) => {
-          const y = getY(tick);
-          return (
-            <g key={`grid-${index}`}>
-              <line
-                x1={paddingLeft}
-                y1={y}
-                x2={chartWidth - paddingRight}
-                y2={y}
-                stroke="var(--border)"
-                strokeOpacity={0.3}
-                strokeDasharray="3 3"
-              />
-              <text
-                x={paddingLeft - 8}
-                y={y + 4}
-                textAnchor="end"
-                fill="var(--muted-foreground)"
-                style={{ fontSize: 11, fontFamily: "Tajawal" }}
-              >
-                {tick}
-              </text>
-            </g>
-          );
-        })}
+        {yTicks.map((tick, index) => (
+          <ChartGridLine
+            key={`grid-${index}`}
+            y={tick.y}
+            x1={PADDING_LEFT}
+            x2={CHART_WIDTH - PADDING_RIGHT}
+            labelX={PADDING_LEFT - 8}
+            label={tick.value}
+          />
+        ))}
 
         {/* Area fill */}
         {hasData && <path d={areaD} fill="url(#lineAreaGrad)" />}
@@ -105,93 +128,36 @@ const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = a
         {hasData && <path d={pathD} fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />}
 
         {/* X labels + dots + hover zones */}
-        {safeData.map((item, i) => {
-          const x = getX(i);
-          const y = getY(item.value);
-          const isHovered = hoveredIndex === i;
-
-          return (
-            <g key={`pt-${i}`}>
-              {/* Hover zone */}
-              <rect
-                x={x - (plotWidth / Math.max(1, safeData.length)) / 2}
-                y={paddingTop}
-                width={plotWidth / Math.max(1, safeData.length)}
-                height={plotHeight}
-                fill="transparent"
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                style={{ cursor: "pointer" }}
-              />
-              {/* Vertical hover line */}
-              {isHovered && (
-                <line
-                  x1={x}
-                  y1={paddingTop}
-                  x2={x}
-                  y2={paddingTop + plotHeight}
-                  stroke={color}
-                  strokeOpacity={0.3}
-                  strokeDasharray="4 4"
-                />
-              )}
-              {/* Dot */}
-              <circle
-                cx={x}
-                cy={y}
-                r={isHovered ? 7 : 5}
-                fill={color}
-                stroke="var(--card)"
-                strokeWidth={2}
-                style={{ transition: "r 0.2s ease" }}
-              />
-              {/* X label */}
-              <text
-                x={x}
-                y={paddingTop + plotHeight + 20}
-                textAnchor="middle"
-                fill="var(--muted-foreground)"
-                style={{ fontSize: 11, fontFamily: "Tajawal" }}
-              >
-                {item.label}
-              </text>
-            </g>
-          );
-        })}
+        {points.map((point, index) => (
+          <ChartLinePoint
+            key={`pt-${index}`}
+            index={index}
+            x={point.x}
+            y={point.y}
+            hoverZoneX={point.x - hoverZoneWidth / 2}
+            hoverZoneY={PADDING_TOP}
+            hoverZoneWidth={hoverZoneWidth}
+            hoverZoneHeight={plotHeight}
+            isHovered={hoveredIndex === index}
+            color={color}
+            label={point.label}
+            labelY={labelY}
+            onHover={handleHover}
+          />
+        ))}
       </svg>
 
       {/* Tooltip */}
-      {hoveredIndex !== null && (() => {
-        const item = safeData[hoveredIndex];
-        if (!item) return null;
-        const x = getX(hoveredIndex);
-        const y = getY(item.value);
-        const leftPct = (x / chartWidth) * 100;
-        const topPct = (y / chartHeight) * 100;
-
-        return (
-          <div
-            className="absolute pointer-events-none z-50"
-            style={{
-              left: `${leftPct}%`,
-              top: `${topPct}%`,
-              transform: "translate(-50%, -120%)",
-            }}
-          >
-            <div
-              className="px-3 py-2 rounded-lg shadow-xl border border-border/40"
-              style={{
-                background: "var(--card)",
-                fontFamily: "Tajawal",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <p className="text-foreground" style={{ fontSize: 12 }}>{item.label}</p>
-              <p style={{ fontSize: 12, color }}>{valueLabel}: {item.value}</p>
-            </div>
-          </div>
-        );
-      })()}
+      {hoveredPoint && (
+        <ChartTooltip
+          left={`${((hoveredPoint.x / CHART_WIDTH) * 100)}%`}
+          top={`${((hoveredPoint.y / height) * 100)}%`}
+          transform="translate(-50%, -120%)"
+          title={hoveredPoint.label}
+          value={`${valueLabel}: ${hoveredPoint.value}`}
+          valueColor={color}
+        />
+      )}
     </div>
   );
 };

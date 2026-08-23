@@ -1,5 +1,14 @@
 import { empDisplayName, empNumber, type DbEmployee } from "@/shared/hooks";
 
+/**
+ * Accessors that adapt a `DbEmployee` to the shared `TypeAhead` component.
+ *
+ * These live in `shared` because employee pickers appear in evaluation,
+ * training, warnings and leave as well as in the employees feature itself —
+ * importing them from `@/features/employees/utils` made five unrelated features
+ * reach into another feature's internals.
+ */
+
 export const getEmployeeId = (e: DbEmployee): string => e.id;
 
 export const getEmployeeDescription = (e: DbEmployee): string | null => {

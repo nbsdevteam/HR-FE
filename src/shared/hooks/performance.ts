@@ -81,7 +81,10 @@ export interface DbPolicy {
 export const useEvaluations = (filters?: { employeeId?: string; period?: string }) => {
   const { data: evaluations, loading, refetch } = useAsyncList(
     () => odooData.fetchEvaluations(filters?.employeeId),
-    [filters?.employeeId, filters?.period]
+    [filters?.employeeId, filters?.period],
+    "Failed to load evaluations",
+    undefined,
+    { cacheKey: "evaluations" }
   );
   return { evaluations, loading, refetch };
 }
@@ -89,25 +92,31 @@ export const useEvaluations = (filters?: { employeeId?: string; period?: string 
 export const useWarnings = (filters?: { employeeId?: string; status?: string }) => {
   const { data: warnings, loading, refetch } = useAsyncList(
     () => odooData.fetchWarnings(filters?.employeeId),
-    [filters?.employeeId, filters?.status]
+    [filters?.employeeId, filters?.status],
+    "Failed to load warnings",
+    undefined,
+    { cacheKey: "warnings" }
   );
   return { warnings, loading, refetch };
 }
 
 export const useTrainingPrograms = () => {
-  const { data: programs, loading, refetch } = useAsyncList(() => odooData.fetchTrainingPrograms());
+  const { data: programs, loading, refetch } = useAsyncList(() => odooData.fetchTrainingPrograms(), [], "Failed to load training programs", undefined, { cacheKey: "trainingPrograms" });
   return { programs, loading, refetch };
 }
 
 export const useTrainingParticipants = (programId?: string) => {
   const { data: participants, loading, refetch } = useAsyncList(
     () => odooData.fetchTrainingParticipants(programId),
-    [programId]
+    [programId],
+    "Failed to load participants",
+    undefined,
+    { cacheKey: "trainingParticipants" }
   );
   return { participants, loading, refetch };
 }
 
 export const usePolicies = () => {
-  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchPolicies());
+  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchPolicies(), [], "Failed to load policies", undefined, { cacheKey: "policies" });
   return { policies, loading, refetch };
 }

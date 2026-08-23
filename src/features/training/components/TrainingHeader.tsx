@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 interface ITrainingHeaderProps {
@@ -15,13 +16,9 @@ const TrainingHeader = ({ onNewProgram }: ITrainingHeaderProps) => (
         {arabicSource("training.managing_training_programs_and_participants")}
       </p>
     </div>
-    <button
-      onClick={onNewProgram}
-      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-    >
-      <Plus className="w-4 h-4" />
+    <Button icon={Plus} onClick={onNewProgram}>
       {arabicSource("training.new_program")}
-    </button>
+    </Button>
   </div>
 );
 

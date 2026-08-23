@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useAsyncList } from "./useAsyncList";
 
@@ -53,34 +53,43 @@ export const useEmployees = () => {
   const { data: employees, loading, error, refetch } = useAsyncList(
     () => odooData.fetchEmployees(),
     [],
-    "Failed to load employees"
+    "Failed to load employees",
+    undefined,
+    { cacheKey: "employees" }
   );
   return { employees, loading, error, refetch };
 }
 
+export const useDepartments = () => {
+  const { data: departments, loading, error, refetch } = useAsyncList(
+    () => odooData.fetchDepartments(),
+    [],
+    "Failed to load departments",
+    undefined,
+    { cacheKey: "departments" }
+  );
+  return { departments, loading, error, refetch };
+}
+
+/**
+ * Employees + departments together. Composes the two cached list hooks rather
+ * than issuing its own pair of fetches, so a page that also calls
+ * `useEmployees()` elsewhere reuses the same in-flight request.
+ */
 export const useHierarchyData = () => {
-  const [employees, setEmployees] = useState<DbEmployee[]>([]);
-  const [departments, setDepartments] = useState<DbDepartment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { employees, loading: employeesLoading, refetch: refetchEmployees } = useEmployees();
+  const { departments, loading: departmentsLoading, refetch: refetchDepartments } = useDepartments();
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [emps, depts] = await Promise.all([
-        odooData.fetchEmployees(),
-        odooData.fetchDepartments(),
-      ]);
-      setEmployees(emps);
-      setDepartments(depts);
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
+  const refetch = useCallback(async () => {
+    await Promise.all([refetchEmployees(), refetchDepartments()]);
+  }, [refetchEmployees, refetchDepartments]);
+
+  return {
+    employees,
+    departments,
+    loading: employeesLoading || departmentsLoading,
+    refetch,
   };
-
-  useEffect(() => { fetchData(); }, []);
-
-  return { employees, departments, loading, refetch: fetchData };
 }
 
 // ——— Helpers ———

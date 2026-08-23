@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ArrowLeft, FileQuestion } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -5,6 +6,10 @@ import { useNavigate } from "react-router";
 const NotFound = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const handleBackToDashboard = useCallback((): void => {
+    navigate("/");
+  }, [navigate]);
 
   return (
     <section className="flex min-h-full items-center justify-center p-6">
@@ -15,7 +20,7 @@ const NotFound = () => {
         <p className="mb-6 text-muted-foreground">{t("errors.not_found_message")}</p>
         <button
           type="button"
-          onClick={() => navigate("/")}
+          onClick={handleBackToDashboard}
           className="mx-auto flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-primary-foreground transition-opacity hover:opacity-90"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />

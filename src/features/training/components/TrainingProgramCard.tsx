@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Clock, Edit2, GraduationCap, Plus, Trash2, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
 import { statusColorPalette } from "../constants/training";
@@ -13,7 +14,7 @@ interface ITrainingProgramCardProps {
   participants: DbTrainingParticipant[];
   trainingCategories: string[];
   statusColors: Record<string, string>;
-  statusIcons: Record<string, any>;
+  statusIcons: Record<string, LucideIcon>;
   participantStatusColors: Record<string, string>;
   getEmployeeName: (employeeId: string) => string;
   onEditProgram: (program: DbTrainingProgram) => void;

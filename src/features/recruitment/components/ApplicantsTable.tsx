@@ -2,6 +2,7 @@ import { useState, memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Users } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
+import EmptyState from "@/shared/components/EmptyState";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
@@ -37,15 +38,12 @@ const ApplicantsTable = ({
 
   if (applicants.length === 0) {
     return (
-      <div className="text-center py-16 text-muted-foreground">
-        <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-        <p>{arabicSource("recruitment.there_are_no_applicants")}</p>
-        <p style={{ fontSize: 12 }}>
-          {arabicSource(
-            "recruitment.click_add_advanced_to_enter_the_first_filter",
-          )}
-        </p>
-      </div>
+      <EmptyState
+        icon={Users}
+        message={arabicSource("recruitment.there_are_no_applicants")}
+        hint={arabicSource("recruitment.click_add_advanced_to_enter_the_first_filter")}
+        className="py-16"
+      />
     );
   }
 

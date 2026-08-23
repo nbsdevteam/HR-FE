@@ -6,6 +6,7 @@ import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
 import { translateArabicSource } from "@/i18n/legacy";
 import { usePolicies } from "@/shared/hooks";
+import { countBy } from "@/shared/utils/collections";
 import {
   ODOO_STATUS_TO_POLICY,
   POLICY_STATUS_TO_ODOO,
@@ -85,12 +86,15 @@ export const usePoliciesPage = () => {
     [currentPage, filtered],
   );
 
-  const stats = useMemo(() => ({
-    total: displayPolicies.length,
-    active: displayPolicies.filter((policy) => policy.status === arabicSource("common.is_active")).length,
-    underReview: displayPolicies.filter((policy) => policy.status === arabicSource("common.is_under_review")).length,
-    archived: displayPolicies.filter((policy) => policy.status === arabicSource("common.archived")).length,
-  }), [displayPolicies]);
+  const stats = useMemo(() => {
+    const byStatus = countBy(displayPolicies, (policy) => policy.status);
+    return {
+      total: displayPolicies.length,
+      active: byStatus.get(arabicSource("common.is_active")) ?? 0,
+      underReview: byStatus.get(arabicSource("common.is_under_review")) ?? 0,
+      archived: byStatus.get(arabicSource("common.archived")) ?? 0,
+    };
+  }, [displayPolicies]);
 
   const handleCreatePolicy = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();

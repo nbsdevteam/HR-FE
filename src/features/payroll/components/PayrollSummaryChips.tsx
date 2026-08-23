@@ -8,7 +8,8 @@ import {
   TreePalm,
 } from "lucide-react";
 import type { SalaryCalculation } from "@/features/payroll";
-import { formatHoursMinutes, DEFAULT_SETTINGS } from "@/features/payroll";
+import { DEFAULT_SETTINGS } from "@/features/payroll";
+import { formatHoursMinutes } from "@/shared/utils/currency";
 import { arabicSource } from "@/i18n/source";
 import PayrollSummaryChip from "./PayrollSummaryChip";
 import { useMemo } from "react";

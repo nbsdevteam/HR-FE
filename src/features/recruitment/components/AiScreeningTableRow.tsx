@@ -4,6 +4,7 @@ import { Download, Eye } from "lucide-react";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import IrBadge from "./IrBadge";
+import MatchedSkillChip from "./MatchedSkillChip";
 import StageSelect from "./StageSelect";
 
 type AiScreeningTableRowProps = {
@@ -52,9 +53,7 @@ const AiScreeningTableRow = ({ app, index, onSelect, onUpdateStage }: AiScreenin
       <td className="px-4 py-3">
         <div className="flex flex-wrap gap-1 max-w-[240px]">
           {(app.matched_skills || []).slice(0, 3).map((skill, si) => (
-            <span key={si} className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 10 }}>
-              {skill}
-            </span>
+            <MatchedSkillChip key={`${skill}-${si}`} skill={skill} />
           ))}
           {(app.matched_skills?.length || 0) > 3 && (
             <span className="px-1.5 py-0.5 rounded bg-muted/20 text-muted-foreground" style={{ fontSize: 10 }}>

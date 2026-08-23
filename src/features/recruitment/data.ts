@@ -1,6 +1,6 @@
 import {
   Briefcase, BookmarkCheck, Building2, Clock, FileCheck, GraduationCap,
-  Mail, MapPin, Phone, UserPlus, Users,
+  Mail, MapPin, Phone, Sparkles, UserPlus, Users, Workflow,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { type DbApplicant } from "@/shared/hooks";
@@ -17,11 +17,11 @@ export const applicantsTableColumns = [
 ] as const;
 
 export const recruitmentTabsData = [
-  { id: "jobs", label: arabicSource("recruitment.vacancies") },
-  { id: "applicants", label: arabicSource("recruitment.applicants") },
-  { id: "ai", label: arabicSource("recruitment.ai_tab") },
-  { id: "pipeline", label: arabicSource("recruitment.recruitment_path") },
-  { id: "bank", label: arabicSource("recruitment.candidates_bank") },
+  { id: "jobs", label: arabicSource("recruitment.vacancies"), icon: Briefcase },
+  { id: "applicants", label: arabicSource("recruitment.applicants"), icon: Users },
+  { id: "ai", label: arabicSource("recruitment.ai_tab"), icon: Sparkles },
+  { id: "pipeline", label: arabicSource("recruitment.recruitment_path"), icon: Workflow },
+  { id: "bank", label: arabicSource("recruitment.candidates_bank"), icon: BookmarkCheck },
 ] as const;
 
 export const aiScreeningStatFields = [
