@@ -11,7 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!email || !password) { setError("يرجى إدخال البريد الإلكتروني وكلمة المرور"); return; }
     setLoading(true);
@@ -20,6 +20,18 @@ const Login = () => {
     const { error: err } = await signIn(email, password);
     if (err) setError(err);
     setLoading(false);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setPassword(e.target.value);
+  };
+
+  const handleTogglePasswordVisibility = (): void => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -67,7 +79,7 @@ const Login = () => {
               <input
                 type="text"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 className="w-full ps-10 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                 placeholder="admin"
                 dir="ltr"
@@ -84,7 +96,7 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 className="w-full ps-10 pe-10 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
                 placeholder="••••••••"
                 dir="ltr"
@@ -92,7 +104,7 @@ const Login = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={handleTogglePasswordVisibility}
                 className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
