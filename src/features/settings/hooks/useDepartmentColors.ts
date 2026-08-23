@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
+import { indexBy } from "@/shared/utils/collections";
 import type { DbDepartment } from "@/shared/hooks";
 
 export const useDepartmentColors = (departments: DbDepartment[], showToast: (message: string) => void) => {
@@ -12,11 +13,17 @@ export const useDepartmentColors = (departments: DbDepartment[], showToast: (mes
     departments.map(d => deptColorEdits[d.id] ?? d.color).filter(Boolean),
   ), [departments, deptColorEdits]);
 
+  // Indexed once: `getDeptColor` is called for every chip, so the previous
+  // `.find()` made rendering the list quadratic in the department count.
+  const departmentsById = useMemo(
+    () => indexBy(departments, (department) => department.id),
+    [departments],
+  );
+
   const getDeptColor = useCallback((deptId: string) => {
     if (deptColorEdits[deptId] !== undefined) return deptColorEdits[deptId];
-    const dept = departments.find(d => d.id === deptId);
-    return dept?.color || "#8B5CF6";
-  }, [deptColorEdits, departments]);
+    return departmentsById.get(deptId)?.color || "#8B5CF6";
+  }, [deptColorEdits, departmentsById]);
 
   const setDeptColor = useCallback((deptId: string, color: string) => {
     setDeptColorEdits(prev => ({ ...prev, [deptId]: color }));

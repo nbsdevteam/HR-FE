@@ -15,14 +15,6 @@ const LeaveTypeList = ({
   onToggleActive,
   onDelete,
 }: TLeaveTypeListProps) => {
-  const handleToggleActiveClick = (leaveType: DbLeaveType) => (): void => {
-    onToggleActive(leaveType);
-  };
-
-  const handleDeleteClick = (leaveTypeId: string) => (): void => {
-    onDelete(leaveTypeId);
-  };
-
   if (loading) {
     return (
       <div className="text-muted-foreground text-center py-6 text-sm">
@@ -43,8 +35,8 @@ const LeaveTypeList = ({
         <LeaveTypeListItem
           key={leaveType.id}
           leaveType={leaveType}
-          onToggleActive={handleToggleActiveClick(leaveType)}
-          onDelete={handleDeleteClick(leaveType.id)}
+          onToggleActive={onToggleActive}
+          onDelete={onDelete}
         />
       ))}
     </div>

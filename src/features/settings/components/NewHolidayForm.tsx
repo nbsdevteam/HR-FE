@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
 import { InputField } from "@/shared/components";
@@ -20,21 +21,21 @@ const NewHolidayForm = ({
   onSave,
   onCancel,
 }: TNewHolidayFormProps) => {
-  const handleNameArChange = (value: string): void => {
+  const handleNameArChange = useCallback((value: string): void => {
     onFieldChange({ name_ar: value });
-  };
+  }, [onFieldChange]);
 
-  const handleNameEnChange = (value: string): void => {
+  const handleNameEnChange = useCallback((value: string): void => {
     onFieldChange({ name_en: value });
-  };
+  }, [onFieldChange]);
 
-  const handleDateChange = (value: string): void => {
+  const handleDateChange = useCallback((value: string): void => {
     onFieldChange({ date: value });
-  };
+  }, [onFieldChange]);
 
-  const handleRecurringToggle = (): void => {
+  const handleRecurringToggle = useCallback((): void => {
     onFieldChange({ is_recurring: !form.is_recurring });
-  };
+  }, [form.is_recurring, onFieldChange]);
 
   return (
     <motion.div

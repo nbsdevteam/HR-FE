@@ -17,12 +17,28 @@ export const useDashboardWorkforceStats = (
   empDocuments: any[],
   cfg: DashboardRiskConfig,
 ) => {
-  const pendingLeaves = leaveRequests.filter(r => isLeavePending(r.status)).length;
-  const approvedLeaves = leaveRequests.filter(
-    r => normalizeLeaveStatus(r.status) === arabicSource("common.accepted"),
-  ).length;
-  const activeContracts = contracts.filter(c => c.status === "active").length;
-  const probationCount = contracts.filter(c => c.probation_status === "in_progress").length;
+  // Both counts in one pass, memoized so the dashboard does not re-scan every
+  // leave request on each render just to produce two integers.
+  const { pendingLeaves, approvedLeaves } = useMemo(() => {
+    const accepted = arabicSource("common.accepted");
+    let pending = 0;
+    let approved = 0;
+    leaveRequests.forEach(r => {
+      if (isLeavePending(r.status)) pending++;
+      if (normalizeLeaveStatus(r.status) === accepted) approved++;
+    });
+    return { pendingLeaves: pending, approvedLeaves: approved };
+  }, [leaveRequests]);
+
+  const { activeContracts, probationCount } = useMemo(() => {
+    let active = 0;
+    let probation = 0;
+    contracts.forEach(c => {
+      if (c.status === "active") active++;
+      if (c.probation_status === "in_progress") probation++;
+    });
+    return { activeContracts: active, probationCount: probation };
+  }, [contracts]);
 
   // Tenure analysis
   const tenureStats = useMemo(() => {
@@ -115,10 +131,24 @@ export const useDashboardWorkforceStats = (
     const now = new Date();
     const daysLeft = (d: string) => Math.ceil((new Date(d).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-    const expiringDocs = empDocuments.filter(d => d.expiry_date && daysLeft(d.expiry_date) >= 0 && daysLeft(d.expiry_date) <= cfg.docExpiryWindowDays).length;
-    const expiredDocs = empDocuments.filter(d => d.expiry_date && daysLeft(d.expiry_date) < 0).length;
-    const expiringContracts = contracts.filter(c => c.end_date && c.status === "active" && daysLeft(c.end_date) >= 0 && daysLeft(c.end_date) <= cfg.contractExpiryWindowDays).length;
-    const expiredContracts = contracts.filter(c => c.end_date && c.status === "active" && daysLeft(c.end_date) < 0).length;
+    // One pass per list, and `daysLeft` evaluated once per row instead of twice.
+    let expiringDocs = 0;
+    let expiredDocs = 0;
+    empDocuments.forEach(d => {
+      if (!d.expiry_date) return;
+      const remaining = daysLeft(d.expiry_date);
+      if (remaining < 0) expiredDocs++;
+      else if (remaining <= cfg.docExpiryWindowDays) expiringDocs++;
+    });
+
+    let expiringContracts = 0;
+    let expiredContracts = 0;
+    contracts.forEach(c => {
+      if (!c.end_date || c.status !== "active") return;
+      const remaining = daysLeft(c.end_date);
+      if (remaining < 0) expiredContracts++;
+      else if (remaining <= cfg.contractExpiryWindowDays) expiringContracts++;
+    });
 
     return { expiringDocs, expiredDocs, expiringContracts, expiredContracts };
   }, [empDocuments, contracts, cfg.docExpiryWindowDays, cfg.contractExpiryWindowDays]);

@@ -1,12 +1,14 @@
 import { Shield, Heart } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { dashboardRiskScoreTextColor } from "../data";
+import type { DashboardRiskItem, DashboardRiskScore } from "../types";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardRiskBadge from "./DashboardRiskBadge";
 import DashboardRiskItemRow from "./DashboardRiskItemRow";
 
 type DashboardRiskScorecardProps = {
-  riskScore: any;
-  riskItemsPreview: any[];
+  riskScore: DashboardRiskScore;
+  riskItemsPreview: DashboardRiskItem[];
   cardCls: string;
 };
 
@@ -22,15 +24,7 @@ const DashboardRiskScorecard = ({
     </h3>
     <div className="text-center p-4 rounded-xl bg-muted/20 mb-4">
       <p
-        className={`text-4xl font-bold ${
-          riskScore.level === "critical"
-            ? "text-red-400"
-            : riskScore.level === "high"
-              ? "text-orange-400"
-              : riskScore.level === "medium"
-                ? "text-amber-400"
-                : "text-emerald-400"
-        }`}
+        className={`text-4xl font-bold ${dashboardRiskScoreTextColor[riskScore.level]}`}
       >
         {riskScore.score}
       </p>
@@ -50,8 +44,12 @@ const DashboardRiskScorecard = ({
           </p>
         </div>
       ) : (
-        riskItemsPreview.map((item: any, i: number) => (
-          <DashboardRiskItemRow key={i} label={item.label} level={item.level} />
+        riskItemsPreview.map((item) => (
+          <DashboardRiskItemRow
+            key={item.label}
+            label={item.label}
+            level={item.level}
+          />
         ))
       )}
     </div>

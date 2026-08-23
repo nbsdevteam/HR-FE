@@ -80,17 +80,21 @@ export const useLeavePage = () => {
     return list;
   }, [empMap, filter, leaveSortBy, leaveSortDir, requests, search]);
 
-  const pendingCount = useMemo(() => requests.filter((request) => isLeavePending(request.status)).length, [requests]);
-
-  const approvedCount = useMemo(
-    () => requests.filter((request) => normalizeLeaveStatus(request.status) === arabicSource("common.accepted")).length,
-    [requests],
-  );
-
-  const rejectedCount = useMemo(
-    () => requests.filter((request) => normalizeLeaveStatus(request.status) === arabicSource("common.rejected_3")).length,
-    [requests],
-  );
+  // One pass over the request list instead of three full scans.
+  const { pendingCount, approvedCount, rejectedCount } = useMemo(() => {
+    const accepted = arabicSource("common.accepted");
+    const rejected = arabicSource("common.rejected_3");
+    let pending = 0;
+    let approved = 0;
+    let refused = 0;
+    requests.forEach((request) => {
+      if (isLeavePending(request.status)) pending++;
+      const status = normalizeLeaveStatus(request.status);
+      if (status === accepted) approved++;
+      else if (status === rejected) refused++;
+    });
+    return { pendingCount: pending, approvedCount: approved, rejectedCount: refused };
+  }, [requests]);
 
   const loading = useMemo(
     () => empLoading || typesLoading || reqLoading || balLoading || permLoading,

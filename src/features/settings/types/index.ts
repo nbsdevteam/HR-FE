@@ -62,6 +62,32 @@ export interface NewDocTypeForm {
   sort_order: number;
 }
 
+/** A configuration row's editable value — the shapes the settings UI produces. */
+export type ConfigValue = string | number | boolean;
+
+/** One text/number input inside a `NewTypeForm` grid row. */
+export interface TypeFormFieldConfig<T> {
+  key: Extract<keyof T, string>;
+  placeholder: string;
+  type?: "text" | "number";
+  dir?: "ltr" | "rtl";
+  /** Render `0` as an empty input (used for optional numeric fields). */
+  blankWhenFalsy?: boolean;
+}
+
+/** A grid row of inputs — `gridClassName` carries the row's column layout. */
+export interface TypeFormRowConfig<T> {
+  id: string;
+  gridClassName: string;
+  fields: TypeFormFieldConfig<T>[];
+}
+
+/** One boolean toggle inside a `NewTypeForm` checkbox row. */
+export interface TypeFormCheckboxConfig<T> {
+  key: Extract<keyof T, string>;
+  label: string;
+}
+
 export type NotifKey = "leave" | "lateAttendance" | "warnings" | "evaluations" | "recruitment";
 
 export type NotifToggles = Record<NotifKey, boolean>;

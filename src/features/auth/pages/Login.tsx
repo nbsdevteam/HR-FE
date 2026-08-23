@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { Lock, Mail, Loader2, Eye, EyeOff, LogIn } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
+import { Button } from "@/shared/components";
 import { useAuth } from "@/shared/auth";
 
 const Login = () => {
-  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const { signIn } = useAuth();
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!email || !password) { setError("يرجى إدخال البريد الإلكتروني وكلمة المرور"); return; }
     setLoading(true);
@@ -20,19 +22,19 @@ const Login = () => {
     const { error: err } = await signIn(email, password);
     if (err) setError(err);
     setLoading(false);
-  };
+  }, [email, password, signIn]);
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     setEmail(e.target.value);
-  };
+  }, []);
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     setPassword(e.target.value);
-  };
+  }, []);
 
-  const handleTogglePasswordVisibility = (): void => {
-    setShowPassword(!showPassword);
-  };
+  const handleTogglePasswordVisibility = useCallback((): void => {
+    setShowPassword((visible) => !visible);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
@@ -102,13 +104,14 @@ const Login = () => {
                 dir="ltr"
                 autoComplete="current-password"
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={handleTogglePasswordVisibility}
-                className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+                icon={showPassword ? EyeOff : Eye}
+                aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                className="absolute end-3 top-1/2 -translate-y-1/2 p-0 hover:bg-transparent cursor-pointer"
+              />
             </div>
           </div>
 
@@ -122,20 +125,15 @@ const Login = () => {
           )}
 
           {/* Submit */}
-          <motion.button
+          <Button
             type="submit"
-            disabled={loading}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            loading={loading}
+            icon={LogIn}
+            className="w-full py-3 rounded-xl font-medium shadow-lg shadow-primary/20 cursor-pointer"
             style={{ fontSize: 14 }}
           >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <><LogIn className="w-5 h-5" /> تسجيل الدخول</>
-            )}
-          </motion.button>
+            تسجيل الدخول
+          </Button>
         </motion.form>
       </motion.div>
     </div>

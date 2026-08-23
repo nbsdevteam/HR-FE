@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
@@ -6,8 +7,8 @@ import SettingsToggle from "./SettingsToggle";
 
 interface IContractTypeListItemProps {
   contractType: DbContractType;
-  onToggleActive: () => void;
-  onDelete: () => void;
+  onToggleActive: (contractType: DbContractType) => void;
+  onDelete: (contractTypeId: string) => void;
 }
 
 const ContractTypeListItem = ({
@@ -16,6 +17,14 @@ const ContractTypeListItem = ({
   onDelete,
 }: IContractTypeListItemProps) => {
   const { primary } = useLocalizedName(contractType.name_ar, contractType.name_en);
+
+  const handleToggleActive = useCallback((): void => {
+    onToggleActive(contractType);
+  }, [onToggleActive, contractType]);
+
+  const handleDelete = useCallback((): void => {
+    onDelete(contractType.id);
+  }, [onDelete, contractType.id]);
 
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
@@ -38,9 +47,9 @@ const ContractTypeListItem = ({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <SettingsToggle on={contractType.is_active} onClick={onToggleActive} />
+        <SettingsToggle on={contractType.is_active} onClick={handleToggleActive} />
         <button
-          onClick={onDelete}
+          onClick={handleDelete}
           className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -50,4 +59,4 @@ const ContractTypeListItem = ({
   );
 };
 
-export default ContractTypeListItem;
+export default memo(ContractTypeListItem);

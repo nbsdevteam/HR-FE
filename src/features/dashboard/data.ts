@@ -23,6 +23,14 @@ export const dashboardKpiTabs: Array<{
   },
 ];
 
+/** Score colour for the big "N/100" risk readout, keyed by computed level. */
+export const dashboardRiskScoreTextColor: Record<DashboardRiskLevel, string> = {
+  low: "text-emerald-400",
+  medium: "text-amber-400",
+  high: "text-orange-400",
+  critical: "text-red-400",
+};
+
 export const dashboardRiskBadgeConfig: Record<
   DashboardRiskLevel,
   { label: string; cls: string }

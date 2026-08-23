@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Briefcase, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -27,9 +28,9 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
     deleteContractTypeEntry,
   } = useContractTypeManagement(refetchContractTypes, showToast);
 
-  const handleToggleNewContractTypeForm = (): void => {
+  const handleToggleNewContractTypeForm = useCallback((): void => {
     setShowNewContractTypeForm(!showNewContractTypeForm);
-  };
+  }, [setShowNewContractTypeForm, showNewContractTypeForm]);
 
   return (
     <motion.div

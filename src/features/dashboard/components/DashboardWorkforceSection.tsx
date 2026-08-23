@@ -79,6 +79,15 @@ const DashboardWorkforceSection = ({
     [newHireStats, turnoverRate, exitProcesses],
   );
 
+  const rejectedLeaves = useMemo(
+    () =>
+      leaveRequests.filter(
+        (r: any) =>
+          normalizeLeaveStatus(r.status) === arabicSource("common.rejected_3"),
+      ).length,
+    [leaveRequests],
+  );
+
   const stats = useMemo(
     () => [
       {
@@ -203,15 +212,7 @@ const DashboardWorkforceSection = ({
                 </p>
               </div>
               <div className="text-center p-2 rounded-lg bg-red-500/10">
-                <p className="text-red-400 font-medium">
-                  {
-                    leaveRequests.filter(
-                      (r: any) =>
-                        normalizeLeaveStatus(r.status) ===
-                        arabicSource("common.rejected_3"),
-                    ).length
-                  }
-                </p>
+                <p className="text-red-400 font-medium">{rejectedLeaves}</p>
                 <p className="text-muted-foreground text-xs">
                   {arabicSource("common.rejected")}
                 </p>

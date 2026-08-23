@@ -15,14 +15,6 @@ const DocumentTypeList = ({
   onToggleActive,
   onDelete,
 }: TDocumentTypeListProps) => {
-  const handleToggleActiveClick = (documentType: DbDocumentType) => (): void => {
-    onToggleActive(documentType);
-  };
-
-  const handleDeleteClick = (documentTypeId: string) => (): void => {
-    onDelete(documentTypeId);
-  };
-
   if (loading) {
     return (
       <p className="text-muted-foreground text-sm text-center py-4">
@@ -36,8 +28,8 @@ const DocumentTypeList = ({
         <DocumentTypeListItem
           key={documentType.id}
           documentType={documentType}
-          onToggleActive={handleToggleActiveClick(documentType)}
-          onDelete={handleDeleteClick(documentType.id)}
+          onToggleActive={onToggleActive}
+          onDelete={onDelete}
         />
       ))}
     </div>

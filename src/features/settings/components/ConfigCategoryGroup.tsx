@@ -1,14 +1,15 @@
+import { memo } from "react";
 import type { DbConfiguration } from "@/shared/hooks";
+import type { ConfigValue } from "../types";
 import CategoryGroupHeader from "./CategoryGroupHeader";
 import ConfigRow from "./ConfigRow";
-import { memo } from "react";
 
 interface IConfigCategoryGroupProps {
   category: string;
   configs: DbConfiguration[];
-  configEdits: Record<string, any>;
-  onEdit: (configId: string, value: any) => void;
-  onSave: (configId: string, value: any) => void;
+  configEdits: Record<string, ConfigValue>;
+  onEdit: (configId: string, value: ConfigValue) => void;
+  onSave: (configId: string, value: ConfigValue) => void;
 }
 
 const ConfigCategoryGroup = ({
@@ -17,39 +18,26 @@ const ConfigCategoryGroup = ({
   configEdits,
   onEdit,
   onSave,
-}: IConfigCategoryGroupProps) => {
-  const handleEdit = (configId: string) => (value: any): void => {
-    onEdit(configId, value);
-  };
-
-  const handleSave = (configId: string) => (value: any): void => {
-    onSave(configId, value);
-  };
-
-  return (
-    <div>
-      <CategoryGroupHeader category={category} />
-      <div className="space-y-3">
-        {configs?.map((config) => {
-          const currentValue =
-            configEdits[config.id] !== undefined
-              ? configEdits[config.id]
-              : config.config_value;
-          const hasChanged = configEdits[config.id] !== undefined;
-          return (
-            <ConfigRow
-              key={config.id}
-              config={config}
-              currentValue={currentValue}
-              hasChanged={hasChanged}
-              onEdit={handleEdit(config.id)}
-              onSave={handleSave(config.id)}
-            />
-          );
-        })}
-      </div>
+}: IConfigCategoryGroupProps) => (
+  <div>
+    <CategoryGroupHeader category={category} />
+    <div className="space-y-3">
+      {configs?.map((config) => {
+        const edited = configEdits[config.id];
+        const hasChanged = edited !== undefined;
+        return (
+          <ConfigRow
+            key={config.id}
+            config={config}
+            currentValue={hasChanged ? edited : config.config_value}
+            hasChanged={hasChanged}
+            onEdit={onEdit}
+            onSave={onSave}
+          />
+        );
+      })}
     </div>
-  );
-};
+  </div>
+);
 
 export default memo(ConfigCategoryGroup);

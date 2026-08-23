@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { AlertTriangle, GraduationCap, FileCheck, Award, Zap } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { pct } from "../utils/dashboardFormat";
+import type { DashboardSectionData } from "./useDashboardData";
 
-export const useDashboardComplianceData = (data: any) => {
+export const useDashboardComplianceData = (data: DashboardSectionData) => {
   const { cfg, expiryStats, warningStats, evalStats, trainingStats, evaluations } = data;
 
   const complianceStats = useMemo(

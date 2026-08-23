@@ -28,9 +28,9 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     deleteLeaveTypeEntry,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
-  const handleToggleNewLeaveTypeForm = (): void => {
+  const handleToggleNewLeaveTypeForm = useCallback((): void => {
     setShowNewLeaveTypeForm(!showNewLeaveTypeForm);
-  };
+  }, [setShowNewLeaveTypeForm, showNewLeaveTypeForm]);
 
   const handleCancelNewLeaveTypeForm = useCallback((): void => {
     setShowNewLeaveTypeForm(false);

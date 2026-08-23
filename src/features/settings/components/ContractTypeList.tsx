@@ -15,14 +15,6 @@ const ContractTypeList = ({
   onToggleActive,
   onDelete,
 }: IContractTypeListProps) => {
-  const handleToggleActiveClick = (contractType: DbContractType) => (): void => {
-    onToggleActive(contractType);
-  };
-
-  const handleDeleteClick = (contractTypeId: string) => (): void => {
-    onDelete(contractTypeId);
-  };
-
   if (loading) {
     return (
       <p className="text-muted-foreground text-sm text-center py-4">
@@ -36,8 +28,8 @@ const ContractTypeList = ({
         <ContractTypeListItem
           key={contractType.id}
           contractType={contractType}
-          onToggleActive={handleToggleActiveClick(contractType)}
-          onDelete={handleDeleteClick(contractType.id)}
+          onToggleActive={onToggleActive}
+          onDelete={onDelete}
         />
       ))}
     </div>

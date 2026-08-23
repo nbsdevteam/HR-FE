@@ -3,11 +3,11 @@ import * as odooData from "@/shared/api/odooData";
 import { useChartTheme } from "@/shared/components/chart-utils";
 import {
   useEmployees, useAttendanceRecords, useMonthlyRecords,
-  useLeaveRequests, useEmployeeContracts, useContractTypes,
-  useEmployeeDocuments, useDocumentTypes, useLoans, useNotifications,
+  useLeaveRequests, useEmployeeContracts,
+  useEmployeeDocuments, useLoans, useNotifications,
   useEvaluations, useWarnings, useTrainingPrograms, useTrainingParticipants,
   useExitProcesses, useJobOpenings, useApplicants, useLeaveBalances,
-  useLeaveTypes, useEmployeeAllowances, useEmployeeDeductions,
+  useEmployeeAllowances, useEmployeeDeductions,
   useConfigurations,
 } from "@/shared/hooks";
 import { useAppSettings } from "@/app/providers";
@@ -36,9 +36,7 @@ export const useDashboardData = () => {
 
   const { requests: leaveRequests } = useLeaveRequests();
   const { contracts } = useEmployeeContracts();
-  useContractTypes();
   const { documents: empDocuments } = useEmployeeDocuments();
-  useDocumentTypes();
   const { loans } = useLoans();
   const { notifications, unreadCount } = useNotifications();
   const { evaluations } = useEvaluations();
@@ -49,12 +47,11 @@ export const useDashboardData = () => {
   const { jobs } = useJobOpenings();
   const { applicants } = useApplicants();
   const { balances: leaveBalances } = useLeaveBalances(new Date().getFullYear());
-  useLeaveTypes();
   const { allowances: allAllowances } = useEmployeeAllowances();
   const { deductions: allDeductions } = useEmployeeDeductions();
-  const { getNumber: cfgNum, getValue: cfgVal } = useConfigurations();
+  const { configs } = useConfigurations();
 
-  const cfg = useDashboardRiskConfig(cfgNum, cfgVal);
+  const cfg = useDashboardRiskConfig(configs);
 
   const {
     totalEmployees, activeEmployees, inactiveEmployees, totalSalaries, avgSalary, medianSalary, departmentData,
@@ -78,8 +75,8 @@ export const useDashboardData = () => {
 
   const riskScore = useDashboardRiskScore(expiryStats, warningStats, attendanceStats, turnoverRate, pendingLeaves, cfg);
 
-  const { leaveDistribution, tenureDistribution, warningDistribution } =
-    useDashboardChartData(leaveRequests, pendingLeaves, approvedLeaves, tenureStats, warningStats);
+  const { tenureDistribution, warningDistribution } =
+    useDashboardChartData(tenureStats, warningStats);
 
   const cardCls = dashboardCardClass;
 
@@ -87,13 +84,13 @@ export const useDashboardData = () => {
     activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
     expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
     pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
+    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, activeContracts, totalSalaries, avgSalary, medianSalary,
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   }), [
     activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
     expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
     pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, leaveDistribution, activeContracts, totalSalaries, avgSalary, medianSalary,
+    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, activeContracts, totalSalaries, avgSalary, medianSalary,
     salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
   ]);
 
@@ -105,8 +102,12 @@ export const useDashboardData = () => {
     let cancelled = false;
     (async () => {
       try {
-        const data = await odooData.fetchHrDashboard();
-        const cards = (data as any)?.cards || data;
+        // The endpoint has shipped both shapes: `{ cards: {...} }` and the bare
+        // card object, so accept either rather than assuming one.
+        const data = (await odooData.fetchHrDashboard()) as
+          | (DashboardServerCards & { cards?: DashboardServerCards })
+          | null;
+        const cards = data?.cards ?? data;
         if (!cancelled && cards) setServerCards(cards);
       } catch {
         if (!cancelled) setServerCards(null);

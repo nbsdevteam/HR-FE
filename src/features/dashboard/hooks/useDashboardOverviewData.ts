@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { formatIQD } from "../utils/dashboardFormat";
+import type { DashboardSectionData } from "./useDashboardData";
 
-export const useDashboardOverviewData = (data: any) => {
+export const useDashboardOverviewData = (data: DashboardSectionData) => {
   const {
     activeEmployees,
     inactiveEmployees,

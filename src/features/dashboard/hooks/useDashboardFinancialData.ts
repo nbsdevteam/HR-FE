@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { Wallet, TrendingUp, CreditCard, Coins, UserX } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { formatIQD } from "../utils/dashboardFormat";
+import type { DashboardSectionData } from "./useDashboardData";
 
-export const useDashboardFinancialData = (data: any) => {
+export const useDashboardFinancialData = (data: DashboardSectionData) => {
   const {
     compensationStats, medianSalary, allAllowances, totalLoanBalance,
     activeLoans, loanUtilization, exitProcesses,

@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { AlertCircle, Loader2, Send, Timer } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Timer } from "lucide-react";
 import {
   getEmployeeDescription,
   getEmployeeId,
@@ -10,14 +10,16 @@ import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
+import LeaveFormError from "./LeaveFormError";
+import LeaveModalActions from "./LeaveModalActions";
 
-const PermissionModal = ({
-  employees, onClose, onSubmit,
-}: {
+type PermissionModalProps = {
   employees: any[];
   onClose: () => void;
   onSubmit: () => Promise<void>;
-}) => {
+};
+
+const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps) => {
   const [employeeId, setEmployeeId] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -33,15 +35,20 @@ const PermissionModal = ({
     return Math.max(0, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 100) / 100);
   }, [startTime, endTime]);
 
-  const handleEmployeeChange = (id: string): void => {
+  const employeeFallbackLabels = useMemo(
+    () => Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)])),
+    [employees],
+  );
+
+  const handleEmployeeChange = useCallback((id: string): void => {
     setEmployeeId(String(id));
-  };
+  }, []);
 
-  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+  const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setReason(e.target.value);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async (): Promise<void> => {
     if (!employeeId || !date || !startTime || !endTime) {
       setError(arabicSource("common.please_fill_out_all_required_fields"));
       return;
@@ -64,7 +71,7 @@ const PermissionModal = ({
       setError(e?.message || "فشل إنشاء الإذن");
       setSaving(false);
     }
-  };
+  }, [date, employeeId, endTime, hours, onSubmit, reason, startTime]);
 
   return (
     <ModalOverlay
@@ -73,12 +80,7 @@ const PermissionModal = ({
     >
         <ModalHeader title={arabicSource("leave.new_permission_request")} onClose={onClose} />
 
-        {error && (
-          <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" style={{ fontSize: 13 }}>
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            {error}
-          </div>
-        )}
+        <LeaveFormError message={error} />
 
         <div className="space-y-4">
           {/* Employee */}
@@ -90,7 +92,7 @@ const PermissionModal = ({
               getLabel={empDisplayName}
               getDescription={getEmployeeDescription}
               getSearchText={getEmployeeSearchText}
-              fallbackLabels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+              fallbackLabels={employeeFallbackLabels}
               value={employeeId}
               onChange={handleEmployeeChange}
             />
@@ -128,22 +130,12 @@ const PermissionModal = ({
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleSubmit}
-              disabled={saving}
-              className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              {arabicSource("leave.send")}
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
-            >
-              {arabicSource("common.cancel")}
-            </button>
-          </div>
+          <LeaveModalActions
+            submitLabel={arabicSource("leave.send")}
+            saving={saving}
+            onSubmit={handleSubmit}
+            onClose={onClose}
+          />
         </div>
     </ModalOverlay>
   );

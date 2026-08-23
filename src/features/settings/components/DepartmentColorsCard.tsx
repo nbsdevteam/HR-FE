@@ -1,7 +1,9 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Palette } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import { indexBy } from "@/shared/utils/collections";
 import type { DbDepartment } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useDepartmentColors } from "../hooks/useDepartmentColors";
@@ -31,13 +33,14 @@ const DepartmentColorsCard = ({
     saveDeptColors,
   } = useDepartmentColors(departments, showToast);
 
-  const activeDept = openColorPicker
-    ? departments.find((d) => d.id === openColorPicker)
-    : undefined;
+  const departmentsById = useMemo(
+    () => indexBy(departments, (department) => department.id),
+    [departments],
+  );
 
-  const handleToggleColorPicker = (deptId: string) => (): void => {
-    toggleColorPicker(deptId);
-  };
+  const activeDept = openColorPicker
+    ? departmentsById.get(openColorPicker)
+    : undefined;
 
   const handleSelectDeptColor = useCallback(
     (color: string): void => {
@@ -103,7 +106,7 @@ const DepartmentColorsCard = ({
                 currentColor={getDeptColor(dept.id)}
                 isOpen={openColorPicker === dept.id}
                 isEdited={!!deptColorEdits[dept.id]}
-                onClick={handleToggleColorPicker(dept.id)}
+                onToggle={toggleColorPicker}
               />
             ))}
           </div>
@@ -120,17 +123,17 @@ const DepartmentColorsCard = ({
           )}
 
           {Object.keys(deptColorEdits).length > 0 && (
-            <button
+            <Button
               type="button"
               onClick={saveDeptColors}
               disabled={savingDeptColors}
-              className="w-full px-3 py-1.5 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
+              className="w-full px-3 py-1.5 cursor-pointer"
               style={{ fontSize: 12 }}
             >
               {savingDeptColors
                 ? arabicSource("common.saving")
                 : arabicSource("settings.save_section_colors")}
-            </button>
+            </Button>
           )}
         </div>
       )}

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { FileCheck, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -27,9 +28,9 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
     deleteDocumentTypeEntry,
   } = useDocumentTypeManagement(refetchDocumentTypes, showToast);
 
-  const handleToggleNewDocTypeForm = (): void => {
+  const handleToggleNewDocTypeForm = useCallback((): void => {
     setShowNewDocTypeForm(!showNewDocTypeForm);
-  };
+  }, [setShowNewDocTypeForm, showNewDocTypeForm]);
 
   return (
     <motion.div

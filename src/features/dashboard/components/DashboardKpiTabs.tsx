@@ -18,7 +18,7 @@ const DashboardKpiTabs = ({
         tabKey={tab.key}
         label={tab.label}
         icon={tab.icon}
-        activeSection={activeSection}
+        isActive={activeSection === tab.key}
         onSectionChange={onSectionChange}
       />
     ))}

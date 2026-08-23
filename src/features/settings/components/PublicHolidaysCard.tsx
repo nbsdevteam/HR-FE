@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Plus, PartyPopper } from "lucide-react";
-import { Select } from "@/shared/components";
+import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { usePublicHolidays } from "@/shared/hooks";
 import { cardCls } from "../styles";
@@ -13,6 +13,9 @@ import NewHolidayForm from "./NewHolidayForm";
 type TPublicHolidaysCardProps = {
   showToast: (message: string) => void;
 };
+
+// Module scope so the Select does not receive a freshly built array each render.
+const HOLIDAY_YEAR_SELECT_OPTIONS = HOLIDAY_YEAR_OPTIONS.map((year) => String(year));
 
 const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
   const {
@@ -40,9 +43,9 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
     [setHolidayYear],
   );
 
-  const handleShowNewHolidayForm = (): void => {
+  const handleShowNewHolidayForm = useCallback((): void => {
     setShowNewHolidayForm(true);
-  };
+  }, [setShowNewHolidayForm]);
 
   return (
     <motion.div
@@ -83,18 +86,18 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
               <Select
                 value={String(holidayYear)}
                 onChange={handleHolidayYearChange}
-                options={HOLIDAY_YEAR_OPTIONS.map((year) => String(year))}
+                options={HOLIDAY_YEAR_SELECT_OPTIONS}
                 className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
               />
             </div>
             {!showNewHolidayForm && (
-              <button
+              <Button
+                icon={Plus}
                 onClick={handleShowNewHolidayForm}
-                className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors text-sm"
+                className="cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
                 {arabicSource("settings.add_holiday")}
-              </button>
+              </Button>
             )}
           </div>
 

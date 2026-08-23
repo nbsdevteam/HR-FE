@@ -1,7 +1,7 @@
 import { Filter, Search } from "lucide-react";
-import { FilterChip } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass } from "../styles";
+import LeaveRequestFilterChip from "./LeaveRequestFilterChip";
 
 type LeaveRequestFiltersProps = {
   filter: string;
@@ -10,23 +10,20 @@ type LeaveRequestFiltersProps = {
   onSearchChange: (search: string) => void;
 };
 
+// Module scope — the option list is static, so it should not be rebuilt per render.
+const LEAVE_STATUS_FILTERS = [
+  arabicSource("common.all"),
+  arabicSource("common.pending"),
+  arabicSource("common.accepted"),
+  arabicSource("common.rejected_3"),
+];
+
 const LeaveRequestFilters = ({
   filter,
   search,
   onFilterChange,
   onSearchChange,
 }: LeaveRequestFiltersProps) => {
-  const filters = [
-    arabicSource("common.all"),
-    arabicSource("common.pending"),
-    arabicSource("common.accepted"),
-    arabicSource("common.rejected_3"),
-  ];
-
-  const handleFilterClick = (filterOption: string) => (): void => {
-    onFilterChange(filterOption);
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onSearchChange(e.target.value);
   };
@@ -34,13 +31,12 @@ const LeaveRequestFilters = ({
   return (
     <div className="flex flex-wrap items-center gap-3 mb-4">
       <Filter className="w-4 h-4 text-muted-foreground" />
-      {filters.map((filterOption) => (
-        <FilterChip
+      {LEAVE_STATUS_FILTERS.map((filterOption) => (
+        <LeaveRequestFilterChip
           key={filterOption}
           label={filterOption}
           active={filter === filterOption}
-          onClick={handleFilterClick(filterOption)}
-          fontSize={13}
+          onSelect={onFilterChange}
         />
       ))}
       <div className="relative flex-1 max-w-xs ms-auto">

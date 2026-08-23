@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
@@ -6,8 +7,8 @@ import SettingsToggle from "./SettingsToggle";
 
 type TLeaveTypeListItemProps = {
   leaveType: DbLeaveType;
-  onToggleActive: () => void;
-  onDelete: () => void;
+  onToggleActive: (leaveType: DbLeaveType) => void;
+  onDelete: (leaveTypeId: string) => void;
 };
 
 const LeaveTypeListItem = ({
@@ -16,6 +17,14 @@ const LeaveTypeListItem = ({
   onDelete,
 }: TLeaveTypeListItemProps) => {
   const { primary, secondary, secondaryDir } = useLocalizedName(leaveType.name_ar, leaveType.name_en);
+
+  const handleToggleActive = useCallback((): void => {
+    onToggleActive(leaveType);
+  }, [onToggleActive, leaveType]);
+
+  const handleDelete = useCallback((): void => {
+    onDelete(leaveType.id);
+  }, [onDelete, leaveType.id]);
 
   return (
     <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
@@ -73,9 +82,9 @@ const LeaveTypeListItem = ({
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <SettingsToggle on={leaveType.is_active} onClick={onToggleActive} />
+        <SettingsToggle on={leaveType.is_active} onClick={handleToggleActive} />
         <button
-          onClick={onDelete}
+          onClick={handleDelete}
           className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -85,4 +94,4 @@ const LeaveTypeListItem = ({
   );
 };
 
-export default LeaveTypeListItem;
+export default memo(LeaveTypeListItem);

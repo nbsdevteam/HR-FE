@@ -1,13 +1,19 @@
 import { arabicSource } from "@/i18n/source";
+import { STATUS_TONES } from "@/shared/utils/statusColors";
 
 export const leaveCardClass = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg";
 
 export const leaveInputClass = "w-full h-10 px-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none";
 
+/**
+ * Localized leave status → badge tone. Keyed by the Arabic label rather than a
+ * backend code, so it maps onto the shared `STATUS_TONES` vocabulary instead of
+ * re-declaring the same Tailwind strings a fourth time.
+ */
 export const leaveStatusColors: Record<string, string> = {
-  [arabicSource("common.pending")]: "bg-primary/10 border-primary/20 text-primary",
-  [arabicSource("common.accepted")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  [arabicSource("common.rejected_3")]: "bg-destructive/10 border-destructive/20 text-destructive",
+  [arabicSource("common.pending")]: STATUS_TONES.accent,
+  [arabicSource("common.accepted")]: STATUS_TONES.success,
+  [arabicSource("common.rejected_3")]: STATUS_TONES.danger,
 };
 
 export const leaveKanbanColumns: { key: string; label: string; accent: string; dotColor: string }[] = [

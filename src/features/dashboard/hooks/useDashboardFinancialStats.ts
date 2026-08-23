@@ -12,8 +12,16 @@ export const useDashboardFinancialStats = (
   employees: any[],
   monthlyPayroll: { label: string; value: number }[],
 ) => {
-  const activeLoans = loans.filter(l => l.status === "active" || l.status === "disbursed");
-  const totalLoanBalance = activeLoans.reduce((sum, l) => sum + (l.remaining_amount || l.loan_amount - (l.paid_installments * l.installment_amount || 0)), 0);
+  // Memoized: `activeLoans` is handed to the aggregated section payload, so an
+  // unmemoized `.filter()` gave it a new identity on every render.
+  const activeLoans = useMemo(
+    () => loans.filter(l => l.status === "active" || l.status === "disbursed"),
+    [loans],
+  );
+  const totalLoanBalance = useMemo(
+    () => activeLoans.reduce((sum, l) => sum + (l.remaining_amount || l.loan_amount - (l.paid_installments * l.installment_amount || 0)), 0),
+    [activeLoans],
+  );
   const loanUtilization = totalEmployees > 0 ? pct(activeLoans.length, totalEmployees) : 0;
 
   // Total compensation cost (salary + allowances - deductions)

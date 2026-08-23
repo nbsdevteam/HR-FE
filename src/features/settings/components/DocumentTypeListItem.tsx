@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
@@ -6,8 +7,8 @@ import SettingsToggle from "./SettingsToggle";
 
 type TDocumentTypeListItemProps = {
   documentType: DbDocumentType;
-  onToggleActive: () => void;
-  onDelete: () => void;
+  onToggleActive: (documentType: DbDocumentType) => void;
+  onDelete: (documentTypeId: string) => void;
 };
 
 const DocumentTypeListItem = ({
@@ -16,6 +17,14 @@ const DocumentTypeListItem = ({
   onDelete,
 }: TDocumentTypeListItemProps) => {
   const { primary } = useLocalizedName(documentType.name_ar, documentType.name_en);
+
+  const handleToggleActive = useCallback((): void => {
+    onToggleActive(documentType);
+  }, [onToggleActive, documentType]);
+
+  const handleDelete = useCallback((): void => {
+    onDelete(documentType.id);
+  }, [onDelete, documentType.id]);
 
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
@@ -34,9 +43,9 @@ const DocumentTypeListItem = ({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <SettingsToggle on={documentType.is_active} onClick={onToggleActive} />
+        <SettingsToggle on={documentType.is_active} onClick={handleToggleActive} />
         <button
-          onClick={onDelete}
+          onClick={handleDelete}
           className="p-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -46,4 +55,4 @@ const DocumentTypeListItem = ({
   );
 };
 
-export default DocumentTypeListItem;
+export default memo(DocumentTypeListItem);

@@ -1,13 +1,33 @@
 import { useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
+import type { DbConfiguration } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 
-export const useDashboardRiskConfig = (
-  cfgNum: (key: string, fallback?: number) => number,
-  cfgVal: (key: string, fallback?: string) => string,
-) =>
+/**
+ * Reads every dashboard threshold out of the configurations table.
+ *
+ * Takes the raw `configs` rows rather than `useConfigurations()`'s `getValue` /
+ * `getNumber` closures on purpose: those are re-created on every render, so
+ * memoizing on them produced a brand-new `cfg` object each render and cascaded
+ * an invalidation through every downstream `useMemo` (risk score, core stats,
+ * workforce stats, and the aggregated section payload). Keying on the `configs`
+ * array — which is `useState` data and therefore stable — keeps `cfg` stable.
+ * Indexing the rows once also replaces ~40 linear `.find()` scans per render.
+ */
+export const useDashboardRiskConfig = (configs: DbConfiguration[]) =>
   // ═══════ All thresholds from configurations table (NOT hard-coded) ═══════
-  useMemo(
-    () => ({
+  useMemo(() => {
+    const byKey = indexBy(configs, (config) => config.config_key);
+
+    const cfgVal = (key: string, fallback = ""): string =>
+      byKey.get(key)?.config_value ?? fallback;
+
+    const cfgNum = (key: string, fallback = 0): number => {
+      const parsed = parseFloat(cfgVal(key, String(fallback)));
+      return isNaN(parsed) ? fallback : parsed;
+    };
+
+    return {
       // Risk scoring
       riskExpiredDocsCriticalThreshold: cfgNum('risk.expired_docs_critical_threshold', 5),
       riskExpiredDocsCriticalPoints: cfgNum('risk.expired_docs_critical_points', 25),
@@ -49,8 +69,7 @@ export const useDashboardRiskConfig = (
       // Employee active status
       employeeActiveStatus: cfgVal('employee.active_status', arabicSource("common.is_active")),
       employeeActiveStatusEn: cfgVal('employee.active_status_en', 'active'),
-    }),
-    [cfgNum, cfgVal],
-  );
+    };
+  }, [configs]);
 
 export type DashboardRiskConfig = ReturnType<typeof useDashboardRiskConfig>;
