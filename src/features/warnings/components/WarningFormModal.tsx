@@ -1,8 +1,12 @@
 import { memo } from "react";
 import { motion } from "motion/react";
-import { EmployeeSelect } from "@/features/employees";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
-import { InputField, Modal, Select } from "@/shared/components";
+import { InputField, Modal, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
@@ -34,8 +38,8 @@ const WarningFormModal = ({
     onFieldChange({ employeeId: String(id) });
   };
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ type: e.target.value });
+  const handleTypeChange = (value: string): void => {
+    onFieldChange({ type: value });
   };
 
   const handleReasonChange = (reason: string): void => {
@@ -69,9 +73,13 @@ const WarningFormModal = ({
         >
           {arabicSource("common.employee")}
         </label>
-        <EmployeeSelect
-          employees={employees}
-          labels={Object.fromEntries(
+        <TypeAhead
+          items={employees}
+          getId={getEmployeeId}
+          getLabel={empDisplayName}
+          getDescription={getEmployeeDescription}
+          getSearchText={getEmployeeSearchText}
+          fallbackLabels={Object.fromEntries(
             employees.map((e) => [String(e.id), empDisplayName(e)]),
           )}
           value={form.employeeId}

@@ -1,72 +1,50 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { ChevronsUpDown, Search, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { DbEmployee, empDisplayName, empNumber } from "@/shared/hooks";
-import EmployeeSelectOption from "./EmployeeSelectOption";
+import TypeAheadOption from "./TypeAheadOption";
 
-type Props = {
-  employees: DbEmployee[];
+type TypeAheadProps<T> = {
+  items: T[];
   value: string;
-  onChange: (employeeId: string) => void;
-  className?: string;
-  placeholder?: string;
-  filter?: (employee: DbEmployee) => boolean;
-  disabled?: boolean;
-  showDepartment?: boolean;
+  onChange: (id: string) => void;
+  getId: (item: T) => string;
+  getLabel: (item: T) => string;
+  getDescription?: (item: T) => string | null | undefined;
+  getSearchText?: (item: T) => string;
+  filter?: (item: T) => boolean;
   excludeIds?: string[];
-  /**
-   * Optional id→label map from the parent (e.g. empMap). Used when the parent
-   * already resolves names successfully (contracts table) so the closed field
-   * stays in sync even if local state is reset.
-   */
-  labels?: Record<string, string>;
+  fallbackLabels?: Record<string, string>;
+  blankLabel?: string;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  disabled?: boolean;
+  showDescription?: boolean;
+  className?: string;
 };
 
-function matchesQuery(emp: DbEmployee, q: string): boolean {
-  if (!q) return true;
-  const hay = [
-    empDisplayName(emp),
-    emp.name,
-    emp.arabic_name,
-    emp.department,
-    emp.position,
-    emp.email,
-    emp.device_employee_no,
-    emp.person_id != null ? String(emp.person_id) : "",
-    emp.person_id != null ? empNumber(emp.person_id) : "",
-    emp.id,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  return hay.includes(q);
-}
-
-/** Resolve employee row for a controlled value (id is canonical). */
-function findEmployee(
-  employees: DbEmployee[],
-  valueKey: string,
-): DbEmployee | null {
+function findItem<T>(items: T[], valueKey: string, getId: (item: T) => string): T | null {
   if (!valueKey) return null;
-  return employees.find((e) => String(e.id) === valueKey) || null;
+  return items.find((item) => getId(item) === valueKey) || null;
 }
 
-/**
- * Searchable employee dropdown. Display name is derived from value + employees
- * (and optional parent labels map) — not from ephemeral local-only state.
- */
-const EmployeeSelect = ({
-  employees,
+const TypeAhead = <T,>({
+  items,
   value,
   onChange,
-  className = "",
-  placeholder,
+  getId,
+  getLabel,
+  getDescription,
+  getSearchText,
   filter,
-  disabled = false,
-  showDepartment = true,
   excludeIds,
-  labels,
-}: Props) => {
+  fallbackLabels,
+  blankLabel,
+  placeholder,
+  searchPlaceholder,
+  disabled = false,
+  showDescription = true,
+  className = "",
+}: TypeAheadProps<T>) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
@@ -78,51 +56,56 @@ const EmployeeSelect = ({
   );
 
   const valueKey = value == null || value === "" ? "" : String(value);
+
   const selected = useMemo(
-    () => findEmployee(employees, valueKey),
-    [employees, valueKey],
+    () => findItem(items, valueKey, getId),
+    [items, valueKey, getId],
   );
 
-  // Canonical display: employees row → parent labels map → empty (placeholder).
   const selectedName = useMemo(() => {
     if (!valueKey) return "";
-    if (selected) return empDisplayName(selected);
-    const fromLabels = labels?.[valueKey];
-    if (fromLabels) return fromLabels;
-    return "";
-  }, [valueKey, selected, labels]);
+    if (selected) return getLabel(selected);
+    return fallbackLabels?.[valueKey] || "";
+  }, [valueKey, selected, getLabel, fallbackLabels]);
 
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return employees
-      .filter((e) => !exclude.has(String(e.id)))
-      .filter((e) => (filter ? filter(e) : true))
-      .filter((e) => matchesQuery(e, q))
+    const matches = (item: T): boolean => {
+      if (!q) return true;
+      const text = (
+        getSearchText
+          ? getSearchText(item)
+          : [getLabel(item), getDescription?.(item)].filter(Boolean).join(" ")
+      ).toLowerCase();
+      return text.includes(q);
+    };
+    return items
+      .filter((item) => !exclude.has(getId(item)))
+      .filter((item) => (filter ? filter(item) : true))
+      .filter(matches)
       .slice()
-      .sort((a, b) => empDisplayName(a).localeCompare(empDisplayName(b), "ar"));
-  }, [employees, exclude, filter, query]);
+      .sort((a, b) => getLabel(a).localeCompare(getLabel(b), "ar"));
+  }, [items, exclude, filter, query, getSearchText, getLabel, getDescription, getId]);
 
-  const label =
-    placeholder ||
-    arabicSource("training.select_employee") ||
-    arabicSource("common.search_for_an_employee");
+  const triggerPlaceholder = placeholder || arabicSource("common.select");
+  const searchBoxPlaceholder = searchPlaceholder || arabicSource("common.search");
+  const showBlankOption = blankLabel !== undefined;
 
-  const pick = (emp: DbEmployee) => {
-    // Always persist the Odoo hr.employee id (same key empMap / contracts use).
-    onChange(String(emp.id));
+  const pick = (item: T): void => {
+    onChange(getId(item));
     setOpen(false);
     setQuery("");
   };
 
-  const clear = () => {
+  const clear = (): void => {
     onChange("");
   };
 
-  function handleToggle() {
+  const handleToggle = (): void => {
     if (disabled) return;
     setOpen((v) => !v);
     setQuery("");
-  }
+  };
 
   const handleClearClick = (e: React.MouseEvent<HTMLSpanElement>): void => {
     e.preventDefault();
@@ -150,13 +133,25 @@ const EmployeeSelect = ({
     e.stopPropagation();
   };
 
-  const handleOptionMouseDown =
-    (emp: DbEmployee) => (e: React.MouseEvent<HTMLButtonElement>): void => {
-      // mousedown + preventDefault: commit before blur/outside handlers.
+  const handleBlankMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>): void => {
       e.preventDefault();
       e.stopPropagation();
-      pick(emp);
-    };
+      onChange("");
+      setOpen(false);
+      setQuery("");
+    },
+    [onChange],
+  );
+
+  const handleOptionMouseDown = useCallback(
+    (item: T) => (e: React.MouseEvent<HTMLButtonElement>): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      pick(item);
+    },
+    [pick],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -199,16 +194,13 @@ const EmployeeSelect = ({
           readOnly
           disabled={disabled}
           value={selectedName}
-          placeholder={label}
-          data-employee-id={valueKey || undefined}
+          placeholder={triggerPlaceholder}
+          data-selected-id={valueKey || undefined}
           className="min-w-0 flex-1 h-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground cursor-pointer"
           style={{ fontSize: 13 }}
           dir="auto"
           aria-haspopup="listbox"
           aria-expanded={open}
-          // onFocus={() => {
-          //   if (!disabled) setOpen(true);
-          // }}
         />
         <span className="flex items-center gap-1 shrink-0">
           {!!valueKey && !disabled && (
@@ -240,13 +232,20 @@ const EmployeeSelect = ({
               value={query}
               onChange={handleQueryChange}
               onClick={handleSearchInputClick}
-              placeholder={arabicSource("common.search_for_an_employee")}
+              placeholder={searchBoxPlaceholder}
               className="w-full h-8 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
               style={{ fontSize: 13 }}
             />
           </div>
           <div className="max-h-96 overflow-y-auto" role="listbox">
-            {options.length === 0 ? (
+            {showBlankOption && (
+              <TypeAheadOption
+                label={blankLabel as string}
+                active={valueKey === ""}
+                onMouseDown={handleBlankMouseDown}
+              />
+            )}
+            {options.length === 0 && !showBlankOption ? (
               <p
                 className="px-3 py-3 text-muted-foreground"
                 style={{ fontSize: 12 }}
@@ -254,13 +253,13 @@ const EmployeeSelect = ({
                 {arabicSource("common.no_results_found")}
               </p>
             ) : (
-              options?.map((emp) => (
-                <EmployeeSelectOption
-                  key={emp.id}
-                  emp={emp}
-                  active={String(emp.id) === valueKey}
-                  showDepartment={showDepartment}
-                  onMouseDown={handleOptionMouseDown(emp)}
+              options.map((item) => (
+                <TypeAheadOption
+                  key={getId(item)}
+                  label={getLabel(item)}
+                  description={showDescription ? getDescription?.(item) : undefined}
+                  active={getId(item) === valueKey}
+                  onMouseDown={handleOptionMouseDown(item)}
                 />
               ))
             )}
@@ -271,8 +270,8 @@ const EmployeeSelect = ({
           >
             {options.length} /{" "}
             {
-              employees.filter(
-                (e) => !exclude.has(String(e.id)) && (!filter || filter(e)),
+              items.filter(
+                (item) => !exclude.has(getId(item)) && (!filter || filter(item)),
               ).length
             }
           </div>
@@ -282,4 +281,4 @@ const EmployeeSelect = ({
   );
 };
 
-export default EmployeeSelect;
+export default TypeAhead;

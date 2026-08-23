@@ -16,8 +16,8 @@ const SkillTagChip = ({
   onWeightChange,
   onRemove,
 }: ISkillTagChipProps) => {
-  const handleWeightChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onWeightChange(Number(e.target.value));
+  const handleWeightChange = (value: string): void => {
+    onWeightChange(Number(value));
   };
 
   return (
@@ -28,16 +28,13 @@ const SkillTagChip = ({
       {skill.name}
       {weighted && (
         <Select
-          value={skill.weight || 2}
+          value={String(skill.weight || 2)}
           onChange={handleWeightChange}
+          options={["1", "2", "3"]}
           className="bg-transparent text-primary cursor-pointer outline-none"
           style={{ fontSize: 10 }}
           dir="ltr"
-        >
-          <option value={1}>1</option>
-          <option value={2}>2</option>
-          <option value={3}>3</option>
-        </Select>
+        />
       )}
       <button
         type="button"

@@ -42,11 +42,11 @@ const EmployeeDepartmentField = ({
     }
   };
 
-  const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    if (e.target.value === "__NEW__") {
+  const handleDepartmentChange = (value: string): void => {
+    if (value === "__NEW__") {
       onStartAddingDept();
     } else {
-      onFieldChange("department", e.target.value);
+      onFieldChange("department", value);
     }
   };
 
@@ -84,13 +84,14 @@ const EmployeeDepartmentField = ({
           <Select
             value={department}
             onChange={handleDepartmentChange}
+            options={[
+              ...allDepts.map((d) => ({ value: d, label: d })),
+              { divider: true },
+              { value: "__NEW__", label: arabicSource("shared.add_a_new_section") },
+            ]}
             className={inputClass}
             style={{ fontSize: 14 }}
-          >
-            {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
-            <option disabled style={{ borderTop: "1px solid var(--border)", fontSize: 11 }}>──────────</option>
-            <option value="__NEW__">{arabicSource("shared.add_a_new_section")}</option>
-          </Select>
+          />
         )
       }
     />

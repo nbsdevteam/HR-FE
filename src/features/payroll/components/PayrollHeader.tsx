@@ -26,8 +26,8 @@ const PayrollHeader = ({
   onSavePayslips,
   onServerComputePayslips,
 }: PayrollHeaderProps) => {
-  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    onMonthChange(event.target.value);
+  const handleMonthChange = (value: string): void => {
+    onMonthChange(value);
   };
 
   return (
@@ -45,15 +45,10 @@ const PayrollHeader = ({
       <Select
         value={selectedMonth}
         onChange={handleMonthChange}
+        options={(availableMonths || []).map((month) => ({ value: month, label: displayMonth(month) }))}
         className={payrollSelectClass}
         style={{ width: 180 }}
-      >
-        {availableMonths?.map((month) => (
-          <option key={month} value={month}>
-            {displayMonth(month)}
-          </option>
-        ))}
-      </Select>
+      />
       <button
         onClick={onSavePayslips}
         disabled={savingPayslips || payslipsSaved || payrollCount === 0}

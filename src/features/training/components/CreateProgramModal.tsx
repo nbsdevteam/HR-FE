@@ -37,8 +37,8 @@ const CreateProgramModal = ({
     onFieldChange({ title: value });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ category: e.target.value });
+  const handleCategoryChange = (value: string): void => {
+    onFieldChange({ category: value });
   };
 
   const handleWeightChange = (value: string): void => {
@@ -61,8 +61,8 @@ const CreateProgramModal = ({
     onFieldChange({ end_date: value });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ status: e.target.value });
+  const handleStatusChange = (value: string): void => {
+    onFieldChange({ status: value });
   };
 
   const handleMaxParticipantsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

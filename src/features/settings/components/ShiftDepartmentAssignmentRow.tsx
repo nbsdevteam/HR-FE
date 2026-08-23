@@ -1,6 +1,9 @@
-import { Select } from "@/shared/components";
+import { TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment, DbShift } from "@/shared/hooks";
+
+const getShiftId = (shift: DbShift): string => shift.id;
+const getShiftLabel = (shift: DbShift): string => shift.name;
 
 type TShiftDepartmentAssignmentRowProps = {
   department: DbDepartment;
@@ -15,10 +18,6 @@ const ShiftDepartmentAssignmentRow = ({
   value,
   onChange,
 }: TShiftDepartmentAssignmentRowProps) => {
-  const handleShiftChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onChange(e.target.value);
-  };
-
   return (
     <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
       <div
@@ -26,18 +25,14 @@ const ShiftDepartmentAssignmentRow = ({
         style={{ backgroundColor: department.color }}
       />
       <span className="text-foreground flex-1">{department.name}</span>
-      <Select
+      <TypeAhead
+        items={shifts || []}
+        getId={getShiftId}
+        getLabel={getShiftLabel}
         value={value}
-        onChange={handleShiftChange}
-        className="px-3 py-1 bg-muted/30 border border-border/40 rounded text-foreground text-sm focus:outline-none focus:border-primary"
-      >
-        <option value="">{arabicSource("settings.virtual_shift")}</option>
-        {shifts?.map((shift) => (
-          <option key={shift.id} value={shift.id}>
-            {shift.name}
-          </option>
-        ))}
-      </Select>
+        onChange={onChange}
+        blankLabel={arabicSource("settings.virtual_shift")}
+      />
     </div>
   );
 };

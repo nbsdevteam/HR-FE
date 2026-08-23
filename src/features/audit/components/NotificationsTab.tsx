@@ -57,16 +57,12 @@ const NotificationsTab = () => {
     }
   };
 
-  const handleFilterTypeChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setFilterType(e.target.value);
+  const handleFilterTypeChange = (value: string): void => {
+    setFilterType(value);
   };
 
-  const handleFilterCategoryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setFilterCategory(e.target.value);
+  const handleFilterCategoryChange = (value: string): void => {
+    setFilterCategory(value);
   };
 
   return (

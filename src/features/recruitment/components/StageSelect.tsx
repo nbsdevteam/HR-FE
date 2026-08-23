@@ -8,21 +8,14 @@ type StageSelectProps = {
 };
 
 const StageSelect = ({ stage, onChange }: StageSelectProps) => {
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onChange(e.target.value);
-  };
-
   return (
     <Select
       value={stage}
-      onChange={handleChange}
+      onChange={onChange}
+      options={ALL_STAGES}
       className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[stage] || ""}`}
       style={{ fontSize: 12 }}
-    >
-      {ALL_STAGES.map((s) => (
-        <option key={s} value={s}>{s}</option>
-      ))}
-    </Select>
+    />
   );
 };
 

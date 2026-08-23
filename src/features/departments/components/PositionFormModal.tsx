@@ -1,10 +1,13 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Briefcase, Save } from "lucide-react";
-import { Modal, ModalFooterActions, Select } from "@/shared/components";
+import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
 import type { PositionNode } from "../types";
 import FieldLabel from "./FieldLabel";
+
+const getDepartmentId = (d: DbDepartment): string => d.id;
+const getDepartmentLabel = (d: DbDepartment): string => d.name;
 
 export type PositionFormState = {
   title_ar: string;
@@ -33,8 +36,8 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
     setPosForm((p) => ({ ...p, title_en: e.target.value }));
   };
 
-  const handleDepartmentIdChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setPosForm((p) => ({ ...p, department_id: e.target.value }));
+  const handleDepartmentIdChange = (value: string): void => {
+    setPosForm((p) => ({ ...p, department_id: value }));
   };
 
   const handleMaxHeadcountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -84,12 +87,14 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
       </div>
       <div>
         <FieldLabel>{arabicSource("common.section")}</FieldLabel>
-        <Select value={posForm.department_id} onChange={handleDepartmentIdChange}
-          className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
-          style={{ fontSize: 13 }}>
-          <option value="">{arabicSource("common.no_section")}</option>
-          {dbDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </Select>
+        <TypeAhead
+          items={dbDepartments}
+          getId={getDepartmentId}
+          getLabel={getDepartmentLabel}
+          value={posForm.department_id}
+          onChange={handleDepartmentIdChange}
+          blankLabel={arabicSource("common.no_section")}
+        />
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.maximum_number")}</FieldLabel>

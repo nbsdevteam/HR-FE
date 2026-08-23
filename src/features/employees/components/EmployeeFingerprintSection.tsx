@@ -23,8 +23,8 @@ const EmployeeFingerprintSection = ({
   onFacePhotoChange,
   onClearFacePhoto,
 }: EmployeeFingerprintSectionProps) => {
-  const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFormChange({ gender: e.target.value as "male" | "female" });
+  const handleGenderChange = (value: string): void => {
+    onFormChange({ gender: value as "male" | "female" });
   };
 
   const handleFacePhotoInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -64,10 +64,11 @@ const EmployeeFingerprintSection = ({
         label={arabicSource("employees.gender")}
         value={gender}
         onChange={handleGenderChange}
-      >
-        <option value="male">{arabicSource("common.male")}</option>
-        <option value="female">{arabicSource("common.female")}</option>
-      </Select>
+        options={[
+          { value: "male", label: arabicSource("common.male") },
+          { value: "female", label: arabicSource("common.female") },
+        ]}
+      />
     </div>
     <div className="mt-3">
       <label className={labelCls} style={{ fontSize: 12 }}>

@@ -17,8 +17,8 @@ const EmployeeAddAttachmentForm = ({ newAttachment, onChange, onConfirm, onCance
     onChange({ name: e.target.value });
   };
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onChange({ type: e.target.value });
+  const handleTypeChange = (value: string): void => {
+    onChange({ type: value });
   };
 
   return (
@@ -40,15 +40,16 @@ const EmployeeAddAttachmentForm = ({ newAttachment, onChange, onConfirm, onCance
         labelStyle={{ fontSize: 11 }}
         value={newAttachment.type}
         onChange={handleTypeChange}
+        options={[
+          { value: "PDF", label: "PDF" },
+          { value: arabicSource("common.image"), label: arabicSource("common.image") },
+          { value: "Word", label: "Word" },
+          { value: "Excel", label: "Excel" },
+          { value: arabicSource("common.other"), label: arabicSource("shared.i_see") },
+        ]}
         className={dashedRecordInputClass}
         style={{ fontSize: 13 }}
-      >
-        <option value="PDF">PDF</option>
-        <option value={arabicSource("common.image")}>{arabicSource("common.image")}</option>
-        <option value="Word">Word</option>
-        <option value="Excel">Excel</option>
-        <option value={arabicSource("common.other")}>{arabicSource("shared.i_see")}</option>
-      </Select>
+      />
     </DashedAddRecordCard>
   );
 };

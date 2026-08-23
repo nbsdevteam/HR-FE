@@ -2,9 +2,14 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { FileText, Plus } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { DataTable, EmptyState, FilterChip, Select, TableHeaderRow } from "@/shared/components";
-import { EmployeeSelect } from "@/features/employees";
+import { DataTable, EmptyState, FilterChip, Select, TableHeaderRow, TypeAhead } from "@/shared/components";
 import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import {
+  empDisplayName,
   type DbDocumentType, type DbEmployeeDocument,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -109,8 +114,8 @@ const DocumentsTab = ({
     setFormData((p) => ({ ...p, employee_id: String(id) }));
   };
 
-  const handleDocumentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setFormData((p) => ({ ...p, document_type_id: e.target.value }));
+  const handleDocumentTypeChange = (value: string): void => {
+    setFormData((p) => ({ ...p, document_type_id: value }));
   };
 
   const handleDocumentNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -149,19 +154,26 @@ const DocumentsTab = ({
           >
             <div>
               <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
-              <EmployeeSelect
-                employees={employees}
-                labels={employeeLabels}
+              <TypeAhead
+                items={employees}
+                getId={getEmployeeId}
+                getLabel={empDisplayName}
+                getDescription={getEmployeeDescription}
+                getSearchText={getEmployeeSearchText}
+                fallbackLabels={employeeLabels}
                 value={formData.employee_id}
                 onChange={handleEmployeeChange}
               />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("lifecycle.document_type_2")}</FormFieldLabel>
-              <Select value={formData.document_type_id} onChange={handleDocumentTypeChange} className={inputCls}>
-                <option value="">{arabicSource("common.choose")}</option>
-                {docTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
-              </Select>
+              <Select
+                value={formData.document_type_id}
+                onChange={handleDocumentTypeChange}
+                options={docTypes.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name_ar }))}
+                placeholder={arabicSource("common.choose")}
+                className={inputCls}
+              />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.document_number")}</FormFieldLabel>

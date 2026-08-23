@@ -34,8 +34,8 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
   } = usePublicHolidayManagement(holidays, refetchHolidays, showToast);
 
   const handleHolidayYearChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>): void => {
-      setHolidayYear(parseInt(e.target.value));
+    (value: string): void => {
+      setHolidayYear(parseInt(value));
     },
     [setHolidayYear],
   );
@@ -81,16 +81,11 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
                 {arabicSource("settings.year")}
               </label>
               <Select
-                value={holidayYear}
+                value={String(holidayYear)}
                 onChange={handleHolidayYearChange}
+                options={HOLIDAY_YEAR_OPTIONS.map((year) => String(year))}
                 className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
-              >
-                {HOLIDAY_YEAR_OPTIONS.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
             {!showNewHolidayForm && (
               <button

@@ -84,15 +84,15 @@ const AuditTrailTab = () => {
   }, []);
 
   const handleFilterActionChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>): void => {
-      setFilterAction(e.target.value);
+    (value: string): void => {
+      setFilterAction(value);
     },
     [setFilterAction],
   );
 
   const handleFilterEntityChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>): void => {
-      setFilterEntity(e.target.value);
+    (value: string): void => {
+      setFilterEntity(value);
     },
     [setFilterEntity],
   );

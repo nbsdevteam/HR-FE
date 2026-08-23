@@ -44,8 +44,8 @@ const PublicApplyForm = ({
   onSubmit,
   onUpdateForm,
 }: PublicApplyFormProps) => {
-  const handleJobOpeningChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    onUpdateForm({ job_opening_id: event.target.value });
+  const handleJobOpeningChange = (value: string): void => {
+    onUpdateForm({ job_opening_id: value });
   };
 
   const handleNameChange = (value: string): void => {
@@ -92,16 +92,14 @@ const PublicApplyForm = ({
         <Select
           value={form.job_opening_id}
           onChange={handleJobOpeningChange}
+          options={info.open_positions.map((job) => ({
+            value: String(job.id),
+            label: `${job.title}${job.department ? ` — ${job.department}` : ""}`,
+          }))}
+          placeholder={arabicSource("apply.select_position_placeholder")}
           className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none cursor-pointer"
           style={{ fontSize: 14 }}
-        >
-          <option value="">{arabicSource("apply.select_position_placeholder")}</option>
-          {info.open_positions.map((job) => (
-            <option key={job.id} value={job.id}>
-              {job.title}{job.department ? ` — ${job.department}` : ""}
-            </option>
-          ))}
-        </Select>
+        />
       </PublicApplyField>
     )}
 

@@ -32,15 +32,15 @@ const WarningsFiltersBar = ({
   };
 
   const handleFilterTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>): void => {
-      onFilterTypeChange(e.target.value);
+    (value: string): void => {
+      onFilterTypeChange(value);
     },
     [onFilterTypeChange],
   );
 
   const handleFilterStatusChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>): void => {
-      onFilterStatusChange(e.target.value);
+    (value: string): void => {
+      onFilterStatusChange(value);
     },
     [onFilterStatusChange],
   );

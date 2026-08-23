@@ -4,13 +4,15 @@ import {
   Hash, Briefcase, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/features/payroll/services/payslip-engine";
-import { Select } from "@/shared/components";
+import { Select, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { Employee, EmployeeOption } from "../types";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 
 const inputClass = "w-full bg-transparent border-b-2 border-primary/40 focus:border-primary px-1 py-1.5 text-foreground outline-none transition-colors";
+const getManagerOptionId = (emp: EmployeeOption): string => emp.dbId;
+const getManagerOptionLabel = (emp: EmployeeOption): string => `${emp.name} (${emp.position})`;
 
 type EmployeeInfoTabProps = {
   editData: Employee;
@@ -89,12 +91,12 @@ const EmployeeInfoTab = ({
     onFieldChange("emergencyPhone", e.target.value);
   };
 
-  const handleBloodTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("bloodType", e.target.value);
+  const handleBloodTypeChange = (value: string): void => {
+    onFieldChange("bloodType", value);
   };
 
-  const handleManagerChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onManagerChange(e.target.value || null);
+  const handleManagerChange = (value: string): void => {
+    onManagerChange(value || null);
   };
 
   return (
@@ -223,25 +225,27 @@ const EmployeeInfoTab = ({
         icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType} dir="ltr"
         isEditing={isEditing}
         editElement={
-          <Select value={editData.bloodType} onChange={handleBloodTypeChange}
-            className={inputClass} style={{ fontSize: 14 }}>
-            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bt => (
-              <option key={bt} value={bt}>{bt}</option>
-            ))}
-          </Select>
+          <Select
+            value={editData.bloodType}
+            onChange={handleBloodTypeChange}
+            options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
+            className={inputClass}
+            style={{ fontSize: 14 }}
+          />
         }
       />
       <EmployeeFieldRow
         icon={Users} iconColor="text-primary" label={arabicSource("common.direct_manager")} value={editData.managerName}
         isEditing={isEditing}
         editElement={
-          <Select value={editData.managerId || ""} onChange={handleManagerChange}
-            className={inputClass} style={{ fontSize: 14 }}>
-            <option value="">{arabicSource("shared.without_a_direct_manager")}</option>
-            {allEmployees.map(emp => (
-              <option key={emp.dbId} value={emp.dbId}>{emp.name} ({emp.position})</option>
-            ))}
-          </Select>
+          <TypeAhead
+            items={allEmployees}
+            getId={getManagerOptionId}
+            getLabel={getManagerOptionLabel}
+            value={editData.managerId || ""}
+            onChange={handleManagerChange}
+            blankLabel={arabicSource("shared.without_a_direct_manager")}
+          />
         }
       />
     </motion.div>

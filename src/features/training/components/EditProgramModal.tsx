@@ -27,8 +27,8 @@ const EditProgramModal = ({
     onFieldChange({ duration: value });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ status: e.target.value });
+  const handleStatusChange = (value: string): void => {
+    onFieldChange({ status: value });
   };
 
   const handleCompletionRateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

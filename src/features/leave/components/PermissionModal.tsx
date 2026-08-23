@@ -1,7 +1,11 @@
 import { useState, useMemo } from "react";
 import { AlertCircle, Loader2, Send, Timer } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
-import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import { InputField, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -80,9 +84,13 @@ const PermissionModal = ({
           {/* Employee */}
           <div>
             <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee_3")}</label>
-            <EmployeeSelect
-              employees={employees}
-              labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+            <TypeAhead
+              items={employees}
+              getId={getEmployeeId}
+              getLabel={empDisplayName}
+              getDescription={getEmployeeDescription}
+              getSearchText={getEmployeeSearchText}
+              fallbackLabels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
               value={employeeId}
               onChange={handleEmployeeChange}
             />

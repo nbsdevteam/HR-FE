@@ -5,7 +5,6 @@ import { arabicSource } from "@/i18n/source";
 import { ALL_STAGES } from "../constants/recruitment";
 import { labelCls, selectCls, inputCls } from "../styles";
 import StarRating from "./StarRating";
-import Option from "./Option";
 
 type ApplicantFormSalarySectionProps = {
   expectedSalary: number | string;
@@ -28,12 +27,12 @@ const ApplicantFormSalarySection = ({
     onFieldChange("expected_salary", e.target.value);
   };
 
-  const handleSalaryCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("salary_currency", e.target.value);
+  const handleSalaryCurrencyChange = (value: string): void => {
+    onFieldChange("salary_currency", value);
   };
 
-  const handleStageChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("stage", e.target.value);
+  const handleStageChange = (value: string): void => {
+    onFieldChange("stage", value);
   };
 
   return (
@@ -67,11 +66,9 @@ const ApplicantFormSalarySection = ({
           <Select
             value={salaryCurrency}
             onChange={handleSalaryCurrencyChange}
+            options={["IQD", "USD"]}
             className={selectCls}
-          >
-            <option>IQD</option>
-            <option>USD</option>
-          </Select>
+          />
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -90,12 +87,9 @@ const ApplicantFormSalarySection = ({
           <Select
             value={stage}
             onChange={handleStageChange}
+            options={ALL_STAGES}
             className={selectCls}
-          >
-            {ALL_STAGES.map((s) => (
-              <Option key={s}>{s}</Option>
-            ))}
-          </Select>
+          />
         </div>
       </div>
     </fieldset>

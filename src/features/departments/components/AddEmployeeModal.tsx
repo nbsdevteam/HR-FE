@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, ModalFooterActions, NodeAvatar, Select } from "@/shared/components";
+import { Modal, ModalFooterActions, NodeAvatar, TypeAhead } from "@/shared/components";
 import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -7,6 +7,10 @@ import { avatarColors } from "../styles";
 import { pickUniqueColor } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
+
+const stringIdentity = (value: string): string => value;
+const getManagerId = (n: OrgNode): string => String(n.id);
+const getManagerLabel = (n: OrgNode): string => `${n.name} — ${n.position} (${n.department})`;
 
 const AddEmployeeModal = ({
   allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
@@ -56,8 +60,8 @@ const AddEmployeeModal = ({
     setErrors(p => ({ ...p, position: false }));
   };
 
-  const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setDepartment(e.target.value);
+  const handleDepartmentChange = (value: string): void => {
+    setDepartment(value);
   };
 
   const handleShowNewDeptClick = (): void => {
@@ -78,8 +82,8 @@ const AddEmployeeModal = ({
     setNewDeptName("");
   };
 
-  const handleManagerChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setManagerId(Number(e.target.value));
+  const handleManagerChange = (value: string): void => {
+    setManagerId(Number(value));
   };
 
   return (
@@ -129,11 +133,13 @@ const AddEmployeeModal = ({
             <FieldLabel icon={Building2}>{arabicSource("common.section")}</FieldLabel>
             {!showNewDept ? (
               <div className="space-y-2">
-                <Select value={department} onChange={handleDepartmentChange}
-                  className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
-                  style={{ fontSize: 13 }}>
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </Select>
+                <TypeAhead
+                  items={departments}
+                  getId={stringIdentity}
+                  getLabel={stringIdentity}
+                  value={department}
+                  onChange={handleDepartmentChange}
+                />
                 <button type="button" onClick={handleShowNewDeptClick}
                   className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors" style={{ fontSize: 12 }}>
                   <Plus className="w-3.5 h-3.5" /> {arabicSource("hierarchy.add_a_new_section")}
@@ -165,11 +171,13 @@ const AddEmployeeModal = ({
 
           <div>
             <FieldLabel icon={Users}>{arabicSource("hierarchy.direct_supervisor_manager")}</FieldLabel>
-            <Select value={managerId} onChange={handleManagerChange}
-              className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
-              style={{ fontSize: 13 }}>
-              {allNodes.filter(n => n.dbId !== "__root__").map(n => <option key={n.dbId} value={n.id}>{n.name} — {n.position} ({n.department})</option>)}
-            </Select>
+            <TypeAhead
+              items={allNodes.filter(n => n.dbId !== "__root__")}
+              getId={getManagerId}
+              getLabel={getManagerLabel}
+              value={String(managerId)}
+              onChange={handleManagerChange}
+            />
             {selectedManager && selectedManager.dbId !== "__root__" && (
               <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
                 <NodeAvatar photo={selectedManager.photo} name={selectedManager.name} color={selectedManager.color} initials={selectedManager.initials} sizeClassName="w-7 h-7" extraClassName="flex-shrink-0" fontSize={10} />

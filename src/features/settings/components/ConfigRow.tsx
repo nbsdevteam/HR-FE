@@ -24,8 +24,8 @@ const ConfigRow = ({
     onSave(newVal);
   };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onEdit(e.target.value);
+  const handleSelectChange = (value: string): void => {
+    onEdit(value);
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -63,18 +63,13 @@ const ConfigRow = ({
               value={currentValue || "30_days"}
               onChange={handleSelectChange}
               onBlur={handleSaveCurrentValue}
+              options={[
+                { value: "30_days", label: arabicSource("settings.30_days_fixed") },
+                { value: "calendar_workdays", label: arabicSource("settings.actual_working_days") },
+                { value: "fixed_days_per_month", label: arabicSource("settings.custom_fixed_days") },
+              ]}
               className="bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="30_days">
-                {arabicSource("settings.30_days_fixed")}
-              </option>
-              <option value="calendar_workdays">
-                {arabicSource("settings.actual_working_days")}
-              </option>
-              <option value="fixed_days_per_month">
-                {arabicSource("settings.custom_fixed_days")}
-              </option>
-            </Select>
+            />
             {hasChanged && (
               <button
                 onClick={handleSaveCurrentValue}

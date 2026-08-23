@@ -32,24 +32,20 @@ const JobFormFieldsSection = ({
   const handleTitleChange = (value: string): void => {
     onFieldChange("title", value);
   };
-  const handleDepartmentChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onFieldChange("department", e.target.value);
+  const handleDepartmentChange = (value: string): void => {
+    onFieldChange("department", value);
   };
   const handleLocationChange = (value: string): void => {
     onFieldChange("location", value);
   };
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("type", e.target.value);
+  const handleTypeChange = (value: string): void => {
+    onFieldChange("type", value);
   };
   const handleDeadlineChange = (value: string): void => {
     onFieldChange("deadline", value);
   };
-  const handleStatusChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onFieldChange("status", e.target.value);
+  const handleStatusChange = (value: string): void => {
+    onFieldChange("status", value);
   };
   const handleSalaryRangeChange = (value: string): void => {
     onFieldChange("salary_range", value);

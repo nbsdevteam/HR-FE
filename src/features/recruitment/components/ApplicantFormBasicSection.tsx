@@ -1,9 +1,12 @@
 import { memo } from "react";
 import { Users } from "lucide-react";
-import { Select } from "@/shared/components";
+import { Select, TypeAhead } from "@/shared/components";
 import { type DbJobOpening } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { inputCls, labelCls, selectCls } from "../styles";
+
+const getJobOpeningId = (job: DbJobOpening): string => job.id;
+const getJobOpeningLabel = (job: DbJobOpening): string => job.title;
 
 type ApplicantFormBasicSectionProps = {
   name: string;
@@ -19,12 +22,12 @@ const ApplicantFormBasicSection = ({ name, jobOpeningId, gender, city, openJobs,
     onFieldChange("name", e.target.value);
   };
 
-  const handleJobOpeningChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("job_opening_id", e.target.value);
+  const handleJobOpeningChange = (value: string): void => {
+    onFieldChange("job_opening_id", value);
   };
 
-  const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("gender", e.target.value);
+  const handleGenderChange = (value: string): void => {
+    onFieldChange("gender", value);
   };
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -44,18 +47,23 @@ const ApplicantFormBasicSection = ({ name, jobOpeningId, gender, city, openJobs,
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.the_job_applied_for")}</label>
-          <Select value={jobOpeningId} onChange={handleJobOpeningChange} className={selectCls}>
-            {openJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
-            {openJobs.length === 0 && <option value="">{arabicSource("recruitment.there_are_no_open_positions")}</option>}
-          </Select>
+          <TypeAhead
+            items={openJobs}
+            getId={getJobOpeningId}
+            getLabel={getJobOpeningLabel}
+            value={jobOpeningId}
+            onChange={handleJobOpeningChange}
+          />
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("recruitment.sex")}</label>
-          <Select value={gender} onChange={handleGenderChange} className={selectCls}>
-            <option value="">{arabicSource("common.select")}</option>
-            <option>{arabicSource("common.male")}</option>
-            <option>{arabicSource("common.female")}</option>
-          </Select>
+          <Select
+            value={gender}
+            onChange={handleGenderChange}
+            options={[arabicSource("common.male"), arabicSource("common.female")]}
+            placeholder={arabicSource("common.select")}
+            className={selectCls}
+          />
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>{arabicSource("common.city")}</label>

@@ -1,5 +1,10 @@
 import { AlertCircle, Loader2 } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import { TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import { leaveInputClass as inputCls } from "../styles";
 
@@ -24,9 +29,13 @@ const LeaveRequestEmployeeField = ({
 }: LeaveRequestEmployeeFieldProps) => {
   if (!selfOnly) {
     return (
-      <EmployeeSelect
-        employees={employees}
-        labels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+      <TypeAhead
+        items={employees}
+        getId={getEmployeeId}
+        getLabel={empDisplayName}
+        getDescription={getEmployeeDescription}
+        getSearchText={getEmployeeSearchText}
+        fallbackLabels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
         value={employeeId}
         onChange={onEmployeeChange}
       />

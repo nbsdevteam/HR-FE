@@ -71,16 +71,12 @@ const CandidateBank = ({
     setBankSearch(e.target.value);
   };
 
-  const handleSkillFilterChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setSkillFilter(e.target.value);
+  const handleSkillFilterChange = (value: string): void => {
+    setSkillFilter(value);
   };
 
-  const handleSortByChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setSortBy(e.target.value);
+  const handleSortByChange = (value: string): void => {
+    setSortBy(value);
   };
 
   return (
@@ -122,35 +118,23 @@ const CandidateBank = ({
           <Select
             value={skillFilter}
             onChange={handleSkillFilterChange}
+            options={allSkills}
+            blankLabel={arabicSource("recruitment.all_skills")}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
             style={{ fontSize: 13 }}
-          >
-            <option value="">{arabicSource("recruitment.all_skills")}</option>
-            {allSkills.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </Select>
+          />
           <Select
             value={sortBy}
             onChange={handleSortByChange}
+            options={[
+              { value: "rank", label: arabicSource("recruitment.sort_by_efficiency") },
+              { value: "rating", label: arabicSource("recruitment.sort_by_rating") },
+              { value: "date", label: arabicSource("recruitment.sort_by_date") },
+              { value: "name", label: arabicSource("recruitment.alphabetical_order") },
+            ]}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
             style={{ fontSize: 13 }}
-          >
-            <option value="rank">
-              {arabicSource("recruitment.sort_by_efficiency")}
-            </option>
-            <option value="rating">
-              {arabicSource("recruitment.sort_by_rating")}
-            </option>
-            <option value="date">
-              {arabicSource("recruitment.sort_by_date")}
-            </option>
-            <option value="name">
-              {arabicSource("recruitment.alphabetical_order")}
-            </option>
-          </Select>
+          />
         </div>
       </div>
 

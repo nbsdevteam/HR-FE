@@ -18,6 +18,7 @@ export { default as StatusBadge } from "./StatusBadge";
 export { default as TabButton } from "./TabButton";
 export { default as TabGroup } from "./TabGroup";
 export { default as TableHeaderRow } from "./TableHeaderRow";
+export { default as TypeAhead } from "./TypeAhead";
 export { default as ViewToggle } from "./ViewToggle";
 export * from "./chart-utils";
 export { default as CustomBarChart } from "./custom-bar-chart";

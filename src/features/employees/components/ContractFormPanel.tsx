@@ -1,9 +1,13 @@
 import type { Dispatch, SetStateAction } from "react";
 import { motion } from "motion/react";
 import { Loader2, Save } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
-import { Select } from "@/shared/components";
-import type { DbContractType } from "@/shared/hooks";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import { Select, TypeAhead } from "@/shared/components";
+import { empDisplayName, type DbContractType } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
 
@@ -47,10 +51,8 @@ const ContractFormPanel = ({
     setFormData((p) => ({ ...p, employee_id: String(id) }));
   };
 
-  const handleContractTypeChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setFormData((p) => ({ ...p, contract_type_id: e.target.value }));
+  const handleContractTypeChange = (value: string): void => {
+    setFormData((p) => ({ ...p, contract_type_id: value }));
   };
 
   const handleContractNumberChange = (
@@ -80,10 +82,8 @@ const ContractFormPanel = ({
     }));
   };
 
-  const handleSalaryCurrencyChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setFormData((p) => ({ ...p, salary_currency: e.target.value }));
+  const handleSalaryCurrencyChange = (value: string): void => {
+    setFormData((p) => ({ ...p, salary_currency: value }));
   };
 
   return (
@@ -99,9 +99,13 @@ const ContractFormPanel = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
-          <EmployeeSelect
-            employees={employees}
-            labels={employeeLabels}
+          <TypeAhead
+            items={employees}
+            getId={getEmployeeId}
+            getLabel={empDisplayName}
+            getDescription={getEmployeeDescription}
+            getSearchText={getEmployeeSearchText}
+            fallbackLabels={employeeLabels}
             value={formData.employee_id}
             onChange={handleEmployeeChange}
           />
@@ -111,19 +115,14 @@ const ContractFormPanel = ({
             {arabicSource("lifecycle.contract_type_2")}
           </FormFieldLabel>
           <Select
-            value={formData?.contract_type_id}
+            value={formData.contract_type_id || ""}
             onChange={handleContractTypeChange}
-            className={inputCls}
-          >
-            <option value="">{arabicSource("common.choose")}</option>
-            {contractTypes
+            options={contractTypes
               .filter((t) => t.is_active)
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name_ar}
-                </option>
-              ))}
-          </Select>
+              .map((t) => ({ value: t.id, label: t.name_ar }))}
+            placeholder={arabicSource("common.choose")}
+            className={inputCls}
+          />
         </div>
         <div>
           <FormFieldLabel>
@@ -169,11 +168,9 @@ const ContractFormPanel = ({
             <Select
               value={formData.salary_currency}
               onChange={handleSalaryCurrencyChange}
+              options={["IQD", "USD"]}
               className="w-20 h-10 px-2 rounded-lg border border-border bg-input-background text-foreground text-xs outline-none"
-            >
-              <option value="IQD">IQD</option>
-              <option value="USD">USD</option>
-            </Select>
+            />
           </div>
         </div>
       </div>

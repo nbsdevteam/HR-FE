@@ -14,16 +14,16 @@ const PolicyFormFields = ({ form, mode, onFormChange }: PolicyFormFieldsProps) =
     onFormChange({ ...form, title });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFormChange({ ...form, category: e.target.value });
+  const handleCategoryChange = (value: string): void => {
+    onFormChange({ ...form, category: value });
   };
 
   const handleDescriptionChange = (description: string): void => {
     onFormChange({ ...form, description });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFormChange({ ...form, status: e.target.value });
+  const handleStatusChange = (value: string): void => {
+    onFormChange({ ...form, status: value });
   };
 
   const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {

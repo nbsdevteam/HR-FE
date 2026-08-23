@@ -55,8 +55,8 @@ const NewLeaveTypeForm = ({
     onFieldChange({ is_encashable: e.target.checked });
   };
 
-  const handleAccrualMethodChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ accrual_method: e.target.value });
+  const handleAccrualMethodChange = (value: string): void => {
+    onFieldChange({ accrual_method: value });
   };
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -147,12 +147,13 @@ const NewLeaveTypeForm = ({
         <Select
           value={form.accrual_method}
           onChange={handleAccrualMethodChange}
+          options={[
+            { value: "annual", label: arabicSource("common.annual") },
+            { value: "monthly", label: arabicSource("common.monthly") },
+            { value: "none", label: arabicSource("settings.without_merit") },
+          ]}
           className="h-8 px-2 rounded border border-border bg-input-background text-foreground text-xs outline-none"
-        >
-          <option value="annual">{arabicSource("common.annual")}</option>
-          <option value="monthly">{arabicSource("common.monthly")}</option>
-          <option value="none">{arabicSource("settings.without_merit")}</option>
-        </Select>
+        />
         <input
           type="color"
           value={form.color}

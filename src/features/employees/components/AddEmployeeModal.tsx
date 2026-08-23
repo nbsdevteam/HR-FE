@@ -1,11 +1,17 @@
 import { Fingerprint, Loader2, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, Select } from "@/shared/components";
+import { ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
 import LabeledInput from "./LabeledInput";
+
+const getDepartmentId = (d: DbDepartment): string => d.id;
+const getDepartmentLabel = (d: DbDepartment): string => d.name;
+const getDesignationId = (p: DbPosition): string => p.id;
+const getDesignationLabel = (p: DbPosition): string => p.title_ar || p.title_en || p.id;
+const fieldLabelClass = "text-foreground block mb-1.5";
 
 type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
@@ -66,19 +72,15 @@ const AddEmployeeModal = ({
     onFormChange({ companyPhone: e.target.value });
   };
 
-  const handleDepartmentChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
+  const handleDepartmentChange = (value: string): void => {
     onFormChange({
-      departmentId: e.target.value,
+      departmentId: value,
       designationId: "",
     });
   };
 
-  const handleDesignationChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onFormChange({ designationId: e.target.value });
+  const handleDesignationChange = (value: string): void => {
+    onFormChange({ designationId: value });
   };
 
   const handleSalaryChange = (
@@ -166,32 +168,32 @@ const AddEmployeeModal = ({
               onChange={handleCompanyPhoneChange}
               placeholder="07XXXXXXXXX"
             />
-            <Select
-              label={arabicSource("common.section")}
-              value={addForm.departmentId}
-              onChange={handleDepartmentChange}
-            >
-              <option value="">
-                {arabicSource("employees.select_the_section")}
-              </option>
-              {departmentOptions.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              label={arabicSource("employees.job_position")}
-              value={addForm.designationId}
-              onChange={handleDesignationChange}
-            >
-              <option value="">{arabicSource("common.select")}</option>
-              {designationOptions.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title_ar || p.title_en || p.id}
-                </option>
-              ))}
-            </Select>
+            <div>
+              <label className={fieldLabelClass} style={{ fontSize: 12 }}>
+                {arabicSource("common.section")}
+              </label>
+              <TypeAhead
+                items={departmentOptions}
+                getId={getDepartmentId}
+                getLabel={getDepartmentLabel}
+                value={addForm.departmentId}
+                onChange={handleDepartmentChange}
+                placeholder={arabicSource("employees.select_the_section")}
+              />
+            </div>
+            <div>
+              <label className={fieldLabelClass} style={{ fontSize: 12 }}>
+                {arabicSource("employees.job_position")}
+              </label>
+              <TypeAhead
+                items={designationOptions}
+                getId={getDesignationId}
+                getLabel={getDesignationLabel}
+                value={addForm.designationId}
+                onChange={handleDesignationChange}
+                placeholder={arabicSource("common.select")}
+              />
+            </div>
             <LabeledInput
               label={arabicSource("employees.salary_iqd")}
               type="number"

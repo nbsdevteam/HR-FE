@@ -2,7 +2,7 @@ import { useState, useMemo, memo } from "react";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
-import { Select } from "@/shared/components";
+import { TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,
@@ -15,6 +15,9 @@ import { hasIr } from "../utils/recruitmentRanking";
 import { aiScreeningStatFields } from "../data";
 import AiScreeningStatTile from "./AiScreeningStatTile";
 import AiScreeningTableRow from "./AiScreeningTableRow";
+
+const getJobId = (job: DbJobOpening): string => job.id;
+const getJobLabel = (job: DbJobOpening): string => job.title;
 
 interface AIScreenViewProps {
   jobs: DbJobOpening[];
@@ -72,8 +75,8 @@ const AiScreeningView = ({
     setBusy(false);
   };
 
-  const handleJobIdChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setJobId(e.target.value || null);
+  const handleJobIdChange = (value: string): void => {
+    setJobId(value || null);
   };
 
   const handleMinIrChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -99,21 +102,15 @@ const AiScreeningView = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <Select
+        <TypeAhead
+          items={jobs}
+          getId={getJobId}
+          getLabel={getJobLabel}
           value={jobId || ""}
           onChange={handleJobIdChange}
-          className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer min-w-[220px]"
-          style={{ fontSize: 13 }}
-        >
-          <option value="">
-            {arabicSource("recruitment.select_job_first")}
-          </option>
-          {jobs.map((job) => (
-            <option key={job.id} value={job.id}>
-              {job.title}
-            </option>
-          ))}
-        </Select>
+          placeholder={arabicSource("recruitment.select_job_first")}
+          className="min-w-[220px]"
+        />
         {jobId && (
           <>
             <button

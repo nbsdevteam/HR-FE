@@ -1,6 +1,10 @@
 import { ChevronDown, UserCheck } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
-import { Select } from "@/shared/components";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import { Select, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -45,8 +49,8 @@ const NewEvalStepOne = ({
     onCycleChange(value);
   };
 
-  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onPeriodChange(e.target.value);
+  const handlePeriodChange = (value: string): void => {
+    onPeriodChange(value);
   };
 
   return (
@@ -54,9 +58,13 @@ const NewEvalStepOne = ({
     {/* Employee Selection */}
     <div>
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.employee")}</label>
-      <EmployeeSelect
-        employees={activeEmployees}
-        labels={employeeLabels}
+      <TypeAhead
+        items={activeEmployees}
+        getId={getEmployeeId}
+        getLabel={empDisplayName}
+        getDescription={getEmployeeDescription}
+        getSearchText={getEmployeeSearchText}
+        fallbackLabels={employeeLabels}
         value={selectedEmpId}
         onChange={handleSelectedEmpChange}
         placeholder={arabicSource("evaluation.select_employee")}
@@ -79,9 +87,13 @@ const NewEvalStepOne = ({
           <div className="ps-6">
             <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("evaluation.there_is_no_direct_manager_assigned_choose_an_evaluator_manually")}</p>
             <div className="mt-2">
-              <EmployeeSelect
-                employees={activeEmployees}
-                labels={employeeLabels}
+              <TypeAhead
+                items={activeEmployees}
+                getId={getEmployeeId}
+                getLabel={empDisplayName}
+                getDescription={getEmployeeDescription}
+                getSearchText={getEmployeeSearchText}
+                fallbackLabels={employeeLabels}
                 value={evaluatorId}
                 onChange={handleEvaluatorChange}
                 placeholder={arabicSource("common.select_evaluator")}
@@ -106,9 +118,13 @@ const NewEvalStepOne = ({
     {selectedEmp && evaluatorId === "" && selectedEmp.manager_id && (
       <div>
         <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.choose_another_rater")}</label>
-        <EmployeeSelect
-          employees={activeEmployees}
-          labels={employeeLabels}
+        <TypeAhead
+          items={activeEmployees}
+          getId={getEmployeeId}
+          getLabel={empDisplayName}
+          getDescription={getEmployeeDescription}
+          getSearchText={getEmployeeSearchText}
+          fallbackLabels={employeeLabels}
           value={evaluatorId}
           onChange={handleEvaluatorChange}
           placeholder={arabicSource("common.select_evaluator")}
@@ -148,12 +164,9 @@ const NewEvalStepOne = ({
       <Select
         value={period}
         onChange={handlePeriodChange}
+        options={periodOptions}
         className={inputCls}
-      >
-        {periodOptions.map(p => (
-          <option key={p} value={p}>{p}</option>
-        ))}
-      </Select>
+      />
     </div>
 
     {/* Next */}

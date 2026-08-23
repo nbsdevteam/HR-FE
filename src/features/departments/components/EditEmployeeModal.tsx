@@ -4,13 +4,17 @@ import {
   Modal,
   ModalFooterActions,
   NodeAvatar,
-  Select,
+  TypeAhead,
 } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { getDescendantIds } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
+
+const stringIdentity = (value: string): string => value;
+const getManagerId = (n: OrgNode): string => String(n.id);
+const getManagerLabel = (n: OrgNode): string => `${n.name} — ${n.position} (${n.department})`;
 
 const EditEmployeeModal = ({
   node,
@@ -85,16 +89,12 @@ const EditEmployeeModal = ({
     setErrors((p) => ({ ...p, position: false }));
   };
 
-  const handleDepartmentChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setDepartment(e.target.value);
+  const handleDepartmentChange = (value: string): void => {
+    setDepartment(value);
   };
 
-  const handleManagerChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    setManagerId(e.target.value ? Number(e.target.value) : null);
+  const handleManagerChange = (value: string): void => {
+    setManagerId(value ? Number(value) : null);
   };
 
   // Find current manager id
@@ -188,39 +188,27 @@ const EditEmployeeModal = ({
           <FieldLabel icon={Building2} accentColorClassName="text-blue-400">
             {arabicSource("common.section")}
           </FieldLabel>
-          <Select
+          <TypeAhead
+            items={departments}
+            getId={stringIdentity}
+            getLabel={stringIdentity}
             value={department}
             onChange={handleDepartmentChange}
-            className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
-            style={{ fontSize: 13 }}
-          >
-            {departments.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
 
         <div>
           <FieldLabel icon={Users} accentColorClassName="text-blue-400">
             {arabicSource("hierarchy.direct_supervisor_optional")}
           </FieldLabel>
-          <Select
-            value={managerId ?? ""}
+          <TypeAhead
+            items={validManagers}
+            getId={getManagerId}
+            getLabel={getManagerLabel}
+            value={managerId != null ? String(managerId) : ""}
             onChange={handleManagerChange}
-            className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
-            style={{ fontSize: 13 }}
-          >
-            <option value="">
-              {arabicSource("common.without_a_manager_top_of_the_pyramid")}
-            </option>
-            {validManagers.map((n) => (
-              <option key={n.dbId} value={n.id}>
-                {n.name} — {n.position} ({n.department})
-              </option>
-            ))}
-          </Select>
+            blankLabel={arabicSource("common.without_a_manager_top_of_the_pyramid")}
+          />
           {selectedManager && (
             <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10">
               <NodeAvatar

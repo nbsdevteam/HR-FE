@@ -20,8 +20,8 @@ const EvaluationFilters = ({
     onSearchTextChange(e.target.value);
   };
 
-  const handleFilterStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFilterStatusChange(e.target.value);
+  const handleFilterStatusChange = (value: string): void => {
+    onFilterStatusChange(value);
   };
 
   return (
@@ -40,15 +40,16 @@ const EvaluationFilters = ({
     <Select
       value={filterStatus}
       onChange={handleFilterStatusChange}
+      options={[
+        arabicSource("common.all"),
+        arabicSource("common.complete"),
+        arabicSource("common.under_evaluation"),
+        arabicSource("common.did_not_start"),
+      ]}
       aria-label={arabicSource("common.status")}
       className={evaluationInputClass}
       style={{ width: 160, height: 38 }}
-    >
-      <option value={arabicSource("common.all")}>{arabicSource("common.all")}</option>
-      <option value={arabicSource("common.complete")}>{arabicSource("common.complete")}</option>
-      <option value={arabicSource("common.under_evaluation")}>{arabicSource("common.under_evaluation")}</option>
-      <option value={arabicSource("common.did_not_start")}>{arabicSource("common.did_not_start")}</option>
-    </Select>
+    />
   </div>
   );
 };

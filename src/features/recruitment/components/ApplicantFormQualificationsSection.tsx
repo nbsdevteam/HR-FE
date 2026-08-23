@@ -22,8 +22,8 @@ const ApplicantFormQualificationsSection = ({
   skills,
   onFieldChange,
 }: ApplicantFormQualificationsSectionProps) => {
-  const handleEducationChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("education", e.target.value);
+  const handleEducationChange = (value: string): void => {
+    onFieldChange("education", value);
   };
 
   const handleExperienceYearsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -34,8 +34,8 @@ const ApplicantFormQualificationsSection = ({
     onFieldChange("current_company", e.target.value);
   };
 
-  const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange("source", e.target.value);
+  const handleSourceChange = (value: string): void => {
+    onFieldChange("source", value);
   };
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -59,15 +59,16 @@ const ApplicantFormQualificationsSection = ({
           <Select
             value={education}
             onChange={handleEducationChange}
+            options={[
+              arabicSource("recruitment.preparatory_school"),
+              arabicSource("recruitment.diploma"),
+              arabicSource("recruitment.bachelor_s_degree"),
+              arabicSource("recruitment.master"),
+              arabicSource("recruitment.ph_d"),
+            ]}
+            placeholder={arabicSource("common.select")}
             className={selectCls}
-          >
-            <option value="">{arabicSource("common.select")}</option>
-            <option>{arabicSource("recruitment.preparatory_school")}</option>
-            <option>{arabicSource("recruitment.diploma")}</option>
-            <option>{arabicSource("recruitment.bachelor_s_degree")}</option>
-            <option>{arabicSource("recruitment.master")}</option>
-            <option>{arabicSource("recruitment.ph_d")}</option>
-          </Select>
+          />
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 13 }}>
@@ -102,12 +103,9 @@ const ApplicantFormQualificationsSection = ({
           <Select
             value={source}
             onChange={handleSourceChange}
+            options={sourceOptions}
             className={selectCls}
-          >
-            {sourceOptions.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </Select>
+          />
         </div>
       </div>
       <div>

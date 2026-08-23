@@ -42,12 +42,12 @@ const ReportFiltersBar = ({
     onSearchQueryChange(e.target.value);
   };
 
-  const handleFilterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFilterCategoryChange(e.target.value);
+  const handleFilterCategoryChange = (value: string): void => {
+    onFilterCategoryChange(value);
   };
 
-  const handleFilterDeptChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFilterDeptChange(e.target.value);
+  const handleFilterDeptChange = (value: string): void => {
+    onFilterDeptChange(value);
   };
 
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

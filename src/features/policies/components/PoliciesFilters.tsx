@@ -32,8 +32,8 @@ const PoliciesFilters = ({
     onStatusFilterChange(status);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onSortChange(e.target.value as PolicySortKey);
+  const handleSortChange = (value: string): void => {
+    onSortChange(value as PolicySortKey);
   };
 
   return (

@@ -37,10 +37,8 @@ const JobScreeningSpecFields = ({
   ): void => {
     onMinExperienceYearsChange(Number(e.target.value) || 0);
   };
-  const handleEducationLevelChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onEducationLevelChange(e.target.value);
+  const handleEducationLevelChange = (value: string): void => {
+    onEducationLevelChange(value);
   };
   const handleIrAutoShortlistChange = (
     e: React.ChangeEvent<HTMLInputElement>,

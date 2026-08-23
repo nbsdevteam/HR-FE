@@ -41,16 +41,12 @@ const RecruitmentApplicantsView = ({
     onSearchTermChange(event.target.value);
   };
 
-  const handleFilterStageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onFilterStageChange(event.target.value);
+  const handleFilterStageChange = (value: string): void => {
+    onFilterStageChange(value);
   };
 
-  const handleFilterJobChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onFilterJobChange(event.target.value);
+  const handleFilterJobChange = (value: string): void => {
+    onFilterJobChange(value);
   };
 
   return (
@@ -67,14 +63,26 @@ const RecruitmentApplicantsView = ({
             style={{ fontSize: 13 }}
           />
         </div>
-        <Select value={filterStage} onChange={handleFilterStageChange} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-          <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_stages")}</option>
-          {ALL_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-        </Select>
-        <Select value={filterJob} onChange={handleFilterJobChange} className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer" style={{ fontSize: 13 }}>
-          <option value={arabicSource("common.all")}>{arabicSource("recruitment.all_jobs")}</option>
-          {jobs.map((job) => <option key={job.id} value={job.id}>{job.title}</option>)}
-        </Select>
+        <Select
+          value={filterStage}
+          onChange={handleFilterStageChange}
+          options={[
+            { value: arabicSource("common.all"), label: arabicSource("recruitment.all_stages") },
+            ...ALL_STAGES,
+          ]}
+          className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
+          style={{ fontSize: 13 }}
+        />
+        <Select
+          value={filterJob}
+          onChange={handleFilterJobChange}
+          options={[
+            { value: arabicSource("common.all"), label: arabicSource("recruitment.all_jobs") },
+            ...jobs.map((job) => ({ value: job.id, label: job.title })),
+          ]}
+          className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
+          style={{ fontSize: 13 }}
+        />
       </div>
 
       <ApplicantsTable

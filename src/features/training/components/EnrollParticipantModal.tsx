@@ -1,8 +1,12 @@
 import { useMemo } from "react";
 import { Save } from "lucide-react";
-import { EmployeeSelect } from "@/features/employees";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
-import { ModalFooterActions, ModalHeader, ModalOverlay, Select } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { EnrollParticipantForm } from "../types";
@@ -29,7 +33,7 @@ const EnrollParticipantModal = ({
   const employeeLabels = useMemo(
     () =>
       Object.fromEntries(
-        employees?.map((e) => [String(e.id), empDisplayName(e)]),
+        (employees || []).map((e) => [String(e.id), empDisplayName(e)]),
       ),
     [employees],
   );
@@ -38,8 +42,8 @@ const EnrollParticipantModal = ({
     onFieldChange({ employee_id: String(id) });
   };
 
-  const handleCompletionStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFieldChange({ completion_status: e.target.value });
+  const handleCompletionStatusChange = (value: string): void => {
+    onFieldChange({ completion_status: value });
   };
 
   const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -68,9 +72,13 @@ const EnrollParticipantModal = ({
           <label className="block text-sm text-foreground mb-2">
             {arabicSource("common.employee_3")}
           </label>
-          <EmployeeSelect
-            employees={employees}
-            labels={employeeLabels}
+          <TypeAhead
+            items={employees}
+            getId={getEmployeeId}
+            getLabel={empDisplayName}
+            getDescription={getEmployeeDescription}
+            getSearchText={getEmployeeSearchText}
+            fallbackLabels={employeeLabels}
             value={form.employee_id}
             onChange={handleEmployeeChange}
             placeholder={arabicSource("training.select_employee")}

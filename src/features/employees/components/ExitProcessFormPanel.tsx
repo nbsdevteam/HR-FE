@@ -1,6 +1,11 @@
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { EmployeeSelect } from "@/features/employees";
-import { Select } from "@/shared/components";
+import {
+  getEmployeeDescription,
+  getEmployeeId,
+  getEmployeeSearchText,
+} from "@/features/employees/utils/employeeTypeAhead";
+import { Select, TypeAhead } from "@/shared/components";
+import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
@@ -34,8 +39,8 @@ const ExitProcessFormPanel = ({
     setFormData((p) => ({ ...p, employee_id: String(id) }));
   };
 
-  const handleExitTypeChange = (e: ChangeEvent<HTMLSelectElement>): void => {
-    setFormData((p) => ({ ...p, exit_type: e.target.value }));
+  const handleExitTypeChange = (value: string): void => {
+    setFormData((p) => ({ ...p, exit_type: value }));
   };
 
   const handleExitDateChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -65,9 +70,13 @@ const ExitProcessFormPanel = ({
     >
       <div>
         <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
-        <EmployeeSelect
-          employees={employees}
-          labels={employeeLabels}
+        <TypeAhead
+          items={employees}
+          getId={getEmployeeId}
+          getLabel={empDisplayName}
+          getDescription={getEmployeeDescription}
+          getSearchText={getEmployeeSearchText}
+          fallbackLabels={employeeLabels}
           value={formData.employee_id}
           onChange={handleEmployeeChange}
           filter={(e) => e.status !== arabicSource("common.finished")}
@@ -75,9 +84,12 @@ const ExitProcessFormPanel = ({
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.termination_type_2")}</FormFieldLabel>
-        <Select value={formData.exit_type} onChange={handleExitTypeChange} className={inputCls}>
-          {Object.entries(exitTypeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </Select>
+        <Select
+          value={formData.exit_type}
+          onChange={handleExitTypeChange}
+          options={Object.entries(exitTypeLabels).map(([value, label]) => ({ value, label }))}
+          className={inputCls}
+        />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.termination_date_2")}</FormFieldLabel>

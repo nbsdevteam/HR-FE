@@ -1,11 +1,13 @@
 import { useState } from "react";
-import type { ChangeEvent } from "react";
 import { AlertTriangle, Link2 } from "lucide-react";
-import { Modal, Select } from "@/shared/components";
+import { Modal, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
+
+const getManagerId = (n: OrgNode): string => n.dbId;
+const getManagerLabel = (n: OrgNode): string => `${n.name} — ${n.position}`;
 
 const UnlinkedPanel = ({
   employees,
@@ -24,10 +26,10 @@ const UnlinkedPanel = ({
 
   const handleManagerSelectChange =
     (empId: string) =>
-    (e: ChangeEvent<HTMLSelectElement>): void => {
+    (value: string): void => {
       setSelectedManager((p) => ({
         ...p,
-        [empId]: e.target.value,
+        [empId]: value,
       }));
     };
 
@@ -87,23 +89,15 @@ const UnlinkedPanel = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <Select
+                <TypeAhead
+                  items={allNodes.filter((n) => n.dbId !== "__root__" && n.dbId !== emp.id)}
+                  getId={getManagerId}
+                  getLabel={getManagerLabel}
                   value={selectedManager[emp.id] || ""}
                   onChange={handleManagerSelectChange(emp.id)}
-                  className="flex-1 bg-background border border-border/60 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
-                  style={{ fontSize: 12 }}
-                >
-                  <option value="">
-                    {arabicSource("hierarchy.choose_the_direct_manager")}
-                  </option>
-                  {allNodes
-                    .filter((n) => n.dbId !== "__root__" && n.dbId !== emp.id)
-                    .map((n) => (
-                      <option key={n.dbId} value={n.dbId}>
-                        {n.name} — {n.position}
-                      </option>
-                    ))}
-                </Select>
+                  placeholder={arabicSource("hierarchy.choose_the_direct_manager")}
+                  className="flex-1"
+                />
                 <button
                   onClick={handleLinkButtonClick(emp.id)}
                   disabled={!selectedManager[emp.id]}

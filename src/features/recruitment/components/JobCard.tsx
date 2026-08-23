@@ -35,10 +35,8 @@ const JobCard = ({
   onJobStatusChange,
   onLinkJob,
 }: IJobCardProps) => {
-  const handleStatusChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onJobStatusChange(job, e.target.value);
+  const handleStatusChange = (value: string): void => {
+    onJobStatusChange(job, value);
   };
   const handleLinkClick = (): void => {
     onLinkJob(job);
@@ -71,20 +69,11 @@ const JobCard = ({
       <Select
         value={job.status}
         onChange={handleStatusChange}
+        options={JOB_STATUSES}
         title={arabicSource("recruitment.vacancy_status")}
         className={`px-2 py-0.5 rounded-md border bg-transparent cursor-pointer outline-none focus:ring-2 focus:ring-primary/40 ${statusColors[job.status] || ""}`}
         style={{ fontSize: 12 }}
-      >
-        {JOB_STATUSES.map((status) => (
-          <option
-            key={status}
-            value={status}
-            className="bg-card text-foreground"
-          >
-            {status}
-          </option>
-        ))}
-      </Select>
+      />
     </div>
     <div className="flex flex-wrap gap-3 mb-3">
       <span
