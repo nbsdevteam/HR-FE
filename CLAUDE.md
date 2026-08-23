@@ -17,3 +17,16 @@
 8. Whenever you write or touch a file, remove any unused imports in it.
 
 9. Before adding a new local Button, Modal, Table, KanbanColumn, or stat-tile component, check `src/shared/components/` first — a generic version likely already exists there (`Button`, `Modal`, `DataTable`, `KanbanColumn`, `StatCard`, `ConfirmDeleteModal`, `ModalHeader`, `ModalFooterActions`). Only build a local one-off if the shared component genuinely can't represent the needed shape.
+
+10. Never pass an inline anonymous function to an event prop (`onClick`, `onChange`, `onSubmit`, etc.). Declare a named handler (e.g. `handleDesignationChange`) in the component body above the `return`, type its event parameter explicitly with the correct React/DOM event type (never `any`), and pass the function by reference.
+
+    ```tsx
+    // ❌ inline, untyped
+    <select onChange={(e) => onFormChange({ designationId: e.target.value })} />
+
+    // ✅ extracted, strictly typed
+    const handleDesignationChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+      onFormChange({ designationId: e.target.value });
+    };
+    <select onChange={handleDesignationChange} />
+    ```
