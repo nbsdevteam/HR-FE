@@ -34,6 +34,18 @@ const EnrollParticipantModal = ({
     [employees],
   );
 
+  const handleEmployeeChange = (id: string): void => {
+    onFieldChange({ employee_id: String(id) });
+  };
+
+  const handleCompletionStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFieldChange({ completion_status: e.target.value });
+  };
+
+  const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onFieldChange({ score: e.target.value });
+  };
+
   return (
     <ModalOverlay
       onClose={onClose}
@@ -60,7 +72,7 @@ const EnrollParticipantModal = ({
             employees={employees}
             labels={employeeLabels}
             value={form.employee_id}
-            onChange={(id) => onFieldChange({ employee_id: String(id) })}
+            onChange={handleEmployeeChange}
             placeholder={arabicSource("training.select_employee")}
             excludeIds={excludeIds}
           />
@@ -69,7 +81,7 @@ const EnrollParticipantModal = ({
         <Select
           label={arabicSource("training.join_status")}
           value={form.completion_status}
-          onChange={(e) => onFieldChange({ completion_status: e.target.value })}
+          onChange={handleCompletionStatusChange}
           options={participantStatuses}
           className={fieldCls}
         />
@@ -82,7 +94,7 @@ const EnrollParticipantModal = ({
             <input
               type="number"
               value={form.score}
-              onChange={(e) => onFieldChange({ score: e.target.value })}
+              onChange={handleScoreChange}
               min="0"
               max="100"
               className={fieldCls}

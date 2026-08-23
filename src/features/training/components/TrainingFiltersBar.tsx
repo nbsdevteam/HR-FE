@@ -16,7 +16,12 @@ const TrainingFiltersBar = ({
   filters,
   filter,
   onFilterChange,
-}: ITrainingFiltersBarProps) => (
+}: ITrainingFiltersBarProps) => {
+  const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchTermChange(e.target.value);
+  };
+
+  return (
   <div className="flex items-center gap-4 flex-wrap">
     <div className="flex-1 min-w-64 relative">
       <Search className="absolute end-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -24,7 +29,7 @@ const TrainingFiltersBar = ({
         type="text"
         placeholder={arabicSource("training.searching_for_a_program")}
         value={searchTerm}
-        onChange={(e) => onSearchTermChange(e.target.value)}
+        onChange={handleSearchTermChange}
         className="w-full ps-4 pe-10 py-2 rounded-lg bg-card border border-border/40 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60"
       />
     </div>
@@ -40,6 +45,7 @@ const TrainingFiltersBar = ({
       ))}
     </div>
   </div>
-);
+  );
+};
 
 export default TrainingFiltersBar;

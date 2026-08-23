@@ -32,7 +32,48 @@ const CreateProgramModal = ({
   onFieldChange,
   onSave,
   onClose,
-}: TCreateProgramModalProps) => (
+}: TCreateProgramModalProps) => {
+  const handleTitleChange = (value: string): void => {
+    onFieldChange({ title: value });
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFieldChange({ category: e.target.value });
+  };
+
+  const handleWeightChange = (value: string): void => {
+    onFieldChange({ weight: value });
+  };
+
+  const handleInstructorChange = (value: string): void => {
+    onFieldChange({ instructor: value });
+  };
+
+  const handleDurationChange = (value: string): void => {
+    onFieldChange({ duration: value });
+  };
+
+  const handleStartDateChange = (value: string): void => {
+    onFieldChange({ start_date: value });
+  };
+
+  const handleEndDateChange = (value: string): void => {
+    onFieldChange({ end_date: value });
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFieldChange({ status: e.target.value });
+  };
+
+  const handleMaxParticipantsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onFieldChange({ max_participants: e.target.value });
+  };
+
+  const handleObjectivesChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    onFieldChange({ objectives: e.target.value });
+  };
+
+  return (
   <ModalOverlay
     onClose={onClose}
     closeOnBackdropClick={false}
@@ -53,7 +94,7 @@ const CreateProgramModal = ({
       <InputField
         label={arabicSource("training.address")}
         value={form.title}
-        onChange={(value) => onFieldChange({ title: value })}
+        onChange={handleTitleChange}
         className={fieldCls}
         placeholder={arabicSource("training.program_title")}
       />
@@ -62,7 +103,7 @@ const CreateProgramModal = ({
         <Select
           label={arabicSource("training.category")}
           value={form.category}
-          onChange={(e) => onFieldChange({ category: e.target.value })}
+          onChange={handleCategoryChange}
           options={trainingCategories}
           className={fieldCls}
         />
@@ -70,7 +111,7 @@ const CreateProgramModal = ({
         <InputField
           label={arabicSource("training.weight")}
           value={form.weight}
-          onChange={(value) => onFieldChange({ weight: value })}
+          onChange={handleWeightChange}
           className={fieldCls}
           placeholder={`${defaultWeight}%`}
         />
@@ -80,7 +121,7 @@ const CreateProgramModal = ({
         <InputField
           label={arabicSource("common.coach")}
           value={form.instructor}
-          onChange={(value) => onFieldChange({ instructor: value })}
+          onChange={handleInstructorChange}
           className={fieldCls}
           placeholder={arabicSource("training.name_of_coach")}
         />
@@ -88,7 +129,7 @@ const CreateProgramModal = ({
         <InputField
           label={arabicSource("common.duration_hours")}
           value={form.duration}
-          onChange={(value) => onFieldChange({ duration: value })}
+          onChange={handleDurationChange}
           className={fieldCls}
           placeholder={arabicSource("training.20_hours")}
         />
@@ -99,7 +140,7 @@ const CreateProgramModal = ({
           label={arabicSource("common.start_date")}
           type="date"
           value={form.start_date}
-          onChange={(value) => onFieldChange({ start_date: value })}
+          onChange={handleStartDateChange}
           className={fieldCls}
         />
 
@@ -107,7 +148,7 @@ const CreateProgramModal = ({
           label={arabicSource("training.end_date")}
           type="date"
           value={form.end_date}
-          onChange={(value) => onFieldChange({ end_date: value })}
+          onChange={handleEndDateChange}
           className={fieldCls}
         />
       </div>
@@ -115,7 +156,7 @@ const CreateProgramModal = ({
       <Select
         label={arabicSource("common.status")}
         value={form.status}
-        onChange={(e) => onFieldChange({ status: e.target.value })}
+        onChange={handleStatusChange}
         options={trainingStatuses}
         className={fieldCls}
       />
@@ -127,7 +168,7 @@ const CreateProgramModal = ({
         <input
           type="number"
           value={form.max_participants}
-          onChange={(e) => onFieldChange({ max_participants: e.target.value })}
+          onChange={handleMaxParticipantsChange}
           className={fieldCls}
           placeholder="30"
           min={1}
@@ -140,7 +181,7 @@ const CreateProgramModal = ({
         </label>
         <textarea
           value={form.objectives}
-          onChange={(e) => onFieldChange({ objectives: e.target.value })}
+          onChange={handleObjectivesChange}
           rows={4}
           className={`${fieldCls} resize-none`}
           placeholder={arabicSource(
@@ -160,6 +201,7 @@ const CreateProgramModal = ({
       />
     </div>
   </ModalOverlay>
-);
+  );
+};
 
 export default CreateProgramModal;

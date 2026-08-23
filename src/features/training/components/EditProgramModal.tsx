@@ -18,7 +18,24 @@ const EditProgramModal = ({
   onFieldChange,
   onSave,
   onClose,
-}: TEditProgramModalProps) => (
+}: TEditProgramModalProps) => {
+  const handleInstructorChange = (value: string): void => {
+    onFieldChange({ instructor: value });
+  };
+
+  const handleDurationChange = (value: string): void => {
+    onFieldChange({ duration: value });
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFieldChange({ status: e.target.value });
+  };
+
+  const handleCompletionRateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onFieldChange({ completion_rate: parseInt(e.target.value) || 0 });
+  };
+
+  return (
   <ModalOverlay
     onClose={onClose}
     closeOnBackdropClick={false}
@@ -39,14 +56,14 @@ const EditProgramModal = ({
       <InputField
         label={arabicSource("common.coach")}
         value={program.instructor || ""}
-        onChange={(value) => onFieldChange({ instructor: value })}
+        onChange={handleInstructorChange}
         className={fieldCls}
       />
 
       <InputField
         label={arabicSource("common.duration_hours")}
         value={program.duration || ""}
-        onChange={(value) => onFieldChange({ duration: value })}
+        onChange={handleDurationChange}
         className={fieldCls}
       />
 
@@ -54,7 +71,7 @@ const EditProgramModal = ({
         <Select
           label={arabicSource("common.status")}
           value={program.status}
-          onChange={(e) => onFieldChange({ status: e.target.value })}
+          onChange={handleStatusChange}
           options={trainingStatuses}
           className={fieldCls}
         />
@@ -66,9 +83,7 @@ const EditProgramModal = ({
           <input
             type="number"
             value={program.completion_rate}
-            onChange={(e) =>
-              onFieldChange({ completion_rate: parseInt(e.target.value) || 0 })
-            }
+            onChange={handleCompletionRateChange}
             min="0"
             max="100"
             className={fieldCls}
@@ -87,6 +102,7 @@ const EditProgramModal = ({
       />
     </div>
   </ModalOverlay>
-);
+  );
+};
 
 export default EditProgramModal;
