@@ -15,11 +15,22 @@ const DeviceFacePersonCard = ({
   uploading,
   onViewFace,
   onUploadFace,
-}: DeviceFacePersonCardProps) => (
+}: DeviceFacePersonCardProps) => {
+  const handleViewFaceClick = (_event: React.MouseEvent<HTMLButtonElement>): void => {
+    onViewFace(person.employeeNo);
+  };
+
+  const handleFaceFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files?.[0];
+    if (file) onUploadFace(person.employeeNo, file);
+    event.target.value = "";
+  };
+
+  return (
   <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-4 text-center space-y-2 hover:border-primary/30 transition-colors">
     <div className="w-16 h-16 mx-auto rounded-full bg-muted/30 flex items-center justify-center overflow-hidden">
       {person.numOfFace > 0 ? (
-        <button onClick={() => onViewFace(person.employeeNo)} className="w-full h-full flex items-center justify-center hover:bg-muted/50 transition-colors">
+        <button onClick={handleViewFaceClick} className="w-full h-full flex items-center justify-center hover:bg-muted/50 transition-colors">
           <ScanFace className="w-8 h-8 text-emerald-400" />
         </button>
       ) : (
@@ -36,7 +47,7 @@ const DeviceFacePersonCard = ({
     <div className="flex gap-1 justify-center">
       {person.numOfFace > 0 ? (
         <button
-          onClick={() => onViewFace(person.employeeNo)}
+          onClick={handleViewFaceClick}
           className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
         >
           <Eye className="w-3 h-3 inline me-1" />
@@ -56,15 +67,12 @@ const DeviceFacePersonCard = ({
           type="file"
           accept="image/jpeg,image/png"
           className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) onUploadFace(person.employeeNo, file);
-            event.target.value = "";
-          }}
+          onChange={handleFaceFileChange}
         />
       </label>
     </div>
   </div>
-);
+  );
+};
 
 export default DeviceFacePersonCard;

@@ -38,6 +38,10 @@ const AttendanceRecordsView = ({
     setExcuseModal({ record });
   };
 
+  const handleSort = (key: AttendanceSortKey): void => {
+    toggleSort(key, sortBy, sortDir, setSortBy, setSortDir);
+  };
+
   if (viewMode === "kanban") {
     return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="flex gap-3">
@@ -114,7 +118,7 @@ const AttendanceRecordsView = ({
             ]}
             sortBy={sortBy}
             sortDir={sortDir}
-            onSort={(key) => toggleSort(key, sortBy, sortDir, setSortBy, setSortDir)}
+            onSort={handleSort}
           />
         }
         renderRow={(record, index) => (

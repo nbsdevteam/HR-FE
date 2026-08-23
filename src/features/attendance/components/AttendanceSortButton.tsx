@@ -8,9 +8,13 @@ type AttendanceSortButtonProps = {
 };
 
 const AttendanceSortButton = ({ sortKey, label, active, onClick }: AttendanceSortButtonProps) => {
+  const handleSortClick = (): void => {
+    onClick(sortKey);
+  };
+
   return (
     <button
-      onClick={() => onClick(sortKey)}
+      onClick={handleSortClick}
       className={`px-2 py-1 rounded transition-colors cursor-pointer ${
         active ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
       }`}

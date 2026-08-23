@@ -11,15 +11,21 @@ const DragEmpCard = ({ emp, color }: DragEmpCardProps) => {
   const [dragging, setDragging] = useState(false);
   const name = empDisplayName(emp);
 
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.dataTransfer.setData("shift-employee-id", emp.id);
+    e.dataTransfer.effectAllowed = "move";
+    setDragging(true);
+  };
+
+  const handleDragEnd = (_e: React.DragEvent<HTMLDivElement>): void => {
+    setDragging(false);
+  };
+
   return (
     <div
       draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData("shift-employee-id", emp.id);
-        e.dataTransfer.effectAllowed = "move";
-        setDragging(true);
-      }}
-      onDragEnd={() => setDragging(false)}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       className={`flex items-center gap-2 p-2 rounded-lg border cursor-grab active:cursor-grabbing transition-all ${
         dragging ? "opacity-40 scale-95 border-primary/40" : "border-border/40 bg-card/50 hover:border-primary/30"
       }`}

@@ -25,6 +25,10 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
 
   const handleCloseExcuseModal = useCallback(() => setExcuseModal(null), [onClose]);
 
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setExcuseForm(f => ({ ...f, note: e.target.value }));
+  };
+
   const execuseData = [
     { key: "late" as const, label: arabicSource("attendance.excuse_for_delay"), desc: arabicSource("attendance.late_salary_will_not_be_counted"), show: (excuseModal?.record.lateMinutes || 0) > 0 || excuseModal?.record.status === arabicSource("common.late") },
     { key: "shortfall" as const, label: arabicSource("attendance.excuse_of_lack_of_hours"), desc: arabicSource("attendance.short_hours_for_this_day_will_not_be_deducted"), show: true },
@@ -54,7 +58,7 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
                 {excuseModal.record.employee} — {excuseModal.record.date}
               </p>
             </div>
-            <button onClick={() => setExcuseModal(null)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer">
+            <button onClick={handleCloseExcuseModal} className="p-1.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer">
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
@@ -93,7 +97,7 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
               <label className="text-foreground block mb-1.5" style={{ fontSize: 12 }}>{arabicSource("attendance.reason_for_excuse")}</label>
               <textarea
                 value={excuseForm.note}
-                onChange={(e) => setExcuseForm(f => ({ ...f, note: e.target.value }))}
+                onChange={handleNoteChange}
                 placeholder={arabicSource("attendance.enter_the_reason_for_the_excuse")}
                 rows={3}
                 className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none resize-none"
@@ -109,7 +113,7 @@ const ExcuseModal = ({ excuseModal, excuseForm, excuseSaving, onClose, onExcuseF
             )}
             <div className="flex items-center gap-2 ms-auto">
               <button
-                onClick={() => setExcuseModal(null)}
+                onClick={handleCloseExcuseModal}
                 className="px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 style={{ fontSize: 13 }}
               >

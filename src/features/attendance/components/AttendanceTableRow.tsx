@@ -15,6 +15,20 @@ type AttendanceTableRowProps = {
 };
 
 const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: AttendanceTableRowProps) => {
+  const handleRowClick = (): void => {
+    onSelectEmployee(record.employeeId);
+  };
+
+  const handleExcuseClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+    e.stopPropagation();
+    onOpenExcuse(record, {
+      late: record.excusedLate,
+      absence: record.excusedAbsence,
+      shortfall: record.excusedShortfall,
+      note: record.excuseNote || "",
+    });
+  };
+
   return (
     <motion.tr
       key={record.id}
@@ -22,7 +36,7 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
       animate={{ opacity: 1 }}
       transition={{ delay: index * 0.02 }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors group cursor-pointer"
-      onClick={() => onSelectEmployee(record.employeeId)}
+      onClick={handleRowClick}
     >
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -74,15 +88,7 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
       <td className="px-4 py-3 text-center">
         <div
           className="cursor-pointer hover:bg-primary/5 rounded-lg py-1 px-2 -mx-2 transition-colors group"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenExcuse(record, {
-              late: record.excusedLate,
-              absence: record.excusedAbsence,
-              shortfall: record.excusedShortfall,
-              note: record.excuseNote || "",
-            });
-          }}
+          onClick={handleExcuseClick}
         >
           {record.workHoursNum > 0 ? (
             <div className="flex flex-col items-center">

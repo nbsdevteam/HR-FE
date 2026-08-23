@@ -30,6 +30,10 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
     if (empId) onDrop(empId, shift.id);
   };
 
+  const handleDragLeave = (_e: React.DragEvent<HTMLDivElement>): void => {
+    setDragOver(false);
+  };
+
   const workingDays = days.filter(d => (shift as any)[`${d}_is_working`]);
   const workingDayLabels = workingDays.map(d => shiftDayLabelsAr[days.indexOf(d)]);
 
@@ -39,7 +43,7 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
         dragOver ? "border-primary bg-primary/5 shadow-lg shadow-primary/20" : "border-border/40 bg-card/30"
       }`}
       onDragOver={handleDragOver}
-      onDragLeave={() => setDragOver(false)}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <div className="px-4 py-3 border-b border-border/30">

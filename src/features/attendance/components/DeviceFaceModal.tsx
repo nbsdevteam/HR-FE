@@ -9,7 +9,12 @@ type DeviceFaceModalProps = {
   onDelete: (employeeNumber: string) => void;
 };
 
-const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => (
+const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => {
+  const handleDeleteClick = (_event: React.MouseEvent<HTMLButtonElement>): void => {
+    onDelete(face.empNo);
+  };
+
+  return (
   <ModalOverlay
     onClose={onClose}
     overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
@@ -40,7 +45,7 @@ const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => (
       )}
       {face.image && (
         <button
-          onClick={() => onDelete(face.empNo)}
+          onClick={handleDeleteClick}
           className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -48,6 +53,7 @@ const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => (
         </button>
       )}
   </ModalOverlay>
-);
+  );
+};
 
 export default DeviceFaceModal;

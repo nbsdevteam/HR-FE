@@ -13,9 +13,13 @@ type AttendanceDetailTabButtonProps<T extends string> = {
 const AttendanceDetailTabButton = <T extends string>({ tab, active, onClick }: AttendanceDetailTabButtonProps<T>) => {
   const Icon = tab.icon;
 
+  const handleTabClick = (): void => {
+    onClick(tab.id);
+  };
+
   return (
     <button
-      onClick={() => onClick(tab.id)}
+      onClick={handleTabClick}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer ${
         active ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-muted/20"
       }`}

@@ -6,7 +6,16 @@ type DeviceDoorControlProps = {
   onDoorAction: (action: "open" | "close") => void;
 };
 
-const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) => (
+const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) => {
+  const handleOpenDoorClick = (_event: React.MouseEvent<HTMLButtonElement>): void => {
+    onDoorAction("open");
+  };
+
+  const handleCloseDoorClick = (_event: React.MouseEvent<HTMLButtonElement>): void => {
+    onDoorAction("close");
+  };
+
+  return (
   <div className="bg-card/30 backdrop-blur-md rounded-xl border border-border/20 p-6">
     <h3 className="text-foreground mb-4 flex items-center gap-2">
       <Shield className="w-5 h-5 text-primary" />
@@ -14,7 +23,7 @@ const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) =>
     </h3>
     <div className="flex gap-3">
       <button
-        onClick={() => onDoorAction("open")}
+        onClick={handleOpenDoorClick}
         disabled={loading}
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
       >
@@ -22,7 +31,7 @@ const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) =>
         {arabicSource("devicemanagement.the_door_opened")}
       </button>
       <button
-        onClick={() => onDoorAction("close")}
+        onClick={handleCloseDoorClick}
         disabled={loading}
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
       >
@@ -31,6 +40,7 @@ const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) =>
       </button>
     </div>
   </div>
-);
+  );
+};
 
 export default DeviceDoorControl;

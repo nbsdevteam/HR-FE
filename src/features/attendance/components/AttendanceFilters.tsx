@@ -15,6 +15,10 @@ type AttendanceFiltersProps = {
 };
 
 const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChange, onStatusFilterChange, onSortByChange }: AttendanceFiltersProps) => {
+  const handleStatusFilterClick = (value: string) => () => {
+    onStatusFilterChange(value);
+  };
+
   return (
     <>
     {/* Search & Filters Bar */}
@@ -34,7 +38,7 @@ const AttendanceFilters = ({ searchTerm, statusFilter, sortBy, onSearchTermChang
             key={f}
             label={f}
             active={statusFilter === f}
-            onClick={() => onStatusFilterChange(f)}
+            onClick={handleStatusFilterClick(f)}
           />
         ))}
       </div>

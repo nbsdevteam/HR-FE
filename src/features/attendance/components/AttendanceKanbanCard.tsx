@@ -12,6 +12,10 @@ type AttendanceKanbanCardProps = {
 };
 
 const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKanbanCardProps) => {
+  const handleCardClick = (): void => {
+    onSelectEmployee(record.employeeId);
+  };
+
   return (
     <motion.div
       key={record.id}
@@ -19,7 +23,7 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.04 }}
       className="bg-card/60 border border-border/30 rounded-lg p-3 shadow-sm hover:border-border/50 transition-colors cursor-pointer"
-      onClick={() => onSelectEmployee(record.employeeId)}
+      onClick={handleCardClick}
     >
       <div className="flex items-center gap-2.5 mb-2">
         <div

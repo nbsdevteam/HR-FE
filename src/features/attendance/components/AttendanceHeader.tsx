@@ -9,6 +9,10 @@ type AttendanceHeaderProps = {
 };
 
 const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelectedDateChange }: AttendanceHeaderProps) => {
+  const handleSelectedDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSelectedDateChange(e.target.value);
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -20,7 +24,7 @@ const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelected
         <input
           type="date"
           value={selectedDate}
-          onChange={(e) => onSelectedDateChange(e.target.value)}
+          onChange={handleSelectedDateChange}
           className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
           dir="ltr"
         />

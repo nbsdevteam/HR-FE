@@ -10,6 +10,10 @@ type ShiftAssignedEmployeeRowProps = {
 const ShiftAssignedEmployeeRow = ({ employee, onRemove }: ShiftAssignedEmployeeRowProps) => {
   const name = empDisplayName(employee);
 
+  const handleRemoveClick = (): void => {
+    onRemove(employee.id);
+  };
+
   return (
     <div className="flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
       {employee.profile_picture ? (
@@ -21,7 +25,7 @@ const ShiftAssignedEmployeeRow = ({ employee, onRemove }: ShiftAssignedEmployeeR
       )}
       <span className="text-foreground truncate flex-1" style={{ fontSize: 11 }}>{name}</span>
       <button
-        onClick={() => onRemove(employee.id)}
+        onClick={handleRemoveClick}
         className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-red-500/20 transition-colors shrink-0"
         title={arabicSource("shared.cancel_assignment")}
       >

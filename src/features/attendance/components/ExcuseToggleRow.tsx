@@ -11,6 +11,10 @@ type ExcuseToggleRowProps = {
 };
 
 const ExcuseToggleRow = ({ item, checked, onToggle }: ExcuseToggleRowProps) => {
+  const handleToggleClick = (): void => {
+    onToggle(item.key);
+  };
+
   return (
     <label className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:border-primary/30 transition-colors cursor-pointer">
       <div>
@@ -19,7 +23,7 @@ const ExcuseToggleRow = ({ item, checked, onToggle }: ExcuseToggleRowProps) => {
       </div>
       <div
         className={`w-11 h-6 rounded-full cursor-pointer transition-colors relative ${checked ? "bg-emerald-500" : "bg-muted"}`}
-        onClick={() => onToggle(item.key)}
+        onClick={handleToggleClick}
       >
         <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${checked ? "start-5" : "start-0.5"}`} />
       </div>
