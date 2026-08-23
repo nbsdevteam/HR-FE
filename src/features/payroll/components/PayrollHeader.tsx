@@ -25,7 +25,12 @@ const PayrollHeader = ({
   onMonthChange,
   onSavePayslips,
   onServerComputePayslips,
-}: PayrollHeaderProps) => (
+}: PayrollHeaderProps) => {
+  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    onMonthChange(event.target.value);
+  };
+
+  return (
   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
       <h1 className="text-gradient-gold">
@@ -39,7 +44,7 @@ const PayrollHeader = ({
     <div className="flex items-center gap-3">
       <Select
         value={selectedMonth}
-        onChange={(event) => onMonthChange(event.target.value)}
+        onChange={handleMonthChange}
         className={payrollSelectClass}
         style={{ width: 180 }}
       >
@@ -80,6 +85,7 @@ const PayrollHeader = ({
       </button>
     </div>
   </div>
-);
+  );
+};
 
 export default PayrollHeader;

@@ -97,6 +97,10 @@ const OverviewTab = ({
     [totalBasic, totalNet, totalDeductions, totalEmployees],
   );
 
+  const handleSort = (key: typeof paySortBy): void => {
+    toggleSort(key, paySortBy, paySortDir, setPaySortBy, setPaySortDir);
+  };
+
   const departmentPayroll = useMemo(() => {
     const map: Record<string, number> = {};
     payrollData.forEach((r: any) => {
@@ -166,15 +170,7 @@ const OverviewTab = ({
             columns={sortByData}
             sortBy={paySortBy}
             sortDir={paySortDir}
-            onSort={(key) =>
-              toggleSort(
-                key,
-                paySortBy,
-                paySortDir,
-                setPaySortBy,
-                setPaySortDir,
-              )
-            }
+            onSort={handleSort}
           />
         }
         renderRow={(r: any, i: number) => (

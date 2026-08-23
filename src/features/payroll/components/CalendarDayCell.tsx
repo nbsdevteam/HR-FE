@@ -31,6 +31,16 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
     if (rec && onExcuseShortfall) onExcuseShortfall(rec.id);
   }, [rec, onExcuseShortfall]);
 
+  const handleCellMouseEnter = (e: React.MouseEvent<HTMLDivElement>): void => {
+    e.currentTarget.style.backgroundColor = "rgba(212, 175, 55, 0.06)";
+    e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(212, 175, 55, 0.12)";
+  };
+
+  const handleCellMouseLeave = (e: React.MouseEvent<HTMLDivElement>): void => {
+    e.currentTarget.style.backgroundColor = "";
+    e.currentTarget.style.boxShadow = "";
+  };
+
   // Cell background
   let cellBg = weekBg;
   if (isLeave && !rec?.isUnpaidLeave) cellBg = "bg-blue-500/6";
@@ -48,8 +58,8 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
   return (
     <div
       className={`${cellHeight} border-b border-e border-border/20 p-2 flex flex-col transition-all duration-200 ${cellBg} ${today ? "ring-2 ring-inset ring-primary/40" : ""} ${isRest && !rec ? "bg-[repeating-linear-gradient(135deg,transparent,transparent_4px,rgba(128,128,128,0.03)_4px,rgba(128,128,128,0.03)_8px)]" : ""}`}
-      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(212, 175, 55, 0.06)"; e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(212, 175, 55, 0.12)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ""; e.currentTarget.style.boxShadow = ""; }}
+      onMouseEnter={handleCellMouseEnter}
+      onMouseLeave={handleCellMouseLeave}
     >
       {/* Row 1: Day number + status icon */}
       <div className="flex items-center justify-between mb-1">
