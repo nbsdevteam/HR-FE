@@ -68,7 +68,7 @@ const TypeAheadPopup = <T,>({
         style={{ fontSize: 13 }}
       />
     </div>
-    <div className="max-h-96 overflow-y-auto" role="listbox">
+    <div className="dropdown-scrollbar max-h-96 overflow-y-auto" role="listbox">
       {showBlankOption && (
         <TypeAheadOption
           label={blankLabel as string}
