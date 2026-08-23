@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { formatTime, formatWorkHours, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -117,4 +117,4 @@ const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }:
   );
 };
 
-export default CalendarDayCell;
+export default memo(CalendarDayCell);

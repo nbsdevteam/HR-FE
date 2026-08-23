@@ -1,55 +1,48 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as odooData from "@/shared/api/odooData";
 import {
-  useEmployees,
   useAttendanceRecords,
-  empDisplayName,
-  formatTime,
-  formatWorkHours,
-  mapAttendanceStatus,
-  useShifts,
+  useEmployees,
   useHierarchyData,
+  useShifts,
 } from "@/shared/hooks";
-import type { DbAttendanceRecord, DbEmployee } from "@/shared/hooks";
-import { localizedAlert } from "@/i18n/native";
-import { arabicSource } from "@/i18n/source";
-import { AttendanceRow, dayNames } from "@/features/attendance/types";
-import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
+import type { DbAttendanceRecord } from "@/shared/hooks";
+import type { ExcuseForm } from "@/features/attendance/types";
+import {
+  buildTodayAttendanceStats,
+  buildWeeklyAttendance,
+} from "@/features/attendance/utils/attendanceDisplay";
+import { useAttendanceRows } from "./useAttendanceRows";
+import { useAttendanceViewState } from "./useAttendanceViewState";
+import { useExcuseModal } from "./useExcuseModal";
 
+/**
+ * Composition root for the attendance page — wires the records fetch to the
+ * view state (`useAttendanceViewState`), the row projection
+ * (`useAttendanceRows`) and the excuse dialog (`useExcuseModal`).
+ */
 export const useAttendancePage = () => {
   const [rawRecords, setRawRecords] = useState<DbAttendanceRecord[]>([]);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(
-    arabicSource("common.all"),
-  );
-  const [sortBy, setSortBy] = useState<
-    | "name"
-    | "deviceNo"
-    | "department"
-    | "checkIn"
-    | "checkOut"
-    | "hours"
-    | "status"
-  >("checkIn");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
-    null,
-  );
-  const [chartExpanded, setChartExpanded] = useState(false);
-  const [excuseModal, setExcuseModal] = useState<{
-    record: AttendanceRow;
-  } | null>(null);
-  const [excuseForm, setExcuseForm] = useState({
-    late: false,
-    absence: false,
-    shortfall: false,
-    note: "",
-  });
-  const [excuseSaving, setExcuseSaving] = useState(false);
 
+  const {
+    selectedDate,
+    setSelectedDate,
+    viewMode,
+    setViewMode,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    sortBy,
+    setSortBy,
+    sortDir,
+    setSortDir,
+    selectedEmployeeId,
+    setSelectedEmployeeId,
+    chartExpanded,
+    handleToggleChart,
+    handleCloseEmployeeDetail,
+  } = useAttendanceViewState();
   const { i18n } = useTranslation();
 
   const thirtyDaysAgo = useMemo(
@@ -63,142 +56,19 @@ export const useAttendancePage = () => {
     records: hookRecords,
     loading,
     refetch: refetchAttendance,
-  } = useAttendanceRecords({
-    date_from: thirtyDaysAgo,
-  });
+  } = useAttendanceRecords({ date_from: thirtyDaysAgo });
 
-  // Build employee ID → info map (including device_employee_no)
-  // Department color map
-  const deptColorMap = useMemo(() => {
-    const m: Record<string, string> = {};
-    dbDepartments.forEach((d: any) => {
-      if (d.color) m[d.name] = d.color;
-    });
-    return m;
-  }, [dbDepartments]);
-
-  const empMap = useMemo(() => {
-    const m: Record<
-      string,
-      {
-        name: string;
-        dept: string;
-        deviceNo: string;
-        photo: string | null;
-        position: string | null;
-        deptColor: string | null;
-      }
-    > = {};
-    employees.forEach((e: DbEmployee) => {
-      m[e.id] = {
-        name: empDisplayName(e),
-        dept: e.department || "—",
-        deviceNo: e.device_employee_no || "—",
-        photo: e.profile_picture || null,
-        position: e.position || null,
-        deptColor: deptColorMap[e.department] || null,
-      };
-    });
-    return m;
-  }, [employees, deptColorMap]);
-
-  // Filter records for selected date and map to UI rows
-  const attendanceRows: AttendanceRow[] = useMemo(() => {
-    const rows = rawRecords
-      .filter((r) => r.date === selectedDate)
-      .map((r) => {
-        const emp = empMap[r.employee_id] || {
-          name: r.employee_id.substring(0, 12),
-          dept: "—",
-          deviceNo: "—",
-          photo: null,
-          position: null,
-        };
-        return {
-          id: r.id,
-          employeeId: r.employee_id,
-          employee: emp.name,
-          department: emp.dept,
-          deviceNo: r.device_employee_no || emp.deviceNo,
-          date: r.date,
-          checkIn: formatTime(r.check_in_time),
-          checkOut: formatTime(r.check_out_time),
-          rawCheckIn: r.check_in_time,
-          rawCheckOut: r.check_out_time,
-          status: mapAttendanceStatus(r.status, r.is_late),
-          rawStatus: r.status,
-          workHours: formatWorkHours(r.working_hours || 0),
-          workHoursNum: r.working_hours || 0,
-          source: r.source || null,
-          verifyMode: r.verify_mode || null,
-          lateMinutes: r.late_minutes || 0,
-          autoCheckout: r.auto_checkout_applied || false,
-          overtimeHours: r.overtime_hours || 0,
-          breakMinutes: (r as any).total_break_minutes || 0,
-          deptColor: emp.deptColor || null,
-          excusedLate: r.excused_late || false,
-          excusedAbsence: r.excused_absence || false,
-          excusedShortfall: r.excused_shortfall || false,
-          excuseNote: r.excuse_note || null,
-        };
-      });
-
-    // Apply search filter
-    let filtered = rows;
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (r) =>
-          r.employee.includes(searchTerm) ||
-          r.deviceNo.includes(searchTerm) ||
-          r.department.includes(searchTerm),
-      );
-    }
-    if (statusFilter !== arabicSource("common.all")) {
-      filtered = filtered.filter((r) => r.status === statusFilter);
-    }
-
-    // Sort
-    const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "name")
-      filtered.sort((a, b) => dir * a.employee.localeCompare(b.employee, "ar"));
-    else if (sortBy === "deviceNo")
-      filtered.sort(
-        (a, b) =>
-          dir * (parseInt(a.deviceNo || "0") - parseInt(b.deviceNo || "0")),
-      );
-    else if (sortBy === "department")
-      filtered.sort(
-        (a, b) => dir * a.department.localeCompare(b.department, "ar"),
-      );
-    else if (sortBy === "checkIn")
-      filtered.sort(
-        (a, b) =>
-          dir *
-          (a.rawCheckIn || "99:99").localeCompare(b.rawCheckIn || "99:99"),
-      );
-    else if (sortBy === "checkOut")
-      filtered.sort(
-        (a, b) =>
-          dir *
-          (a.rawCheckOut || "99:99").localeCompare(b.rawCheckOut || "99:99"),
-      );
-    else if (sortBy === "hours")
-      filtered.sort((a, b) => dir * (a.workHoursNum - b.workHoursNum));
-    else if (sortBy === "status")
-      filtered.sort((a, b) => dir * a.status.localeCompare(b.status, "ar"));
-
-    return filtered;
-  }, [
+  const { empMap, attendanceRows } = useAttendanceRows({
     rawRecords,
     selectedDate,
-    empMap,
+    employees,
+    departments: dbDepartments,
     searchTerm,
     statusFilter,
     sortBy,
     sortDir,
-  ]);
+  });
 
-  // Stats
   const todayStats = useMemo(
     () =>
       buildTodayAttendanceStats(
@@ -209,79 +79,40 @@ export const useAttendancePage = () => {
     [rawRecords, selectedDate, i18n.resolvedLanguage],
   );
 
-  // Weekly chart
-  const weeklyAttendance = useMemo(() => {
-    const dayMap: Record<
-      string,
-      { present: number; late: number; absent: number; leave: number }
-    > = {};
-    const orderedDays = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-    ];
-    orderedDays.forEach((d) => {
-      dayMap[d] = { present: 0, late: 0, absent: 0, leave: 0 };
-    });
-    rawRecords.forEach((r) => {
-      const d = r.day_of_week?.toLowerCase();
-      if (!dayMap[d]) return;
-      const st = mapAttendanceStatus(r.status, r.is_late);
-      if (st === arabicSource("common.present")) dayMap[d].present++;
-      else if (st === arabicSource("common.late")) dayMap[d].late++;
-      else if (st === arabicSource("common.absent")) dayMap[d].absent++;
-      else if (st === arabicSource("common.leave")) dayMap[d].leave++;
-    });
-    return orderedDays
-      .map((d) => ({ day: dayNames[d] || d, ...dayMap[d] }))
-      .reverse();
-  }, [rawRecords]);
+  const weeklyAttendance = useMemo(
+    () => buildWeeklyAttendance(rawRecords),
+    [rawRecords],
+  );
 
-  const handleSaveExcuse = useCallback(async () => {
-    if (!excuseModal) return;
-    setExcuseSaving(true);
-    try {
-      await odooData.excuseAttendance({
-        attendance_id: Number(excuseModal.record.id) || excuseModal.record.id,
-        excused_late: excuseForm.late,
-        excused_absence: excuseForm.absence,
-        excused_shortfall: excuseForm.shortfall,
-        excuse_note: excuseForm.note || null,
-      });
-      setRawRecords((prev) =>
-        prev.map((r) =>
-          r.id === excuseModal.record.id
+  const handleExcuseSaved = useCallback(
+    async (recordId: string, form: ExcuseForm) => {
+      setRawRecords((current) =>
+        current.map((record) =>
+          record.id === recordId
             ? {
-                ...r,
-                excused_late: excuseForm.late,
-                excused_absence: excuseForm.absence,
-                excused_shortfall: excuseForm.shortfall,
-                excuse_note: excuseForm.note || null,
+                ...record,
+                excused_late: form.late,
+                excused_absence: form.absence,
+                excused_shortfall: form.shortfall,
+                excuse_note: form.note || null,
               }
-            : r,
+            : record,
         ),
       );
-      setExcuseModal(null);
       await refetchAttendance();
-    } catch (err) {
-      localizedAlert(arabicSource("attendance.error_saving_excuse"));
-    }
-    setExcuseSaving(false);
-  }, [excuseForm, excuseModal, refetchAttendance]);
+    },
+    [refetchAttendance],
+  );
 
-  const handleToggleChart = useCallback(() => {
-    setChartExpanded((current) => !current);
-  }, []);
-
-  const handleCloseEmployeeDetail = useCallback(() => {
-    setSelectedEmployeeId(null);
-  }, []);
-
-  const handleCloseExcuseModal = useCallback(() => {
-    setExcuseModal(null);
-  }, []);
+  const {
+    excuseModal,
+    setExcuseModal,
+    excuseForm,
+    setExcuseForm,
+    excuseSaving,
+    handleSaveExcuse,
+    handleCloseExcuseModal,
+  } = useExcuseModal({ onSaved: handleExcuseSaved });
 
   useEffect(() => {
     setRawRecords(hookRecords);
@@ -291,7 +122,7 @@ export const useAttendancePage = () => {
         .reverse();
       setSelectedDate(dates[0]);
     }
-  }, [hookRecords, selectedDate]);
+  }, [hookRecords, selectedDate, setSelectedDate]);
 
   return {
     rawRecords,

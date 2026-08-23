@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Clock, Users } from "lucide-react";
 import { type DbEmployee, type DbShift } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -17,13 +17,13 @@ const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", 
 const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneProps) => {
   const [dragOver, setDragOver] = useState(false);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setDragOver(true);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     setDragOver(false);
     const empId = e.dataTransfer.getData("shift-employee-id");
@@ -34,8 +34,15 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
     setDragOver(false);
   };
 
-  const workingDays = days.filter(d => (shift as any)[`${d}_is_working`]);
-  const workingDayLabels = workingDays.map(d => shiftDayLabelsAr[days.indexOf(d)]);
+  // Single pass — `shiftDayLabelsAr` is index-aligned with `days`.
+  const workingDayLabels = useMemo(
+    () =>
+      days.reduce<string[]>((labels, day, index) => {
+        if ((shift as any)[`${day}_is_working`]) labels.push(shiftDayLabelsAr[index]);
+        return labels;
+      }, []),
+    [shift],
+  );
 
   return (
     <div
@@ -81,4 +88,4 @@ const ShiftDropZone = ({ shift, assignedEmps, onDrop, onRemove }: ShiftDropZoneP
   );
 };
 
-export default ShiftDropZone;
+export default memo(ShiftDropZone);

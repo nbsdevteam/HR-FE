@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "motion/react";
-import { CalendarDays, BarChart3, TrendingUp, Loader2 } from "lucide-react";
+import { CalendarDays, BarChart3, TrendingUp, Loader2, type LucideIcon } from "lucide-react";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { ModalOverlay, TabButton } from "@/shared/components";
+import type { AttendanceEmployeeMap } from "../types";
 import { useEmployeeAttendanceDetail, type DetailTabId } from "../hooks/useEmployeeAttendanceDetail";
 import AttendanceCalendarView from "./AttendanceCalendarView";
-import AttendanceDetailTabButton from "./AttendanceDetailTabButton";
 import EmployeeAttendanceDetailHeader from "./EmployeeAttendanceDetailHeader";
 import MonthlySummaryView from "./MonthlySummaryView";
 import OverallSummaryView from "./OverallSummaryView";
@@ -26,7 +26,7 @@ export const DETAIL_TABS = [
     label: arabicSource("attendance.overall_summary"),
     icon: TrendingUp,
   },
-] satisfies { id: DetailTabId; label: string; icon: unknown }[];
+] satisfies { id: DetailTabId; label: string; icon: LucideIcon }[];
 
 const EmployeeAttendanceDetail = ({
   employeeId,
@@ -38,16 +38,7 @@ const EmployeeAttendanceDetail = ({
 }: {
   employeeId: string;
   employees: DbEmployee[];
-  empMap: Record<
-    string,
-    {
-      name: string;
-      dept: string;
-      deviceNo: string;
-      photo: string | null;
-      position: string | null;
-    }
-  >;
+  empMap: AttendanceEmployeeMap;
   dbShifts: any[];
   dbDepartments: any[];
   onClose: () => void;
@@ -91,11 +82,13 @@ const EmployeeAttendanceDetail = ({
       {/* Tabs */}
       <div className="flex gap-1 p-2 bg-card/30 border-b border-border/20">
         {DETAIL_TABS.map((tab) => (
-          <AttendanceDetailTabButton
+          <TabButton
             key={tab.id}
-            tab={tab}
-            active={activeTab === tab.id}
-            onClick={setActiveTab}
+            id={tab.id}
+            label={tab.label}
+            icon={tab.icon}
+            isActive={activeTab === tab.id}
+            onSelect={setActiveTab}
           />
         ))}
       </div>

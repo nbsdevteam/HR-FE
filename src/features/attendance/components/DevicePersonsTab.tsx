@@ -1,64 +1,95 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Users } from "lucide-react";
 import EmptyState from "@/shared/components/EmptyState";
+import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
-import { DEVICE_SYNC_API, filterDevicePersons } from "../utils/deviceManagement";
+import {
+  DEVICE_SYNC_API,
+  filterDevicePersons,
+} from "../utils/deviceManagement";
 import DevicePersonCard from "./DevicePersonCard";
 import DevicePersonsToolbar from "./DevicePersonsToolbar";
 
+const FACE_BATCH_SIZE = 5;
+
+const fetchDevicePersons = async (): Promise<DevicePerson[]> => {
+  const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
+  const data = await response.json();
+  return data.success ? data.persons : [];
+};
+
+/** Pull the enrolled face photos a few at a time so the device isn't flooded. */
+const fetchFacePhotos = async (
+  persons: DevicePerson[],
+): Promise<Record<string, string>> => {
+  const photos: Record<string, string> = {};
+
+  for (let index = 0; index < persons.length; index += FACE_BATCH_SIZE) {
+    const batch = persons.slice(index, index + FACE_BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (person) => {
+        try {
+          const response = await fetch(
+            `${DEVICE_SYNC_API}/device/persons/${person.employeeNo}/face`,
+          );
+          const data = await response.json();
+          if (data.found && data.imageBase64) {
+            photos[person.employeeNo] = data.imageBase64;
+          }
+        } catch {
+          // Skip failed face photo fetches.
+        }
+      }),
+    );
+  }
+
+  return photos;
+};
+
 const DevicePersonsTab = () => {
-  const [persons, setPersons] = useState<DevicePerson[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [facePhotos, setFacePhotos] = useState<Record<string, string>>({});
   const [loadingFaces, setLoadingFaces] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const filtered = useMemo(() => filterDevicePersons(persons, search), [persons, search]);
+  // No cacheKey: the device is a live peripheral, so a remount must re-read it.
+  const {
+    data: persons,
+    loading,
+    refetch: load,
+  } = useAsyncList<DevicePerson>(
+    fetchDevicePersons,
+    [],
+    "Failed to load device persons",
+  );
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
-      const data = await response.json();
-      if (data.success) {
-        setPersons(data.persons);
-
-        const withFaces = data.persons.filter((person: DevicePerson) => person.numOfFace > 0);
-        if (withFaces.length > 0 && Object.keys(facePhotos).length === 0) {
-          setLoadingFaces(true);
-          const photos: Record<string, string> = {};
-
-          for (let index = 0; index < withFaces.length; index += 5) {
-            const batch = withFaces.slice(index, index + 5);
-            await Promise.all(batch.map(async (person: DevicePerson) => {
-              try {
-                const faceResponse = await fetch(`${DEVICE_SYNC_API}/device/persons/${person.employeeNo}/face`);
-                const faceData = await faceResponse.json();
-                if (faceData.found && faceData.imageBase64) photos[person.employeeNo] = faceData.imageBase64;
-              } catch {
-                // Skip failed face photo fetches.
-              }
-            }));
-          }
-
-          setFacePhotos(photos);
-          setLoadingFaces(false);
-        }
-      }
-    } catch {
-      // Device can be offline.
-    }
-    setLoading(false);
-  }, [facePhotos]);
+  const filtered = useMemo(
+    () => filterDevicePersons(persons, search),
+    [persons, search],
+  );
 
   const handleSearchChange = useCallback((nextSearch: string) => {
     setSearch(nextSearch);
   }, []);
 
+  // Faces load once, after the person list arrives — keeping this out of the
+  // person fetcher stops the photo state from retriggering that fetch.
   useEffect(() => {
-    load();
-  }, [load]);
+    const withFaces = persons.filter((person) => person.numOfFace > 0);
+    if (withFaces.length === 0) return;
+
+    let cancelled = false;
+    setLoadingFaces(true);
+    fetchFacePhotos(withFaces).then((photos) => {
+      if (cancelled) return;
+      setFacePhotos(photos);
+      setLoadingFaces(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [persons]);
 
   return (
     <div className="space-y-4">

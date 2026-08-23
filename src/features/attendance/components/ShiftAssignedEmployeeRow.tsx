@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { X } from "lucide-react";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -35,4 +36,4 @@ const ShiftAssignedEmployeeRow = ({ employee, onRemove }: ShiftAssignedEmployeeR
   );
 };
 
-export default ShiftAssignedEmployeeRow;
+export default memo(ShiftAssignedEmployeeRow);

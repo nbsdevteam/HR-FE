@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { formatTime, formatWorkHours, mapAttendanceStatus, type DbAttendanceRecord } from "@/shared/hooks";
 import { StatusBadge } from "@/shared/components";
 import { statusColors } from "@/features/attendance/styles";
@@ -40,4 +41,4 @@ const DailyAttendanceTableRow = ({ record }: DailyAttendanceTableRowProps) => {
   );
 };
 
-export default DailyAttendanceTableRow;
+export default memo(DailyAttendanceTableRow);

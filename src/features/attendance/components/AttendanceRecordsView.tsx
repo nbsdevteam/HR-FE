@@ -1,11 +1,19 @@
-﻿import { motion } from "motion/react";
+import { memo, useCallback, useMemo } from "react";
+import { motion } from "motion/react";
 import DataTable from "@/shared/components/DataTable";
-import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
+import SortableHeaderRow, {
+  toggleSort,
+} from "@/shared/components/SortableHeader";
+import { groupBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
-import type { AttendanceRow, AttendanceSortKey, AttendanceViewMode, ExcuseForm } from "@/features/attendance/types";
-import AttendanceKanbanCard from "./AttendanceKanbanCard";
+import type {
+  AttendanceRow,
+  AttendanceSortKey,
+  AttendanceViewMode,
+  ExcuseForm,
+} from "@/features/attendance/types";
+import AttendanceKanbanColumn from "./AttendanceKanbanColumn";
 import AttendanceTableRow from "./AttendanceTableRow";
-import { memo } from "react";
 import { kanbanColumns } from "../data";
 
 type AttendanceRecordsViewProps = {
@@ -16,11 +24,41 @@ type AttendanceRecordsViewProps = {
   setSortBy: (value: AttendanceSortKey) => void;
   setSortDir: (value: "asc" | "desc") => void;
   setSelectedEmployeeId: (value: string) => void;
-  setExcuseForm: (value: ExcuseForm | ((current: ExcuseForm) => ExcuseForm)) => void;
+  setExcuseForm: (
+    value: ExcuseForm | ((current: ExcuseForm) => ExcuseForm),
+  ) => void;
   setExcuseModal: (value: { record: AttendanceRow } | null) => void;
 };
 
+const TABLE_COLUMNS: ReadonlyArray<{
+  label: string;
+  key: AttendanceSortKey | null;
+  center?: boolean;
+}> = [
+  { label: arabicSource("common.employee"), key: "name" },
+  {
+    label: arabicSource("common.fingerprint_number"),
+    key: "deviceNo",
+    center: true,
+  },
+  { label: arabicSource("common.section"), key: "department" },
+  { label: arabicSource("common.attendance"), key: "checkIn", center: true },
+  { label: arabicSource("common.dismissal"), key: "checkOut", center: true },
+  { label: arabicSource("common.working_hours"), key: "hours", center: true },
+  { label: arabicSource("common.source"), key: null },
+  { label: arabicSource("common.status"), key: "status" },
+];
 
+const EMPTY_ROW = (
+  <tr>
+    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+      {arabicSource("attendance.there_are_no_attendance_records_for_this_date")}
+    </td>
+  </tr>
+);
+
+/** Shared identity for columns with no records, so memoised children stay stable. */
+const NO_ROWS: AttendanceRow[] = [];
 
 const AttendanceRecordsView = ({
   viewMode,
@@ -33,63 +71,57 @@ const AttendanceRecordsView = ({
   setExcuseForm,
   setExcuseModal,
 }: AttendanceRecordsViewProps) => {
-  const openExcuse = (record: AttendanceRow, form: ExcuseForm) => {
-    setExcuseForm(form);
-    setExcuseModal({ record });
-  };
+  // One bucketing pass instead of re-filtering the whole list per kanban column.
+  const rowsByStatus = useMemo(
+    () => groupBy(attendanceRows, (row) => row.status),
+    [attendanceRows],
+  );
 
-  const handleSort = (key: AttendanceSortKey): void => {
-    toggleSort(key, sortBy, sortDir, setSortBy, setSortDir);
-  };
+  const openExcuse = useCallback(
+    (record: AttendanceRow, form: ExcuseForm) => {
+      setExcuseForm(form);
+      setExcuseModal({ record });
+    },
+    [setExcuseForm, setExcuseModal],
+  );
+
+  const handleSort = useCallback(
+    (key: AttendanceSortKey): void => {
+      toggleSort(key, sortBy, sortDir, setSortBy, setSortDir);
+    },
+    [sortBy, sortDir, setSortBy, setSortDir],
+  );
+
+  const renderRow = useCallback(
+    (record: AttendanceRow, index: number) => (
+      <AttendanceTableRow
+        key={record.id}
+        record={record}
+        index={index}
+        onSelectEmployee={setSelectedEmployeeId}
+        onOpenExcuse={openExcuse}
+      />
+    ),
+    [setSelectedEmployeeId, openExcuse],
+  );
 
   if (viewMode === "kanban") {
     return (
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="flex gap-3">
-        {kanbanColumns.map((column, columnIndex) => {
-          const items = attendanceRows.filter((row) => row.status === column.key);
-          const ColumnIcon = column.icon;
-
-          if (items.length === 0) {
-            return (
-              <motion.div
-                key={column.key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: columnIndex * 0.08 }}
-                className={`bg-card/10 backdrop-blur-md border ${column.accent} rounded-xl overflow-hidden flex flex-col items-center py-5 px-2 gap-3`}
-                style={{ minWidth: 56, maxWidth: 64 }}
-              >
-                <ColumnIcon className={`w-4 h-4 ${column.textColor} opacity-40`} />
-                <span className="text-muted-foreground/40 font-medium" style={{ fontSize: 11, writingMode: "vertical-rl" }}>{column.label}</span>
-                <span className="px-2 py-0.5 rounded-full bg-muted/20 text-muted-foreground/40 font-mono" style={{ fontSize: 11 }}>0</span>
-              </motion.div>
-            );
-          }
-
-          return (
-            <motion.div
-              key={column.key}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: columnIndex * 0.08 }}
-              className={`bg-card/20 backdrop-blur-md border ${column.accent} rounded-xl shadow-lg overflow-hidden flex-1`}
-              style={{ minWidth: 0 }}
-            >
-              <div className="p-4 border-b border-border/20 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ColumnIcon className={`w-4 h-4 ${column.textColor}`} />
-                  <span className="text-foreground" style={{ fontSize: 14 }}>{column.label}</span>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-muted/30 text-muted-foreground font-mono" style={{ fontSize: 12 }}>{items.length}</span>
-              </div>
-              <div className="p-3 space-y-2.5 max-h-[500px] overflow-y-auto">
-                {items.map((record, index) => (
-                  <AttendanceKanbanCard key={record.id} record={record} index={index} onSelectEmployee={setSelectedEmployeeId} />
-                ))}
-              </div>
-            </motion.div>
-          );
-        })}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex gap-3"
+      >
+        {kanbanColumns.map((column, columnIndex) => (
+          <AttendanceKanbanColumn
+            key={column.key}
+            column={column}
+            columnIndex={columnIndex}
+            records={rowsByStatus.get(column.key) ?? NO_ROWS}
+            onSelectEmployee={setSelectedEmployeeId}
+          />
+        ))}
       </motion.div>
     );
   }
@@ -106,40 +138,17 @@ const AttendanceRecordsView = ({
         items={attendanceRows}
         header={
           <SortableHeaderRow
-            columns={[
-              { label: arabicSource("common.employee"), key: "name" },
-              { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
-              { label: arabicSource("common.section"), key: "department" },
-              { label: arabicSource("common.attendance"), key: "checkIn", center: true },
-              { label: arabicSource("common.dismissal"), key: "checkOut", center: true },
-              { label: arabicSource("common.working_hours"), key: "hours", center: true },
-              { label: arabicSource("common.source"), key: null },
-              { label: arabicSource("common.status"), key: "status" },
-            ]}
+            columns={TABLE_COLUMNS}
             sortBy={sortBy}
             sortDir={sortDir}
             onSort={handleSort}
           />
         }
-        renderRow={(record, index) => (
-          <AttendanceTableRow
-            key={record.id}
-            record={record}
-            index={index}
-            onSelectEmployee={setSelectedEmployeeId}
-            onOpenExcuse={openExcuse}
-          />
-        )}
-        emptyRow={
-          <tr>
-            <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-              {arabicSource("attendance.there_are_no_attendance_records_for_this_date")}
-            </td>
-          </tr>
-        }
+        renderRow={renderRow}
+        emptyRow={EMPTY_ROW}
       />
     </motion.div>
   );
-}
+};
 
 export default memo(AttendanceRecordsView);

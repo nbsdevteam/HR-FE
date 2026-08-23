@@ -1,6 +1,6 @@
+import { TabButton } from "@/shared/components";
 import type { DeviceManagementTab } from "../types";
-import { getDeviceManagementTabs } from "../utils/deviceManagement";
-import DeviceManagementTabButton from "./DeviceManagementTabButton";
+import { DEVICE_MANAGEMENT_TABS } from "../utils/deviceManagement";
 
 type DeviceManagementTabsProps = {
   activeTab: DeviceManagementTab;
@@ -9,14 +9,14 @@ type DeviceManagementTabsProps = {
 
 const DeviceManagementTabs = ({ activeTab, onTabChange }: DeviceManagementTabsProps) => (
   <div className="flex gap-1 p-1 bg-card/30 backdrop-blur-md rounded-xl border border-border/20 w-fit">
-    {getDeviceManagementTabs().map((tab) => (
-      <DeviceManagementTabButton
+    {DEVICE_MANAGEMENT_TABS.map((tab) => (
+      <TabButton
         key={tab.key}
-        tabKey={tab.key}
+        id={tab.key}
         label={tab.label}
         icon={tab.icon}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
+        isActive={activeTab === tab.key}
+        onSelect={onTabChange}
       />
     ))}
   </div>

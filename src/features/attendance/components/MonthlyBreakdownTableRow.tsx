@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { formatWorkHours } from "@/shared/hooks";
 import { attendanceMonthNamesByNumber } from "../data";
 import type { MonthlyBreakdownEntry } from "../types";
@@ -29,4 +30,4 @@ const MonthlyBreakdownTableRow = ({ row }: MonthlyBreakdownTableRowProps) => {
   );
 };
 
-export default MonthlyBreakdownTableRow;
+export default memo(MonthlyBreakdownTableRow);

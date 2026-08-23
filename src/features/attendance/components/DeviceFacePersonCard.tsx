@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Eye, Loader2, ScanFace, Upload } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
@@ -75,4 +76,4 @@ const DeviceFacePersonCard = ({
   );
 };
 
-export default DeviceFacePersonCard;
+export default memo(DeviceFacePersonCard);

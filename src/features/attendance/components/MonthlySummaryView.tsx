@@ -5,12 +5,13 @@ import { formatWorkHours, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "@/features/attendance/styles";
 import { dailyRecordsTableHeadings } from "@/features/attendance/data";
+import type { MonthAttendanceStats } from "../utils/attendanceStats";
 import AttendanceSummaryCard from "./AttendanceSummaryCard";
 import AttendanceTableHeaderCell from "./AttendanceTableHeaderCell";
 import DailyAttendanceTableRow from "./DailyAttendanceTableRow";
 
 type MonthlySummaryViewProps = {
-  stats: { daysWorked: number; totalHours: number; avgHours: number; overtime: number; lateCount: number; lateMins: number; absentCount: number; checkedInOnly: number; totalRecords: number };
+  stats: MonthAttendanceStats;
   monthLabel: string;
   records: DbAttendanceRecord[];
   onPrev: () => void;

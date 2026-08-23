@@ -11,15 +11,14 @@ import { arabicSource } from "@/i18n/source";
 import DragEmpCard from "./DragEmpCard";
 import ShiftDropZone from "./ShiftDropZone";
 
-// ── Draggable Employee Card ──
-
 const ShiftAssigner = () => {
-  const { employees, refetch: refetchEmployees } = useEmployees();
-  const { shifts, loading: shiftsLoading } = useShifts();
-  const { assignments, loading: assignLoading, refetch: refetchAssignments } = useEmployeeShiftAssignments();
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const { employees, refetch: refetchEmployees } = useEmployees();
+  const { shifts, loading: shiftsLoading } = useShifts();
+  const { assignments, loading: assignLoading, refetch: refetchAssignments } = useEmployeeShiftAssignments();
 
   // Map employees to their shift (via shift_id on employee or via assignment table)
   const empShiftMap = useMemo(() => {
@@ -48,9 +47,12 @@ const ShiftAssigner = () => {
   }, [employees, empShiftMap]);
 
   const filteredUnassigned = useMemo(() => {
-    if (!search.trim()) return unassigned;
-    const q = search.trim().toLowerCase();
-    return unassigned.filter(e => empDisplayName(e).includes(q) || (e.department || "").includes(q));
+    const query = search.trim().toLowerCase();
+    if (!query) return unassigned;
+    return unassigned.filter(e =>
+      empDisplayName(e).toLowerCase().includes(query) ||
+      (e.department || "").toLowerCase().includes(query),
+    );
   }, [unassigned, search]);
 
   // Assign employee to shift
@@ -91,8 +93,15 @@ const ShiftAssigner = () => {
     setSaving(false);
   }, [refetchEmployees, refetchAssignments]);
 
-  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); } }, [toast]);
+  const handleSearchChange = useCallback((nextSearch: string) => {
+    setSearch(nextSearch);
+  }, []);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   if (shiftsLoading || assignLoading) {
     return (
@@ -122,7 +131,7 @@ const ShiftAssigner = () => {
               iconClassName="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
               inputClassName="w-full bg-background border border-border/40 rounded-lg ps-8 pe-3 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
               value={search}
-              onChange={setSearch}
+              onChange={handleSearchChange}
               placeholder={arabicSource("common.search")}
               style={{ fontSize: 11 }}
             />

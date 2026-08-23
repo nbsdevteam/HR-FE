@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Timer } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -18,7 +19,6 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
 
   return (
     <motion.div
-      key={record.id}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.04 }}
@@ -60,6 +60,6 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
       {record.overtimeHours > 0 && <div className="mt-0.5 text-emerald-400/70" style={{ fontSize: 10 }}>{arabicSource("common.additional")} {record.overtimeHours.toFixed(1)} {arabicSource("common.hours")}</div>}
     </motion.div>
   );
-}
+};
 
-export default AttendanceKanbanCard;
+export default memo(AttendanceKanbanCard);

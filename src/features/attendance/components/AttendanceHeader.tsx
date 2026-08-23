@@ -31,6 +31,6 @@ const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelected
       </div>
     </div>
   );
-}
+};
 
 export default AttendanceHeader;

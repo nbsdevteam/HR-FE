@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
+import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import type { DeviceFacePreview, DevicePerson } from "../types";
 import {
   DEVICE_SYNC_API,
@@ -11,29 +12,32 @@ import DeviceFaceModal from "./DeviceFaceModal";
 import DeviceFacePersonCard from "./DeviceFacePersonCard";
 import DeviceFaceToolbar from "./DeviceFaceToolbar";
 
+const fetchDevicePersons = async (): Promise<DevicePerson[]> => {
+  const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
+  const data = await response.json();
+  return data.success ? data.persons : [];
+};
+
 const DeviceFaceTab = () => {
-  const [persons, setPersons] = useState<DevicePerson[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [viewFace, setViewFace] = useState<DeviceFacePreview | null>(null);
+
+  // No cacheKey: the device is a live peripheral, so a remount must re-read it.
+  const {
+    data: persons,
+    loading,
+    refetch: load,
+  } = useAsyncList<DevicePerson>(
+    fetchDevicePersons,
+    [],
+    "Failed to load device persons",
+  );
 
   const filtered = useMemo(
     () => filterDevicePersons(persons, search),
     [persons, search],
   );
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
-      const data = await response.json();
-      if (data.success) setPersons(data.persons);
-    } catch {
-      // Device can be offline.
-    }
-    setLoading(false);
-  }, []);
 
   const handleSearchChange = useCallback((nextSearch: string) => {
     setSearch(nextSearch);
@@ -63,14 +67,11 @@ const DeviceFaceTab = () => {
       setUploading(employeeNumber);
       try {
         const base64 = await fileToBase64(file);
-        await fetch(
-          `${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: base64 }),
-          },
-        );
+        await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64 }),
+        });
         await load();
       } catch {
         // Device can be offline.
@@ -83,10 +84,9 @@ const DeviceFaceTab = () => {
   const handleDeleteFace = useCallback(
     async (employeeNumber: string) => {
       try {
-        await fetch(
-          `${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`,
-          { method: "DELETE" },
-        );
+        await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, {
+          method: "DELETE",
+        });
         setViewFace(null);
         await load();
       } catch {
@@ -95,10 +95,6 @@ const DeviceFaceTab = () => {
     },
     [load],
   );
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   return (
     <div className="space-y-4">

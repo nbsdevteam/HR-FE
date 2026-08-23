@@ -70,6 +70,10 @@ export type TodayAttendanceStats = {
 
 export type AttendanceStatusCountKey = "present" | "late" | "absent" | "leave";
 
+export type WeeklyAttendanceRow = Record<AttendanceStatusCountKey, number> & {
+  day: string;
+};
+
 export type DeviceInfo = {
   deviceName: string;
   model: string;

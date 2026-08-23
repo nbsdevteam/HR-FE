@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { GripVertical } from "lucide-react";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 
@@ -46,4 +46,4 @@ const DragEmpCard = ({ emp, color }: DragEmpCardProps) => {
   );
 };
 
-export default DragEmpCard;
+export default memo(DragEmpCard);

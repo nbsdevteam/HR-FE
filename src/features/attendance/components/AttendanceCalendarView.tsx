@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock, Timer, TrendingUp, XCircle } from "lucide-react";
+import { Button } from "@/shared/components";
 import { type DbAttendanceRecord, formatWorkHours } from "@/shared/hooks";
 import type { EmployeeSchedule } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import {
   buildCalendarCells, buildRecordMap, buildRestDowSet, CALENDAR_DAY_HEADERS, isFutureDate,
 } from "../utils/calendarHelpers";
+import type { MonthAttendanceStats } from "../utils/attendanceStats";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarDayHeaderCell from "./CalendarDayHeaderCell";
 import CalendarEmptyCell from "./CalendarEmptyCell";
@@ -19,7 +21,7 @@ type AttendanceCalendarViewProps = {
   monthLabel: string;
   onPrev: () => void;
   onNext: () => void;
-  stats: { daysWorked: number; totalHours: number; avgHours: number; overtime: number; lateCount: number; absentCount: number; checkedInOnly: number };
+  stats: MonthAttendanceStats;
   schedule: EmployeeSchedule | null;
 };
 
@@ -37,40 +39,37 @@ const AttendanceCalendarView = ({
   const restDowSet = useMemo(() => buildRestDowSet(schedule), [schedule]);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  const calanderData = useMemo(() => [
-  { label: arabicSource("common.working_days"), value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400", bg: "from-emerald-500/10" },
-  { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400", bg: "from-blue-500/10" },
-  { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400", bg: "from-amber-500/10" },
-  { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400", bg: "from-emerald-500/10" },
-  { label: arabicSource("common.absence"), value: stats.absentCount, icon: XCircle, color: "text-destructive", bg: "from-destructive/10" },
-], [stats, arabicSource]);
-
+  const calendarStats = useMemo(() => [
+    { label: arabicSource("common.working_days"), value: stats.daysWorked, icon: CalendarDays, color: "text-emerald-400" },
+    { label: arabicSource("common.total_hours"), value: formatWorkHours(stats.totalHours), icon: Clock, color: "text-blue-400" },
+    { label: arabicSource("common.average_day"), value: formatWorkHours(stats.avgHours), icon: Timer, color: "text-amber-400" },
+    { label: arabicSource("common.additional_label"), value: formatWorkHours(stats.overtime), icon: TrendingUp, color: "text-emerald-400" },
+    { label: arabicSource("common.absence"), value: stats.absentCount, icon: XCircle, color: "text-destructive" },
+  ], [stats]);
 
   return (
     <div className="space-y-5">
       {/* Month stats — compact row */}
       <div className="grid grid-cols-5 gap-3">
-        {calanderData.map((chip, i) => {
-          return <CalendarStatChip key={chip.label} label={chip.label} value={chip.value} icon={chip.icon} color={chip.color} index={i} />;
-        })}
+        {calendarStats.map((chip, index) => (
+          <CalendarStatChip key={chip.label} label={chip.label} value={chip.value} icon={chip.icon} color={chip.color} index={index} />
+        ))}
       </div>
 
       {/* Calendar grid */}
       <div className="bg-card border border-border/30 rounded-xl overflow-hidden shadow-lg">
         {/* Month navigator */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/30">
-          <button onClick={onPrev} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
-            <ChevronRight className="w-4 h-4" />
-            <span style={{ fontSize: 12 }}>{arabicSource("attendance.previous")}</span>
-          </button>
+          <Button variant="ghost" size="sm" icon={ChevronRight} onClick={onPrev}>
+            {arabicSource("attendance.previous")}
+          </Button>
           <h3 className="text-foreground flex items-center gap-2 text-lg">
             <CalendarDays className="w-5 h-5 text-primary" />
             {monthLabel}
           </h3>
-          <button onClick={onNext} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
-            <span style={{ fontSize: 12 }}>{arabicSource("attendance.next")}</span>
-            <ChevronLeft className="w-4 h-4" />
-          </button>
+          <Button variant="ghost" size="sm" icon={ChevronLeft} iconPosition="trailing" onClick={onNext}>
+            {arabicSource("attendance.next")}
+          </Button>
         </div>
 
         {/* Day headers — bold band */}
@@ -112,4 +111,4 @@ const AttendanceCalendarView = ({
   );
 };
 
-export default AttendanceCalendarView
+export default AttendanceCalendarView;

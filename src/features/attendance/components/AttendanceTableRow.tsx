@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Fingerprint, ShieldCheck, Timer } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
@@ -15,6 +16,8 @@ type AttendanceTableRowProps = {
 };
 
 const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: AttendanceTableRowProps) => {
+  const detail = statusDetail(record);
+
   const handleRowClick = (): void => {
     onSelectEmployee(record.employeeId);
   };
@@ -31,7 +34,6 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
 
   return (
     <motion.tr
-      key={record.id}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: index * 0.02 }}
@@ -125,11 +127,11 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
             <StatusBadge colorClassName={statusColors[record.status]}>{record.status}</StatusBadge>
             {record.lateMinutes > 0 && <span className="text-primary/70" style={{ fontSize: 10 }}>({record.lateMinutes} {arabicSource("attendance.d_2")}</span>}
           </div>
-          {statusDetail(record) && <span className="text-muted-foreground/50" style={{ fontSize: 9 }}>{statusDetail(record)}</span>}
+          {detail && <span className="text-muted-foreground/50" style={{ fontSize: 9 }}>{detail}</span>}
         </div>
       </td>
     </motion.tr>
   );
 };
 
-export default AttendanceTableRow;
+export default memo(AttendanceTableRow);

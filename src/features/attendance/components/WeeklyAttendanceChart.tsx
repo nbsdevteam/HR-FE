@@ -3,10 +3,15 @@ import { BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 import CustomGroupedBarChart from "@/shared/components/custom-grouped-bar-chart";
 import { arabicSource } from "@/i18n/source";
 import { attendanceSeries } from "@/features/attendance/styles";
+import type { WeeklyAttendanceRow } from "@/features/attendance/types";
 
-type WeeklyRow = { day: string; present: number; late: number; absent: number; leave: number };
+type WeeklyAttendanceChartProps = {
+  chartExpanded: boolean;
+  weeklyAttendance: WeeklyAttendanceRow[];
+  onToggle: () => void;
+};
 
-const WeeklyAttendanceChart = ({ chartExpanded, weeklyAttendance, onToggle }: { chartExpanded: boolean; weeklyAttendance: WeeklyRow[]; onToggle: () => void }) => {
+const WeeklyAttendanceChart = ({ chartExpanded, weeklyAttendance, onToggle }: WeeklyAttendanceChartProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

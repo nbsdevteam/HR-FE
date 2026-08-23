@@ -6,17 +6,14 @@ import { arabicSource } from "@/i18n/source";
 import { cardCls } from "@/features/attendance/styles";
 import { monthlyBreakdownTableHeadings } from "@/features/attendance/data";
 import type { MonthlyBreakdownEntry } from "../types";
+import type { OverallAttendanceStats } from "../utils/attendanceStats";
 import AttendanceSummaryCard from "./AttendanceSummaryCard";
 import AttendanceSecondaryStatCard from "./AttendanceSecondaryStatCard";
 import AttendanceTableHeaderCell from "./AttendanceTableHeaderCell";
 import MonthlyBreakdownTableRow from "./MonthlyBreakdownTableRow";
 
 type OverallSummaryViewProps = {
-  stats: {
-    daysWorked: number; totalHours: number; avgHours: number; overtime: number;
-    lateCount: number; lateMins: number; absentCount: number; totalRecords: number;
-    monthsCount: number; firstDate: string; lastDate: string; presentDays: number; attendanceRate: number;
-  };
+  stats: OverallAttendanceStats;
   breakdown: MonthlyBreakdownEntry[];
 };
 

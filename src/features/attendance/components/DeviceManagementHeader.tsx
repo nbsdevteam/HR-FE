@@ -1,6 +1,5 @@
 import type { BiometricDevice } from "../types";
 import { arabicSource } from "@/i18n/source";
-// import DeviceSelectOption from "./DeviceSelectOption";
 
 type DeviceManagementHeaderProps = {
   devices: BiometricDevice[];
@@ -24,17 +23,11 @@ const DeviceManagementHeader = ({
         )}
       </p>
     </div>
-    {/* {devices.length > 1 && (
-      <select
-        className="backdrop-blur-md rounded-lg px-3 py-2 text-sm border border-border/20 bg-transparent text-foreground"
-        value={selectedDevice}
-        onChange={(event) => onSelectedDeviceChange(event.target.value)}
-      >
-        {devices.map((device) => (
-          <DeviceSelectOption key={device.id} device={device} />
-        ))}
-      </select>
-    )} */}
+    {/*
+      Multi-device picker is disabled for now. When it comes back, render the
+      shared `Select` from `@/shared/components` over `devices` /
+      `selectedDevice` / `onSelectedDeviceChange` rather than a raw <select>.
+    */}
   </div>
 );
 

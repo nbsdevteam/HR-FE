@@ -1,6 +1,6 @@
 import { ScanFace, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { Button, ModalOverlay } from "@/shared/components";
 import type { DeviceFacePreview } from "../types";
 
 type DeviceFaceModalProps = {
@@ -44,13 +44,15 @@ const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => {
         </div>
       )}
       {face.image && (
-        <button
+        <Button
+          variant="destructive"
+          size="sm"
+          icon={Trash2}
           onClick={handleDeleteClick}
-          className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition-colors"
+          className="mt-4"
         >
-          <Trash2 className="w-3.5 h-3.5" />
           {arabicSource("devicemanagement.delete_the_image")}
-        </button>
+        </Button>
       )}
   </ModalOverlay>
   );

@@ -1,5 +1,4 @@
-import type { ElementType } from "react";
-import { Camera, Activity, Server } from "lucide-react";
+import { Camera, Activity, Server, type LucideIcon } from "lucide-react";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type {
@@ -10,11 +9,12 @@ import type {
 
 export const DEVICE_SYNC_API = SYNC_API;
 
-export const getDeviceManagementTabs = (): Array<{
+/** Static tab definitions — module-level so the array identity stays stable. */
+export const DEVICE_MANAGEMENT_TABS: ReadonlyArray<{
   key: DeviceManagementTab;
   label: string;
-  icon: ElementType;
-}> => [
+  icon: LucideIcon;
+}> = [
   { key: "overview", label: arabicSource("common.overview"), icon: Server },
   // { key: "persons", label: arabicSource("devicemanagement.people_management"), icon: Users },
   {

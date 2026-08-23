@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { CreditCard, Fingerprint, ScanFace, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -12,7 +13,6 @@ type DevicePersonCardProps = {
 
 const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardProps) => (
   <motion.div
-    key={person.employeeNo}
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ delay: index * 0.02 }}
@@ -64,4 +64,4 @@ const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardProps) =
   </motion.div>
 );
 
-export default DevicePersonCard;
+export default memo(DevicePersonCard);

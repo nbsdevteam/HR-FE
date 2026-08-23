@@ -2,7 +2,16 @@ import { CreditCard, Fingerprint, ScanFace, Smartphone } from "lucide-react";
 import { getIntlLocale, normalizeLanguage, type AppLanguage } from "@/i18n";
 import { arabicSource } from "@/i18n/source";
 import { mapAttendanceStatus, type DbAttendanceRecord } from "@/shared/hooks";
-import type { AttendanceRow, AttendanceStatusCountKey, TodayAttendanceStats } from "../types";
+import {
+  dayNames,
+  type AttendanceRow,
+  type AttendanceStatusCountKey,
+  type TodayAttendanceStats,
+  type WeeklyAttendanceRow,
+} from "../types";
+
+/** Sunday → Thursday, the working week the chart reports on. */
+const WEEK_DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
 
 const attendanceStatusKeyByLabel: Record<string, AttendanceStatusCountKey> = {
   [arabicSource("common.present")]: "present",
@@ -65,6 +74,32 @@ export const buildTodayAttendanceStats = (
     avgHours: formatAverageHours(averageHours, language),
     autoCheckouts,
   };
+};
+
+/** Per-weekday status tallies for the weekly bar chart (most recent day first). */
+export const buildWeeklyAttendance = (
+  records: DbAttendanceRecord[],
+): WeeklyAttendanceRow[] => {
+  const byDay = new Map<string, Record<AttendanceStatusCountKey, number>>();
+  WEEK_DAY_KEYS.forEach((day) => {
+    byDay.set(day, createEmptyAttendanceCounts());
+  });
+
+  records.forEach((record) => {
+    const counts = byDay.get(record.day_of_week?.toLowerCase());
+    if (!counts) return;
+
+    const countKey =
+      attendanceStatusKeyByLabel[
+        mapAttendanceStatus(record.status, record.is_late)
+      ];
+    if (countKey) counts[countKey]++;
+  });
+
+  return WEEK_DAY_KEYS.map((day) => ({
+    day: dayNames[day] || day,
+    ...byDay.get(day)!,
+  })).reverse();
 };
 
 export const verifyModeLabel = (mode: string | null): string => {
