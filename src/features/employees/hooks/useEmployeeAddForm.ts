@@ -4,6 +4,7 @@ import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
+import { errorMessage } from "../utils/errorMessage";
 
 const defaultAddForm: EmployeeAddForm = {
   name: "",
@@ -144,8 +145,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
         setShowAddModal(false);
         resetAddForm();
       }, 1500);
-    } catch (error: any) {
-      setAddError(error.message);
+    } catch (error: unknown) {
+      setAddError(errorMessage(error));
     }
     setAddSaving(false);
   }, [addForm, facePhotoBase64, nextEmployeeId, refetch, resetAddForm]);

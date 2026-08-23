@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { KanbanColumn } from "@/shared/components";
+import { groupBy, indexBy } from "@/shared/utils/collections";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { accentColors, deptColors, deptDots } from "../styles";
-import EmployeeKanbanTile from "./EmployeeKanbanTile";
+import EmployeesKanbanColumn from "./EmployeesKanbanColumn";
+
+const EMPTY_COLUMN: Employee[] = [];
 
 type EmployeesKanbanViewProps = {
   departments: string[];
@@ -22,19 +23,22 @@ const EmployeesKanbanView = ({
   selectedDept,
   onSelectEmployee,
 }: EmployeesKanbanViewProps) => {
-  const employeesByDept = useMemo(() => {
-    const map = new Map<string, Employee[]>();
-    for (const emp of employees) {
-      const bucket = map.get(emp.department);
-      if (bucket) bucket.push(emp);
-      else map.set(emp.department, [emp]);
-    }
-    return map;
-  }, [employees]);
+  const employeesByDept = useMemo(
+    () => groupBy(employees, (emp) => emp.department),
+    [employees],
+  );
 
   const dbEmpByPersonId = useMemo(
-    () => new Map(dbEmployees.map((e) => [e.person_id, e])),
+    () => indexBy(dbEmployees, (e) => e.person_id),
     [dbEmployees],
+  );
+
+  /** Filter up front so the grid never renders `null` placeholder children. */
+  const visibleDepartments = useMemo(
+    () => (selectedDept === arabicSource("common.all")
+      ? departments
+      : departments.filter((dept) => dept === selectedDept)),
+    [departments, selectedDept],
   );
 
   return (
@@ -46,35 +50,16 @@ const EmployeesKanbanView = ({
       transition={{ duration: 0.2 }}
       className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3"
     >
-      {departments.map((dept, ci) => {
-        if (selectedDept !== arabicSource("common.all") && selectedDept !== dept) return null;
-
-        return (
-          <KanbanColumn
-            key={dept}
-            label={dept}
-            index={ci}
-            delayStep={0.08}
-            accentClassName={deptColors[dept] || "border-border/40"}
-            dotClassName={deptDots[dept] || "bg-primary"}
-            items={employeesByDept.get(dept) || []}
-            emptyMessage={arabicSource("employees.there_are_no_employees")}
-            headerClassName="p-3 border-b border-border/20 flex items-center justify-between"
-            labelFontSize={13}
-            bodyClassName="p-3 space-y-8 min-h-[140px] pt-8"
-            renderItem={(emp, i) => (
-              <EmployeeKanbanTile
-                key={emp.dbId}
-                emp={emp}
-                index={i}
-                accent={accentColors[(emp.id - 1) % accentColors.length]}
-                dbEmp={dbEmpByPersonId.get(emp.id)}
-                onSelectEmployee={onSelectEmployee}
-              />
-            )}
-          />
-        );
-      })}
+      {visibleDepartments.map((dept, ci) => (
+        <EmployeesKanbanColumn
+          key={dept}
+          dept={dept}
+          index={ci}
+          employees={employeesByDept.get(dept) || EMPTY_COLUMN}
+          dbEmpByPersonId={dbEmpByPersonId}
+          onSelectEmployee={onSelectEmployee}
+        />
+      ))}
     </motion.div>
   );
 };

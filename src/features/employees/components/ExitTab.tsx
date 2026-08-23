@@ -2,14 +2,18 @@ import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Plus, UserX } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
+import { Button, DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import {
   useExitChecklist,
-  type DbExitProcess, type DbExitChecklistItem,
+  type DbEmployee, type DbExitProcess, type DbExitChecklistItem,
 } from "@/shared/hooks";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
+import type { EmployeeMap } from "../types/lifecycle";
+
+/** Minimal shape of a custody row — `odooData.fetchCustodies` is typed `any[]`. */
+type OpenCustody = { id: string; return_date?: string | null; status?: string | null };
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";
 import ExitProcessTableRow from "./ExitProcessTableRow";
 import ExitProcessDetailView from "./ExitProcessDetailView";
@@ -25,8 +29,8 @@ const ExitTab = ({
 }: {
   processes: DbExitProcess[];
   exitItems: DbExitChecklistItem[];
-  empMap: Record<string, any>;
-  employees: any[];
+  empMap: EmployeeMap;
+  employees: DbEmployee[];
   employeeLabels: Record<string, string>;
   refetch: () => void;
   exitTypeLabels: Record<string, string>;
@@ -100,12 +104,12 @@ const ExitTab = ({
           await odooData.setEmployeeStatus(proc.employee_id, "exited");
           // Return open custodies so exit clears outstanding assets.
           try {
-            const open = await odooData.fetchCustodies(proc.employee_id);
+            const open: OpenCustody[] = await odooData.fetchCustodies(proc.employee_id);
             const today = new Date().toISOString().slice(0, 10);
             await Promise.all(
               (open || [])
-                .filter((c: any) => !c.return_date && c.status !== "returned")
-                .map((c: any) =>
+                .filter(c => !c.return_date && c.status !== "returned")
+                .map(c =>
                   odooData.updateCustody(c.id, {
                     status: "returned",
                     return_date: today,
@@ -128,6 +132,22 @@ const ExitTab = ({
   const closeForm = useCallback(() => setShowForm(false), []);
   const openDetail = useCallback((processId: string) => setSelectedProcess(processId), []);
   const closeDetail = useCallback(() => setSelectedProcess(null), []);
+
+  const renderExitProcessRow = useCallback(
+    (p: DbExitProcess, i: number) => (
+      <ExitProcessTableRow
+        key={p.id}
+        process={p}
+        index={i}
+        emp={empMap[p.employee_id]}
+        exitTypeLabels={exitTypeLabels}
+        statusLabels={statusLabels}
+        statusColors={statusColors}
+        onView={openDetail}
+      />
+    ),
+    [empMap, exitTypeLabels, statusLabels, statusColors, openDetail],
+  );
 
   // Detail view
   if (selectedProcess) {
@@ -156,9 +176,9 @@ const ExitTab = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end">
-        <button onClick={toggleForm} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark cursor-pointer" style={{ fontSize: 13 }}>
-          <Plus className="w-4 h-4" /> {arabicSource("common.termination_of_service")}
-        </button>
+        <Button size="lg" icon={Plus} onClick={toggleForm} className="shadow-lg shadow-primary/20">
+          {arabicSource("common.termination_of_service")}
+        </Button>
       </div>
 
       {/* New Exit Form */}
@@ -184,18 +204,7 @@ const ExitTab = ({
         wrapperClassName={cardCls}
         items={processes}
         header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")]} />}
-        renderRow={(p, i) => (
-          <ExitProcessTableRow
-            key={p.id}
-            process={p}
-            index={i}
-            emp={empMap[p.employee_id]}
-            exitTypeLabels={exitTypeLabels}
-            statusLabels={statusLabels}
-            statusColors={statusColors}
-            onView={openDetail}
-          />
-        )}
+        renderRow={renderExitProcessRow}
         emptyRow={<tr><td colSpan={6}><EmptyState icon={UserX} message={arabicSource("lifecycle.no_termination_procedures")} /></td></tr>}
       />
     </div>

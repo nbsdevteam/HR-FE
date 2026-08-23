@@ -1,15 +1,17 @@
-import type { Dispatch, SetStateAction } from "react";
-import { motion } from "motion/react";
-import { Loader2, Save } from "lucide-react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/features/employees/utils/employeeTypeAhead";
 import { Select, TypeAhead } from "@/shared/components";
-import { empDisplayName, type DbContractType } from "@/shared/hooks";
+import { empDisplayName, type DbContractType, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
+import ExpandFormCard from "./shared/ExpandFormCard";
+
+const CONTRACT_FORM_GRID_CLASS =
+  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
 
 export type ContractFormData = {
   employee_id: string;
@@ -25,7 +27,7 @@ export type ContractFormData = {
 type ContractFormPanelProps = {
   formData: ContractFormData;
   setFormData: Dispatch<SetStateAction<ContractFormData>>;
-  employees: any[];
+  employees: DbEmployee[];
   employeeLabels: Record<string, string>;
   contractTypes: DbContractType[];
   onSave: () => void;
@@ -47,6 +49,11 @@ const ContractFormPanel = ({
   cardCls,
   inputCls,
 }: ContractFormPanelProps) => {
+  const contractTypeOptions = useMemo(
+    () => contractTypes.filter((t) => t.is_active).map((t) => ({ value: t.id, label: t.name_ar })),
+    [contractTypes],
+  );
+
   const handleEmployeeChange = (id: string): void => {
     setFormData((p) => ({ ...p, employee_id: String(id) }));
   };
@@ -87,17 +94,16 @@ const ContractFormPanel = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      className={`${cardCls} p-5`}
+    <ExpandFormCard
+      cardClassName={cardCls}
+      title={arabicSource("common.new_contract")}
+      saveLabel={arabicSource("common.save")}
+      saving={saving}
+      onSave={onSave}
+      onCancel={onCancel}
+      gridClassName={CONTRACT_FORM_GRID_CLASS}
     >
-      <h3 className="text-foreground mb-4">
-        {arabicSource("common.new_contract")}
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
+      <div>
           <FormFieldLabel>{arabicSource("common.employee_3")}</FormFieldLabel>
           <TypeAhead
             items={employees}
@@ -117,9 +123,7 @@ const ContractFormPanel = ({
           <Select
             value={formData.contract_type_id || ""}
             onChange={handleContractTypeChange}
-            options={contractTypes
-              .filter((t) => t.is_active)
-              .map((t) => ({ value: t.id, label: t.name_ar }))}
+            options={contractTypeOptions}
             placeholder={arabicSource("common.choose")}
             className={inputCls}
           />
@@ -173,28 +177,7 @@ const ContractFormPanel = ({
             />
           </div>
         </div>
-      </div>
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs hover:bg-primary/90 cursor-pointer disabled:opacity-50"
-        >
-          {saving ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
-          ) : (
-            <Save className="w-3 h-3" />
-          )}{" "}
-          {arabicSource("common.save")}
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 border border-border text-muted-foreground rounded-lg text-xs hover:bg-muted/20 cursor-pointer"
-        >
-          {arabicSource("common.cancel")}
-        </button>
-      </div>
-    </motion.div>
+    </ExpandFormCard>
   );
 };
 

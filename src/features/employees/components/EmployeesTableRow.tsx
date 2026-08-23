@@ -4,7 +4,8 @@ import { AlertCircle, Edit, Eye, Fingerprint, Trash2 } from "lucide-react";
 import { NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
-import { formatCurrency } from "@/features/payroll/services/payslip-engine";
+import { formatCurrency } from "@/shared/utils/currency";
+import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { arabicSource } from "@/i18n/source";
 import { statusColors } from "../styles";
@@ -69,7 +70,7 @@ const EmployeesTableRow = ({
       <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp.department}</td>
       <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp.position}</td>
       <td className="px-4 py-3">
-        <StatusBadge colorClassName={statusColors[emp.status]}>{translateBackendCode(emp.status, employeeStatusKeys)}</StatusBadge>
+        <StatusBadge colorClassName={getStatusColor(emp.status, statusColors)}>{translateBackendCode(emp.status, employeeStatusKeys)}</StatusBadge>
       </td>
       <td className="px-4 py-3">
         {isPending ? (

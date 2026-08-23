@@ -13,3 +13,11 @@ export const lifecycleTabs = [
 export type LifecycleTabId = (typeof lifecycleTabs)[number]["id"];
 
 export type EmployeeMap = Record<string, DbEmployee>;
+
+/** One line of an exit process's clearance checklist. */
+export type ExitChecklistLine = {
+  id: string;
+  checklist_item_id: string;
+  is_completed: boolean;
+  completed_at?: string | null;
+};

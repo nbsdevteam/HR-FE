@@ -1,13 +1,14 @@
+import { memo, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Check, UserX, X } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
-import { empDisplayName, type DbContractType, type DbEmployeeContract } from "@/shared/hooks";
+import { empDisplayName, type DbContractType, type DbEmployee, type DbEmployeeContract } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 
 type ContractTableRowProps = {
   contract: DbEmployeeContract;
   index: number;
-  emp: any;
+  emp: DbEmployee | undefined;
   contractType: DbContractType | undefined;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
@@ -18,21 +19,24 @@ type ContractTableRowProps = {
 const ContractTableRow = ({
   contract: c, index: i, emp, contractType: ct, statusLabels, statusColors, onProbationUpdate, onTerminate,
 }: ContractTableRowProps) => {
-  const probDaysLeft = c.probation_end_date
-    ? Math.ceil((new Date(c.probation_end_date).getTime() - Date.now()) / 86400000)
-    : null;
+  const probDaysLeft = useMemo(
+    () => (c.probation_end_date
+      ? Math.ceil((new Date(c.probation_end_date).getTime() - Date.now()) / 86400000)
+      : null),
+    [c.probation_end_date],
+  );
 
-  const handleProbationPassedClick = (): void => {
+  const handleProbationPassedClick = useCallback((): void => {
     onProbationUpdate(c.id, "passed");
-  };
+  }, [onProbationUpdate, c.id]);
 
-  const handleProbationFailedClick = (): void => {
+  const handleProbationFailedClick = useCallback((): void => {
     onProbationUpdate(c.id, "failed");
-  };
+  }, [onProbationUpdate, c.id]);
 
-  const handleTerminateClick = (): void => {
+  const handleTerminateClick = useCallback((): void => {
     onTerminate(c.id);
-  };
+  }, [onTerminate, c.id]);
 
   return (
     <motion.tr
@@ -83,4 +87,4 @@ const ContractTableRow = ({
   );
 };
 
-export default ContractTableRow;
+export default memo(ContractTableRow);

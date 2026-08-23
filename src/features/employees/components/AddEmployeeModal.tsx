@@ -1,7 +1,7 @@
-import { Fingerprint, Loader2, Plus } from "lucide-react";
+import { Fingerprint, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
+import { Button, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
@@ -229,14 +229,13 @@ const AddEmployeeModal = ({
         )}
 
         <div className="flex gap-3 pt-3">
-          <button
+          <Button
             onClick={onAddEmployee}
-            disabled={addSaving || !addForm.name.trim() || !nextEmployeeId}
-            className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            loading={addSaving}
+            disabled={!addForm.name.trim() || !nextEmployeeId}
+            className="flex-1 h-11 shadow-lg shadow-primary/20"
           >
-            {addSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
+            {!addSaving && (
               <>
                 <Fingerprint className="w-4 h-4" />
                 <Plus className="w-4 h-4" />
@@ -245,14 +244,15 @@ const AddEmployeeModal = ({
             {addSaving
               ? arabicSource("common.saving")
               : arabicSource("employees.save_and_record_on_the_device")}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={onClose}
             disabled={addSaving}
-            className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50"
+            className="flex-1 h-11"
           >
             {arabicSource("common.cancel")}
-          </button>
+          </Button>
         </div>
       </div>
     </ModalOverlay>

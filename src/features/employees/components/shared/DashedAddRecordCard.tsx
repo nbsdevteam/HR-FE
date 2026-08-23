@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 export const dashedRecordInputClass =
@@ -27,22 +28,12 @@ const DashedAddRecordCard = ({ title, confirmDisabled, onConfirm, onCancel, chil
         {children}
       </div>
       <div className="flex items-center gap-2 pt-1">
-        <button
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ fontSize: 12 }}
-        >
-          <Check className="w-3.5 h-3.5" />
+        <Button size="sm" icon={Check} disabled={confirmDisabled} onClick={onConfirm}>
           {arabicSource("common.confirm")}
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          style={{ fontSize: 12 }}
-        >
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
           {arabicSource("common.cancel")}
-        </button>
+        </Button>
       </div>
     </div>
   </motion.div>

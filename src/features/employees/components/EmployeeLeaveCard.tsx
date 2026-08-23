@@ -1,13 +1,15 @@
 import { motion } from "motion/react";
 import { CalendarCheck } from "lucide-react";
+import { getStatusColor, STATUS_TONES } from "@/shared/utils/statusColors";
 import { arabicSource } from "@/i18n/source";
 import type { LeaveRecord } from "../types";
 import RecordIconBadge from "./shared/RecordIconBadge";
 
+/** Arabic leave-status labels mapped onto the shared badge tones. */
 const leaveStatusColors: Record<string, string> = {
-  [arabicSource("common.agreed")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
-  [arabicSource("common.pending_2")]: "bg-primary/15 border-primary/30 text-primary",
-  [arabicSource("common.rejected")]: "bg-destructive/15 border-destructive/30 text-destructive",
+  [arabicSource("common.agreed")]: STATUS_TONES.success,
+  [arabicSource("common.pending_2")]: STATUS_TONES.accent,
+  [arabicSource("common.rejected")]: STATUS_TONES.danger,
 };
 
 type EmployeeLeaveCardProps = {
@@ -25,7 +27,7 @@ const EmployeeLeaveCard = ({ leave }: EmployeeLeaveCardProps) => (
         <RecordIconBadge icon={CalendarCheck} wrapperClassName="p-2 rounded-lg bg-primary/10" iconClassName="w-4 h-4 text-primary" />
         <span className="text-foreground" style={{ fontSize: 14 }}>{leave.type}</span>
       </div>
-      <span className={`px-2.5 py-1 rounded-md border ${leaveStatusColors[leave.status]}`} style={{ fontSize: 12 }}>
+      <span className={`px-2.5 py-1 rounded-md border ${getStatusColor(leave.status, leaveStatusColors)}`} style={{ fontSize: 12 }}>
         {leave.status}
       </span>
     </div>

@@ -3,7 +3,7 @@ import type { Employee, EmployeeOption } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { toEmployee } from "../utils/employeeMapper";
+import { toEmployees } from "../utils/employeeMapper";
 import type { EmployeeSortKey, EmployeeViewMode } from "../types";
 
 export const useEmployeeListFilters = (dbEmployees: DbEmployee[]) => {
@@ -13,7 +13,7 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[]) => {
   const [sortBy, setSortBy] = useState<EmployeeSortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  const allEmployees = useMemo(() => dbEmployees.map(e => toEmployee(e, dbEmployees)), [dbEmployees]);
+  const allEmployees = useMemo(() => toEmployees(dbEmployees), [dbEmployees]);
 
   const employeeOptions: EmployeeOption[] = useMemo(() =>
     dbEmployees.map(e => ({

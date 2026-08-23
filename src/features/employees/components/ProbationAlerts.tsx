@@ -1,7 +1,8 @@
 import { AlertTriangle } from "lucide-react";
-import { empDisplayName, type DbEmployee, type DbEmployeeContract } from "@/shared/hooks";
+import type { DbEmployeeContract } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { EmployeeMap } from "../types/lifecycle";
+import ProbationAlertRow from "./ProbationAlertRow";
 
 type ProbationAlertsProps = {
   probationAlerts: DbEmployeeContract[];
@@ -18,15 +19,13 @@ const ProbationAlerts = ({ probationAlerts, empMap }: ProbationAlertsProps) => {
         <span className="text-amber-400" style={{ fontSize: 14 }}>{arabicSource("lifecycle.trial_period_alerts")}</span>
       </div>
       <div className="space-y-1">
-        {probationAlerts.map(contract => {
-          const employee = empMap[contract.employee_id] as DbEmployee | undefined;
-          const daysLeft = Math.ceil((new Date(contract.probation_end_date!).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-          return (
-            <p key={contract.id} className="text-foreground" style={{ fontSize: 13 }}>
-              {employee ? empDisplayName(employee) : "—"} {arabicSource("lifecycle.the_trial_period_ends_yet")} <span className="text-amber-400">{daysLeft} {arabicSource("common.days_2")}</span>
-            </p>
-          );
-        })}
+        {probationAlerts.map(contract => (
+          <ProbationAlertRow
+            key={contract.id}
+            employee={empMap[contract.employee_id]}
+            probationEndDate={contract.probation_end_date!}
+          />
+        ))}
       </div>
     </div>
   );

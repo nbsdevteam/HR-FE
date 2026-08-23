@@ -4,7 +4,8 @@ import { Calendar, Fingerprint } from "lucide-react";
 import { NodeAvatar } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
-import { formatCurrency } from "@/features/payroll/services/payslip-engine";
+import { formatCurrency } from "@/shared/utils/currency";
+import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { statusColors } from "../styles";
 
@@ -54,7 +55,7 @@ const EmployeeKanbanTile = ({ emp, index, accent, dbEmp, onSelectEmployee }: Emp
           <p className="text-foreground truncate" style={{ fontSize: 12 }}>{emp.name}</p>
           <p className="text-muted-foreground truncate mt-0.5" style={{ fontSize: 10 }}>{emp.position}</p>
           <div className="flex items-center justify-center gap-2 mt-2">
-            <span className={`px-1.5 py-0.5 rounded border ${statusColors[emp.status]}`} style={{ fontSize: 9 }}>{translateBackendCode(emp.status, employeeStatusKeys)}</span>
+            <span className={`px-1.5 py-0.5 rounded border ${getStatusColor(emp.status, statusColors)}`} style={{ fontSize: 9 }}>{translateBackendCode(emp.status, employeeStatusKeys)}</span>
             {dbEmp?.device_employee_no ? (
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted/20 border border-border/20 font-mono text-muted-foreground" style={{ fontSize: 8 }}>
                 <Fingerprint className="w-2.5 h-2.5 text-primary/50" />

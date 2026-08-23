@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
-import { Plus, Search, Briefcase } from "lucide-react";
+import { Plus, Briefcase } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
+import { Button, DataTable, EmptyState, SearchInput, TableHeaderRow } from "@/shared/components";
 import {
   empDisplayName,
   type DbContractType,
+  type DbEmployee,
   type DbEmployeeContract,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -13,6 +14,7 @@ import {
   lifecycleCardClass as cardCls,
   lifecycleInputClass as inputCls,
 } from "../styles/lifecycle";
+import type { EmployeeMap } from "../types/lifecycle";
 import ContractFormPanel, { type ContractFormData } from "./ContractFormPanel";
 import ContractTableRow from "./ContractTableRow";
 
@@ -52,8 +54,8 @@ const ContractsTab = ({
 }: {
   contracts: DbEmployeeContract[];
   contractTypes: DbContractType[];
-  empMap: Record<string, any>;
-  employees: any[];
+  empMap: EmployeeMap;
+  employees: DbEmployee[];
   employeeLabels: Record<string, string>;
   refetch: () => void;
   search: string;
@@ -91,7 +93,7 @@ const ContractsTab = ({
       return;
     setSaving(true);
 
-    const ct = contractTypes.find((t) => t.id === formData.contract_type_id);
+    const ct = contractTypeById.get(formData.contract_type_id);
 
     // Calendar-day arithmetic (avoid UTC shift from toISOString).
     const probEnd = (() => {
@@ -118,7 +120,7 @@ const ContractsTab = ({
       alert("خطأ في حفظ العقد");
     }
     setSaving(false);
-  }, [formData, contractTypes, refetch]);
+  }, [formData, contractTypeById, refetch]);
 
   const handleProbation = useCallback(
     async (contractId: string, status: "passed" | "failed") => {
@@ -149,30 +151,41 @@ const ContractsTab = ({
   const closeForm = useCallback(() => setShowForm(false), []);
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onSearchChange(e.target.value);
-  };
+  const renderContractRow = useCallback(
+    (c: DbEmployeeContract, i: number) => (
+      <ContractTableRow
+        key={c.id}
+        contract={c}
+        index={i}
+        emp={empMap[c.employee_id]}
+        contractType={contractTypeById.get(c.contract_type_id)}
+        statusLabels={statusLabels}
+        statusColors={statusColors}
+        onProbationUpdate={handleProbation}
+        onTerminate={handleTerminate}
+      />
+    ),
+    [empMap, contractTypeById, statusLabels, statusColors, handleProbation, handleTerminate],
+  );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={handleSearchChange}
-            placeholder={arabicSource("lifecycle.search_by_name")}
-            className={`${inputCls} ps-10`}
-          />
-        </div>
-        <button
+        <SearchInput
+          value={search}
+          onChange={onSearchChange}
+          placeholder={arabicSource("lifecycle.search_by_name")}
+          wrapperClassName="relative flex-1 max-w-md"
+          inputClassName={`${inputCls} ps-10`}
+        />
+        <Button
+          size="lg"
+          icon={Plus}
           onClick={toggleForm}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer"
-          style={{ fontSize: 13 }}
+          className="shadow-lg shadow-primary/20"
         >
-          <Plus className="w-4 h-4" /> {arabicSource("common.new_contract")}
-        </button>
+          {arabicSource("common.new_contract")}
+        </Button>
       </div>
 
       {/* New Contract Form */}
@@ -198,19 +211,7 @@ const ContractsTab = ({
         wrapperClassName={cardCls}
         items={filtered}
         header={<TableHeaderRow headings={CONTRACTS_TABLE_HEADINGS} />}
-        renderRow={(c, i) => (
-          <ContractTableRow
-            key={c.id}
-            contract={c}
-            index={i}
-            emp={empMap[c.employee_id]}
-            contractType={contractTypeById.get(c.contract_type_id)}
-            statusLabels={statusLabels}
-            statusColors={statusColors}
-            onProbationUpdate={handleProbation}
-            onTerminate={handleTerminate}
-          />
-        )}
+        renderRow={renderContractRow}
         emptyRow={
           <tr>
             <td colSpan={8}>

@@ -1,13 +1,14 @@
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
-import { empDisplayName, type DbExitProcess } from "@/shared/hooks";
+import { empDisplayName, type DbEmployee, type DbExitProcess } from "@/shared/hooks";
 import { formatNumber } from "@/i18n/format";
 
 type ExitProcessTableRowProps = {
   process: DbExitProcess;
   index: number;
-  emp: any;
+  emp: DbEmployee | undefined;
   exitTypeLabels: Record<string, string>;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;
@@ -15,9 +16,9 @@ type ExitProcessTableRowProps = {
 };
 
 const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, statusLabels, statusColors, onView }: ExitProcessTableRowProps) => {
-  const handleViewClick = (): void => {
+  const handleViewClick = useCallback((): void => {
     onView(p.id);
-  };
+  }, [onView, p.id]);
 
   return (
     <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
@@ -40,4 +41,4 @@ const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, status
   );
 };
 
-export default ExitProcessTableRow;
+export default memo(ExitProcessTableRow);

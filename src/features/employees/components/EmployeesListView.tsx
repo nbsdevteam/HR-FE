@@ -1,12 +1,30 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import DataTable from "@/shared/components/DataTable";
 import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
+import { indexBy } from "@/shared/utils/collections";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
+
+const EMPLOYEE_COLUMNS: ReadonlyArray<{
+  label: string;
+  key: EmployeeSortKey | null;
+  center?: boolean;
+}> = [
+  { label: arabicSource("common.employee"), key: "name" },
+  { label: arabicSource("common.job_number"), key: "employeeNumber" },
+  { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
+  { label: arabicSource("common.section"), key: "department" },
+  { label: arabicSource("common.position"), key: "position" },
+  { label: arabicSource("common.status"), key: "status" },
+  { label: arabicSource("common.footprint"), key: null },
+  { label: arabicSource("common.direct_date"), key: "joinDate" },
+  { label: arabicSource("common.salary"), key: "salary" },
+  { label: arabicSource("common.procedures"), key: null },
+];
 
 type EmployeesListViewProps = {
   employees: Employee[];
@@ -34,13 +52,32 @@ const EmployeesListView = ({
   onDeleteTargetChange,
 }: EmployeesListViewProps) => {
   const dbEmpByPersonId = useMemo(
-    () => new Map(dbEmployees.map((e) => [e.person_id, e])),
+    () => indexBy(dbEmployees, (e) => e.person_id),
     [dbEmployees],
   );
 
-  const handleSort = (key: EmployeeSortKey): void => {
-    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
-  };
+  const handleSort = useCallback(
+    (key: EmployeeSortKey): void => {
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+    },
+    [sortBy, sortDir, onSortByChange, onSortDirChange],
+  );
+
+  const renderEmployeeRow = useCallback(
+    (emp: Employee, i: number) => (
+      <EmployeesTableRow
+        key={emp.dbId}
+        emp={emp}
+        dbEmp={dbEmpByPersonId.get(emp.id)}
+        index={i}
+        isPending={pendingEmployees.has(emp.id)}
+        isDeviceSynced={deviceSyncedSet.has(emp.id)}
+        onSelectEmployee={onSelectEmployee}
+        onDeleteTargetChange={onDeleteTargetChange}
+      />
+    ),
+    [dbEmpByPersonId, pendingEmployees, deviceSyncedSet, onSelectEmployee, onDeleteTargetChange],
+  );
 
   return (
     <motion.div
@@ -56,35 +93,13 @@ const EmployeesListView = ({
         items={employees}
         header={
           <SortableHeaderRow
-            columns={[
-              { label: arabicSource("common.employee"), key: "name" },
-              { label: arabicSource("common.job_number"), key: "employeeNumber" },
-              { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
-              { label: arabicSource("common.section"), key: "department" },
-              { label: arabicSource("common.position"), key: "position" },
-              { label: arabicSource("common.status"), key: "status" },
-              { label: arabicSource("common.footprint"), key: null },
-              { label: arabicSource("common.direct_date"), key: "joinDate" },
-              { label: arabicSource("common.salary"), key: "salary" },
-              { label: arabicSource("common.procedures"), key: null },
-            ]}
+            columns={EMPLOYEE_COLUMNS}
             sortBy={sortBy}
             sortDir={sortDir}
             onSort={handleSort}
           />
         }
-        renderRow={(emp, i) => (
-          <EmployeesTableRow
-            key={emp.dbId}
-            emp={emp}
-            dbEmp={dbEmpByPersonId.get(emp.id)}
-            index={i}
-            isPending={pendingEmployees.has(emp.id)}
-            isDeviceSynced={deviceSyncedSet.has(emp.id)}
-            onSelectEmployee={onSelectEmployee}
-            onDeleteTargetChange={onDeleteTargetChange}
-          />
-        )}
+        renderRow={renderEmployeeRow}
       />
     </motion.div>
   );

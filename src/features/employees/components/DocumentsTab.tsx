@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { FileText, Plus } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { DataTable, EmptyState, FilterChip, Select, TableHeaderRow, TypeAhead } from "@/shared/components";
+import { Button, DataTable, EmptyState, FilterChip, Select, TableHeaderRow, TypeAhead } from "@/shared/components";
 import {
   getEmployeeDescription,
   getEmployeeId,
@@ -10,10 +10,11 @@ import {
 } from "@/features/employees/utils/employeeTypeAhead";
 import {
   empDisplayName,
-  type DbDocumentType, type DbEmployeeDocument,
+  type DbDocumentType, type DbEmployee, type DbEmployeeDocument,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
+import type { EmployeeMap } from "../types/lifecycle";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
 import DocumentTableRow from "./DocumentTableRow";
@@ -37,8 +38,8 @@ const DocumentsTab = ({
 }: {
   documents: DbEmployeeDocument[];
   docTypes: DbDocumentType[];
-  empMap: Record<string, any>;
-  employees: any[];
+  empMap: EmployeeMap;
+  employees: DbEmployee[];
   employeeLabels: Record<string, string>;
   refetch: () => void;
   statusLabels: Record<string, string>;
@@ -72,6 +73,11 @@ const DocumentsTab = ({
   const filtered = useMemo(
     () => (filter === "all" ? enrichedDocs : enrichedDocs.filter(d => d.computedStatus === filter)),
     [filter, enrichedDocs],
+  );
+
+  const docTypeOptions = useMemo(
+    () => docTypes.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name_ar })),
+    [docTypes],
   );
 
   const handleCreate = useCallback(async () => {
@@ -130,15 +136,31 @@ const DocumentsTab = ({
     setFormData((p) => ({ ...p, expiry_date: e.target.value }));
   };
 
+  const renderDocumentRow = useCallback(
+    (d: DbEmployeeDocument & { computedStatus: string }, i: number) => (
+      <DocumentTableRow
+        key={d.id}
+        doc={d}
+        index={i}
+        emp={empMap[d.employee_id]}
+        docType={docTypeById.get(d.document_type_id)}
+        statusLabels={statusLabels}
+        statusColors={statusColors}
+        onDelete={handleDelete}
+      />
+    ),
+    [empMap, docTypeById, statusLabels, statusColors, handleDelete],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         {DOCUMENT_FILTERS.map(f => (
           <FilterChip key={f.key} label={f.label} active={filter === f.key} onClick={handleFilterClick(f.key)} fontSize={13} />
         ))}
-        <button onClick={toggleForm} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark cursor-pointer ms-auto" style={{ fontSize: 13 }}>
-          <Plus className="w-4 h-4" /> {arabicSource("common.add_document")}
-        </button>
+        <Button icon={Plus} onClick={toggleForm} className="shadow-lg shadow-primary/20 ms-auto">
+          {arabicSource("common.add_document")}
+        </Button>
       </div>
 
       {/* New Doc Form */}
@@ -170,7 +192,7 @@ const DocumentsTab = ({
               <Select
                 value={formData.document_type_id}
                 onChange={handleDocumentTypeChange}
-                options={docTypes.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name_ar }))}
+                options={docTypeOptions}
                 placeholder={arabicSource("common.choose")}
                 className={inputCls}
               />
@@ -196,18 +218,7 @@ const DocumentsTab = ({
         wrapperClassName={cardCls}
         items={filtered}
         header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.document_type"), arabicSource("common.document_number"), arabicSource("common.release_date"), arabicSource("common.end_date"), arabicSource("common.status"), arabicSource("common.procedures")]} />}
-        renderRow={(d, i) => (
-          <DocumentTableRow
-            key={d.id}
-            doc={d}
-            index={i}
-            emp={empMap[d.employee_id]}
-            docType={docTypeById.get(d.document_type_id)}
-            statusLabels={statusLabels}
-            statusColors={statusColors}
-            onDelete={handleDelete}
-          />
-        )}
+        renderRow={renderDocumentRow}
         emptyRow={<tr><td colSpan={7}><EmptyState icon={FileText} message={arabicSource("lifecycle.no_documents")} /></td></tr>}
       />
     </div>

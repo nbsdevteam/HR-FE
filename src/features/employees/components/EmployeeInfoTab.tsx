@@ -3,7 +3,7 @@ import {
   Mail, Phone, MapPin, Wallet, CalendarCheck, CalendarX,
   Hash, Briefcase, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
-import { formatCurrency } from "@/features/payroll/services/payslip-engine";
+import { formatCurrency } from "@/shared/utils/currency";
 import { Select, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { Employee, EmployeeOption } from "../types";

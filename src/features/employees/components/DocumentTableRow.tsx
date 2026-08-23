@@ -2,12 +2,12 @@ import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Trash2 } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
-import { empDisplayName, type DbDocumentType, type DbEmployeeDocument } from "@/shared/hooks";
+import { empDisplayName, type DbDocumentType, type DbEmployee, type DbEmployeeDocument } from "@/shared/hooks";
 
 type DocumentTableRowProps = {
   doc: DbEmployeeDocument & { computedStatus: string };
   index: number;
-  emp: any;
+  emp: DbEmployee | undefined;
   docType: DbDocumentType | undefined;
   statusLabels: Record<string, string>;
   statusColors: Record<string, string>;

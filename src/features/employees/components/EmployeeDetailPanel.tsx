@@ -1,4 +1,6 @@
-import { motion, AnimatePresence } from "motion/react";
+import { useCallback } from "react";
+import { AnimatePresence, type HTMLMotionProps } from "motion/react";
+import { ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { EmployeeDetailPanelProps } from "../types";
 import { useEmployeeDetailPanel } from "../hooks/useEmployeeDetailPanel";
@@ -10,6 +12,19 @@ import EmployeeCustodiesTab from "./EmployeeCustodiesTab";
 import EmployeeLeavesTab from "./EmployeeLeavesTab";
 import EmployeeAttachmentsTab from "./EmployeeAttachmentsTab";
 import EmployeeTerminationDialog from "./EmployeeTerminationDialog";
+
+/** Full-height sheet: opaque scrim + a panel sliding in from the start edge. */
+const PANEL_OVERLAY_CLASS = "fixed inset-0 z-50 flex bg-black/60 backdrop-blur-[4px]";
+
+const PANEL_CONTENT_CLASS =
+  "ms-auto w-full max-w-[680px] h-full bg-card border-s border-border shadow-2xl flex flex-col overflow-hidden";
+
+const PANEL_CONTENT_MOTION: HTMLMotionProps<"div"> = {
+  initial: { x: 80, opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  exit: { x: 80, opacity: 0 },
+  transition: { type: "spring", damping: 28, stiffness: 300 },
+};
 
 const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
   const { onClose, allEmployees = [] } = props;
@@ -55,53 +70,45 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     terminationResult,
   } = useEmployeeDetailPanel(props);
 
-  const handleNewCustodyChange = (patch: Partial<typeof newCustody>) =>
-    setNewCustody({ ...newCustody, ...patch });
-  const handleNewAttachmentChange = (patch: Partial<typeof newAttachment>) =>
-    setNewAttachment({ ...newAttachment, ...patch });
-  const handleToggleTerminationOption = (
-    key: keyof typeof terminationOptions,
-    checked: boolean,
-  ) => setTerminationOptions((prev) => ({ ...prev, [key]: checked }));
+  const handleNewCustodyChange = useCallback(
+    (patch: Partial<typeof newCustody>) => setNewCustody({ ...newCustody, ...patch }),
+    [newCustody, setNewCustody],
+  );
 
-  const handlePanelContentClick = (e: React.MouseEvent<HTMLDivElement>): void => {
-    e.stopPropagation();
-  };
+  const handleNewAttachmentChange = useCallback(
+    (patch: Partial<typeof newAttachment>) => setNewAttachment({ ...newAttachment, ...patch }),
+    [newAttachment, setNewAttachment],
+  );
 
-  const handleStartEdit = (): void => {
+  const handleToggleTerminationOption = useCallback(
+    (key: keyof typeof terminationOptions, checked: boolean) =>
+      setTerminationOptions((prev) => ({ ...prev, [key]: checked })),
+    [setTerminationOptions],
+  );
+
+  const handleStartEdit = useCallback((): void => {
     setIsEditing(true);
-  };
+  }, [setIsEditing]);
 
-  const handleStartAddingDept = (): void => {
+  const handleStartAddingDept = useCallback((): void => {
     setAddingNewDept(true);
-  };
+  }, [setAddingNewDept]);
 
-  const handleToggleAddCustody = (): void => {
+  const handleToggleAddCustody = useCallback((): void => {
     setShowAddCustody((prev) => !prev);
-  };
+  }, [setShowAddCustody]);
 
-  const handleToggleAddAttachment = (): void => {
+  const handleToggleAddAttachment = useCallback((): void => {
     setShowAddAttachment((prev) => !prev);
-  };
+  }, [setShowAddAttachment]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex"
-      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}
-    >
-      {/* Full-screen panel sliding from the start (right in RTL) */}
-      <motion.div
-        initial={{ x: 80, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: 80, opacity: 0 }}
-        transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        onClick={handlePanelContentClick}
-        className="ms-auto w-full max-w-[680px] h-full bg-card shadow-2xl flex flex-col overflow-hidden"
-        style={{ borderInlineStart: "1px solid var(--border)" }}
+    <>
+      <ModalOverlay
+        onClose={onClose}
+        overlayClassName={PANEL_OVERLAY_CLASS}
+        contentClassName={PANEL_CONTENT_CLASS}
+        contentMotionProps={PANEL_CONTENT_MOTION}
       >
         <div
           className="shrink-0 px-6 pt-5 pb-4"
@@ -185,8 +192,10 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </ModalOverlay>
 
+      {/* Sibling of the sheet, not a child: the sheet's slide transform would
+          otherwise become the containing block for this dialog's fixed overlay. */}
       <AnimatePresence>
         {showTerminationDialog && (
           <EmployeeTerminationDialog
@@ -199,7 +208,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 

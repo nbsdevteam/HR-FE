@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { DEPARTMENTS, SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
@@ -9,6 +9,7 @@ import type {
   EmployeeDetailModalTab,
   EmployeeDetailPanelProps,
 } from "../types";
+import { errorMessage } from "../utils/errorMessage";
 
 const departments: string[] = [...DEPARTMENTS];
 
@@ -41,26 +42,30 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   const [terminationLoading, setTerminationLoading] = useState(false);
   const [terminationResult, setTerminationResult] = useState<string | null>(null);
 
-  // Build the full department list: hardcoded + current employee's dept if not already included
-  const allDepts = [...departments];
-  if (employee.department && !allDepts.includes(employee.department)) {
-    allDepts.push(employee.department);
-  }
-  if (editData.department && !allDepts.includes(editData.department)) {
-    allDepts.push(editData.department);
-  }
+  // Build the full department list: hardcoded + current employee's dept if not already included.
+  // Memoized so the array identity stays stable for the memoized tabs it is passed to.
+  const allDepts = useMemo(() => {
+    const depts = [...departments];
+    if (employee.department && !depts.includes(employee.department)) {
+      depts.push(employee.department);
+    }
+    if (editData.department && !depts.includes(editData.department)) {
+      depts.push(editData.department);
+    }
+    return depts;
+  }, [employee.department, editData.department]);
 
   const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
-    setEditData({ ...editData, [field]: value });
-  }, [editData]);
+    setEditData(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   const handleManagerChange = useCallback((managerId: string | null) => {
-    setEditData({
-      ...editData,
+    setEditData(prev => ({
+      ...prev,
       managerId,
       managerName: managerId ? (allEmployees.find(emp => emp.dbId === managerId)?.name || "—") : arabicSource("common.no_manager"),
-    });
-  }, [editData, allEmployees]);
+    }));
+  }, [allEmployees]);
 
   const handleConfirmNewDept = useCallback(() => {
     if (!newDeptName.trim()) return;
@@ -112,8 +117,8 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
           }).catch(() => { /* device sync is best-effort */ });
         } catch { /* non-critical */ }
       }
-    } catch (e: any) {
-      setSaveError(e.message);
+    } catch (e: unknown) {
+      setSaveError(errorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -165,18 +170,20 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   // ---- Custody handlers ----
   const handleAddCustody = useCallback(() => {
     if (!newCustody.item.trim()) return;
-    const nextId = editData.custodies.length > 0 ? Math.max(...editData.custodies.map(c => c.id)) + 1 : 1;
-    const custody: Custody = {
-      id: nextId,
-      item: newCustody.item.trim(),
-      description: newCustody.description.trim(),
-      dateReceived: newCustody.dateReceived,
-      ...(newCustody.serialNumber.trim() ? { serialNumber: newCustody.serialNumber.trim() } : {}),
-    };
-    setEditData({ ...editData, custodies: [...editData.custodies, custody] });
+    setEditData(prev => {
+      const nextId = prev.custodies.length > 0 ? Math.max(...prev.custodies.map(c => c.id)) + 1 : 1;
+      const custody: Custody = {
+        id: nextId,
+        item: newCustody.item.trim(),
+        description: newCustody.description.trim(),
+        dateReceived: newCustody.dateReceived,
+        ...(newCustody.serialNumber.trim() ? { serialNumber: newCustody.serialNumber.trim() } : {}),
+      };
+      return { ...prev, custodies: [...prev.custodies, custody] };
+    });
     setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" });
     setShowAddCustody(false);
-  }, [newCustody, editData]);
+  }, [newCustody]);
 
   const handleCancelAddCustody = useCallback(() => {
     setShowAddCustody(false);
@@ -184,23 +191,25 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   }, []);
 
   const handleDeleteCustody = useCallback((id: number) => {
-    setEditData({ ...editData, custodies: editData.custodies.filter(c => c.id !== id) });
-  }, [editData]);
+    setEditData(prev => ({ ...prev, custodies: prev.custodies.filter(c => c.id !== id) }));
+  }, []);
 
   // ---- Attachment handlers ----
   const handleAddAttachment = useCallback(() => {
     if (!newAttachment.name.trim()) return;
-    const nextId = editData.attachments.length > 0 ? Math.max(...editData.attachments.map(a => a.id)) + 1 : 1;
-    const att: Attachment = {
-      id: nextId,
-      name: newAttachment.name.trim(),
-      type: newAttachment.type,
-      date: todayStr(),
-    };
-    setEditData({ ...editData, attachments: [...editData.attachments, att] });
+    setEditData(prev => {
+      const nextId = prev.attachments.length > 0 ? Math.max(...prev.attachments.map(a => a.id)) + 1 : 1;
+      const att: Attachment = {
+        id: nextId,
+        name: newAttachment.name.trim(),
+        type: newAttachment.type,
+        date: todayStr(),
+      };
+      return { ...prev, attachments: [...prev.attachments, att] };
+    });
     setNewAttachment({ name: "", type: "PDF" });
     setShowAddAttachment(false);
-  }, [newAttachment, editData]);
+  }, [newAttachment]);
 
   const handleCancelAddAttachment = useCallback(() => {
     setShowAddAttachment(false);
@@ -208,8 +217,8 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   }, []);
 
   const handleDeleteAttachment = useCallback((id: number) => {
-    setEditData({ ...editData, attachments: editData.attachments.filter(a => a.id !== id) });
-  }, [editData]);
+    setEditData(prev => ({ ...prev, attachments: prev.attachments.filter(a => a.id !== id) }));
+  }, []);
 
   return {
     addingNewDept,

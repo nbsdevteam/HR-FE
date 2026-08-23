@@ -1,4 +1,5 @@
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS } from "@/shared/constants";
+import { STATUS_TONES } from "@/shared/utils/statusColors";
 import { arabicSource } from "@/i18n/source";
 
 export const deptColors = DEPT_BORDER_COLORS;
@@ -16,11 +17,12 @@ export const accentColors = [
   "#E74C3C",
 ];
 
+/** Arabic employee-status labels mapped onto the shared badge tones. */
 export const statusColors: Record<string, string> = {
-  [arabicSource("common.is_active")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  [arabicSource("common.leave")]: "bg-primary/10 border-primary/20 text-primary",
-  [arabicSource("common.finished")]: "bg-destructive/10 border-destructive/20 text-destructive",
-  [arabicSource("common.pending")]: "bg-amber-500/10 border-amber-500/20 text-amber-400",
+  [arabicSource("common.is_active")]: STATUS_TONES.success,
+  [arabicSource("common.leave")]: STATUS_TONES.accent,
+  [arabicSource("common.finished")]: STATUS_TONES.danger,
+  [arabicSource("common.pending")]: STATUS_TONES.warning,
 };
 
 export const inputCls =

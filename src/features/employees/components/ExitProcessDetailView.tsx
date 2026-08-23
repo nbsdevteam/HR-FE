@@ -1,20 +1,15 @@
 import { useMemo } from "react";
 import { ChevronRight, ClipboardList, LogOut } from "lucide-react";
-import { empDisplayName, type DbExitChecklistItem, type DbExitProcess } from "@/shared/hooks";
+import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import { formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import ExitChecklistItemRow from "./ExitChecklistItemRow";
-
-type ExitChecklistLine = {
-  id: string;
-  checklist_item_id: string;
-  is_completed: boolean;
-  completed_at?: string | null;
-};
+import type { ExitChecklistLine } from "../types/lifecycle";
+import ExitChecklistCategoryGroup from "./ExitChecklistCategoryGroup";
 
 type ExitProcessDetailViewProps = {
   proc: DbExitProcess;
-  emp: any;
+  emp: DbEmployee | undefined;
   checklist: ExitChecklistLine[];
   exitItems: DbExitChecklistItem[];
   categoryLabels: Record<string, string>;
@@ -35,25 +30,30 @@ const ExitProcessDetailView = ({
   const totalCount = checklist.length;
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const exitItemById = useMemo(() => new Map(exitItems.map(i => [i.id, i])), [exitItems]);
+  const exitItemById = useMemo(() => indexBy(exitItems, i => i.id), [exitItems]);
 
-  const categorizedChecklist = useMemo(
-    () => Object.entries(categoryLabels)
-      .map(([cat, catLabel]) => ({
-        cat,
-        catLabel,
-        items: checklist.filter(c => exitItemById.get(c.checklist_item_id)?.category === cat),
-      }))
-      .filter(group => group.items.length > 0),
-    [categoryLabels, checklist, exitItemById],
+  const itemNameById = useMemo(
+    () => new Map(exitItems.map(i => [i.id, i.name_ar])),
+    [exitItems],
   );
+
+  /** One grouping pass over the checklist instead of a full filter per category. */
+  const categorizedChecklist = useMemo(() => {
+    const byCategory = new Map<string, ExitChecklistLine[]>();
+    for (const line of checklist) {
+      const category = exitItemById.get(line.checklist_item_id)?.category;
+      if (!category) continue;
+      const bucket = byCategory.get(category);
+      if (bucket) bucket.push(line);
+      else byCategory.set(category, [line]);
+    }
+    return Object.entries(categoryLabels)
+      .map(([cat, catLabel]) => ({ cat, catLabel, items: byCategory.get(cat) ?? [] }))
+      .filter(group => group.items.length > 0);
+  }, [categoryLabels, checklist, exitItemById]);
 
   const handleStatusUpdateClick = (status: string) => (): void => {
     onStatusUpdate(proc.id, status);
-  };
-
-  const handleChecklistToggle = (checklistId: string, completed: boolean) => (): void => {
-    onChecklistToggle(checklistId, !completed);
   };
 
   return (
@@ -129,20 +129,13 @@ const ExitProcessDetailView = ({
           {arabicSource("lifecycle.disclaimer_list")}
         </h3>
         {categorizedChecklist.map(({ cat, catLabel, items }) => (
-          <div key={cat} className="mb-4">
-            <p className="text-muted-foreground mb-2" style={{ fontSize: 12 }}>{catLabel}:</p>
-            <div className="space-y-1">
-              {items.map(c => (
-                <ExitChecklistItemRow
-                  key={c.id}
-                  itemName={exitItemById.get(c.checklist_item_id)?.name_ar || ""}
-                  isCompleted={c.is_completed}
-                  completedAt={c.completed_at}
-                  onToggle={handleChecklistToggle(c.id, c.is_completed)}
-                />
-              ))}
-            </div>
-          </div>
+          <ExitChecklistCategoryGroup
+            key={cat}
+            catLabel={catLabel}
+            items={items}
+            itemNameById={itemNameById}
+            onChecklistToggle={onChecklistToggle}
+          />
         ))}
       </div>
     </div>

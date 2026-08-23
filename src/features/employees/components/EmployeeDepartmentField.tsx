@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { Building, Check, X } from "lucide-react";
-import { Select } from "@/shared/components";
+import { Select, type SelectOption } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 
@@ -30,6 +31,15 @@ const EmployeeDepartmentField = ({
   onConfirmNewDept,
   onCancelNewDept,
 }: EmployeeDepartmentFieldProps) => {
+  const departmentOptions = useMemo<SelectOption[]>(
+    () => [
+      ...allDepts.map((d) => ({ value: d, label: d })),
+      { divider: true },
+      { value: "__NEW__", label: arabicSource("shared.add_a_new_section") },
+    ],
+    [allDepts],
+  );
+
   const handleNewDeptNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onNewDeptNameChange(e.target.value);
   };
@@ -84,11 +94,7 @@ const EmployeeDepartmentField = ({
           <Select
             value={department}
             onChange={handleDepartmentChange}
-            options={[
-              ...allDepts.map((d) => ({ value: d, label: d })),
-              { divider: true },
-              { value: "__NEW__", label: arabicSource("shared.add_a_new_section") },
-            ]}
+            options={departmentOptions}
             className={inputClass}
             style={{ fontSize: 14 }}
           />

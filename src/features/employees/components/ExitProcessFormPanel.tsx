@@ -1,14 +1,18 @@
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { useMemo, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/features/employees/utils/employeeTypeAhead";
 import { Select, TypeAhead } from "@/shared/components";
-import { empDisplayName } from "@/shared/hooks";
+import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
+
+/** Employees who have already left cannot start a new exit process. */
+const isNotAlreadyFinished = (e: DbEmployee): boolean =>
+  e.status !== arabicSource("common.finished");
 
 export type ExitFormData = {
   employee_id: string;
@@ -22,7 +26,7 @@ export type ExitFormData = {
 type ExitProcessFormPanelProps = {
   formData: ExitFormData;
   setFormData: Dispatch<SetStateAction<ExitFormData>>;
-  employees: any[];
+  employees: DbEmployee[];
   employeeLabels: Record<string, string>;
   exitTypeLabels: Record<string, string>;
   onSave: () => void;
@@ -35,6 +39,11 @@ type ExitProcessFormPanelProps = {
 const ExitProcessFormPanel = ({
   formData, setFormData, employees, employeeLabels, exitTypeLabels, onSave, onCancel, saving, cardCls, inputCls,
 }: ExitProcessFormPanelProps) => {
+  const exitTypeOptions = useMemo(
+    () => Object.entries(exitTypeLabels).map(([value, label]) => ({ value, label })),
+    [exitTypeLabels],
+  );
+
   const handleEmployeeChange = (id: string): void => {
     setFormData((p) => ({ ...p, employee_id: String(id) }));
   };
@@ -79,7 +88,7 @@ const ExitProcessFormPanel = ({
           fallbackLabels={employeeLabels}
           value={formData.employee_id}
           onChange={handleEmployeeChange}
-          filter={(e) => e.status !== arabicSource("common.finished")}
+          filter={isNotAlreadyFinished}
         />
       </div>
       <div>
@@ -87,7 +96,7 @@ const ExitProcessFormPanel = ({
         <Select
           value={formData.exit_type}
           onChange={handleExitTypeChange}
-          options={Object.entries(exitTypeLabels).map(([value, label]) => ({ value, label }))}
+          options={exitTypeOptions}
           className={inputCls}
         />
       </div>

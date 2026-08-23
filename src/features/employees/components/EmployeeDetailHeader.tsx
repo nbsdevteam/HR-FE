@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Edit, Loader2, Save, X } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type EmployeeDetailHeaderProps = {
@@ -28,13 +29,9 @@ const EmployeeDetailHeader = ({ isEditing, saving, onStartEdit, onSave, onCancel
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? arabicSource("common.saving") : arabicSource("common.save")}
           </motion.button>
-          <button
-            onClick={onCancelEdit}
-            className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            style={{ fontSize: 13 }}
-          >
+          <Button variant="ghost" onClick={onCancelEdit} style={{ fontSize: 13 }}>
             {arabicSource("common.cancel")}
-          </button>
+          </Button>
         </>
       ) : (
         <motion.button

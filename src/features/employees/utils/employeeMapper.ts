@@ -1,9 +1,16 @@
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { empDisplayName, empNumber } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 
-export const toEmployee = (employee: DbEmployee, allEmployees: DbEmployee[]): Employee => {
+/** `dbEmployee.id` → row, so manager resolution is a Map hit instead of a full scan. */
+export type ManagerIndex = ReadonlyMap<string, DbEmployee>;
+
+export const buildManagerIndex = (allEmployees: readonly DbEmployee[]): ManagerIndex =>
+  indexBy(allEmployees, e => e.id);
+
+export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Employee => {
   const name = empDisplayName(employee);
   const joinDate = employee.join_date || (employee.created_at ? employee.created_at.substring(0, 10) : "");
   const statusMap: Record<string, string> = {
@@ -12,7 +19,7 @@ export const toEmployee = (employee: DbEmployee, allEmployees: DbEmployee[]): Em
     [arabicSource("common.finished")]: arabicSource("common.finished"),
     [arabicSource("common.pending")]: arabicSource("common.pending"),
   } as const;
-  const manager = employee.manager_id ? allEmployees.find(m => m.id === employee.manager_id) : null;
+  const manager = employee.manager_id ? managerIndex.get(employee.manager_id) : null;
 
   return {
     id: employee.person_id,
@@ -43,4 +50,10 @@ export const toEmployee = (employee: DbEmployee, allEmployees: DbEmployee[]): Em
     leaves: [],
     attachments: [],
   };
+};
+
+/** Map a whole roster in O(N): the manager index is built once, not once per row. */
+export const toEmployees = (allEmployees: readonly DbEmployee[]): Employee[] => {
+  const managerIndex = buildManagerIndex(allEmployees);
+  return allEmployees.map(e => toEmployee(e, managerIndex));
 };

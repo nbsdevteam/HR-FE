@@ -5,6 +5,7 @@ import { SYNC_API } from "@/shared/constants";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget } from "../types";
+import { errorMessage } from "../utils/errorMessage";
 
 export const useEmployeeDeleteFlow = (dbEmployees: DbEmployee[], refetch: () => void) => {
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteEmployeeTarget | null>(null);
@@ -25,9 +26,10 @@ export const useEmployeeDeleteFlow = (dbEmployees: DbEmployee[], refetch: () => 
       await odooData.setEmployeeStatus(deleteConfirm.id, "suspended");
       refetch();
       setDeleteConfirm(null);
-    } catch (error: any) {
-      console.error("Delete failed:", error.message);
-      localizedAlert(arabicSource("employees.error_deleting_employee") + " " + error.message);
+    } catch (error: unknown) {
+      const message = errorMessage(error);
+      console.error("Delete failed:", message);
+      localizedAlert(arabicSource("employees.error_deleting_employee") + " " + message);
     }
     setDeleting(false);
   }, [dbEmployees, deleteConfirm, refetch]);
