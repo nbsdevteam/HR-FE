@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
 
@@ -24,4 +25,4 @@ const ReportResultRow = ({ row, index, columns }: IReportResultRowProps) => (
   </tr>
 );
 
-export default ReportResultRow;
+export default memo(ReportResultRow);

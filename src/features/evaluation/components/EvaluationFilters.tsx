@@ -1,7 +1,15 @@
+import { memo } from "react";
 import { Search } from "lucide-react";
 import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { evaluationInputClass } from "../styles";
+
+const STATUS_OPTIONS = [
+  arabicSource("common.all"),
+  arabicSource("common.complete"),
+  arabicSource("common.under_evaluation"),
+  arabicSource("common.did_not_start"),
+];
 
 type EvaluationFiltersProps = {
   searchText: string;
@@ -40,12 +48,7 @@ const EvaluationFilters = ({
     <Select
       value={filterStatus}
       onChange={handleFilterStatusChange}
-      options={[
-        arabicSource("common.all"),
-        arabicSource("common.complete"),
-        arabicSource("common.under_evaluation"),
-        arabicSource("common.did_not_start"),
-      ]}
+      options={STATUS_OPTIONS}
       aria-label={arabicSource("common.status")}
       className={evaluationInputClass}
       style={{ width: 160, height: 38 }}
@@ -54,4 +57,4 @@ const EvaluationFilters = ({
   );
 };
 
-export default EvaluationFilters;
+export default memo(EvaluationFilters);

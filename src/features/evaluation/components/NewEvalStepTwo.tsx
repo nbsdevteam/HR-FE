@@ -1,12 +1,11 @@
-import { NodeAvatar, StatusBadge } from "@/shared/components";
+import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { defaultCriteria as DEFAULT_CRITERIA } from "../types";
 import { getRatingInfo, renderStars } from "../utils/evaluationHelpers";
-import CriterionRow from "./shared/CriterionRow";
-import StarScoreButtons from "./shared/StarScoreButtons";
 import EvaluationSaveActions from "./shared/EvaluationSaveActions";
+import NewEvalCriterionRow from "./shared/NewEvalCriterionRow";
 
 type NewEvalStepTwoProps = {
   selectedEmp: DbEmployee | null;
@@ -28,10 +27,6 @@ const NewEvalStepTwo = ({
   selectedEmp, evaluatorEmp, period, overallRating, scores, onScoreChange,
   comments, onCommentsChange, saving, onBack, onSaveDraft, onComplete, onCancel,
 }: NewEvalStepTwoProps) => {
-  const handleScoreChange = (criterion: string) => (v: number): void => {
-    onScoreChange(criterion, v);
-  };
-
   const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     onCommentsChange(e.target.value);
   };
@@ -77,20 +72,14 @@ const NewEvalStepTwo = ({
     {/* Criteria Scoring */}
     <div className="space-y-2">
       <label className="text-foreground block" style={{ fontSize: 13 }}>{arabicSource("evaluation.evaluation_criteria")}</label>
-      {DEFAULT_CRITERIA.map(criterion => {
-        const score = scores[criterion] || 3;
-        const cRatingInfo = getRatingInfo(score);
-        return (
-          <CriterionRow key={criterion} name={criterion}>
-            <div className="flex items-center gap-1.5">
-              <StarScoreButtons score={score} onChange={handleScoreChange(criterion)} />
-              <span className={`px-1.5 py-0.5 rounded border ms-1 ${cRatingInfo.bgColor}`} style={{ fontSize: 9 }}>
-                {score}
-              </span>
-            </div>
-          </CriterionRow>
-        );
-      })}
+      {DEFAULT_CRITERIA.map(criterion => (
+        <NewEvalCriterionRow
+          key={criterion}
+          criterion={criterion}
+          score={scores[criterion] || 3}
+          onScoreChange={onScoreChange}
+        />
+      ))}
     </div>
 
     {/* Comments */}
@@ -107,12 +96,9 @@ const NewEvalStepTwo = ({
 
     {/* Actions */}
     <EvaluationSaveActions saving={saving} onSaveDraft={onSaveDraft} onComplete={onComplete} />
-    <button
-      onClick={onCancel}
-      className="w-full h-10 rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
-    >
+    <Button variant="outline" onClick={onCancel} className="w-full h-10 cursor-pointer">
       {arabicSource("common.cancel")}
-    </button>
+    </Button>
   </div>
   );
 };

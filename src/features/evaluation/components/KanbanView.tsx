@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
 import { KanbanColumn } from "@/shared/components";
@@ -66,4 +66,4 @@ const KanbanView = ({
   );
 };
 
-export default KanbanView;
+export default memo(KanbanView);

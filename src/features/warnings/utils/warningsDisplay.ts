@@ -1,4 +1,5 @@
 import { empDisplayName, type DbEmployee, type DbWarning } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import type { WarningWithEmployee } from "../types";
 import { statusKeyToLabel, typeKeyToLabel } from "./warningKeyMapping";
 
@@ -7,16 +8,20 @@ export const enrichWarnings = (
   employees: DbEmployee[],
   warningTypes: string[],
   warningStatuses: string[],
-): WarningWithEmployee[] => warnings.map((w) => {
-  const emp = employees.find((e) => e.id === w.employee_id);
-  return {
-    ...w,
-    type: typeKeyToLabel(w.type, warningTypes),
-    status: statusKeyToLabel(w.status, warningStatuses),
-    employeeName: emp ? empDisplayName(emp) : w.employee_id,
-    employeeDepartment: emp?.department || "—",
-  };
-});
+): WarningWithEmployee[] => {
+  // One index instead of a per-row `.find()` — the join was O(rows x employees).
+  const employeeById = indexBy(employees, (e) => e.id);
+  return warnings.map((w) => {
+    const emp = employeeById.get(w.employee_id);
+    return {
+      ...w,
+      type: typeKeyToLabel(w.type, warningTypes),
+      status: statusKeyToLabel(w.status, warningStatuses),
+      employeeName: emp ? empDisplayName(emp) : w.employee_id,
+      employeeDepartment: emp?.department || "—",
+    };
+  });
+};
 
 export const filterWarnings = (
   warnings: WarningWithEmployee[],

@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import DataTable from "@/shared/components/DataTable";
 import SortableHeaderRow, {
   toggleSort,
@@ -25,9 +26,12 @@ const ReportTemplatesTable = ({
   onSortDirChange,
   onSelect,
 }: ReportTemplatesTableProps) => {
-  const handleSort = (key: ReportSortBy): void => {
-    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
-  };
+  const handleSort = useCallback(
+    (key: ReportSortBy): void => {
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+    },
+    [sortBy, sortDir, onSortByChange, onSortDirChange],
+  );
 
   return (
   <DataTable
@@ -53,4 +57,4 @@ const ReportTemplatesTable = ({
   );
 };
 
-export default ReportTemplatesTable;
+export default memo(ReportTemplatesTable);

@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { memo } from "react";
 import {
   BarChart3,
   Download,
@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { ModalOverlay } from "@/shared/components";
+import { Button, ModalOverlay } from "@/shared/components";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportRow } from "../types";
 import ReportResultsTable from "./ReportResultsTable";
@@ -57,22 +57,17 @@ const ReportViewerModal = ({
       </div>
       <div className="flex items-center gap-2">
         {!generatedData ? (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <Button
+            variant="primary"
+            icon={BarChart3}
+            loading={generating}
             onClick={onGenerate}
-            disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+            className="shadow cursor-pointer"
           >
-            {generating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <BarChart3 className="w-4 h-4" />
-            )}
             {generating
               ? arabicSource("reports.construction_underway")
               : arabicSource("common.create")}
-          </motion.button>
+          </Button>
         ) : (
           <>
             <button
@@ -142,4 +137,4 @@ const ReportViewerModal = ({
   </ModalOverlay>
 );
 
-export default ReportViewerModal;
+export default memo(ReportViewerModal);

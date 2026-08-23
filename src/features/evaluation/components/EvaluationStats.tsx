@@ -1,7 +1,7 @@
+import { memo, useMemo } from "react";
 import { Award, ClipboardCheck, Target, TrendingUp } from "lucide-react";
 import StatCard from "@/shared/components/StatCard";
 import { arabicSource } from "@/i18n/source";
-import { useMemo } from "react";
 
 type EvaluationStatsProps = {
   totalEvals: number;
@@ -60,4 +60,4 @@ const EvaluationStats = ({
   );
 };
 
-export default EvaluationStats;
+export default memo(EvaluationStats);

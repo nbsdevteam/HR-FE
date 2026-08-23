@@ -1,5 +1,6 @@
 import { BarChart3, Calendar, CalendarRange, UserCheck } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { STATUS_TONES } from "@/shared/utils/statusColors";
 
 export const evaluationStatusToOdoo: Record<string, string> = {
   "قيد التقييم": "draft",
@@ -39,10 +40,12 @@ export const evaluationCycles = [
 
 export type EvalCycleType = typeof evaluationCycles[number]["value"];
 
+// Same tones as before, now sourced from the shared badge vocabulary so the
+// Tailwind strings are not re-declared per feature.
 export const evaluationStatusColors: Record<string, string> = {
-  [arabicSource("common.complete")]: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  [arabicSource("common.under_evaluation")]: "bg-primary/10 border-primary/20 text-primary",
-  [arabicSource("common.did_not_start")]: "bg-muted/30 border-border text-muted-foreground",
+  [arabicSource("common.complete")]: STATUS_TONES.success,
+  [arabicSource("common.under_evaluation")]: STATUS_TONES.accent,
+  [arabicSource("common.did_not_start")]: STATUS_TONES.neutral,
 };
 
 export type EvaluationSortKey = "employee" | "department" | "evaluator" | "period" | "rating" | "status";

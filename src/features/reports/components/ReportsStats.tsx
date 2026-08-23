@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import StatCard from "@/shared/components/StatCard";
 import { reportsStatFields } from "../data";
 
@@ -14,16 +15,15 @@ const ReportsStats = ({
   departmentCount,
   employeeCount,
 }: IReportsStatsProps) => {
-  const values: Record<string, number> = {
-    templateCount,
-    historyCount,
-    departmentCount,
-    employeeCount,
-  };
-  const items = reportsStatFields.map((field) => ({
-    ...field,
-    value: values[field.key],
-  }));
+  const items = useMemo(() => {
+    const values: Record<string, number> = {
+      templateCount,
+      historyCount,
+      departmentCount,
+      employeeCount,
+    };
+    return reportsStatFields.map((field) => ({ ...field, value: values[field.key] }));
+  }, [templateCount, historyCount, departmentCount, employeeCount]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -42,4 +42,4 @@ const ReportsStats = ({
   );
 };
 
-export default ReportsStats;
+export default memo(ReportsStats);

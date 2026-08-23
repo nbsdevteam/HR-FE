@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
 import { useConfigurations } from "@/shared/hooks";
+import { buildStatusColorMap } from "@/shared/utils/statusColors";
 import { statusColorPalette, typeColorPalette } from "../constants/warnings";
 import type { KanbanStatusCol } from "../types";
 
@@ -16,13 +17,10 @@ export const useWarningConfig = () => {
   ), [getValue]);
 
   // Auto-build color and severity maps from the ordered type list
-  const typeColors = useMemo(() => {
-    const map: Record<string, string> = {};
-    warningTypes.forEach((t, i) => {
-      map[t] = typeColorPalette[Math.min(i, typeColorPalette.length - 1)];
-    });
-    return map;
-  }, [warningTypes]);
+  const typeColors = useMemo(
+    () => buildStatusColorMap(warningTypes, typeColorPalette),
+    [warningTypes],
+  );
 
   const typeSeverity = useMemo(() => {
     const map: Record<string, number> = {};
@@ -32,13 +30,10 @@ export const useWarningConfig = () => {
     return map;
   }, [warningTypes]);
 
-  const statusColors = useMemo(() => {
-    const map: Record<string, string> = {};
-    warningStatuses.forEach((s, i) => {
-      map[s] = statusColorPalette[Math.min(i, statusColorPalette.length - 1)];
-    });
-    return map;
-  }, [warningStatuses]);
+  const statusColors = useMemo(
+    () => buildStatusColorMap(warningStatuses, statusColorPalette),
+    [warningStatuses],
+  );
 
   const kanbanStatusCols: KanbanStatusCol[] = useMemo(() => [
     { key: arabicSource("common.is_active"), label: arabicSource("common.is_active"), accent: "border-destructive/40", dotColor: "bg-destructive" },

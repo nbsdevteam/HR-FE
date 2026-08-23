@@ -2,9 +2,10 @@ import {
   Briefcase, CalendarDays, Clock, FileCheck, FileText,
   GraduationCap, UserPlus, Users, Wallet, AlertTriangle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
-export const categoryIcons: Record<string, any> = {
+export const categoryIcons: Record<string, LucideIcon> = {
   attendance: Clock,
   payroll: Wallet,
   leave: CalendarDays,

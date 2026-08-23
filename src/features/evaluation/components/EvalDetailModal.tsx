@@ -18,8 +18,7 @@ import {
   type DbEvaluation,
 } from "../types";
 import { getRatingInfo, renderStars } from "../utils/evaluationHelpers";
-import CriterionRow from "./shared/CriterionRow";
-import StarScoreButtons from "./shared/StarScoreButtons";
+import EvalDetailCriterionRow from "./shared/EvalDetailCriterionRow";
 import EvaluationSaveActions from "./shared/EvaluationSaveActions";
 
 const EvalDetailModal = ({
@@ -61,6 +60,16 @@ const EvalDetailModal = ({
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [scores]);
 
+  const criterionNames = useMemo(
+    () => (editing ? DEFAULT_CRITERIA : criteria.map((c) => c.criterion_name)),
+    [editing, criteria],
+  );
+
+  const radarData = useMemo(
+    () => criteria.map((c) => ({ name: c.criterion_name, score: c.score })),
+    [criteria],
+  );
+
   const handleSave = useCallback(async (status: string) => {
     setSaving(true);
     try {
@@ -100,9 +109,9 @@ const EvalDetailModal = ({
   const saveComplete = useCallback(() => handleSave(arabicSource("common.complete")), [handleSave]);
   const startEditing = useCallback(() => setEditing(true), []);
 
-  const handleScoreChange = (criterionName: string) => (v: number): void => {
-    setScores(prev => ({ ...prev, [criterionName]: v }));
-  };
+  const handleScoreChange = useCallback((criterionName: string, value: number): void => {
+    setScores(prev => ({ ...prev, [criterionName]: value }));
+  }, []);
 
   const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setComments(e.target.value);
@@ -169,7 +178,7 @@ const EvalDetailModal = ({
           <div className="mb-6">
             <h3 className="text-foreground mb-3">{arabicSource("evaluation.criteria_analysis")}</h3>
             <CustomRadarChart
-              data={criteria.map(c => ({ name: c.criterion_name, score: c.score }))}
+              data={radarData}
               maxValue={5}
               height={280}
             />
@@ -179,26 +188,15 @@ const EvalDetailModal = ({
         {/* Criteria */}
         <div className="space-y-3 mb-6">
           <h3 className="text-foreground">{arabicSource("evaluation.standards")}</h3>
-          {(editing ? DEFAULT_CRITERIA : criteria.map(c => c.criterion_name)).map((name, i) => {
-            const criterionName = typeof name === "string" ? name : "";
-            const score = scores[criterionName] || 3;
-            const cRatingInfo = getRatingInfo(score);
-            return (
-              <CriterionRow key={criterionName + i} name={criterionName}>
-                {editing ? (
-                  <div className="flex items-center gap-2">
-                    <StarScoreButtons score={score} onChange={handleScoreChange(criterionName)} />
-                    <StatusBadge colorClassName={cRatingInfo.bgColor} fontSize={10} extraClassName="ms-2">{cRatingInfo.label}</StatusBadge>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <div className="flex">{renderStars(score)}</div>
-                    <span className="text-muted-foreground" style={{ fontSize: 12 }}>({score}/5)</span>
-                  </div>
-                )}
-              </CriterionRow>
-            );
-          })}
+          {criterionNames.map((name, i) => (
+            <EvalDetailCriterionRow
+              key={`${name}-${i}`}
+              criterion={name}
+              score={scores[name] || 3}
+              editing={editing}
+              onScoreChange={handleScoreChange}
+            />
+          ))}
         </div>
 
         {/* Comments */}

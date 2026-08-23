@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { arabicSource } from "@/i18n/source";
 import { formatDateTime } from "@/i18n/format";
 import type { DbReportHistory } from "@/shared/hooks";
@@ -16,4 +17,4 @@ const ReportHistoryItem = ({ entry }: ReportHistoryItemProps) => (
   </div>
 );
 
-export default ReportHistoryItem;
+export default memo(ReportHistoryItem);

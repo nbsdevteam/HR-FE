@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Eye, FileText } from "lucide-react";
 import StatusBadge from "@/shared/components/StatusBadge";
@@ -18,9 +19,9 @@ const ReportTemplateCard = ({
 }: ReportTemplateCardProps) => {
   const Icon = categoryIcons[template.category] || FileText;
 
-  const handleSelectClick = (): void => {
+  const handleSelectClick = useCallback((): void => {
     onSelect(template);
-  };
+  }, [onSelect, template]);
 
   return (
     <motion.div
@@ -67,4 +68,4 @@ const ReportTemplateCard = ({
   );
 };
 
-export default ReportTemplateCard;
+export default memo(ReportTemplateCard);

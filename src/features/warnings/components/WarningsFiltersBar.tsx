@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -84,4 +84,4 @@ const WarningsFiltersBar = ({
   );
 };
 
-export default WarningsFiltersBar;
+export default memo(WarningsFiltersBar);

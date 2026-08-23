@@ -1,15 +1,17 @@
+import { useCallback } from "react";
 import { ChevronDown, UserCheck } from "lucide-react";
 import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/features/employees/utils/employeeTypeAhead";
-import { Select, TypeAhead } from "@/shared/components";
+import { Button, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { evaluationCycles as EVAL_CYCLES, type EvalCycleType } from "../types";
 import { evaluationInputClass as inputCls } from "../styles";
+import EvalCycleOption from "./EvalCycleOption";
 
 type NewEvalStepOneProps = {
   activeEmployees: DbEmployee[];
@@ -45,9 +47,12 @@ const NewEvalStepOne = ({
     onEvaluatorIdChange("");
   };
 
-  const handleCycleClick = (value: EvalCycleType) => (): void => {
-    onCycleChange(value);
-  };
+  const handleCycleSelect = useCallback(
+    (value: EvalCycleType): void => {
+      onCycleChange(value);
+    },
+    [onCycleChange],
+  );
 
   const handlePeriodChange = (value: string): void => {
     onPeriodChange(value);
@@ -137,24 +142,15 @@ const NewEvalStepOne = ({
     <div>
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("evaluation.evaluation_cycle")}</label>
       <div className="grid grid-cols-2 gap-2">
-        {EVAL_CYCLES.map(c => {
-          const Icon = c.icon;
-          const isActive = cycle === c.value;
-          return (
-            <button
-              key={c.value}
-              onClick={handleCycleClick(c.value)}
-              className={`flex items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
-                isActive
-                  ? "bg-primary/10 border-primary/30 text-primary"
-                  : "bg-muted/10 border-border/30 text-muted-foreground hover:border-primary/20"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span style={{ fontSize: 12 }}>{c.value}</span>
-            </button>
-          );
-        })}
+        {EVAL_CYCLES.map(c => (
+          <EvalCycleOption
+            key={c.value}
+            value={c.value}
+            icon={c.icon}
+            isActive={cycle === c.value}
+            onSelect={handleCycleSelect}
+          />
+        ))}
       </div>
     </div>
 
@@ -170,14 +166,15 @@ const NewEvalStepOne = ({
     </div>
 
     {/* Next */}
-    <button
+    <Button
+      variant="primary"
       onClick={onNext}
       disabled={!selectedEmpId || !period}
-      className="w-full h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="w-full h-11 shadow-lg shadow-primary/20 cursor-pointer"
     >
       {arabicSource("evaluation.next_evaluation_of_criteria")}
       <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
-    </button>
+    </Button>
   </div>
   );
 };

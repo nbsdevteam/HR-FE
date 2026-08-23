@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { LayoutGrid, Search, Table } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
@@ -6,6 +7,11 @@ import { categoryLabels } from "../constants/reports";
 import { cardCls } from "../styles";
 import type { ReportViewMode } from "../types";
 import { selectStyle } from "@/styles/sharedClasses";
+
+const CATEGORY_OPTIONS = [
+  { value: "all", label: arabicSource("common.all_categories") },
+  ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+];
 
 type ReportFiltersBarProps = {
   searchQuery: string;
@@ -38,6 +44,11 @@ const ReportFiltersBar = ({
   onDateToChange,
   onViewModeChange,
 }: ReportFiltersBarProps) => {
+  const departmentOptions = useMemo(
+    () => departments.map((d) => ({ value: d.name, label: d.name })),
+    [departments],
+  );
+
   const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onSearchQueryChange(e.target.value);
   };
@@ -81,19 +92,13 @@ const ReportFiltersBar = ({
       <Select
         value={filterCategory}
         onChange={handleFilterCategoryChange}
-        options={[
-          { value: "all", label: arabicSource("common.all_categories") },
-          ...Object.entries(categoryLabels).map(([value, label]) => ({
-            value,
-            label,
-          })),
-        ]}
+        options={CATEGORY_OPTIONS}
         className={selectStyle}
       />
       <Select
         value={filterDept}
         onChange={handleFilterDeptChange}
-        options={departments.map((d) => ({ value: d.name, label: d.name }))}
+        options={departmentOptions}
         blankLabel={arabicSource("reports.all_sections")}
         className={selectStyle}
       />
@@ -134,4 +139,4 @@ const ReportFiltersBar = ({
   );
 };
 
-export default ReportFiltersBar;
+export default memo(ReportFiltersBar);

@@ -1,4 +1,6 @@
+import { memo } from "react";
 import { History } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 interface IReportsHeaderProps {
@@ -18,15 +20,16 @@ const ReportsHeader = ({
       </p>
     </div>
     <div className="flex items-center gap-2">
-      <button
+      <Button
+        variant={showHistory ? "primary" : "outline"}
+        icon={History}
         onClick={onToggleHistory}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors cursor-pointer ${showHistory ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
+        className="cursor-pointer"
       >
-        <History className="w-4 h-4" />
         {arabicSource("reports.report_log")}
-      </button>
+      </Button>
     </div>
   </div>
 );
 
-export default ReportsHeader;
+export default memo(ReportsHeader);

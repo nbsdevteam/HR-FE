@@ -1,12 +1,11 @@
-import { memo } from "react";
-import { motion } from "motion/react";
+import { memo, useMemo } from "react";
 import {
   getEmployeeDescription,
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/features/employees/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
-import { InputField, Modal, Select, TypeAhead } from "@/shared/components";
+import { Button, InputField, Modal, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
 
@@ -34,6 +33,11 @@ const WarningFormModal = ({
   onSubmit,
   onClose,
 }: TWarningFormModalProps) => {
+  const employeeFallbackLabels = useMemo(
+    () => Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)])),
+    [employees],
+  );
+
   const handleEmployeeChange = (id: string): void => {
     onFieldChange({ employeeId: String(id) });
   };
@@ -79,9 +83,7 @@ const WarningFormModal = ({
           getLabel={empDisplayName}
           getDescription={getEmployeeDescription}
           getSearchText={getEmployeeSearchText}
-          fallbackLabels={Object.fromEntries(
-            employees.map((e) => [String(e.id), empDisplayName(e)]),
-          )}
+          fallbackLabels={employeeFallbackLabels}
           value={form.employeeId}
           onChange={handleEmployeeChange}
           placeholder={arabicSource("warnings.find_the_employee")}
@@ -151,28 +153,26 @@ const WarningFormModal = ({
       </div>
 
       <div className="flex gap-3 pt-4">
-        <motion.button
+        <Button
           type="submit"
+          variant="primary"
           disabled={saving}
-          whileHover={{ scale: !saving ? 1.05 : 1 }}
-          whileTap={{ scale: !saving ? 0.95 : 1 }}
-          className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
         >
           {saving
             ? arabicSource("common.saving")
             : isEditing
               ? arabicSource("warnings.alarm_update")
               : arabicSource("warnings.alarm_issued")}
-        </motion.button>
-        <motion.button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={onClose}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex-1 h-11 rounded-lg border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
+          className="flex-1 h-11 cursor-pointer"
         >
           {arabicSource("common.cancel")}
-        </motion.button>
+        </Button>
       </div>
     </form>
   </Modal>

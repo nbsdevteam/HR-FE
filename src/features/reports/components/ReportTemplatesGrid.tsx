@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { DbReportTemplate } from "@/shared/hooks";
 import ReportTemplateCard from "./ReportTemplateCard";
 
@@ -22,4 +23,4 @@ const ReportTemplatesGrid = ({
   </div>
 );
 
-export default ReportTemplatesGrid;
+export default memo(ReportTemplatesGrid);

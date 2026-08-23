@@ -52,8 +52,12 @@ const NewEvalPanel = ({
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [scores]);
 
-  const currentYear = new Date().getFullYear();
-  const periodOptions = getPeriodOptions(cycle, currentYear);
+  // Memoized so `NewEvalStepOne` (and the Select inside it) does not receive a
+  // brand-new options array on every keystroke elsewhere in the panel.
+  const periodOptions = useMemo(
+    () => getPeriodOptions(cycle, new Date().getFullYear()),
+    [cycle],
+  );
 
   const selectedEmp = selectedEmpId ? empMap[selectedEmpId] : null;
   const evaluatorEmp = evaluatorId ? empMap[evaluatorId] : null;

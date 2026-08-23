@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { FileText } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
@@ -11,9 +12,9 @@ type ReportTemplateRowProps = {
 const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
   const Icon = categoryIcons[template.category] || FileText;
 
-  const handleSelectClick = (): void => {
+  const handleSelectClick = useCallback((): void => {
     onSelect(template);
-  };
+  }, [onSelect, template]);
 
   return (
     <tr className="border-b border-border/20 hover:bg-muted/10">
@@ -45,4 +46,4 @@ const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
   );
 };
 
-export default ReportTemplateRow;
+export default memo(ReportTemplateRow);

@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { ClipboardCheck } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
@@ -33,9 +34,12 @@ const EvaluationListView = ({
   onSortDirChange,
   onSelectEvaluation,
 }: EvaluationListViewProps) => {
-  const handleSort = (key: EvaluationSortKey): void => {
-    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
-  };
+  const handleSort = useCallback(
+    (key: EvaluationSortKey): void => {
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+    },
+    [sortBy, sortDir, onSortByChange, onSortDirChange],
+  );
 
   return (
   <motion.div
@@ -98,4 +102,4 @@ const EvaluationListView = ({
   );
 };
 
-export default EvaluationListView;
+export default memo(EvaluationListView);

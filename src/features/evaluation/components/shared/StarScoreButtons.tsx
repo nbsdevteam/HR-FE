@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Star } from "lucide-react";
 
 type StarScoreButtonsProps = {
@@ -21,4 +22,4 @@ const StarScoreButtons = ({ score, onChange }: StarScoreButtonsProps) => {
   );
 };
 
-export default StarScoreButtons;
+export default memo(StarScoreButtons);

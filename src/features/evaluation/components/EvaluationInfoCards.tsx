@@ -1,8 +1,10 @@
+import { memo } from "react";
 import { motion } from "motion/react";
+import { arabicSource } from "@/i18n/source";
 import { evaluationCycles, ratingScale } from "../types";
 import { evaluationCardClass } from "../styles";
-import { renderStars } from "../utils/evaluationHelpers";
-import { arabicSource } from "@/i18n/source";
+import EvaluationCycleCard from "./EvaluationCycleCard";
+import RatingScaleCard from "./RatingScaleCard";
 
 const EvaluationInfoCards = () => (
   <>
@@ -12,20 +14,14 @@ const EvaluationInfoCards = () => (
         {arabicSource("evaluation.the_line_manager_depending_on_the_organizational_structure_is_re")}
       </p>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        {evaluationCycles.map(cycle => {
-          const Icon = cycle.icon;
-          return (
-            <div key={cycle.value} className="flex items-center gap-3 p-3 rounded-lg bg-muted/10 border border-border/20">
-              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                <Icon className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-foreground" style={{ fontSize: 13 }}>{cycle.value}</p>
-                <p className="text-muted-foreground" style={{ fontSize: 10 }}>{cycle.label}</p>
-              </div>
-            </div>
-          );
-        })}
+        {evaluationCycles.map(cycle => (
+          <EvaluationCycleCard
+            key={cycle.value}
+            value={cycle.value}
+            label={cycle.label}
+            icon={cycle.icon}
+          />
+        ))}
       </div>
     </motion.div>
 
@@ -33,15 +29,17 @@ const EvaluationInfoCards = () => (
       <h2 className="text-foreground mb-4">{arabicSource("evaluation.five_point_rating_scale")}</h2>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         {ratingScale.map(scale => (
-          <div key={scale.value} className={`p-3 rounded-lg border ${scale.bgColor} text-center`}>
-            <div className="flex justify-center mb-2">{renderStars(scale.value)}</div>
-            <p className="text-foreground" style={{ fontSize: 13 }}>{scale.label}</p>
-            <p className="text-muted-foreground" style={{ fontSize: 11 }}>{scale.labelEn}</p>
-          </div>
+          <RatingScaleCard
+            key={scale.value}
+            value={scale.value}
+            label={scale.label}
+            labelEn={scale.labelEn}
+            bgColor={scale.bgColor}
+          />
         ))}
       </div>
     </motion.div>
   </>
 );
 
-export default EvaluationInfoCards;
+export default memo(EvaluationInfoCards);

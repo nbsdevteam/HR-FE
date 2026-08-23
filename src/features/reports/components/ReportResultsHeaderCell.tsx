@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 type ReportResultsHeaderCellProps = {
   label: string;
 };
@@ -11,4 +13,4 @@ const ReportResultsHeaderCell = ({ label }: ReportResultsHeaderCellProps) => (
   </th>
 );
 
-export default ReportResultsHeaderCell;
+export default memo(ReportResultsHeaderCell);

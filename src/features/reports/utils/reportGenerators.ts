@@ -5,9 +5,24 @@ import type {
   DbEmployeeContract, DbEmployeeDocument, DbLeaveBalance, DbLeaveRequest,
   DbLeaveType, DbMonthlyRecord, DbReportTemplate,
 } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import type { ReportFilters, ReportRow } from "../types";
 
+// NOTE: `@/shared/utils/currency` deliberately is NOT used here — its
+// `formatCurrency(val, currency)` takes no options, and these money columns must
+// stay whole-IQD (`maximumFractionDigits: 0`), so we call the i18n primitive.
 const formatIQD = (val: number) => formatCurrency(val, "IQD", { maximumFractionDigits: 0 });
+
+/** Shape of the payslip blob stored on a monthly record. */
+type SalaryCalculation = {
+  baseSalary?: number;
+  netSalary?: number;
+  allowances?: { amount?: number }[];
+  deductions?: { amount?: number }[];
+};
+
+const sumAmounts = (lines: { amount?: number }[] | undefined): number =>
+  (lines || []).reduce((total, line) => total + (line.amount || 0), 0);
 
 export type ReportDataContext = {
   attendanceRecords: DbAttendanceRecord[];
@@ -81,13 +96,13 @@ const generatePayrollMonthly: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
   const filtered = filterByDept(ctx.monthlyRecords, filterDept, r => ctx.empDeptMap[r.employee_id]);
   return filtered.map(r => {
-    const calc = (r.salary_calculation || {}) as any;
+    const calc = (r.salary_calculation || {}) as SalaryCalculation;
     return {
       employee_name: ctx.empMap[r.employee_id] || r.employee_id,
       department: ctx.empDeptMap[r.employee_id] || "—",
       basic_salary: formatIQD(calc.baseSalary || 0),
-      allowances: formatIQD((calc.allowances || []).reduce((s: number, a: any) => s + (a.amount || 0), 0)),
-      deductions: formatIQD((calc.deductions || []).reduce((s: number, d: any) => s + (d.amount || 0), 0)),
+      allowances: formatIQD(sumAmounts(calc.allowances)),
+      deductions: formatIQD(sumAmounts(calc.deductions)),
       net_salary: formatIQD(calc.netSalary || 0),
     };
   });
@@ -96,8 +111,10 @@ const generatePayrollMonthly: ReportGenerator = (ctx) => {
 const generateLeaveBalances: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
   const balances = filterByDept(ctx.leaveBalances, filterDept, b => ctx.empDeptMap[b.employee_id]);
+  // Index once instead of scanning `leaveTypes` for every balance row.
+  const leaveTypeById = indexBy(ctx.leaveTypes, t => t.id);
   return balances.map(b => {
-    const lt = ctx.leaveTypes.find(t => t.id === b.leave_type_id);
+    const lt = b.leave_type_id ? leaveTypeById.get(b.leave_type_id) : undefined;
     return {
       employee_name: ctx.empMap[b.employee_id] || b.employee_id,
       leave_type: lt?.name_ar || "—",
@@ -126,8 +143,10 @@ const generateEmployeeMaster: ReportGenerator = (ctx) => {
 const generateContractsStatus: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
   const filtered = filterByDept(ctx.contracts, filterDept, c => ctx.empDeptMap[c.employee_id]);
+  // Index once instead of scanning `contractTypes` for every contract row.
+  const contractTypeById = indexBy(ctx.contractTypes, t => t.id);
   return filtered.map(c => {
-    const ct = ctx.contractTypes.find(t => t.id === c.contract_type_id);
+    const ct = contractTypeById.get(c.contract_type_id);
     return {
       employee_name: ctx.empMap[c.employee_id] || c.employee_id,
       contract_type: ct?.name_ar || "—",
@@ -143,8 +162,10 @@ const generateDocumentsExpiry: ReportGenerator = (ctx) => {
   const { filterDept } = ctx.filters;
   const now = new Date();
   const filtered = filterByDept(ctx.empDocuments, filterDept, d => ctx.empDeptMap[d.employee_id]);
+  // Index once instead of scanning `documentTypes` for every document row.
+  const documentTypeById = indexBy(ctx.documentTypes, t => t.id);
   return filtered.filter(d => d.expiry_date).map(d => {
-    const dt = ctx.documentTypes.find(t => t.id === d.document_type_id);
+    const dt = documentTypeById.get(d.document_type_id);
     const expiry = new Date(d.expiry_date!);
     const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     let status = arabicSource("reports.mast");

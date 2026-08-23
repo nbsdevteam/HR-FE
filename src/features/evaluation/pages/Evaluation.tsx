@@ -1,4 +1,4 @@
-import { useCallback, lazy, Suspense } from "react";
+import { useCallback, useMemo, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 import CustomBarChart from "@/shared/components/custom-bar-chart";
@@ -47,6 +47,14 @@ const EvaluationPage = () => {
     closeNewEvaluation,
     viewMode,
   } = useEvaluationPage();
+
+  const selectedEvalCriteria = useMemo(
+    () =>
+      selectedEval
+        ? criteria.filter((criterion) => criterion.evaluation_id === selectedEval.id)
+        : [],
+    [criteria, selectedEval],
+  );
 
   const handleNewEvaluation = useCallback(
     () => setShowNewEval(true),
@@ -138,9 +146,7 @@ const EvaluationPage = () => {
             <EvalDetailModal
               evaluation={selectedEval}
               empMap={empMap}
-              criteria={criteria.filter(
-                (criterion) => criterion.evaluation_id === selectedEval.id,
-              )}
+              criteria={selectedEvalCriteria}
               onClose={handleCloseEvalDetail}
               onUpdate={fetchData}
             />
