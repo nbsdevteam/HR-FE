@@ -8,6 +8,8 @@ interface InputFieldProps {
   className: string;
   dir?: string;
   step?: string;
+  min?: number;
+  max?: number;
 }
 
 /**
@@ -24,6 +26,8 @@ const InputField = ({
   className,
   dir,
   step,
+  min,
+  max,
 }: InputFieldProps) => {
   const input = (
     <input
@@ -34,6 +38,8 @@ const InputField = ({
       className={className}
       dir={dir}
       step={step}
+      min={min}
+      max={max}
     />
   );
 

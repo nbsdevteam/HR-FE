@@ -10,7 +10,8 @@ import LabeledInput from "./LabeledInput";
 const getDepartmentId = (d: DbDepartment): string => d.id;
 const getDepartmentLabel = (d: DbDepartment): string => d.name;
 const getDesignationId = (p: DbPosition): string => p.id;
-const getDesignationLabel = (p: DbPosition): string => p.title_ar || p.title_en || p.id;
+const getDesignationLabel = (p: DbPosition): string =>
+  p.title_ar || p.title_en || p.id;
 const fieldLabelClass = "text-foreground block mb-1.5";
 
 type AddEmployeeModalProps = {
@@ -83,9 +84,7 @@ const AddEmployeeModal = ({
     onFormChange({ designationId: value });
   };
 
-  const handleSalaryChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFormChange({ salary: e.target.value });
   };
 

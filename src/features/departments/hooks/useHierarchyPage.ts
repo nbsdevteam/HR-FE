@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useHierarchyData, usePositions } from "@/shared/hooks";
+import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
+import type { PositionFormState } from "../components/PositionFormModal";
 import {
   buildOrgTree,
   buildOrgTreeFromPositions,
@@ -13,6 +15,7 @@ import {
 import { useHierarchyCrud } from "./useHierarchyCrud";
 import { useHierarchyExport } from "./useHierarchyExport";
 import { useHierarchyPanZoom } from "./useHierarchyPanZoom";
+import { EMPTY_POSITION_FORM } from "./usePositionsView";
 
 export const useHierarchyPage = () => {
   const [viewMode, setViewMode] = useState<"tree" | "positions">("tree");
@@ -33,6 +36,11 @@ export const useHierarchyPage = () => {
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [showCleanupModal, setShowCleanupModal] = useState(false);
   const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
+  const [showAddPositionModal, setShowAddPositionModal] = useState(false);
+  const [positionSaving, setPositionSaving] = useState(false);
+  const [posForm, setPosForm] = useState<PositionFormState>(
+    EMPTY_POSITION_FORM,
+  );
 
   const [toast, setToast] = useState<string | null>(null);
 
@@ -199,6 +207,38 @@ export const useHierarchyPage = () => {
     setShowAddDepartmentModal(true);
   }, []);
 
+  const openAddPositionModal = useCallback(() => {
+    setPosForm(EMPTY_POSITION_FORM);
+    setShowAddPositionModal(true);
+  }, []);
+
+  const closeAddPositionModal = useCallback(() => {
+    setShowAddPositionModal(false);
+  }, []);
+
+  const handleAddPositionSubmit = useCallback(async () => {
+    if (!posForm.title_ar.trim()) return;
+    setPositionSaving(true);
+    try {
+      await odooData.createDesignation({
+        title_ar: posForm.title_ar.trim(),
+        name: posForm.title_en.trim() || posForm.title_ar.trim(),
+        department_id: posForm.department_id || null,
+        reports_to_job_id: null,
+        max_headcount: parseInt(posForm.max_headcount) || 1,
+        description: posForm.description.trim() || null,
+        level: 0,
+      });
+      setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
+      setShowAddPositionModal(false);
+      setPosForm(EMPTY_POSITION_FORM);
+      await refetchPositions();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
+    }
+    setPositionSaving(false);
+  }, [posForm, refetchPositions]);
+
   const handleSearchSelect = useCallback((node: OrgNode) => {
     setFocusedNodeId(node.id);
     setSearchQuery(node.name);
@@ -351,6 +391,10 @@ export const useHierarchyPage = () => {
     showSetupModal,
     showCleanupModal,
     showAddDepartmentModal,
+    showAddPositionModal,
+    positionSaving,
+    posForm,
+    setPosForm,
     toast,
     isDragging,
     panEnabled,
@@ -372,6 +416,9 @@ export const useHierarchyPage = () => {
     handleCleanupDuplicates,
     openAddModal,
     openAddDepartmentModal,
+    openAddPositionModal,
+    closeAddPositionModal,
+    handleAddPositionSubmit,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,

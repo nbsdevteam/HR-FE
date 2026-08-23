@@ -1,5 +1,12 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Building2, Download, Printer, UserPlus } from "lucide-react";
+import {
+  AlertTriangle,
+  Briefcase,
+  Building2,
+  Download,
+  Printer,
+  UserPlus,
+} from "lucide-react";
 import type { Ref } from "react";
 import type { OrgNode } from "../types";
 import SearchResults from "./SearchResults";
@@ -15,6 +22,7 @@ type HierarchyHeaderProps = {
   onShowUnlinked: () => void;
   onAddEmployee: () => void;
   onAddDepartment: () => void;
+  onAddPosition: () => void;
   onSearchChange: (value: string) => void;
   onSearchFocus: () => void;
   onSearchSelect: (node: OrgNode) => void;
@@ -33,6 +41,7 @@ const HierarchyHeader = ({
   onShowUnlinked,
   onAddEmployee,
   onAddDepartment,
+  onAddPosition,
   onSearchChange,
   onSearchFocus,
   onSearchSelect,
@@ -80,6 +89,15 @@ const HierarchyHeader = ({
       >
         <Building2 className="w-4 h-4" />{" "}
         {arabicSource("hierarchy.add_a_new_section")}
+      </button>
+
+      <button
+        onClick={onAddPosition}
+        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-card border border-border/60 hover:border-primary/30 text-foreground transition-all shadow-sm"
+        style={{ fontSize: 13 }}
+      >
+        <Briefcase className="w-4 h-4" />{" "}
+        {arabicSource("hierarchy.new_position")}
       </button>
 
       <SearchInput

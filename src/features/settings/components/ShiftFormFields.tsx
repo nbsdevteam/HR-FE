@@ -11,7 +11,8 @@ type TShiftFormFieldsProps = {
   onDayChange: (dayKey: string, patch: Partial<ShiftDaySchedule>) => void;
 };
 
-const fieldCls = "w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary";
+const fieldCls =
+  "w-full px-3 py-2 bg-muted/30 border border-border/40 rounded-lg text-foreground focus:outline-none focus:border-primary";
 
 const ShiftFormFields = ({
   form,
@@ -48,7 +49,7 @@ const ShiftFormFields = ({
 
   const handleTargetHoursPerDayChange = useCallback(
     (value: string): void => {
-      onFieldChange({ target_hours_per_day: parseInt(value) || 0 });
+      onFieldChange({ target_hours_per_day: parseFloat(value) || 0 });
     },
     [onFieldChange],
   );
@@ -84,6 +85,7 @@ const ShiftFormFields = ({
           value={form.grace_minutes}
           onChange={handleGraceMinutesChange}
           className={fieldCls}
+          min={1}
         />
         <InputField
           label={arabicSource("common.late_hours_for_absence")}
@@ -91,6 +93,7 @@ const ShiftFormFields = ({
           value={form.late_to_absent_hours}
           onChange={handleLateToAbsentHoursChange}
           className={fieldCls}
+          min={1}
         />
         <InputField
           label={arabicSource("common.daily_working_hours")}
@@ -99,6 +102,7 @@ const ShiftFormFields = ({
           onChange={handleTargetHoursPerDayChange}
           className={fieldCls}
           step="0.5"
+          min={0.5}
         />
       </div>
 

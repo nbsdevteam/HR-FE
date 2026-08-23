@@ -41,6 +41,10 @@ const Hierarchy = () => {
     showSetupModal,
     showCleanupModal,
     showAddDepartmentModal,
+    showAddPositionModal,
+    positionSaving,
+    posForm,
+    setPosForm,
     toast,
     isDragging,
     panEnabled,
@@ -62,6 +66,9 @@ const Hierarchy = () => {
     handleCleanupDuplicates,
     openAddModal,
     openAddDepartmentModal,
+    openAddPositionModal,
+    closeAddPositionModal,
+    handleAddPositionSubmit,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -114,6 +121,7 @@ const Hierarchy = () => {
         onShowUnlinked={handleShowUnlinked}
         onAddEmployee={openAddModal}
         onAddDepartment={openAddDepartmentModal}
+        onAddPosition={openAddPositionModal}
         onSearchChange={handleSearchChange}
         onSearchFocus={handleSearchFocus}
         onSearchSelect={handleSearchSelect}
@@ -206,6 +214,7 @@ const Hierarchy = () => {
       </AnimatePresence>
       <HierarchyModals
         dbEmployees={dbEmployees}
+        dbDepartments={dbDepartments}
         orgTree={orgTree}
         allNodes={allNodes}
         departments={departments}
@@ -221,6 +230,10 @@ const Hierarchy = () => {
         showSetupModal={showSetupModal}
         showCleanupModal={showCleanupModal}
         showAddDepartmentModal={showAddDepartmentModal}
+        showAddPositionModal={showAddPositionModal}
+        posForm={posForm}
+        setPosForm={setPosForm}
+        positionSaving={positionSaving}
         onAddEmployee={handleAddEmployee}
         onDeleteEmployee={handleDeleteEmployee}
         onEditEmployee={handleEditEmployee}
@@ -236,6 +249,8 @@ const Hierarchy = () => {
         onCloseSetupModal={handleCloseSetupModal}
         onCloseCleanupModal={handleCloseCleanupModal}
         onCloseAddDepartmentModal={handleCloseAddDepartmentModal}
+        onAddPosition={handleAddPositionSubmit}
+        onCloseAddPositionModal={closeAddPositionModal}
         onDetailAddChild={handleDetailAddChild}
         onDetailDelete={handleDetailDelete}
         onDetailEdit={handleDetailEdit}

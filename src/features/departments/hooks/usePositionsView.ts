@@ -8,7 +8,7 @@ import type { PositionNode } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
 import type { PositionFormState } from "../components/PositionFormModal";
 
-const EMPTY_POSITION_FORM: PositionFormState = {
+export const EMPTY_POSITION_FORM: PositionFormState = {
   title_ar: "",
   title_en: "",
   department_id: "",
