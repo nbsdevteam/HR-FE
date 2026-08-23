@@ -6,7 +6,7 @@ export const mapLeaveType = (r: any): DbLeaveType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     code: r.code || "",
     is_paid: r.is_paid !== false && !r.unpaid,
     default_days_per_year: num(r.default_days_per_year),

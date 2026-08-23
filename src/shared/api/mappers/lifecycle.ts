@@ -13,7 +13,7 @@ export const mapDocumentType = (r: any): DbDocumentType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     code: r.code || "",
     has_expiry: bool(r.has_expiry),
     expiry_warning_days: num(r.before_days ?? r.expiry_warning_days, 30),
@@ -48,7 +48,7 @@ export const mapContractType = (r: any): DbContractType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     code: r.code || "",
     description: r.description || null,
     default_duration_months: r.default_duration_months ?? null,
@@ -88,7 +88,7 @@ export const mapExitChecklistItem = (r: any): DbExitChecklistItem => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     category: r.category || "general",
     responsible_role: r.responsible_role || "",
     sort_order: num(r.sort_order),
@@ -135,7 +135,7 @@ export const mapApprovalWorkflow = (r: any): any => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || null,
+    name_en: r.name_en || r.name || null,
     entity_type: r.entity_type || "",
     is_active: bool(r.active !== undefined ? r.active : r.is_active),
     steps: Array.isArray(r.steps) ? r.steps : [],

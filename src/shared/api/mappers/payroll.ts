@@ -5,7 +5,7 @@ export const mapAllowanceType = (r: any): DbAllowanceType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     calc_method: r.calc_method || "fixed",
     default_amount: num(r.default_amount),
     percentage_of: r.percentage_of || "basic",
@@ -34,7 +34,7 @@ export const mapDeductionType = (r: any): DbDeductionType => {
   return {
     id: sid(r.id),
     name_ar: r.name_ar || r.name || "",
-    name_en: r.name || r.name_en || null,
+    name_en: r.name_en || r.name || null,
     calc_method: r.calc_method || "fixed",
     default_amount: num(r.default_amount),
     default_percentage: num(r.default_percentage),
