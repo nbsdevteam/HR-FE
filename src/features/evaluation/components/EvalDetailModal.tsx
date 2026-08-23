@@ -100,6 +100,14 @@ const EvalDetailModal = ({
   const saveComplete = useCallback(() => handleSave(arabicSource("common.complete")), [handleSave]);
   const startEditing = useCallback(() => setEditing(true), []);
 
+  const handleScoreChange = (criterionName: string) => (v: number): void => {
+    setScores(prev => ({ ...prev, [criterionName]: v }));
+  };
+
+  const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setComments(e.target.value);
+  };
+
   return (
     <ModalOverlay
       onClose={onClose}
@@ -179,7 +187,7 @@ const EvalDetailModal = ({
               <CriterionRow key={criterionName + i} name={criterionName}>
                 {editing ? (
                   <div className="flex items-center gap-2">
-                    <StarScoreButtons score={score} onChange={(v) => setScores(prev => ({ ...prev, [criterionName]: v }))} />
+                    <StarScoreButtons score={score} onChange={handleScoreChange(criterionName)} />
                     <StatusBadge colorClassName={cRatingInfo.bgColor} fontSize={10} extraClassName="ms-2">{cRatingInfo.label}</StatusBadge>
                   </div>
                 ) : (
@@ -200,7 +208,7 @@ const EvalDetailModal = ({
             <textarea
               rows={3}
               value={comments}
-              onChange={e => setComments(e.target.value)}
+              onChange={handleCommentsChange}
               placeholder={arabicSource("common.observations_about_the_employee_s_performance")}
               className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
             />

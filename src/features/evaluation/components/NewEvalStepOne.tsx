@@ -28,7 +28,28 @@ const NewEvalStepOne = ({
   activeEmployees, employeeLabels, selectedEmpId, onSelectedEmpIdChange,
   evaluatorId, onEvaluatorIdChange, selectedEmp, evaluatorEmp,
   cycle, onCycleChange, period, onPeriodChange, periodOptions, onNext,
-}: NewEvalStepOneProps) => (
+}: NewEvalStepOneProps) => {
+  const handleSelectedEmpChange = (id: string): void => {
+    onSelectedEmpIdChange(String(id));
+  };
+
+  const handleEvaluatorChange = (id: string): void => {
+    onEvaluatorIdChange(String(id));
+  };
+
+  const handleClearEvaluatorClick = (): void => {
+    onEvaluatorIdChange("");
+  };
+
+  const handleCycleClick = (value: EvalCycleType) => (): void => {
+    onCycleChange(value);
+  };
+
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onPeriodChange(e.target.value);
+  };
+
+  return (
   <div className="space-y-4">
     {/* Employee Selection */}
     <div>
@@ -37,7 +58,7 @@ const NewEvalStepOne = ({
         employees={activeEmployees}
         labels={employeeLabels}
         value={selectedEmpId}
-        onChange={(id) => onSelectedEmpIdChange(String(id))}
+        onChange={handleSelectedEmpChange}
         placeholder={arabicSource("evaluation.select_employee")}
       />
     </div>
@@ -62,7 +83,7 @@ const NewEvalStepOne = ({
                 employees={activeEmployees}
                 labels={employeeLabels}
                 value={evaluatorId}
-                onChange={(id) => onEvaluatorIdChange(String(id))}
+                onChange={handleEvaluatorChange}
                 placeholder={arabicSource("common.select_evaluator")}
                 excludeIds={selectedEmpId ? [selectedEmpId] : []}
               />
@@ -71,7 +92,7 @@ const NewEvalStepOne = ({
         )}
         {evaluatorEmp && (
           <button
-            onClick={() => onEvaluatorIdChange("")}
+            onClick={handleClearEvaluatorClick}
             className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer ps-6 mt-1"
             style={{ fontSize: 11 }}
           >
@@ -89,7 +110,7 @@ const NewEvalStepOne = ({
           employees={activeEmployees}
           labels={employeeLabels}
           value={evaluatorId}
-          onChange={(id) => onEvaluatorIdChange(String(id))}
+          onChange={handleEvaluatorChange}
           placeholder={arabicSource("common.select_evaluator")}
           excludeIds={selectedEmpId ? [selectedEmpId] : []}
         />
@@ -106,7 +127,7 @@ const NewEvalStepOne = ({
           return (
             <button
               key={c.value}
-              onClick={() => onCycleChange(c.value)}
+              onClick={handleCycleClick(c.value)}
               className={`flex items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
                 isActive
                   ? "bg-primary/10 border-primary/30 text-primary"
@@ -126,7 +147,7 @@ const NewEvalStepOne = ({
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.period")}</label>
       <Select
         value={period}
-        onChange={e => onPeriodChange(e.target.value)}
+        onChange={handlePeriodChange}
         className={inputCls}
       >
         {periodOptions.map(p => (
@@ -145,6 +166,7 @@ const NewEvalStepOne = ({
       <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
     </button>
   </div>
-);
+  );
+};
 
 export default NewEvalStepOne;

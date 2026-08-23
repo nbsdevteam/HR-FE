@@ -27,7 +27,16 @@ type NewEvalStepTwoProps = {
 const NewEvalStepTwo = ({
   selectedEmp, evaluatorEmp, period, overallRating, scores, onScoreChange,
   comments, onCommentsChange, saving, onBack, onSaveDraft, onComplete, onCancel,
-}: NewEvalStepTwoProps) => (
+}: NewEvalStepTwoProps) => {
+  const handleScoreChange = (criterion: string) => (v: number): void => {
+    onScoreChange(criterion, v);
+  };
+
+  const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    onCommentsChange(e.target.value);
+  };
+
+  return (
   <div className="space-y-4">
     {/* Employee Info Summary */}
     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
@@ -74,7 +83,7 @@ const NewEvalStepTwo = ({
         return (
           <CriterionRow key={criterion} name={criterion}>
             <div className="flex items-center gap-1.5">
-              <StarScoreButtons score={score} onChange={(v) => onScoreChange(criterion, v)} />
+              <StarScoreButtons score={score} onChange={handleScoreChange(criterion)} />
               <span className={`px-1.5 py-0.5 rounded border ms-1 ${cRatingInfo.bgColor}`} style={{ fontSize: 9 }}>
                 {score}
               </span>
@@ -90,7 +99,7 @@ const NewEvalStepTwo = ({
       <textarea
         rows={3}
         value={comments}
-        onChange={e => onCommentsChange(e.target.value)}
+        onChange={handleCommentsChange}
         placeholder={arabicSource("common.observations_about_the_employee_s_performance")}
         className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
       />
@@ -105,6 +114,7 @@ const NewEvalStepTwo = ({
       {arabicSource("common.cancel")}
     </button>
   </div>
-);
+  );
+};
 
 export default NewEvalStepTwo;

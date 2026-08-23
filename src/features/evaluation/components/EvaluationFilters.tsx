@@ -15,14 +15,23 @@ const EvaluationFilters = ({
   filterStatus,
   onSearchTextChange,
   onFilterStatusChange,
-}: EvaluationFiltersProps) => (
+}: EvaluationFiltersProps) => {
+  const handleSearchTextChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchTextChange(e.target.value);
+  };
+
+  const handleFilterStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFilterStatusChange(e.target.value);
+  };
+
+  return (
   <div className="flex items-center gap-3 flex-wrap">
     <div className="flex items-center gap-2 flex-1 min-w-[200px]">
       <Search className="w-4 h-4 text-muted-foreground" />
       <input
         type="text"
         value={searchText}
-        onChange={e => onSearchTextChange(e.target.value)}
+        onChange={handleSearchTextChange}
         placeholder={arabicSource("evaluation.search_by_name_or_period")}
         className={`${evaluationInputClass} flex-1`}
         style={{ height: 38 }}
@@ -30,7 +39,7 @@ const EvaluationFilters = ({
     </div>
     <Select
       value={filterStatus}
-      onChange={e => onFilterStatusChange(e.target.value)}
+      onChange={handleFilterStatusChange}
       aria-label={arabicSource("common.status")}
       className={evaluationInputClass}
       style={{ width: 160, height: 38 }}
@@ -41,6 +50,7 @@ const EvaluationFilters = ({
       <option value={arabicSource("common.did_not_start")}>{arabicSource("common.did_not_start")}</option>
     </Select>
   </div>
-);
+  );
+};
 
 export default EvaluationFilters;

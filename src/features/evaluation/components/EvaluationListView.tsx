@@ -32,7 +32,12 @@ const EvaluationListView = ({
   onSortByChange,
   onSortDirChange,
   onSelectEvaluation,
-}: EvaluationListViewProps) => (
+}: EvaluationListViewProps) => {
+  const handleSort = (key: EvaluationSortKey): void => {
+    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+  };
+
+  return (
   <motion.div
     key="list"
     initial={{ opacity: 0, y: 10 }}
@@ -48,9 +53,7 @@ const EvaluationListView = ({
           columns={sortData}
           sortBy={sortBy}
           sortDir={sortDir}
-          onSort={(key) =>
-            toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-          }
+          onSort={handleSort}
         />
       }
       renderRow={(evaluation, i) => (
@@ -92,6 +95,7 @@ const EvaluationListView = ({
       }
     />
   </motion.div>
-);
+  );
+};
 
 export default EvaluationListView;
