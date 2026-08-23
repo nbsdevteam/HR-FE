@@ -15,30 +15,36 @@ const IrComponentRow = ({
   component,
   isOpen,
   onToggle,
-}: IrComponentRowProps) => (
-  <div>
-    <button
-      onClick={() => onToggle(componentKey)}
-      className="w-full text-start cursor-pointer"
-    >
-      <RankBar
-        label={IR_COMPONENT_LABELS[componentKey] || componentKey}
-        value={component.score}
-        weight={`${component.weight}%`}
-      />
-    </button>
-    {isOpen && component.evidence && (
-      <p
-        className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2"
-        style={{ fontSize: 11 }}
+}: IrComponentRowProps) => {
+  const handleToggle = (): void => {
+    onToggle(componentKey);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={handleToggle}
+        className="w-full text-start cursor-pointer"
       >
-        <span className="text-primary">
-          {arabicSource("recruitment.evidence")}:{" "}
-        </span>
-        <span data-i18n-ignore>{component.evidence}</span>
-      </p>
-    )}
-  </div>
-);
+        <RankBar
+          label={IR_COMPONENT_LABELS[componentKey] || componentKey}
+          value={component.score}
+          weight={`${component.weight}%`}
+        />
+      </button>
+      {isOpen && component.evidence && (
+        <p
+          className="mt-1 text-muted-foreground rounded-md bg-muted/10 border border-border/20 p-2"
+          style={{ fontSize: 11 }}
+        >
+          <span className="text-primary">
+            {arabicSource("recruitment.evidence")}:{" "}
+          </span>
+          <span data-i18n-ignore>{component.evidence}</span>
+        </p>
+      )}
+    </div>
+  );
+};
 
 export default memo(IrComponentRow);

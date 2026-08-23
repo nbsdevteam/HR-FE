@@ -68,6 +68,30 @@ const ApplyLinkModal = ({
     await load(true);
   }, [load]);
 
+  const handleExpiresOnChange = useCallback(
+    async (value: string): Promise<void> => {
+      if (!link) return;
+      setLink(
+        await odooData.updateApplicationLink(link.id, {
+          expires_on: value || false,
+        }),
+      );
+    },
+    [link],
+  );
+
+  const handleMaxSubmissionsChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      if (!link) return;
+      setLink(
+        await odooData.updateApplicationLink(link.id, {
+          max_submissions: Number(e.target.value) || 0,
+        }),
+      );
+    },
+    [link],
+  );
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -156,13 +180,7 @@ const ApplyLinkModal = ({
                 value={link.expires_on || ""}
                 dir="ltr"
                 className={inputCls}
-                onChange={async (value) => {
-                  setLink(
-                    await odooData.updateApplicationLink(link.id, {
-                      expires_on: value || false,
-                    }),
-                  );
-                }}
+                onChange={handleExpiresOnChange}
               />
             </div>
             <div>
@@ -175,13 +193,7 @@ const ApplyLinkModal = ({
                 value={link.max_submissions}
                 dir="ltr"
                 className={inputCls}
-                onChange={async (e) => {
-                  setLink(
-                    await odooData.updateApplicationLink(link.id, {
-                      max_submissions: Number(e.target.value) || 0,
-                    }),
-                  );
-                }}
+                onChange={handleMaxSubmissionsChange}
               />
             </div>
           </div>

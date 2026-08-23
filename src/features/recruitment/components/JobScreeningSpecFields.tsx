@@ -31,7 +31,24 @@ const JobScreeningSpecFields = ({
   onMinExperienceYearsChange,
   onEducationLevelChange,
   onIrAutoShortlistChange,
-}: JobScreeningSpecFieldsProps) => (
+}: JobScreeningSpecFieldsProps) => {
+  const handleMinExperienceYearsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onMinExperienceYearsChange(Number(e.target.value) || 0);
+  };
+  const handleEducationLevelChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    onEducationLevelChange(e.target.value);
+  };
+  const handleIrAutoShortlistChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onIrAutoShortlistChange(Number(e.target.value));
+  };
+
+  return (
   <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-4">
     <div
       className="flex items-center gap-2 text-primary"
@@ -61,9 +78,7 @@ const JobScreeningSpecFields = ({
           min={0}
           max={50}
           value={minExperienceYears}
-          onChange={(e) =>
-            onMinExperienceYearsChange(Number(e.target.value) || 0)
-          }
+          onChange={handleMinExperienceYearsChange}
           className={inputCls}
           dir="ltr"
         />
@@ -74,7 +89,7 @@ const JobScreeningSpecFields = ({
         </label>
         <Select
           value={educationLevel}
-          onChange={(e) => onEducationLevelChange(e.target.value)}
+          onChange={handleEducationLevelChange}
           options={EDUCATION_LEVELS}
           className={selectCls}
         />
@@ -92,7 +107,7 @@ const JobScreeningSpecFields = ({
         max={95}
         step={5}
         value={irAutoShortlist}
-        onChange={(e) => onIrAutoShortlistChange(Number(e.target.value))}
+        onChange={handleIrAutoShortlistChange}
         className="w-full cursor-pointer accent-current text-primary"
         dir="ltr"
       />
@@ -104,6 +119,7 @@ const JobScreeningSpecFields = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default JobScreeningSpecFields;

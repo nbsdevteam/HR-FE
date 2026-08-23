@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Users } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
@@ -28,6 +28,13 @@ const ApplicantsTable = ({
   const [sortBy, setSortBy] = useState("rank");
   const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
 
+  const handleSort = useCallback(
+    (key: string): void => {
+      toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir);
+    },
+    [sortBy, recSortDir],
+  );
+
   if (applicants.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -56,9 +63,7 @@ const ApplicantsTable = ({
             columns={applicantsTableColumns}
             sortBy={sortBy}
             sortDir={recSortDir}
-            onSort={(key) =>
-              toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir)
-            }
+            onSort={handleSort}
           />
         }
         renderRow={(app, i) => (

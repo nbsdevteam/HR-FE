@@ -61,6 +61,28 @@ const CandidateBank = ({
     return list;
   }, [applicants, bankSearch, onlyBookmarked, skillFilter, sortBy]);
 
+  const handleToggleOnlyBookmarked = (): void => {
+    setOnlyBookmarked(!onlyBookmarked);
+  };
+
+  const handleBankSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    setBankSearch(e.target.value);
+  };
+
+  const handleSkillFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    setSkillFilter(e.target.value);
+  };
+
+  const handleSortByChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    setSortBy(e.target.value);
+  };
+
   return (
     <div className="space-y-4">
       {/* Bank header */}
@@ -74,7 +96,7 @@ const CandidateBank = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setOnlyBookmarked(!onlyBookmarked)}
+              onClick={handleToggleOnlyBookmarked}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${onlyBookmarked ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-muted/20"}`}
               style={{ fontSize: 12 }}
             >
@@ -92,14 +114,14 @@ const CandidateBank = ({
                 "recruitment.search_by_name_skills_company_education",
               )}
               value={bankSearch}
-              onChange={(e) => setBankSearch(e.target.value)}
+              onChange={handleBankSearchChange}
               className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
               style={{ fontSize: 13 }}
             />
           </div>
           <Select
             value={skillFilter}
-            onChange={(e) => setSkillFilter(e.target.value)}
+            onChange={handleSkillFilterChange}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
             style={{ fontSize: 13 }}
           >
@@ -112,7 +134,7 @@ const CandidateBank = ({
           </Select>
           <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={handleSortByChange}
             className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer"
             style={{ fontSize: 13 }}
           >

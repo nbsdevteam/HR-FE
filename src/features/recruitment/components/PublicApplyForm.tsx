@@ -43,7 +43,40 @@ const PublicApplyForm = ({
   onFileChange,
   onSubmit,
   onUpdateForm,
-}: PublicApplyFormProps) => (
+}: PublicApplyFormProps) => {
+  const handleJobOpeningChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    onUpdateForm({ job_opening_id: event.target.value });
+  };
+
+  const handleNameChange = (value: string): void => {
+    onUpdateForm({ name: value });
+  };
+
+  const handleEmailChange = (value: string): void => {
+    onUpdateForm({ email: value });
+  };
+
+  const handlePhoneChange = (value: string): void => {
+    onUpdateForm({ phone: value });
+  };
+
+  const handleCityChange = (value: string): void => {
+    onUpdateForm({ city: value });
+  };
+
+  const handleExpectedSalaryChange = (value: string): void => {
+    onUpdateForm({ expected_salary: value });
+  };
+
+  const handleHpChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    onUpdateForm({ hp: event.target.value });
+  };
+
+  const handleConsentChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    onUpdateForm({ consent: event.target.checked });
+  };
+
+  return (
   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
     <div>
       <h1 className="text-foreground" style={{ fontSize: 22 }}>{arabicSource("apply.title")}</h1>
@@ -58,7 +91,7 @@ const PublicApplyForm = ({
       <PublicApplyField label={arabicSource("apply.select_position")} required>
         <Select
           value={form.job_opening_id}
-          onChange={(event) => onUpdateForm({ job_opening_id: event.target.value })}
+          onChange={handleJobOpeningChange}
           className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none cursor-pointer"
           style={{ fontSize: 14 }}
         >
@@ -74,19 +107,19 @@ const PublicApplyForm = ({
 
     <div className="grid gap-4 sm:grid-cols-2">
       <PublicApplyField label={arabicSource("apply.full_name")} required>
-        <PublicApplyInput value={form.name} onChange={(value) => onUpdateForm({ name: value })} />
+        <PublicApplyInput value={form.name} onChange={handleNameChange} />
       </PublicApplyField>
       <PublicApplyField label={arabicSource("common.email")} required>
-        <PublicApplyInput value={form.email} onChange={(value) => onUpdateForm({ email: value })} type="email" dir="ltr" />
+        <PublicApplyInput value={form.email} onChange={handleEmailChange} type="email" dir="ltr" />
       </PublicApplyField>
       <PublicApplyField label={arabicSource("common.phone_number")} required>
-        <PublicApplyInput value={form.phone} onChange={(value) => onUpdateForm({ phone: value })} type="tel" dir="ltr" />
+        <PublicApplyInput value={form.phone} onChange={handlePhoneChange} type="tel" dir="ltr" />
       </PublicApplyField>
       <PublicApplyField label={arabicSource("common.city")}>
-        <PublicApplyInput value={form.city} onChange={(value) => onUpdateForm({ city: value })} />
+        <PublicApplyInput value={form.city} onChange={handleCityChange} />
       </PublicApplyField>
       <PublicApplyField label={arabicSource("apply.expected_salary")}>
-        <PublicApplyInput value={form.expected_salary} onChange={(value) => onUpdateForm({ expected_salary: value })} type="number" dir="ltr" />
+        <PublicApplyInput value={form.expected_salary} onChange={handleExpectedSalaryChange} type="number" dir="ltr" />
       </PublicApplyField>
     </div>
 
@@ -105,7 +138,7 @@ const PublicApplyForm = ({
     <input
       type="text"
       value={form.hp}
-      onChange={(event) => onUpdateForm({ hp: event.target.value })}
+      onChange={handleHpChange}
       tabIndex={-1}
       autoComplete="off"
       aria-hidden="true"
@@ -116,7 +149,7 @@ const PublicApplyForm = ({
       <input
         type="checkbox"
         checked={form.consent}
-        onChange={(event) => onUpdateForm({ consent: event.target.checked })}
+        onChange={handleConsentChange}
         className="mt-0.5 w-4 h-4 accent-current text-primary cursor-pointer"
       />
       <span className="text-muted-foreground" style={{ fontSize: 12.5 }}>
@@ -142,6 +175,7 @@ const PublicApplyForm = ({
         : <><Send className="w-4 h-4" />{arabicSource("apply.submit")}</>}
     </button>
   </motion.div>
-);
+  );
+};
 
 export default PublicApplyForm;

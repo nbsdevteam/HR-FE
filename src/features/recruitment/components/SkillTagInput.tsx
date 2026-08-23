@@ -32,6 +32,27 @@ const SkillTagInput = ({
     setDraft("");
   };
 
+  const handleDraftChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setDraft(e.target.value);
+  };
+
+  const handleDraftKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      add();
+    }
+  };
+
+  const handleSkillWeightChange =
+    (index: number) =>
+    (weight: number): void => {
+      onChange(skills.map((s, si) => (si === index ? { ...s, weight } : s)));
+    };
+
+  const handleSkillRemove = (index: number) => (): void => {
+    onChange(skills.filter((_, si) => si !== index));
+  };
+
   return (
     <div>
       <label className={labelCls} style={{ fontSize: 12 }}>
@@ -40,13 +61,8 @@ const SkillTagInput = ({
       <input
         type="text"
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            add();
-          }
-        }}
+        onChange={handleDraftChange}
+        onKeyDown={handleDraftKeyDown}
         onBlur={add}
         placeholder={arabicSource("recruitment.add_skill")}
         className={inputCls}
@@ -58,12 +74,8 @@ const SkillTagInput = ({
               key={`${skill.name}-${i}`}
               skill={skill}
               weighted={weighted}
-              onWeightChange={(weight) =>
-                onChange(
-                  skills.map((s, si) => (si === i ? { ...s, weight } : s)),
-                )
-              }
-              onRemove={() => onChange(skills.filter((_, si) => si !== i))}
+              onWeightChange={handleSkillWeightChange(i)}
+              onRemove={handleSkillRemove(i)}
             />
           ))}
         </div>

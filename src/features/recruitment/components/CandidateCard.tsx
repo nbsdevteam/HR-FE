@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import {
   Bookmark,
@@ -33,13 +33,30 @@ const CandidateCard = ({
   const score = effectiveScore(app);
   const rank = rankLabel(score, app.ir_band);
 
+  const handleSelect = useCallback(() => onSelect(app), [onSelect, app]);
+
+  const handleBookmarkToggle = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>): void => {
+      e.stopPropagation();
+      onToggleBookmark(app);
+    },
+    [onToggleBookmark, app],
+  );
+
+  const handleRatingChange = useCallback(
+    (r: number): void => {
+      onUpdateRating(app.id, r);
+    },
+    [onUpdateRating, app.id],
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
       whileHover={{ y: -3 }}
-      onClick={() => onSelect(app)}
+      onClick={handleSelect}
       className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-4 shadow-lg hover:border-primary/40 transition-all cursor-pointer relative"
     >
       <div className="absolute top-3 start-3 flex items-center gap-1">
@@ -50,10 +67,7 @@ const CandidateCard = ({
       </div>
       <div className="absolute top-3 end-3">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleBookmark(app);
-          }}
+          onClick={handleBookmarkToggle}
           className="p-1 rounded hover:bg-primary/10 cursor-pointer"
         >
           {app.is_bookmarked ? (
@@ -80,9 +94,7 @@ const CandidateCard = ({
         <div className="mt-2">
           <StarRating
             value={app.rating}
-            onChange={(r) => {
-              onUpdateRating(app.id, r);
-            }}
+            onChange={handleRatingChange}
             size={14}
           />
         </div>

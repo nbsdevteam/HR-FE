@@ -34,7 +34,26 @@ const JobCard = ({
   onEditJob,
   onJobStatusChange,
   onLinkJob,
-}: IJobCardProps) => (
+}: IJobCardProps) => {
+  const handleStatusChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    onJobStatusChange(job, e.target.value);
+  };
+  const handleLinkClick = (): void => {
+    onLinkJob(job);
+  };
+  const handleAiScreeningClick = (): void => {
+    onAiScreeningOpen(job.id);
+  };
+  const handleEditClick = (): void => {
+    onEditJob(job);
+  };
+  const handleDeleteClick = (): void => {
+    onDeleteJob(job);
+  };
+
+  return (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -51,7 +70,7 @@ const JobCard = ({
       </div>
       <Select
         value={job.status}
-        onChange={(event) => onJobStatusChange(job, event.target.value)}
+        onChange={handleStatusChange}
         title={arabicSource("recruitment.vacancy_status")}
         className={`px-2 py-0.5 rounded-md border bg-transparent cursor-pointer outline-none focus:ring-2 focus:ring-primary/40 ${statusColors[job.status] || ""}`}
         style={{ fontSize: 12 }}
@@ -115,7 +134,7 @@ const JobCard = ({
     )}
     <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/20">
       <button
-        onClick={() => onLinkJob(job)}
+        onClick={handleLinkClick}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
         style={{ fontSize: 12 }}
       >
@@ -123,7 +142,7 @@ const JobCard = ({
         {arabicSource("recruitment.apply_link")}
       </button>
       <button
-        onClick={() => onAiScreeningOpen(job.id)}
+        onClick={handleAiScreeningClick}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors cursor-pointer"
         style={{ fontSize: 12 }}
       >
@@ -132,14 +151,14 @@ const JobCard = ({
       </button>
       <div className="flex items-center gap-1 ms-auto">
         <button
-          onClick={() => onEditJob(job)}
+          onClick={handleEditClick}
           title={arabicSource("common.edit")}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
         >
           <Edit3 className="w-3.5 h-3.5" />
         </button>
         <button
-          onClick={() => onDeleteJob(job)}
+          onClick={handleDeleteClick}
           title={arabicSource("common.delete")}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
         >
@@ -148,6 +167,7 @@ const JobCard = ({
       </div>
     </div>
   </motion.div>
-);
+  );
+};
 
 export default memo(JobCard);

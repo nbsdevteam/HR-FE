@@ -7,17 +7,23 @@ type StageSelectProps = {
   onChange: (stage: string) => void;
 };
 
-const StageSelect = ({ stage, onChange }: StageSelectProps) => (
-  <Select
-    value={stage}
-    onChange={(e) => onChange(e.target.value)}
-    className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[stage] || ""}`}
-    style={{ fontSize: 12 }}
-  >
-    {ALL_STAGES.map((s) => (
-      <option key={s} value={s}>{s}</option>
-    ))}
-  </Select>
-);
+const StageSelect = ({ stage, onChange }: StageSelectProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onChange(e.target.value);
+  };
+
+  return (
+    <Select
+      value={stage}
+      onChange={handleChange}
+      className={`px-2 py-0.5 rounded-md border cursor-pointer bg-transparent ${stageColors[stage] || ""}`}
+      style={{ fontSize: 12 }}
+    >
+      {ALL_STAGES.map((s) => (
+        <option key={s} value={s}>{s}</option>
+      ))}
+    </Select>
+  );
+};
 
 export default memo(StageSelect);

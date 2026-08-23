@@ -72,6 +72,14 @@ const AiScreeningView = ({
     setBusy(false);
   };
 
+  const handleJobIdChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setJobId(e.target.value || null);
+  };
+
+  const handleMinIrChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setMinIr(Number(e.target.value));
+  };
+
   const shortlistAbove = async () => {
     const targets = items.filter(
       (a) =>
@@ -93,7 +101,7 @@ const AiScreeningView = ({
       <div className="flex items-center gap-3 flex-wrap">
         <Select
           value={jobId || ""}
-          onChange={(e) => setJobId(e.target.value || null)}
+          onChange={handleJobIdChange}
           className="h-10 px-3 rounded-lg border border-border bg-input-background text-foreground cursor-pointer min-w-[220px]"
           style={{ fontSize: 13 }}
         >
@@ -131,7 +139,7 @@ const AiScreeningView = ({
                 max={95}
                 step={5}
                 value={minIr}
-                onChange={(e) => setMinIr(Number(e.target.value))}
+                onChange={handleMinIrChange}
                 className="cursor-pointer accent-current text-primary"
                 dir="ltr"
               />

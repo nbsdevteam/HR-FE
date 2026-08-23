@@ -20,19 +20,41 @@ const PublicApplyUpload = ({
   onAcceptFile,
   onDraggingChange,
   onFileChange,
-}: PublicApplyUploadProps) => (
+}: PublicApplyUploadProps) => {
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    onDraggingChange(true);
+  };
+
+  const handleDragLeave = (): void => {
+    onDraggingChange(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    onDraggingChange(false);
+    onAcceptFile(event.dataTransfer.files?.[0] || null);
+  };
+
+  const handleUploadAreaClick = (): void => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveFileClick = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onFileChange(null);
+  };
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    onAcceptFile(event.target.files?.[0] || null);
+  };
+
+  return (
   <div
-    onDragOver={(event) => {
-      event.preventDefault();
-      onDraggingChange(true);
-    }}
-    onDragLeave={() => onDraggingChange(false)}
-    onDrop={(event) => {
-      event.preventDefault();
-      onDraggingChange(false);
-      onAcceptFile(event.dataTransfer.files?.[0] || null);
-    }}
-    onClick={() => fileInputRef.current?.click()}
+    onDragOver={handleDragOver}
+    onDragLeave={handleDragLeave}
+    onDrop={handleDrop}
+    onClick={handleUploadAreaClick}
     className={`rounded-xl border-2 border-dashed px-5 py-8 text-center cursor-pointer transition-colors ${
       dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
     }`}
@@ -43,10 +65,7 @@ const PublicApplyUpload = ({
         <span className="text-foreground" style={{ fontSize: 13 }} dir="ltr">{file.name}</span>
         <button
           type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onFileChange(null);
-          }}
+          onClick={handleRemoveFileClick}
           aria-label={arabicSource("apply.remove_file")}
           className="p-1 rounded-md hover:bg-destructive/10 text-destructive cursor-pointer"
         >
@@ -67,9 +86,10 @@ const PublicApplyUpload = ({
       type="file"
       accept={acceptedResumeTypes}
       className="hidden"
-      onChange={(event) => onAcceptFile(event.target.files?.[0] || null)}
+      onChange={handleFileInputChange}
     />
   </div>
-);
+  );
+};
 
 export default PublicApplyUpload;

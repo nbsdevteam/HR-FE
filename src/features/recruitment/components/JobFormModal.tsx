@@ -1,20 +1,15 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { InputField, Modal, Select } from "@/shared/components";
+import { Modal } from "@/shared/components";
 import {
   type DbJobOpening,
   type DbDepartment,
   type JobSkillRequirement,
 } from "@/shared/hooks";
-import { DEPARTMENTS } from "@/shared/constants";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import {
-  JOB_STATUSES,
-  JOB_STATUS_TO_ODOO,
-  JOB_TYPE_TO_ODOO,
-} from "../constants/recruitment";
-import { inputCls, labelCls, selectCls } from "../styles";
+import { JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO } from "../constants/recruitment";
+import JobFormFieldsSection from "./JobFormFieldsSection";
 import JobScreeningSpecFields from "./JobScreeningSpecFields";
 
 const JobFormModal = ({
@@ -110,6 +105,10 @@ const JobFormModal = ({
     setForm((prev) => ({ ...prev, ir_auto_shortlist: value }));
   }, []);
 
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
   return (
     <Modal
       onClose={onClose}
@@ -121,117 +120,18 @@ const JobFormModal = ({
       }
       bodyClassName="space-y-4"
     >
-        <div>
-          <label className={labelCls} style={{ fontSize: 13 }}>
-            {arabicSource("recruitment.job_title")}
-          </label>
-          <InputField
-            value={form.title}
-            onChange={(title) => setForm({ ...form, title })}
-            placeholder={arabicSource("recruitment.job_title_2")}
-            className={inputCls}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>
-              {arabicSource("common.section")}
-            </label>
-            <Select
-              value={form.department}
-              onChange={(e) => setForm({ ...form, department: e.target.value })}
-              options={DEPARTMENTS}
-              className={selectCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>
-              {arabicSource("recruitment.location")}
-            </label>
-            <InputField
-              value={form.location}
-              onChange={(location) => setForm({ ...form, location })}
-              className={inputCls}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>
-              {arabicSource("recruitment.permanent_type")}
-            </label>
-            <Select
-              value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
-              options={[
-                arabicSource("common.full_time"),
-                arabicSource("recruitment.part_time"),
-                arabicSource("recruitment.temporary_contract"),
-              ]}
-              className={selectCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls} style={{ fontSize: 13 }}>
-              {arabicSource("recruitment.deadline")}
-            </label>
-            <InputField
-              type="date"
-              value={form.deadline}
-              onChange={(deadline) => setForm({ ...form, deadline })}
-              className={inputCls}
-              dir="ltr"
-            />
-          </div>
-        </div>
-        <div>
-          <label className={labelCls} style={{ fontSize: 13 }}>
-            {arabicSource("recruitment.vacancy_status")}
-          </label>
-          <Select
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
-            options={JOB_STATUSES}
-            className={selectCls}
-          />
-        </div>
-        <div>
-          <label className={labelCls} style={{ fontSize: 13 }}>
-            {arabicSource("recruitment.salary_range")}
-          </label>
-          <InputField
-            value={form.salary_range}
-            onChange={(salary_range) => setForm({ ...form, salary_range })}
-            placeholder={arabicSource(
-              "recruitment.example_1_500_000_2_500_000_iqd",
-            )}
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label className={labelCls} style={{ fontSize: 13 }}>
-            {arabicSource("recruitment.requirements_line_for_each_requirement")}
-          </label>
-          <textarea
-            value={form.requirements}
-            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-            rows={3}
-            placeholder={arabicSource("recruitment.5_years_experience")}
-            className={`${inputCls} h-auto py-3 resize-none`}
-          />
-        </div>
-        <div>
-          <label className={labelCls} style={{ fontSize: 13 }}>
-            {arabicSource("common.description")}
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={3}
-            placeholder={arabicSource("recruitment.job_description")}
-            className={`${inputCls} h-auto py-3 resize-none`}
-          />
-        </div>
+        <JobFormFieldsSection
+          title={form.title}
+          department={form.department}
+          location={form.location}
+          type={form.type}
+          deadline={form.deadline}
+          status={form.status}
+          salaryRange={form.salary_range}
+          requirements={form.requirements}
+          description={form.description}
+          onFieldChange={handleFieldChange}
+        />
 
         <JobScreeningSpecFields
           requiredSkills={requiredSkills}
