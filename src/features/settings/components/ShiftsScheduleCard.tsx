@@ -90,7 +90,7 @@ const ShiftsScheduleCard = ({
         {!showNewShiftForm && (
           <button
             onClick={handleShowNewShiftForm}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary cursor-pointer hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>{arabicSource("settings.new_shift_added")}</span>

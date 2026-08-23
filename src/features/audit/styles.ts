@@ -1,4 +1,5 @@
-export const auditCardCls = "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg";
+export const auditCardCls =
+  "bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-6 shadow-lg";
 
 export const actionColors: Record<string, string> = {
   create: "text-emerald-400",

@@ -95,7 +95,7 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
             {!showNewHolidayForm && (
               <button
                 onClick={handleShowNewHolidayForm}
-                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors text-sm"
+                className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 {arabicSource("settings.add_holiday")}

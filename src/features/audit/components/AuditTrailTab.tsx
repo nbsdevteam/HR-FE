@@ -9,6 +9,7 @@ import Select from "@/shared/components/Select";
 import { actionLabels, entityLabels } from "../data/auditMeta";
 import { auditCardCls } from "../styles";
 import AuditLogRow from "./AuditLogRow";
+import { selectStyle } from "@/styles/sharedClasses";
 
 const PAGE_LIMIT = 100;
 
@@ -82,13 +83,19 @@ const AuditTrailTab = () => {
     setExpandedLog((current) => (current === id ? null : id));
   }, []);
 
-  const handleFilterActionChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setFilterAction(e.target.value);
-  };
+  const handleFilterActionChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>): void => {
+      setFilterAction(e.target.value);
+    },
+    [setFilterAction],
+  );
 
-  const handleFilterEntityChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setFilterEntity(e.target.value);
-  };
+  const handleFilterEntityChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>): void => {
+      setFilterEntity(e.target.value);
+    },
+    [setFilterEntity],
+  );
 
   return (
     <div className="space-y-4">
@@ -126,7 +133,7 @@ const AuditTrailTab = () => {
               value,
               label,
             }))}
-            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            className={selectStyle}
           />
           <Select
             value={filterEntity}
@@ -136,7 +143,7 @@ const AuditTrailTab = () => {
               value,
               label,
             }))}
-            className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+            className={selectStyle}
           />
         </div>
       </div>

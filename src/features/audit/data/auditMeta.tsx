@@ -1,5 +1,20 @@
 import type { ComponentType } from "react";
-import { AlertTriangle, Bell, Check, CheckCircle, ClipboardCheck, Download, Edit2, Info, LogIn, Settings, Shield, Trash2, Upload, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  Check,
+  CheckCircle,
+  ClipboardCheck,
+  Download,
+  Edit2,
+  Info,
+  LogIn,
+  Settings,
+  Shield,
+  Trash2,
+  Upload,
+  XCircle,
+} from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
 type IconComponent = ComponentType<{ className?: string }>;
@@ -58,6 +73,46 @@ export const notifTypeIcons: Record<string, IconComponent> = {
 };
 
 export const tabs = [
-  { key: "notifications" as const, label: arabicSource("common.notices"), icon: Bell },
-  { key: "audit" as const, label: arabicSource("auditcenter.audit_log"), icon: Shield },
+  {
+    key: "notifications" as const,
+    label: arabicSource("common.notices"),
+    icon: Bell,
+  },
+  {
+    key: "audit" as const,
+    label: arabicSource("auditcenter.audit_log"),
+    icon: Shield,
+  },
+];
+
+export const allTypesOptions = [
+  { value: "all", label: arabicSource("common.all_types") },
+  { value: "info", label: arabicSource("auditcenter.information") },
+  { value: "warning", label: arabicSource("auditcenter.warning") },
+  { value: "success", label: arabicSource("auditcenter.success") },
+  { value: "error", label: arabicSource("common.error") },
+  {
+    value: "action",
+    label: arabicSource("auditcenter.action_required"),
+  },
+];
+
+export const allCategoriesOptions = [
+  { value: "all", label: arabicSource("common.all_categories") },
+  { value: "system", label: arabicSource("common.system") },
+  { value: "leave", label: arabicSource("common.vacations_2") },
+  {
+    value: "attendance",
+    label: arabicSource("common.attendance_2"),
+  },
+  { value: "payroll", label: arabicSource("common.salaries_2") },
+  { value: "contract", label: arabicSource("common.contracts") },
+  {
+    value: "document",
+    label: arabicSource("common.documentation"),
+  },
+  {
+    value: "approval",
+    label: arabicSource("auditcenter.approvals"),
+  },
 ];

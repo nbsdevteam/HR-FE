@@ -58,7 +58,7 @@ const ShiftDepartmentAssignments = ({
       <button
         onClick={onSave}
         disabled={saving}
-        className="mt-4 w-full px-4 py-2 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
+        className="mt-4 w-full px-4 py-2 bg-primary cursor-pointer hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
       >
         {saving
           ? arabicSource("common.saving")

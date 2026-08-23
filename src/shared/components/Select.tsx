@@ -1,4 +1,9 @@
-import type { CSSProperties, ReactNode, SelectHTMLAttributes } from "react";
+import {
+  memo,
+  type CSSProperties,
+  type ReactNode,
+  type SelectHTMLAttributes,
+} from "react";
 
 export type SelectOption = string | { value: string; label: string };
 
@@ -33,22 +38,22 @@ const Select = ({
 }: SelectProps) => {
   const select = (
     <select className={className} {...selectProps}>
-      {options
-        ? (
-          <>
-            {blankLabel !== undefined && <option value="">{blankLabel}</option>}
-            {options.map((opt) => {
-              const { value, label: optionLabel } =
-                typeof opt === "string" ? { value: opt, label: opt } : opt;
-              return (
-                <option key={value} value={value}>
-                  {optionLabel}
-                </option>
-              );
-            })}
-          </>
-        )
-        : children}
+      {options ? (
+        <>
+          {blankLabel !== undefined && <option value="">{blankLabel}</option>}
+          {options.map((opt) => {
+            const { value, label: optionLabel } =
+              typeof opt === "string" ? { value: opt, label: opt } : opt;
+            return (
+              <option key={value} value={value}>
+                {optionLabel}
+              </option>
+            );
+          })}
+        </>
+      ) : (
+        children
+      )}
     </select>
   );
 
@@ -63,5 +68,4 @@ const Select = ({
     </div>
   );
 };
-
-export default Select;
+export default memo(Select);

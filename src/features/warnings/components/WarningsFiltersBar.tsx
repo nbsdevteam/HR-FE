@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -24,54 +25,62 @@ const WarningsFiltersBar = ({
   warningTypes,
   warningStatuses,
 }: TWarningsFiltersBarProps) => {
-  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleSearchQueryChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
     onSearchQueryChange(e.target.value);
   };
 
-  const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFilterTypeChange(e.target.value);
-  };
+  const handleFilterTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>): void => {
+      onFilterTypeChange(e.target.value);
+    },
+    [onFilterTypeChange],
+  );
 
-  const handleFilterStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    onFilterStatusChange(e.target.value);
-  };
+  const handleFilterStatusChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>): void => {
+      onFilterStatusChange(e.target.value);
+    },
+    [onFilterStatusChange],
+  );
 
   return (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-    className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-4 shadow-lg"
-  >
-    <div className="flex flex-col md:flex-row gap-3">
-      <div className="flex-1 relative">
-        <Search className="absolute end-3 top-3 w-5 h-5 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder={arabicSource("warnings.find_an_employee_or_cause")}
-          value={searchQuery}
-          onChange={handleSearchQueryChange}
-          className="w-full h-11 px-4 pe-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl p-4 shadow-lg"
+    >
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="flex-1 relative">
+          <Search className="absolute end-3 top-3 w-5 h-5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder={arabicSource("warnings.find_an_employee_or_cause")}
+            value={searchQuery}
+            onChange={handleSearchQueryChange}
+            className="w-full h-11 px-4 pe-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+          />
+        </div>
+
+        <Select
+          value={filterType}
+          onChange={handleFilterTypeChange}
+          options={warningTypes}
+          blankLabel={arabicSource("common.all_types")}
+          className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
+        />
+
+        <Select
+          value={filterStatus}
+          onChange={handleFilterStatusChange}
+          options={warningStatuses}
+          blankLabel={arabicSource("warnings.all_cases")}
+          className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
         />
       </div>
-
-      <Select
-        value={filterType}
-        onChange={handleFilterTypeChange}
-        options={warningTypes}
-        blankLabel={arabicSource("common.all_types")}
-        className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-      />
-
-      <Select
-        value={filterStatus}
-        onChange={handleFilterStatusChange}
-        options={warningStatuses}
-        blankLabel={arabicSource("warnings.all_cases")}
-        className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-      />
-    </div>
-  </motion.div>
+    </motion.div>
   );
 };
 

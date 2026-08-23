@@ -46,13 +46,10 @@ const DashboardAttendanceChart = ({
       <h3 className="text-foreground mb-4">
         {arabicSource("common.attendance_status")}{" "}
         {attendanceStats.date
-          ? `(${attendanceStats.date})`
+          ? `${attendanceStats.date}`
           : arabicSource("common.today")}
       </h3>
-      <div
-        className="flex items-center justify-center"
-        style={{ height: 240 }}
-      >
+      <div className="flex items-center justify-center" style={{ height: 240 }}>
         <DonutChart data={attendanceChartData} />
       </div>
       <div className="grid grid-cols-4 gap-2 mt-4">
