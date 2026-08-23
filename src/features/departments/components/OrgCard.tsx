@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import type React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Users, ChevronDown, UserPlus, Crown } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -33,6 +34,15 @@ const OrgCard = ({
   const childRefs = useRef<(HTMLDivElement | null)[]>([]);
   useEffect(() => { childRefs.current = childRefs.current.slice(0, node.children.length); }, [node.children.length]);
 
+  const handleCardClick = (): void => {
+    if (!isVacant) onSelect(node);
+  };
+
+  const handleExpandToggleClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.stopPropagation();
+    toggleExpand(node.id);
+  };
+
   return (
     <div className="relative flex flex-col items-center">
       {hasChildren && isExpanded && <TreeConnectors parentRef={cardRef} childRefs={childRefs} color={topColor} />}
@@ -51,7 +61,7 @@ const OrgCard = ({
             ${isSearchMatch ? "ring-2 ring-primary shadow-lg shadow-primary/25 scale-105" : ""}
             ${isDimmed ? "opacity-30" : "opacity-100"}`}
           style={{ minWidth: depth === 0 ? 220 : 195 }}
-          onClick={() => !isVacant && onSelect(node)}
+          onClick={handleCardClick}
         >
           {isOwner && !isVacant ? (
             <div className="h-2" style={{ background: "linear-gradient(90deg, #FFD700, #FFA500, #FFD700)" }} />
@@ -116,7 +126,7 @@ const OrgCard = ({
                   </div>
                 )}
                 {hasChildren && (
-                  <button onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+                  <button onClick={handleExpandToggleClick}
                     className="w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
                     <ChevronDown className="w-3 h-3 transition-transform duration-200" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />
                   </button>

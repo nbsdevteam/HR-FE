@@ -1,4 +1,5 @@
 import { lazy, memo, Suspense } from "react";
+import type React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { DbEmployee } from "@/shared/hooks";
 import type { OrgNode } from "../types";
@@ -79,7 +80,12 @@ const HierarchyModals = ({
   onDetailAddChild,
   onDetailDelete,
   onDetailEdit,
-}: HierarchyModalsProps) => (
+}: HierarchyModalsProps) => {
+  const handleDetailPanelButtonClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.stopPropagation();
+  };
+
+  return (
   <>
     <AnimatePresence>
       {selectedNode && !deleteTarget && (
@@ -90,7 +96,7 @@ const HierarchyModals = ({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={onCloseSelectedNode}
         >
-          <button onClick={(e) => e.stopPropagation()}>
+          <button onClick={handleDetailPanelButtonClick}>
             <Suspense fallback={null}>
               <DetailPanel
                 node={selectedNode}
@@ -180,6 +186,7 @@ const HierarchyModals = ({
       )}
     </AnimatePresence>
   </>
-);
+  );
+};
 
 export default memo(HierarchyModals);

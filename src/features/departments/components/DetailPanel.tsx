@@ -17,6 +17,18 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   const isRoot = node.id === orgTree.id;
   const isVirtualRoot = node.dbId === "__root__";
 
+  const handleAddChildClick = (): void => {
+    onAddChild(node.id);
+  };
+
+  const handleEditClick = (): void => {
+    onEdit(node);
+  };
+
+  const handleDeleteClick = (): void => {
+    onDelete(node);
+  };
+
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
       className="bg-card border border-border/60 rounded-xl shadow-2xl overflow-hidden" style={{ minWidth: 300, maxWidth: 340 }}>
@@ -25,17 +37,17 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-1.5">
             {!isVirtualRoot && (
-              <button onClick={() => onAddChild(node.id)} className="w-7 h-7 rounded-full flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary transition-colors" title={arabicSource("hierarchy.add_a_subordinate")}>
+              <button onClick={handleAddChildClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary transition-colors" title={arabicSource("hierarchy.add_a_subordinate")}>
                 <UserPlus className="w-3.5 h-3.5" />
               </button>
             )}
             {!isRoot && !isVirtualRoot && (
-              <button onClick={() => onEdit(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors" title={arabicSource("hierarchy.modify_data")}>
+              <button onClick={handleEditClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors" title={arabicSource("hierarchy.modify_data")}>
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             )}
             {!isRoot && !isVirtualRoot && (
-              <button onClick={() => onDelete(node)} className="w-7 h-7 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title={arabicSource("common.separation_from_the_structure")}>
+              <button onClick={handleDeleteClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title={arabicSource("common.separation_from_the_structure")}>
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
@@ -108,7 +120,7 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
         )}
 
         {!isVirtualRoot && (
-          <button onClick={() => onAddChild(node.id)}
+          <button onClick={handleAddChildClick}
             className="w-full mt-4 py-2.5 rounded-xl border border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 text-primary flex items-center justify-center gap-2 transition-all" style={{ fontSize: 12 }}>
             <UserPlus className="w-4 h-4" /> {arabicSource("hierarchy.add_a_new_subordinate")}
           </button>

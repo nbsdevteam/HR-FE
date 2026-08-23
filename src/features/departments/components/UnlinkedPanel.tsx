@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ChangeEvent } from "react";
 import { AlertTriangle, Link2 } from "lucide-react";
 import { Modal, Select } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
@@ -20,6 +21,19 @@ const UnlinkedPanel = ({
   const [selectedManager, setSelectedManager] = useState<
     Record<string, string>
   >({});
+
+  const handleManagerSelectChange =
+    (empId: string) =>
+    (e: ChangeEvent<HTMLSelectElement>): void => {
+      setSelectedManager((p) => ({
+        ...p,
+        [empId]: e.target.value,
+      }));
+    };
+
+  const handleLinkButtonClick = (empId: string) => (): void => {
+    if (selectedManager[empId]) onLink(empId, selectedManager[empId]);
+  };
 
   return (
     <Modal
@@ -75,12 +89,7 @@ const UnlinkedPanel = ({
               <div className="flex items-center gap-2">
                 <Select
                   value={selectedManager[emp.id] || ""}
-                  onChange={(e) =>
-                    setSelectedManager((p) => ({
-                      ...p,
-                      [emp.id]: e.target.value,
-                    }))
-                  }
+                  onChange={handleManagerSelectChange(emp.id)}
                   className="flex-1 bg-background border border-border/60 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
                   style={{ fontSize: 12 }}
                 >
@@ -96,10 +105,7 @@ const UnlinkedPanel = ({
                     ))}
                 </Select>
                 <button
-                  onClick={() => {
-                    if (selectedManager[emp.id])
-                      onLink(emp.id, selectedManager[emp.id]);
-                  }}
+                  onClick={handleLinkButtonClick(emp.id)}
                   disabled={!selectedManager[emp.id]}
                   className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors flex items-center gap-1"
                   style={{ fontSize: 12 }}

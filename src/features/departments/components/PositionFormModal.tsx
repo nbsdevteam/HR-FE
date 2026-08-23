@@ -24,7 +24,28 @@ type PositionFormModalProps = {
   saving: boolean;
 };
 
-const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments, onClose, onConfirm, saving }: PositionFormModalProps) => (
+const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments, onClose, onConfirm, saving }: PositionFormModalProps) => {
+  const handleTitleArChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setPosForm((p) => ({ ...p, title_ar: e.target.value }));
+  };
+
+  const handleTitleEnChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setPosForm((p) => ({ ...p, title_en: e.target.value }));
+  };
+
+  const handleDepartmentIdChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setPosForm((p) => ({ ...p, department_id: e.target.value }));
+  };
+
+  const handleMaxHeadcountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setPosForm((p) => ({ ...p, max_headcount: e.target.value }));
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setPosForm((p) => ({ ...p, description: e.target.value }));
+  };
+
+  return (
   <Modal
     onClose={onClose}
     overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
@@ -49,21 +70,21 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
   >
       <div>
         <FieldLabel>{arabicSource("hierarchy.job_title_arabic")}</FieldLabel>
-        <input type="text" value={posForm.title_ar} onChange={e => setPosForm(p => ({ ...p, title_ar: e.target.value }))}
+        <input type="text" value={posForm.title_ar} onChange={handleTitleArChange}
           placeholder={arabicSource("hierarchy.example_human_resources_manager")}
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} />
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.job_title_english")}</FieldLabel>
-        <input type="text" value={posForm.title_en} onChange={e => setPosForm(p => ({ ...p, title_en: e.target.value }))}
+        <input type="text" value={posForm.title_en} onChange={handleTitleEnChange}
           placeholder={arabicSource("hierarchy.example_human_resources_manager")} dir="ltr"
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} />
       </div>
       <div>
         <FieldLabel>{arabicSource("common.section")}</FieldLabel>
-        <Select value={posForm.department_id} onChange={e => setPosForm(p => ({ ...p, department_id: e.target.value }))}
+        <Select value={posForm.department_id} onChange={handleDepartmentIdChange}
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }}>
           <option value="">{arabicSource("common.no_section")}</option>
@@ -72,19 +93,20 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.maximum_number")}</FieldLabel>
-        <input type="number" value={posForm.max_headcount} onChange={e => setPosForm(p => ({ ...p, max_headcount: e.target.value }))}
+        <input type="number" value={posForm.max_headcount} onChange={handleMaxHeadcountChange}
           min="1" max="100"
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} dir="ltr" />
       </div>
       <div>
         <FieldLabel>{arabicSource("common.description")}</FieldLabel>
-        <textarea value={posForm.description} onChange={e => setPosForm(p => ({ ...p, description: e.target.value }))}
+        <textarea value={posForm.description} onChange={handleDescriptionChange}
           rows={2} placeholder={arabicSource("hierarchy.position_description_and_responsibilities")}
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground resize-none focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} />
       </div>
   </Modal>
-);
+  );
+};
 
 export default PositionFormModal;

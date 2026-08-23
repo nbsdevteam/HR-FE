@@ -33,6 +33,18 @@ const PositionCard = ({
     const empId = e.dataTransfer.getData("employee-id");
     if (empId) onDrop(empId, node.id);
   };
+  const handleEditPositionClick = (): void => {
+    onEditPosition(node);
+  };
+  const handleAddPositionClick = (): void => {
+    onAddPosition(node.id);
+  };
+  const handleDeletePositionClick = (): void => {
+    onDeletePosition(node.id);
+  };
+  const handleToggleExpandClick = (): void => {
+    togglePositionExpand(node.id);
+  };
 
   return (
     <div className="flex flex-col items-center">
@@ -62,14 +74,14 @@ const PositionCard = ({
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => onEditPosition(node)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors" title={arabicSource("common.edit")}>
+              <button onClick={handleEditPositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors" title={arabicSource("common.edit")}>
                 <Edit2 className="w-3 h-3 text-blue-400" />
               </button>
-              <button onClick={() => onAddPosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors" title={arabicSource("hierarchy.add_a_sub_position")}>
+              <button onClick={handleAddPositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors" title={arabicSource("hierarchy.add_a_sub_position")}>
                 <Plus className="w-3 h-3 text-primary" />
               </button>
               {node.assignedEmployees.length === 0 && node.children.length === 0 && (
-                <button onClick={() => onDeletePosition(node.id)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors" title={arabicSource("common.delete")}>
+                <button onClick={handleDeletePositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors" title={arabicSource("common.delete")}>
                   <Trash2 className="w-3 h-3 text-red-400" />
                 </button>
               )}
@@ -105,7 +117,7 @@ const PositionCard = ({
               {node.assignedEmployees.length}/{node.max_headcount}
             </span>
             {hasChildren && (
-              <button onClick={() => togglePositionExpand(node.id)}
+              <button onClick={handleToggleExpandClick}
                 className="w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
                 <ChevronDown className="w-3 h-3 transition-transform" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />
               </button>

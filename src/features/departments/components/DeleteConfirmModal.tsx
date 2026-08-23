@@ -12,6 +12,14 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
   const hasChildren = node.children.length > 0;
   const topColor = defaultDeptColorMap[node.department] || node.color;
 
+  const handleDeleteWithReassignClick = (): void => {
+    onDelete(node, true);
+  };
+
+  const handleDeleteWithoutReassignClick = (): void => {
+    onDelete(node, false);
+  };
+
   return (
     <ModalOverlay
       onClose={onClose}
@@ -41,7 +49,7 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
           {hasChildren ? (
             <div className="space-y-3">
               <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("hierarchy.this_employee_has")} {node.children.length} {arabicSource("hierarchy.direct_reports_choose_what_to_do")}</p>
-              <button onClick={() => onDelete(node, true)}
+              <button onClick={handleDeleteWithReassignClick}
                 className="w-full text-start p-3 rounded-xl border border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="w-4 h-4 text-primary" />
@@ -51,7 +59,7 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
                   {parentNode ? `${arabicSource("hierarchy.subordinates_will_be_transferred_to")}${parentNode.name}"` : arabicSource("hierarchy.subordinates_will_be_moved_to_a_higher_level")}
                 </p>
               </button>
-              <button onClick={() => onDelete(node, false)}
+              <button onClick={handleDeleteWithoutReassignClick}
                 className="w-full text-start p-3 rounded-xl border border-red-500/30 hover:border-red-500/60 hover:bg-red-500/5 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Trash2 className="w-4 h-4 text-red-400" />
@@ -64,7 +72,7 @@ const DeleteConfirmModal = ({ node, orgTree, onDelete, onClose }: {
           ) : (
             <div className="flex items-center justify-end gap-3 mt-2">
               <button onClick={onClose} className="px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 13 }}>{arabicSource("common.cancel")}</button>
-              <button onClick={() => onDelete(node, false)} className="px-5 py-2 rounded-lg bg-red-500/90 hover:bg-red-500 text-white transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
+              <button onClick={handleDeleteWithoutReassignClick} className="px-5 py-2 rounded-lg bg-red-500/90 hover:bg-red-500 text-white transition-colors flex items-center gap-2" style={{ fontSize: 13 }}>
                 <Trash2 className="w-4 h-4" /> {arabicSource("common.separation_from_the_structure")}
               </button>
             </div>

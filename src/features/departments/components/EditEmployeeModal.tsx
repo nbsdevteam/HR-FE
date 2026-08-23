@@ -75,6 +75,28 @@ const EditEmployeeModal = ({
     onSave(node.dbId, updates);
   };
 
+  const handleNameChange = (value: string): void => {
+    setName(value);
+    setErrors((p) => ({ ...p, name: false }));
+  };
+
+  const handlePositionChange = (value: string): void => {
+    setPosition(value);
+    setErrors((p) => ({ ...p, position: false }));
+  };
+
+  const handleDepartmentChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    setDepartment(e.target.value);
+  };
+
+  const handleManagerChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    setManagerId(e.target.value ? Number(e.target.value) : null);
+  };
+
   // Find current manager id
   useEffect(() => {
     const findManagerId = (
@@ -142,10 +164,7 @@ const EditEmployeeModal = ({
           icon={UserCheck}
           label={arabicSource("common.employee_name")}
           value={name}
-          onChange={(v) => {
-            setName(v);
-            setErrors((p) => ({ ...p, name: false }));
-          }}
+          onChange={handleNameChange}
           placeholder={arabicSource("common.employee_name")}
           error={errors.name}
           errorMessage={arabicSource("common.please_enter_employee_name")}
@@ -157,10 +176,7 @@ const EditEmployeeModal = ({
           icon={Briefcase}
           label={arabicSource("common.job_title")}
           value={position}
-          onChange={(v) => {
-            setPosition(v);
-            setErrors((p) => ({ ...p, position: false }));
-          }}
+          onChange={handlePositionChange}
           placeholder={arabicSource("common.job_title")}
           error={errors.position}
           errorMessage={arabicSource("common.please_enter_your_job_title")}
@@ -174,7 +190,7 @@ const EditEmployeeModal = ({
           </FieldLabel>
           <Select
             value={department}
-            onChange={(e) => setDepartment(e.target.value)}
+            onChange={handleDepartmentChange}
             className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
             style={{ fontSize: 13 }}
           >
@@ -192,9 +208,7 @@ const EditEmployeeModal = ({
           </FieldLabel>
           <Select
             value={managerId ?? ""}
-            onChange={(e) =>
-              setManagerId(e.target.value ? Number(e.target.value) : null)
-            }
+            onChange={handleManagerChange}
             className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
             style={{ fontSize: 13 }}
           >
