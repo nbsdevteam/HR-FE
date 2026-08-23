@@ -10,7 +10,12 @@ type EmployeeAttachmentCardProps = {
   onDelete: (id: number) => void;
 };
 
-const EmployeeAttachmentCard = ({ attachment, isEditing, onDelete }: EmployeeAttachmentCardProps) => (
+const EmployeeAttachmentCard = ({ attachment, isEditing, onDelete }: EmployeeAttachmentCardProps) => {
+  const handleDeleteClick = (): void => {
+    onDelete(attachment.id);
+  };
+
+  return (
   <motion.div
     layout
     initial={{ opacity: 0, y: 5 }}
@@ -25,8 +30,9 @@ const EmployeeAttachmentCard = ({ attachment, isEditing, onDelete }: EmployeeAtt
         {attachment.type} — <span dir="ltr">{attachment.date}</span>
       </p>
     </div>
-    {isEditing && <RecordDeleteButton onDelete={() => onDelete(attachment.id)} />}
+    {isEditing && <RecordDeleteButton onDelete={handleDeleteClick} />}
   </motion.div>
-);
+  );
+};
 
 export default EmployeeAttachmentCard;

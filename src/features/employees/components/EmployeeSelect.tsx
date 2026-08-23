@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronsUpDown, Search, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { DbEmployee, empDisplayName, empNumber } from "@/shared/hooks";
+import EmployeeSelectOption from "./EmployeeSelectOption";
 
 type Props = {
   employees: DbEmployee[];
@@ -123,6 +124,40 @@ const EmployeeSelect = ({
     setQuery("");
   }
 
+  const handleClearClick = (e: React.MouseEvent<HTMLSpanElement>): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    clear();
+  };
+
+  const handleClearKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>): void => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      clear();
+    }
+  };
+
+  const handleDropdownPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+    e.stopPropagation();
+  };
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setQuery(e.target.value);
+  };
+
+  const handleSearchInputClick = (e: React.MouseEvent<HTMLInputElement>): void => {
+    e.stopPropagation();
+  };
+
+  const handleOptionMouseDown =
+    (emp: DbEmployee) => (e: React.MouseEvent<HTMLButtonElement>): void => {
+      // mousedown + preventDefault: commit before blur/outside handlers.
+      e.preventDefault();
+      e.stopPropagation();
+      pick(emp);
+    };
+
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (ev: MouseEvent) => {
@@ -180,18 +215,8 @@ const EmployeeSelect = ({
             <span
               role="button"
               tabIndex={0}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                clear();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  clear();
-                }
-              }}
+              onClick={handleClearClick}
+              onKeyDown={handleClearKeyDown}
               className="p-0.5 rounded hover:bg-muted/40 text-muted-foreground"
               aria-label="clear"
             >
@@ -205,7 +230,7 @@ const EmployeeSelect = ({
       {open ? (
         <div
           className="absolute z-[800] mt-1 w-full rounded-lg border border-border bg-card shadow-xl overflow-hidden"
-          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDown={handleDropdownPointerDown}
         >
           <div className="p-2 border-b border-border/40 flex items-center gap-2">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -213,8 +238,8 @@ const EmployeeSelect = ({
               ref={searchRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
+              onChange={handleQueryChange}
+              onClick={handleSearchInputClick}
               placeholder={arabicSource("common.search_for_an_employee")}
               className="w-full h-8 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
               style={{ fontSize: 13 }}
@@ -229,48 +254,15 @@ const EmployeeSelect = ({
                 {arabicSource("common.no_results_found")}
               </p>
             ) : (
-              options?.map((emp) => {
-                const active = String(emp.id) === valueKey;
-                const name = empDisplayName(emp);
-                return (
-                  <button
-                    key={emp.id}
-                    type="button"
-                    role="option"
-                    aria-selected={active}
-                    onMouseDown={(e) => {
-                      // mousedown + preventDefault: commit before blur/outside handlers.
-                      e.preventDefault();
-                      e.stopPropagation();
-                      pick(emp);
-                    }}
-                    className={`w-full px-3 py-2 text-start hover:bg-primary/10 cursor-pointer border-b border-border/10 last:border-b-0 ${
-                      active ? "bg-primary/10 text-primary" : "text-foreground"
-                    }`}
-                    style={{ fontSize: 13 }}
-                  >
-                    <div className="truncate font-medium" dir="auto">
-                      {name}
-                    </div>
-                    {showDepartment &&
-                      (emp.department || emp.device_employee_no) && (
-                        <div
-                          className="text-muted-foreground truncate"
-                          style={{ fontSize: 11 }}
-                        >
-                          {[
-                            emp.department,
-                            emp.device_employee_no
-                              ? `#${emp.device_employee_no}`
-                              : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </div>
-                      )}
-                  </button>
-                );
-              })
+              options?.map((emp) => (
+                <EmployeeSelectOption
+                  key={emp.id}
+                  emp={emp}
+                  active={String(emp.id) === valueKey}
+                  showDepartment={showDepartment}
+                  onMouseDown={handleOptionMouseDown(emp)}
+                />
+              ))
             )}
           </div>
           <div

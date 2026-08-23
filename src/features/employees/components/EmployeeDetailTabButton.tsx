@@ -11,9 +11,14 @@ type EmployeeDetailTabButtonProps = {
   onSelect: (tab: EmployeeDetailModalTab) => void;
 };
 
-const EmployeeDetailTabButton = ({ tabKey, label, icon: TabIcon, count, isActive, onSelect }: EmployeeDetailTabButtonProps) => (
+const EmployeeDetailTabButton = ({ tabKey, label, icon: TabIcon, count, isActive, onSelect }: EmployeeDetailTabButtonProps) => {
+  const handleTabClick = (): void => {
+    onSelect(tabKey);
+  };
+
+  return (
   <button
-    onClick={() => onSelect(tabKey)}
+    onClick={handleTabClick}
     className={`relative flex items-center gap-1.5 px-4 py-3 transition-colors cursor-pointer ${
       isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
     }`}
@@ -33,6 +38,7 @@ const EmployeeDetailTabButton = ({ tabKey, label, icon: TabIcon, count, isActive
       />
     )}
   </button>
-);
+  );
+};
 
 export default EmployeeDetailTabButton;

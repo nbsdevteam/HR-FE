@@ -38,6 +38,10 @@ const EmployeesListView = ({
     [dbEmployees],
   );
 
+  const handleSort = (key: EmployeeSortKey): void => {
+    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+  };
+
   return (
     <motion.div
       key="list"
@@ -66,7 +70,7 @@ const EmployeesListView = ({
             ]}
             sortBy={sortBy}
             sortDir={sortDir}
-            onSort={(key) => toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)}
+            onSort={handleSort}
           />
         }
         renderRow={(emp, i) => (

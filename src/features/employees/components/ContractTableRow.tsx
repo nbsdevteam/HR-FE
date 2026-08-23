@@ -22,6 +22,18 @@ const ContractTableRow = ({
     ? Math.ceil((new Date(c.probation_end_date).getTime() - Date.now()) / 86400000)
     : null;
 
+  const handleProbationPassedClick = (): void => {
+    onProbationUpdate(c.id, "passed");
+  };
+
+  const handleProbationFailedClick = (): void => {
+    onProbationUpdate(c.id, "failed");
+  };
+
+  const handleTerminateClick = (): void => {
+    onTerminate(c.id);
+  };
+
   return (
     <motion.tr
       initial={{ opacity: 0 }}
@@ -52,16 +64,16 @@ const ContractTableRow = ({
         <div className="flex items-center gap-1">
           {c.probation_status === "pending" && (
             <>
-              <button onClick={() => onProbationUpdate(c.id, "passed")} className="p-1 rounded hover:bg-emerald-500/20 cursor-pointer" title={arabicSource("lifecycle.passed_the_test")}>
+              <button onClick={handleProbationPassedClick} className="p-1 rounded hover:bg-emerald-500/20 cursor-pointer" title={arabicSource("lifecycle.passed_the_test")}>
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
               </button>
-              <button onClick={() => onProbationUpdate(c.id, "failed")} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("lifecycle.did_not_pass")}>
+              <button onClick={handleProbationFailedClick} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("lifecycle.did_not_pass")}>
                 <X className="w-3.5 h-3.5 text-destructive" />
               </button>
             </>
           )}
           {c.status === "active" && (
-            <button onClick={() => onTerminate(c.id)} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("common.end")}>
+            <button onClick={handleTerminateClick} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("common.end")}>
               <UserX className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           )}

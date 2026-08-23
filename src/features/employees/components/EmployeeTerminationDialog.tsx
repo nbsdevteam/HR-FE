@@ -34,6 +34,10 @@ const EmployeeTerminationDialog = ({
     [terminationLoading, onClose],
   );
 
+  const handleToggleOption = (key: keyof TerminationOptions) => (checked: boolean): void => {
+    onToggleOption(key, checked);
+  };
+
   return (
     <ModalOverlay
       onClose={handleBackdropClose}
@@ -70,7 +74,7 @@ const EmployeeTerminationDialog = ({
             desc={opt.desc}
             icon={opt.icon}
             checked={terminationOptions[opt.key]}
-            onChange={(checked) => onToggleOption(opt.key, checked)}
+            onChange={handleToggleOption(opt.key)}
           />
         ))}
       </div>

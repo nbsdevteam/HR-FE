@@ -12,7 +12,12 @@ type EmployeeCustodyCardProps = {
   onDelete: (id: number) => void;
 };
 
-const EmployeeCustodyCard = ({ custody, isEditing, onDelete }: EmployeeCustodyCardProps) => (
+const EmployeeCustodyCard = ({ custody, isEditing, onDelete }: EmployeeCustodyCardProps) => {
+  const handleDeleteClick = (): void => {
+    onDelete(custody.id);
+  };
+
+  return (
   <motion.div
     layout
     initial={{ opacity: 0, y: 5 }}
@@ -28,7 +33,7 @@ const EmployeeCustodyCard = ({ custody, isEditing, onDelete }: EmployeeCustodyCa
           <p className="text-muted-foreground mt-0.5" style={{ fontSize: 13 }}>{custody.description}</p>
         </div>
       </div>
-      {isEditing && <RecordDeleteButton onDelete={() => onDelete(custody.id)} />}
+      {isEditing && <RecordDeleteButton onDelete={handleDeleteClick} />}
     </div>
     <div className="flex items-center gap-5 mt-3 ps-11">
       <RecordMetaItem icon={Calendar} label={arabicSource("shared.received_date")} value={custody.dateReceived} />
@@ -37,6 +42,7 @@ const EmployeeCustodyCard = ({ custody, isEditing, onDelete }: EmployeeCustodyCa
       )}
     </div>
   </motion.div>
-);
+  );
+};
 
 export default EmployeeCustodyCard;

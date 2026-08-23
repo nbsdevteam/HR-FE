@@ -48,6 +48,14 @@ const ExitProcessDetailView = ({
     [categoryLabels, checklist, exitItemById],
   );
 
+  const handleStatusUpdateClick = (status: string) => (): void => {
+    onStatusUpdate(proc.id, status);
+  };
+
+  const handleChecklistToggle = (checklistId: string, completed: boolean) => (): void => {
+    onChecklistToggle(checklistId, !completed);
+  };
+
   return (
     <div className="space-y-4">
       <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer">
@@ -99,18 +107,18 @@ const ExitProcessDetailView = ({
       {proc.status !== "completed" && proc.status !== "cancelled" && (
         <div className="flex gap-2">
           {proc.status === "initiated" && (
-            <button onClick={() => onStatusUpdate(proc.id, "in_progress")} className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs cursor-pointer hover:bg-amber-500/30">{arabicSource("common.initiate_procedures")}</button>
+            <button onClick={handleStatusUpdateClick("in_progress")} className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs cursor-pointer hover:bg-amber-500/30">{arabicSource("common.initiate_procedures")}</button>
           )}
           {proc.status === "in_progress" && (
-            <button onClick={() => onStatusUpdate(proc.id, "clearance")} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-xs cursor-pointer hover:bg-blue-500/30">{arabicSource("common.disclaimer")}</button>
+            <button onClick={handleStatusUpdateClick("clearance")} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-xs cursor-pointer hover:bg-blue-500/30">{arabicSource("common.disclaimer")}</button>
           )}
           {proc.status === "clearance" && (
-            <button onClick={() => onStatusUpdate(proc.id, "settlement")} className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs cursor-pointer hover:bg-purple-500/30">{arabicSource("lifecycle.financial_settlement")}</button>
+            <button onClick={handleStatusUpdateClick("settlement")} className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs cursor-pointer hover:bg-purple-500/30">{arabicSource("lifecycle.financial_settlement")}</button>
           )}
           {proc.status === "settlement" && (
-            <button onClick={() => onStatusUpdate(proc.id, "completed")} className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs cursor-pointer hover:bg-emerald-500/30">{arabicSource("lifecycle.complete")}</button>
+            <button onClick={handleStatusUpdateClick("completed")} className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs cursor-pointer hover:bg-emerald-500/30">{arabicSource("lifecycle.complete")}</button>
           )}
-          <button onClick={() => onStatusUpdate(proc.id, "cancelled")} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-xs cursor-pointer hover:bg-destructive/20">{arabicSource("common.cancel")}</button>
+          <button onClick={handleStatusUpdateClick("cancelled")} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-xs cursor-pointer hover:bg-destructive/20">{arabicSource("common.cancel")}</button>
         </div>
       )}
 
@@ -130,7 +138,7 @@ const ExitProcessDetailView = ({
                   itemName={exitItemById.get(c.checklist_item_id)?.name_ar || ""}
                   isCompleted={c.is_completed}
                   completedAt={c.completed_at}
-                  onToggle={() => onChecklistToggle(c.id, !c.is_completed)}
+                  onToggle={handleChecklistToggle(c.id, c.is_completed)}
                 />
               ))}
             </div>

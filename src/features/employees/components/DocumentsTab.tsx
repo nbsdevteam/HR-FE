@@ -103,11 +103,33 @@ const DocumentsTab = ({
   const closeForm = useCallback(() => setShowForm(false), []);
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);
 
+  const handleFilterClick = (key: string) => () => setFilter(key);
+
+  const handleEmployeeChange = (id: string): void => {
+    setFormData((p) => ({ ...p, employee_id: String(id) }));
+  };
+
+  const handleDocumentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setFormData((p) => ({ ...p, document_type_id: e.target.value }));
+  };
+
+  const handleDocumentNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setFormData((p) => ({ ...p, document_number: e.target.value }));
+  };
+
+  const handleIssueDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setFormData((p) => ({ ...p, issue_date: e.target.value }));
+  };
+
+  const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setFormData((p) => ({ ...p, expiry_date: e.target.value }));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         {DOCUMENT_FILTERS.map(f => (
-          <FilterChip key={f.key} label={f.label} active={filter === f.key} onClick={() => setFilter(f.key)} fontSize={13} />
+          <FilterChip key={f.key} label={f.label} active={filter === f.key} onClick={handleFilterClick(f.key)} fontSize={13} />
         ))}
         <button onClick={toggleForm} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark cursor-pointer ms-auto" style={{ fontSize: 13 }}>
           <Plus className="w-4 h-4" /> {arabicSource("common.add_document")}
@@ -131,27 +153,27 @@ const DocumentsTab = ({
                 employees={employees}
                 labels={employeeLabels}
                 value={formData.employee_id}
-                onChange={(id) => setFormData((p) => ({ ...p, employee_id: String(id) }))}
+                onChange={handleEmployeeChange}
               />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("lifecycle.document_type_2")}</FormFieldLabel>
-              <Select value={formData.document_type_id} onChange={e => setFormData(p => ({ ...p, document_type_id: e.target.value }))} className={inputCls}>
+              <Select value={formData.document_type_id} onChange={handleDocumentTypeChange} className={inputCls}>
                 <option value="">{arabicSource("common.choose")}</option>
                 {docTypes.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name_ar}</option>)}
               </Select>
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.document_number")}</FormFieldLabel>
-              <input value={formData.document_number} onChange={e => setFormData(p => ({ ...p, document_number: e.target.value }))} className={inputCls} dir="ltr" />
+              <input value={formData.document_number} onChange={handleDocumentNumberChange} className={inputCls} dir="ltr" />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.release_date")}</FormFieldLabel>
-              <input type="date" value={formData.issue_date} onChange={e => setFormData(p => ({ ...p, issue_date: e.target.value }))} className={inputCls} dir="ltr" />
+              <input type="date" value={formData.issue_date} onChange={handleIssueDateChange} className={inputCls} dir="ltr" />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
-              <input type="date" value={formData.expiry_date} onChange={e => setFormData(p => ({ ...p, expiry_date: e.target.value }))} className={inputCls} dir="ltr" />
+              <input type="date" value={formData.expiry_date} onChange={handleExpiryDateChange} className={inputCls} dir="ltr" />
             </div>
           </ExpandFormCard>
         )}

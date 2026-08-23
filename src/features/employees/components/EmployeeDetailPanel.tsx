@@ -64,6 +64,26 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     checked: boolean,
   ) => setTerminationOptions((prev) => ({ ...prev, [key]: checked }));
 
+  const handlePanelContentClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+    e.stopPropagation();
+  };
+
+  const handleStartEdit = (): void => {
+    setIsEditing(true);
+  };
+
+  const handleStartAddingDept = (): void => {
+    setAddingNewDept(true);
+  };
+
+  const handleToggleAddCustody = (): void => {
+    setShowAddCustody((prev) => !prev);
+  };
+
+  const handleToggleAddAttachment = (): void => {
+    setShowAddAttachment((prev) => !prev);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -79,7 +99,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 80, opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handlePanelContentClick}
         className="ms-auto w-full max-w-[680px] h-full bg-card shadow-2xl flex flex-col overflow-hidden"
         style={{ borderInlineStart: "1px solid var(--border)" }}
       >
@@ -90,7 +110,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           <EmployeeDetailHeader
             isEditing={isEditing}
             saving={saving}
-            onStartEdit={() => setIsEditing(true)}
+            onStartEdit={handleStartEdit}
             onSave={handleSave}
             onCancelEdit={handleCancelEdit}
             onClose={onClose}
@@ -125,7 +145,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 newDeptName={newDeptName}
                 onFieldChange={handleEditField}
                 onManagerChange={handleManagerChange}
-                onStartAddingDept={() => setAddingNewDept(true)}
+                onStartAddingDept={handleStartAddingDept}
                 onNewDeptNameChange={setNewDeptName}
                 onConfirmNewDept={handleConfirmNewDept}
                 onCancelNewDept={handleCancelNewDept}
@@ -138,7 +158,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 isEditing={isEditing}
                 showAddCustody={showAddCustody}
                 newCustody={newCustody}
-                onToggleAddCustody={() => setShowAddCustody((prev) => !prev)}
+                onToggleAddCustody={handleToggleAddCustody}
                 onNewCustodyChange={handleNewCustodyChange}
                 onConfirmAddCustody={handleAddCustody}
                 onCancelAddCustody={handleCancelAddCustody}
@@ -156,9 +176,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 isEditing={isEditing}
                 showAddAttachment={showAddAttachment}
                 newAttachment={newAttachment}
-                onToggleAddAttachment={() =>
-                  setShowAddAttachment((prev) => !prev)
-                }
+                onToggleAddAttachment={handleToggleAddAttachment}
                 onNewAttachmentChange={handleNewAttachmentChange}
                 onConfirmAddAttachment={handleAddAttachment}
                 onCancelAddAttachment={handleCancelAddAttachment}

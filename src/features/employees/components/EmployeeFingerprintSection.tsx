@@ -22,7 +22,18 @@ const EmployeeFingerprintSection = ({
   onFormChange,
   onFacePhotoChange,
   onClearFacePhoto,
-}: EmployeeFingerprintSectionProps) => (
+}: EmployeeFingerprintSectionProps) => {
+  const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFormChange({ gender: e.target.value as "male" | "female" });
+  };
+
+  const handleFacePhotoInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (file) onFacePhotoChange(file);
+    e.target.value = "";
+  };
+
+  return (
   <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
     <p className="text-xs text-primary mb-3 flex items-center gap-1.5">
       <Fingerprint className="w-3.5 h-3.5" />{" "}
@@ -52,9 +63,7 @@ const EmployeeFingerprintSection = ({
       <Select
         label={arabicSource("employees.gender")}
         value={gender}
-        onChange={(e) =>
-          onFormChange({ gender: e.target.value as "male" | "female" })
-        }
+        onChange={handleGenderChange}
       >
         <option value="male">{arabicSource("common.male")}</option>
         <option value="female">{arabicSource("common.female")}</option>
@@ -92,11 +101,7 @@ const EmployeeFingerprintSection = ({
               type="file"
               accept="image/jpeg,image/png"
               className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onFacePhotoChange(file);
-                e.target.value = "";
-              }}
+              onChange={handleFacePhotoInputChange}
             />
           </label>
         )}
@@ -106,6 +111,7 @@ const EmployeeFingerprintSection = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default EmployeeFingerprintSection;

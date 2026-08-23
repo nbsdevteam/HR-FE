@@ -149,6 +149,10 @@ const ContractsTab = ({
   const closeForm = useCallback(() => setShowForm(false), []);
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchChange(e.target.value);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -157,7 +161,7 @@ const ContractsTab = ({
           <input
             type="text"
             value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={handleSearchChange}
             placeholder={arabicSource("lifecycle.search_by_name")}
             className={`${inputCls} ps-10`}
           />

@@ -14,24 +14,30 @@ type ExitProcessTableRowProps = {
   onView: (processId: string) => void;
 };
 
-const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, statusLabels, statusColors, onView }: ExitProcessTableRowProps) => (
-  <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-    className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-    <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp ? empDisplayName(emp) : "—"}</td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{exitTypeLabels[p.exit_type] || p.exit_type}</td>
-    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.exit_date}</td>
-    <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">
-      {p.eos_amount ? `${formatNumber(Number(p.eos_amount))} ${p.eos_currency}` : "—"}
-    </td>
-    <td className="px-4 py-3">
-      <StatusBadge colorClassName={statusColors[p.status] || ""}>{statusLabels[p.status] || p.status}</StatusBadge>
-    </td>
-    <td className="px-4 py-3">
-      <button onClick={() => onView(p.id)} className="p-1.5 rounded hover:bg-primary/10 text-primary cursor-pointer">
-        <Eye className="w-4 h-4" />
-      </button>
-    </td>
-  </motion.tr>
-);
+const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, statusLabels, statusColors, onView }: ExitProcessTableRowProps) => {
+  const handleViewClick = (): void => {
+    onView(p.id);
+  };
+
+  return (
+    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+      className="border-b border-border/20 hover:bg-muted/10 transition-colors">
+      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp ? empDisplayName(emp) : "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{exitTypeLabels[p.exit_type] || p.exit_type}</td>
+      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.exit_date}</td>
+      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">
+        {p.eos_amount ? `${formatNumber(Number(p.eos_amount))} ${p.eos_currency}` : "—"}
+      </td>
+      <td className="px-4 py-3">
+        <StatusBadge colorClassName={statusColors[p.status] || ""}>{statusLabels[p.status] || p.status}</StatusBadge>
+      </td>
+      <td className="px-4 py-3">
+        <button onClick={handleViewClick} className="p-1.5 rounded hover:bg-primary/10 text-primary cursor-pointer">
+          <Eye className="w-4 h-4" />
+        </button>
+      </td>
+    </motion.tr>
+  );
+};
 
 export default ExitProcessTableRow;

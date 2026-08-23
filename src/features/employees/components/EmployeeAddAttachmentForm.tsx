@@ -12,35 +12,45 @@ type EmployeeAddAttachmentFormProps = {
   onCancel: () => void;
 };
 
-const EmployeeAddAttachmentForm = ({ newAttachment, onChange, onConfirm, onCancel }: EmployeeAddAttachmentFormProps) => (
-  <DashedAddRecordCard
-    title={arabicSource("shared.add_a_new_attachment")}
-    confirmDisabled={!newAttachment.name.trim()}
-    onConfirm={onConfirm}
-    onCancel={onCancel}
-  >
-    <DashedRecordField
-      label={arabicSource("shared.document_name")}
-      value={newAttachment.name}
-      onChange={(e) => onChange({ name: e.target.value })}
-      placeholder={arabicSource("shared.example_graduation_certificate")}
-    />
-    <Select
-      label={arabicSource("shared.file_type")}
-      labelClassName="text-muted-foreground block mb-1"
-      labelStyle={{ fontSize: 11 }}
-      value={newAttachment.type}
-      onChange={(e) => onChange({ type: e.target.value })}
-      className={dashedRecordInputClass}
-      style={{ fontSize: 13 }}
+const EmployeeAddAttachmentForm = ({ newAttachment, onChange, onConfirm, onCancel }: EmployeeAddAttachmentFormProps) => {
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onChange({ name: e.target.value });
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onChange({ type: e.target.value });
+  };
+
+  return (
+    <DashedAddRecordCard
+      title={arabicSource("shared.add_a_new_attachment")}
+      confirmDisabled={!newAttachment.name.trim()}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
     >
-      <option value="PDF">PDF</option>
-      <option value={arabicSource("common.image")}>{arabicSource("common.image")}</option>
-      <option value="Word">Word</option>
-      <option value="Excel">Excel</option>
-      <option value={arabicSource("common.other")}>{arabicSource("shared.i_see")}</option>
-    </Select>
-  </DashedAddRecordCard>
-);
+      <DashedRecordField
+        label={arabicSource("shared.document_name")}
+        value={newAttachment.name}
+        onChange={handleNameChange}
+        placeholder={arabicSource("shared.example_graduation_certificate")}
+      />
+      <Select
+        label={arabicSource("shared.file_type")}
+        labelClassName="text-muted-foreground block mb-1"
+        labelStyle={{ fontSize: 11 }}
+        value={newAttachment.type}
+        onChange={handleTypeChange}
+        className={dashedRecordInputClass}
+        style={{ fontSize: 13 }}
+      >
+        <option value="PDF">PDF</option>
+        <option value={arabicSource("common.image")}>{arabicSource("common.image")}</option>
+        <option value="Word">Word</option>
+        <option value="Excel">Excel</option>
+        <option value={arabicSource("common.other")}>{arabicSource("shared.i_see")}</option>
+      </Select>
+    </DashedAddRecordCard>
+  );
+};
 
 export default EmployeeAddAttachmentForm;

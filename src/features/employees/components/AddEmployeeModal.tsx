@@ -44,18 +44,73 @@ const AddEmployeeModal = ({
     onFormChange({ name: e.target.value });
   };
 
+  const handleNationalIdChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ nationalId: e.target.value });
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onFormChange({ email: e.target.value });
+  };
+
+  const handlePersonalPhoneChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ personalPhone: e.target.value });
+  };
+
+  const handleCompanyPhoneChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ companyPhone: e.target.value });
+  };
+
+  const handleDepartmentChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    onFormChange({
+      departmentId: e.target.value,
+      designationId: "",
+    });
+  };
+
+  const handleDesignationChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    onFormChange({ designationId: e.target.value });
+  };
+
+  const handleSalaryChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ salary: e.target.value });
+  };
+
+  const handleJoinDateChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ joinDate: e.target.value });
+  };
+
+  const handleAddressChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onFormChange({ address: e.target.value });
+  };
+
+  const handleModalClose = (): void => {
+    if (!addSaving) onClose();
+  };
+
   return (
     <ModalOverlay
-      onClose={() => {
-        if (!addSaving) onClose();
-      }}
+      onClose={handleModalClose}
       contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-lg shadow-lg max-h-[80vh] overflow-y-auto"
     >
       <ModalHeader
         title={arabicSource("common.add_a_new_employee")}
-        onClose={() => {
-          if (!addSaving) onClose();
-        }}
+        onClose={handleModalClose}
         className="flex items-center justify-between mb-5"
       />
       <div className="space-y-4">
@@ -87,39 +142,34 @@ const AddEmployeeModal = ({
               label={arabicSource("common.id_number")}
               type="text"
               value={addForm.nationalId}
-              onChange={(e) => onFormChange({ nationalId: e.target.value })}
+              onChange={handleNationalIdChange}
               placeholder={arabicSource("employees.national_id_number")}
             />
             <LabeledInput
               label={arabicSource("common.email")}
               type="email"
               value={addForm.email}
-              onChange={(e) => onFormChange({ email: e.target.value })}
+              onChange={handleEmailChange}
               placeholder="example@company.iq"
             />
             <LabeledInput
               label={arabicSource("employees.personal_phone")}
               type="text"
               value={addForm.personalPhone}
-              onChange={(e) => onFormChange({ personalPhone: e.target.value })}
+              onChange={handlePersonalPhoneChange}
               placeholder="07XXXXXXXXX"
             />
             <LabeledInput
               label={arabicSource("common.company_phone")}
               type="text"
               value={addForm.companyPhone}
-              onChange={(e) => onFormChange({ companyPhone: e.target.value })}
+              onChange={handleCompanyPhoneChange}
               placeholder="07XXXXXXXXX"
             />
             <Select
               label={arabicSource("common.section")}
               value={addForm.departmentId}
-              onChange={(e) =>
-                onFormChange({
-                  departmentId: e.target.value,
-                  designationId: "",
-                })
-              }
+              onChange={handleDepartmentChange}
             >
               <option value="">
                 {arabicSource("employees.select_the_section")}
@@ -133,7 +183,7 @@ const AddEmployeeModal = ({
             <Select
               label={arabicSource("employees.job_position")}
               value={addForm.designationId}
-              onChange={(e) => onFormChange({ designationId: e.target.value })}
+              onChange={handleDesignationChange}
             >
               <option value="">{arabicSource("common.select")}</option>
               {designationOptions.map((p) => (
@@ -146,7 +196,7 @@ const AddEmployeeModal = ({
               label={arabicSource("employees.salary_iqd")}
               type="number"
               value={addForm.salary}
-              onChange={(e) => onFormChange({ salary: e.target.value })}
+              onChange={handleSalaryChange}
               placeholder="0"
               dir="ltr"
             />
@@ -154,7 +204,7 @@ const AddEmployeeModal = ({
               label={arabicSource("common.direct_date")}
               type="date"
               value={addForm.joinDate}
-              onChange={(e) => onFormChange({ joinDate: e.target.value })}
+              onChange={handleJoinDateChange}
               dir="ltr"
             />
           </div>
@@ -163,7 +213,7 @@ const AddEmployeeModal = ({
               label={arabicSource("common.address")}
               type="text"
               value={addForm.address}
-              onChange={(e) => onFormChange({ address: e.target.value })}
+              onChange={handleAddressChange}
               placeholder={arabicSource("employees.baghdad_region")}
             />
           </div>
