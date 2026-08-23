@@ -40,6 +40,7 @@ const Hierarchy = () => {
     saving,
     showSetupModal,
     showCleanupModal,
+    showAddDepartmentModal,
     toast,
     isDragging,
     panEnabled,
@@ -60,6 +61,7 @@ const Hierarchy = () => {
     handleSetupHierarchy,
     handleCleanupDuplicates,
     openAddModal,
+    openAddDepartmentModal,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -70,8 +72,6 @@ const Hierarchy = () => {
     handleSearchChange,
     handleSearchFocus,
     handleShowUnlinked,
-    handleShowSetupModal,
-    handleShowCleanupModal,
     handleCloseSearchResults,
     handleTogglePan,
     handleZoomOut,
@@ -85,6 +85,7 @@ const Hierarchy = () => {
     handleCloseUnlinkedPanel,
     handleCloseSetupModal,
     handleCloseCleanupModal,
+    handleCloseAddDepartmentModal,
     handleDetailAddChild,
     handleDetailDelete,
     handleDetailEdit,
@@ -111,9 +112,8 @@ const Hierarchy = () => {
         showSearchResults={showSearchResults}
         searchResults={searchResults}
         onShowUnlinked={handleShowUnlinked}
-        onShowSetup={handleShowSetupModal}
-        onShowCleanup={handleShowCleanupModal}
         onAddEmployee={openAddModal}
+        onAddDepartment={openAddDepartmentModal}
         onSearchChange={handleSearchChange}
         onSearchFocus={handleSearchFocus}
         onSearchSelect={handleSearchSelect}
@@ -220,6 +220,7 @@ const Hierarchy = () => {
         showUnlinked={showUnlinked}
         showSetupModal={showSetupModal}
         showCleanupModal={showCleanupModal}
+        showAddDepartmentModal={showAddDepartmentModal}
         onAddEmployee={handleAddEmployee}
         onDeleteEmployee={handleDeleteEmployee}
         onEditEmployee={handleEditEmployee}
@@ -234,6 +235,7 @@ const Hierarchy = () => {
         onCloseUnlinkedPanel={handleCloseUnlinkedPanel}
         onCloseSetupModal={handleCloseSetupModal}
         onCloseCleanupModal={handleCloseCleanupModal}
+        onCloseAddDepartmentModal={handleCloseAddDepartmentModal}
         onDetailAddChild={handleDetailAddChild}
         onDetailDelete={handleDetailDelete}
         onDetailEdit={handleDetailEdit}

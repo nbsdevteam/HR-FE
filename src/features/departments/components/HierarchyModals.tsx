@@ -10,6 +10,7 @@ const CleanupDuplicatesModal = lazy(() => import("./CleanupDuplicatesModal"));
 const UnlinkedPanel = lazy(() => import("./UnlinkedPanel"));
 const EditEmployeeModal = lazy(() => import("./EditEmployeeModal"));
 const AddEmployeeModal = lazy(() => import("./AddEmployeeModal"));
+const AddDepartmentModal = lazy(() => import("./AddDepartmentModal"));
 const DetailPanel = lazy(() => import("./DetailPanel"));
 
 type HierarchyModalsProps = {
@@ -28,6 +29,7 @@ type HierarchyModalsProps = {
   showUnlinked: boolean;
   showSetupModal: boolean;
   showCleanupModal: boolean;
+  showAddDepartmentModal: boolean;
   onAddEmployee: (parentDbId: string, name: string, position: string, department: string) => Promise<void>;
   onDeleteEmployee: (node: OrgNode, reparent: boolean) => Promise<void>;
   onEditEmployee: (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => Promise<void>;
@@ -42,6 +44,7 @@ type HierarchyModalsProps = {
   onCloseUnlinkedPanel: () => void;
   onCloseSetupModal: () => void;
   onCloseCleanupModal: () => void;
+  onCloseAddDepartmentModal: () => void;
   onDetailAddChild: (id: number) => void;
   onDetailDelete: (node: OrgNode) => void;
   onDetailEdit: (node: OrgNode) => void;
@@ -63,6 +66,7 @@ const HierarchyModals = ({
   showUnlinked,
   showSetupModal,
   showCleanupModal,
+  showAddDepartmentModal,
   onAddEmployee,
   onDeleteEmployee,
   onEditEmployee,
@@ -77,6 +81,7 @@ const HierarchyModals = ({
   onCloseUnlinkedPanel,
   onCloseSetupModal,
   onCloseCleanupModal,
+  onCloseAddDepartmentModal,
   onDetailAddChild,
   onDetailDelete,
   onDetailEdit,
@@ -117,11 +122,20 @@ const HierarchyModals = ({
           <AddEmployeeModal
             allNodes={allNodes}
             departments={departments}
-            departmentColors={deptColors}
             preselectedManagerId={addModalManagerId}
             onAdd={onAddEmployee}
             onClose={onCloseAddModal}
-            onAddDepartment={onAddDepartment}
+          />
+        </Suspense>
+      )}
+    </AnimatePresence>
+    <AnimatePresence>
+      {showAddDepartmentModal && (
+        <Suspense fallback={null}>
+          <AddDepartmentModal
+            departmentColors={deptColors}
+            onAdd={onAddDepartment}
+            onClose={onCloseAddDepartmentModal}
           />
         </Suspense>
       )}

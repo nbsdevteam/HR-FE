@@ -120,13 +120,21 @@ export const useHierarchyCrud = (
   }, [refetch]);
 
   const handleAddDepartment = useCallback(async (name: string, color: string) => {
-    const existing = dbDepartments.find(d => d.name === name);
-    if (existing) {
-      await odooData.updateDepartment(existing.id, { color });
-    } else {
-      await odooData.createDepartment({ name, color });
+    setSaving(true);
+    try {
+      const existing = dbDepartments.find(d => d.name === name);
+      if (existing) {
+        await odooData.updateDepartment(existing.id, { color });
+      } else {
+        await odooData.createDepartment({ name, color });
+      }
+      setToast(arabicSource("hierarchy.the_department_was_added_successfully"));
+      await refetch();
+    } catch (err: any) {
+      setToast(`${arabicSource("common.error_2")} ${err?.message || ""}`);
     }
-  }, [dbDepartments]);
+    setSaving(false);
+  }, [dbDepartments, refetch, setSaving, setToast]);
 
   return {
     handleAddEmployee,

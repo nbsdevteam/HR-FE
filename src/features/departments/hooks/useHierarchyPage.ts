@@ -23,18 +23,30 @@ export const useHierarchyPage = () => {
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addModalManagerId, setAddModalManagerId] = useState<number | null>(null);
+  const [addModalManagerId, setAddModalManagerId] = useState<number | null>(
+    null,
+  );
   const [deleteTarget, setDeleteTarget] = useState<OrgNode | null>(null);
   const [editTarget, setEditTarget] = useState<OrgNode | null>(null);
   const [showUnlinked, setShowUnlinked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
 
   const [toast, setToast] = useState<string | null>(null);
 
-  const { employees: dbEmployees, departments: dbDepartments, loading: dbLoading, refetch } = useHierarchyData();
-  const { positions: dbPositions, loading: positionsLoading, refetch: refetchPositions } = usePositions();
+  const {
+    employees: dbEmployees,
+    departments: dbDepartments,
+    loading: dbLoading,
+    refetch,
+  } = useHierarchyData();
+  const {
+    positions: dbPositions,
+    loading: positionsLoading,
+    refetch: refetchPositions,
+  } = usePositions();
   const {
     containerRef,
     zoom,
@@ -59,27 +71,47 @@ export const useHierarchyPage = () => {
       return buildOrgTreeFromPositions(dbPositions, dbEmployees, dbDepartments);
     }
     // Fallback to legacy manager_id tree for backward compatibility
-    if (dbEmployees.length === 0) return {
-      tree: { id: 0, dbId: "__root__", name: arabicSource("common.foundation"), initials: arabicSource("common.m"), position: arabicSource("common.senior_management"), department: arabicSource("common.senior_management"), color: "#8B5CF6", photo: null, email: null, children: [] } as OrgNode,
-      deptColors: defaultDeptColorMap,
-    };
+    if (dbEmployees.length === 0)
+      return {
+        tree: {
+          id: 0,
+          dbId: "__root__",
+          name: arabicSource("common.foundation"),
+          initials: arabicSource("common.m"),
+          position: arabicSource("common.senior_management"),
+          department: arabicSource("common.senior_management"),
+          color: "#8B5CF6",
+          photo: null,
+          email: null,
+          children: [],
+        } as OrgNode,
+        deptColors: defaultDeptColorMap,
+      };
     return buildOrgTree(dbEmployees, dbDepartments);
   }, [dbEmployees, dbDepartments, dbPositions]);
 
-  const unlinkedEmps = useMemo(() => getUnlinkedEmployees(dbEmployees), [dbEmployees]);
+  const unlinkedEmps = useMemo(
+    () => getUnlinkedEmployees(dbEmployees),
+    [dbEmployees],
+  );
 
   const allNodes = useMemo(() => flattenTree(orgTree), [orgTree]);
   const departments = useMemo(() => {
     const s = new Set<string>();
-    allNodes.forEach(n => s.add(n.department));
-    dbDepartments.forEach(d => s.add(d.name));
+    allNodes.forEach((n) => s.add(n.department));
+    dbDepartments.forEach((d) => s.add(d.name));
     return Array.from(s);
   }, [allNodes, dbDepartments]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.trim().toLowerCase();
-    return allNodes.filter(n => n.name.includes(q) || n.position.includes(q) || n.department.includes(q));
+    return allNodes.filter(
+      (n) =>
+        n.name.includes(q) ||
+        n.position.includes(q) ||
+        n.department.includes(q),
+    );
   }, [searchQuery, allNodes]);
 
   const { searchMatchIds, highlightedIds } = useMemo(() => {
@@ -87,11 +119,13 @@ export const useHierarchyPage = () => {
     const ancestorIds = new Set<number>();
     if (focusedNodeId) {
       matchIds.add(focusedNodeId);
-      findAncestorIds(orgTree, focusedNodeId).forEach(id => ancestorIds.add(id));
+      findAncestorIds(orgTree, focusedNodeId).forEach((id) =>
+        ancestorIds.add(id),
+      );
     } else if (searchQuery.trim() && searchResults.length > 0) {
-      searchResults.forEach(n => {
+      searchResults.forEach((n) => {
         matchIds.add(n.id);
-        findAncestorIds(orgTree, n.id).forEach(id => ancestorIds.add(id));
+        findAncestorIds(orgTree, n.id).forEach((id) => ancestorIds.add(id));
       });
     }
     return { searchMatchIds: matchIds, highlightedIds: ancestorIds };
@@ -100,22 +134,37 @@ export const useHierarchyPage = () => {
   // Live stats from tree
   const departmentStats = useMemo(() => {
     const c: Record<string, number> = {};
-    allNodes.filter(n => n.dbId !== "__root__").forEach(n => { c[n.department] = (c[n.department] || 0) + 1; });
+    allNodes
+      .filter((n) => n.dbId !== "__root__")
+      .forEach((n) => {
+        c[n.department] = (c[n.department] || 0) + 1;
+      });
     return Object.entries(c).map(([name, count]) => ({ name, count }));
   }, [allNodes]);
 
-  const toggleExpand = useCallback((id: number) => { setExpandedMap(p => ({ ...p, [id]: !p[id] })); }, []);
+  const toggleExpand = useCallback((id: number) => {
+    setExpandedMap((p) => ({ ...p, [id]: !p[id] }));
+  }, []);
 
   const expandAll = useCallback(() => {
     const a: Record<number, boolean> = {};
-    function walk(n: OrgNode) { a[n.id] = true; n.children.forEach(walk); }
-    walk(orgTree); setExpandedMap(a);
+    function walk(n: OrgNode) {
+      a[n.id] = true;
+      n.children.forEach(walk);
+    }
+    walk(orgTree);
+    setExpandedMap(a);
   }, [orgTree]);
 
   const collapseAll = useCallback(() => {
     const a: Record<number, boolean> = {};
-    function walk(n: OrgNode) { a[n.id] = false; n.children.forEach(walk); }
-    walk(orgTree); a[orgTree.id] = true; setExpandedMap(a);
+    function walk(n: OrgNode) {
+      a[n.id] = false;
+      n.children.forEach(walk);
+    }
+    walk(orgTree);
+    a[orgTree.id] = true;
+    setExpandedMap(a);
   }, [orgTree]);
 
   const {
@@ -127,16 +176,39 @@ export const useHierarchyPage = () => {
     handleSetupHierarchy,
     handleCleanupDuplicates,
   } = useHierarchyCrud(
-    dbEmployees, dbDepartments, dbPositions, orgTree, refetch,
-    setSaving, setToast, setDeleteTarget, setSelectedNode, setEditTarget, setShowSetupModal, setShowCleanupModal,
+    dbEmployees,
+    dbDepartments,
+    dbPositions,
+    orgTree,
+    refetch,
+    setSaving,
+    setToast,
+    setDeleteTarget,
+    setSelectedNode,
+    setEditTarget,
+    setShowSetupModal,
+    setShowCleanupModal,
   );
 
   const openAddModal = useCallback((managerId?: number) => {
-    setAddModalManagerId(managerId ?? null); setShowAddModal(true);
+    setAddModalManagerId(managerId ?? null);
+    setShowAddModal(true);
   }, []);
 
-  const handleSearchSelect = useCallback((node: OrgNode) => { setFocusedNodeId(node.id); setSearchQuery(node.name); setShowSearchResults(false); }, []);
-  const clearSearch = useCallback(() => { setSearchQuery(""); setFocusedNodeId(null); setShowSearchResults(false); }, []);
+  const openAddDepartmentModal = useCallback(() => {
+    setShowAddDepartmentModal(true);
+  }, []);
+
+  const handleSearchSelect = useCallback((node: OrgNode) => {
+    setFocusedNodeId(node.id);
+    setSearchQuery(node.name);
+    setShowSearchResults(false);
+  }, []);
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+    setFocusedNodeId(null);
+    setShowSearchResults(false);
+  }, []);
 
   const { handlePrint, handleExportPNG } = useHierarchyExport(chartContentRef);
 
@@ -151,10 +223,15 @@ export const useHierarchyPage = () => {
   }, [searchQuery]);
 
   const handleShowUnlinked = useCallback(() => setShowUnlinked(true), []);
-  const handleShowSetupModal = useCallback(() => setShowSetupModal(true), []);
-  const handleShowCleanupModal = useCallback(() => setShowCleanupModal(true), []);
-  const handleCloseSearchResults = useCallback(() => setShowSearchResults(false), []);
-  const handleSelectNode = useCallback((node: OrgNode) => setSelectedNode(node), []);
+
+  const handleCloseSearchResults = useCallback(
+    () => setShowSearchResults(false),
+    [],
+  );
+  const handleSelectNode = useCallback(
+    (node: OrgNode) => setSelectedNode(node),
+    [],
+  );
   const handleCloseSelectedNode = useCallback(() => setSelectedNode(null), []);
   const handleCloseAddModal = useCallback(() => {
     setShowAddModal(false);
@@ -162,14 +239,27 @@ export const useHierarchyPage = () => {
   }, []);
   const handleCloseDeleteModal = useCallback(() => setDeleteTarget(null), []);
   const handleCloseEditModal = useCallback(() => setEditTarget(null), []);
-  const handleCloseUnlinkedPanel = useCallback(() => setShowUnlinked(false), []);
+  const handleCloseUnlinkedPanel = useCallback(
+    () => setShowUnlinked(false),
+    [],
+  );
   const handleCloseSetupModal = useCallback(() => setShowSetupModal(false), []);
-  const handleCloseCleanupModal = useCallback(() => setShowCleanupModal(false), []);
+  const handleCloseCleanupModal = useCallback(
+    () => setShowCleanupModal(false),
+    [],
+  );
+  const handleCloseAddDepartmentModal = useCallback(
+    () => setShowAddDepartmentModal(false),
+    [],
+  );
 
-  const handleDetailAddChild = useCallback((id: number) => {
-    setSelectedNode(null);
-    openAddModal(id);
-  }, [openAddModal]);
+  const handleDetailAddChild = useCallback(
+    (id: number) => {
+      setSelectedNode(null);
+      openAddModal(id);
+    },
+    [openAddModal],
+  );
 
   const handleDetailDelete = useCallback((node: OrgNode) => {
     setSelectedNode(null);
@@ -186,21 +276,37 @@ export const useHierarchyPage = () => {
     refetchPositions();
   }, [refetch, refetchPositions]);
 
-  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); } }, [toast]);
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (highlightedIds.size > 0 || searchMatchIds.size > 0) {
-      setExpandedMap(prev => {
+      setExpandedMap((prev) => {
         const next = { ...prev };
-        highlightedIds.forEach(id => { next[id] = true; });
-        searchMatchIds.forEach(id => { next[id] = true; });
+        highlightedIds.forEach((id) => {
+          next[id] = true;
+        });
+        searchMatchIds.forEach((id) => {
+          next[id] = true;
+        });
         return next;
       });
       setTimeout(() => {
         const first = searchMatchIds.values().next().value;
         if (first && containerRef.current) {
-          const el = containerRef.current.querySelector(`[data-node-id="${first}"]`);
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+          const el = containerRef.current.querySelector(
+            `[data-node-id="${first}"]`,
+          );
+          if (el)
+            el.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "center",
+            });
         }
       }, 350);
     }
@@ -209,7 +315,10 @@ export const useHierarchyPage = () => {
   // Initialize expand map when tree changes
   useEffect(() => {
     const init: Record<number, boolean> = {};
-    function walk(n: OrgNode, d: number) { init[n.id] = d < 2; n.children.forEach(c => walk(c, d + 1)); }
+    function walk(n: OrgNode, d: number) {
+      init[n.id] = d < 2;
+      n.children.forEach((c) => walk(c, d + 1));
+    }
     walk(orgTree, 0);
     setExpandedMap(init);
   }, [orgTree]);
@@ -241,6 +350,7 @@ export const useHierarchyPage = () => {
     saving,
     showSetupModal,
     showCleanupModal,
+    showAddDepartmentModal,
     toast,
     isDragging,
     panEnabled,
@@ -261,6 +371,7 @@ export const useHierarchyPage = () => {
     handleSetupHierarchy,
     handleCleanupDuplicates,
     openAddModal,
+    openAddDepartmentModal,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -271,8 +382,6 @@ export const useHierarchyPage = () => {
     handleSearchChange,
     handleSearchFocus,
     handleShowUnlinked,
-    handleShowSetupModal,
-    handleShowCleanupModal,
     handleCloseSearchResults,
     handleTogglePan,
     handleZoomOut,
@@ -286,6 +395,7 @@ export const useHierarchyPage = () => {
     handleCloseUnlinkedPanel,
     handleCloseSetupModal,
     handleCloseCleanupModal,
+    handleCloseAddDepartmentModal,
     handleDetailAddChild,
     handleDetailDelete,
     handleDetailEdit,

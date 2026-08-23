@@ -753,6 +753,8 @@
   "hierarchy.name_of_the_new_section": "اسم القسم الجديد",
   "hierarchy.add_a_new_section": "إضافة قسم جديد",
   "hierarchy.addition_to_the_structure": "إضافة للهيكل",
+  "hierarchy.section_color": "لون القسم",
+  "hierarchy.the_department_was_added_successfully": "تم إضافة القسم بنجاح",
   "hierarchy.add_a_subordinate": "إضافة مرؤوس",
   "hierarchy.add_a_new_subordinate": "إضافة مرؤوس جديد",
   "hierarchy.add_a_new_position": "إضافة منصب جديد",

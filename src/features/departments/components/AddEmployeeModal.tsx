@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Modal, ModalFooterActions, NodeAvatar, TypeAhead } from "@/shared/components";
-import { Users, UserPlus, UserCheck, Briefcase, Building2, Plus, ChevronLeft } from "lucide-react";
+import { Users, UserPlus, UserCheck, Briefcase, Building2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
-import { avatarColors } from "../styles";
-import { pickUniqueColor } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
 import LabeledTextField from "./LabeledTextField";
 
@@ -13,21 +11,17 @@ const getManagerId = (n: OrgNode): string => String(n.id);
 const getManagerLabel = (n: OrgNode): string => `${n.name} — ${n.position} (${n.department})`;
 
 const AddEmployeeModal = ({
-  allNodes, departments, departmentColors, preselectedManagerId, onAdd, onClose, onAddDepartment,
+  allNodes, departments, preselectedManagerId, onAdd, onClose,
 }: {
-  allNodes: OrgNode[]; departments: string[]; departmentColors: Record<string, string>;
+  allNodes: OrgNode[]; departments: string[];
   preselectedManagerId: number | null;
   onAdd: (parentDbId: string, name: string, position: string, department: string) => void;
   onClose: () => void;
-  onAddDepartment: (name: string, color: string) => void;
 }) => {
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
   const [department, setDepartment] = useState(departments[0] || "");
   const [managerId, setManagerId] = useState<number>(preselectedManagerId ?? allNodes[0]?.id ?? 0);
-  const [showNewDept, setShowNewDept] = useState(false);
-  const [newDeptName, setNewDeptName] = useState("");
-  const [newDeptColor, setNewDeptColor] = useState(() => pickUniqueColor(new Set(Object.values(departmentColors))));
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const selectedManager = allNodes.find(n => n.id === managerId);
@@ -36,17 +30,11 @@ const AddEmployeeModal = ({
     const e: Record<string, boolean> = {};
     if (!name.trim()) e.name = true;
     if (!position.trim()) e.position = true;
-    if (showNewDept && !newDeptName.trim()) e.newDept = true;
     if (Object.keys(e).length > 0) { setErrors(e); return; }
 
-    let finalDept = department;
-    if (showNewDept && newDeptName.trim()) {
-      finalDept = newDeptName.trim();
-      onAddDepartment(finalDept, newDeptColor);
-    }
     const parentNode = allNodes.find(n => n.id === managerId);
     const parentDbId = parentNode?.dbId || "__root__";
-    onAdd(parentDbId, name.trim(), position.trim(), finalDept);
+    onAdd(parentDbId, name.trim(), position.trim(), department);
     onClose();
   };
 
@@ -62,24 +50,6 @@ const AddEmployeeModal = ({
 
   const handleDepartmentChange = (value: string): void => {
     setDepartment(value);
-  };
-
-  const handleShowNewDeptClick = (): void => {
-    setShowNewDept(true);
-  };
-
-  const handleNewDeptNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setNewDeptName(e.target.value);
-    setErrors(p => ({ ...p, newDept: false }));
-  };
-
-  const handleNewDeptColorSelect = (c: string) => (): void => {
-    setNewDeptColor(c);
-  };
-
-  const handleBackToSectionsClick = (): void => {
-    setShowNewDept(false);
-    setNewDeptName("");
   };
 
   const handleManagerChange = (value: string): void => {
@@ -131,42 +101,13 @@ const AddEmployeeModal = ({
 
           <div>
             <FieldLabel icon={Building2}>{arabicSource("common.section")}</FieldLabel>
-            {!showNewDept ? (
-              <div className="space-y-2">
-                <TypeAhead
-                  items={departments}
-                  getId={stringIdentity}
-                  getLabel={stringIdentity}
-                  value={department}
-                  onChange={handleDepartmentChange}
-                />
-                <button type="button" onClick={handleShowNewDeptClick}
-                  className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors" style={{ fontSize: 12 }}>
-                  <Plus className="w-3.5 h-3.5" /> {arabicSource("hierarchy.add_a_new_section")}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input type="text" value={newDeptName} onChange={handleNewDeptNameChange}
-                    placeholder={arabicSource("hierarchy.name_of_the_new_section")} autoFocus
-                    className={`flex-1 bg-background border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors ${errors.newDept ? "border-red-500" : "border-border/60"}`}
-                    style={{ fontSize: 13 }} />
-                  <div className="flex items-center gap-1 flex-wrap" style={{ maxWidth: 140 }}>
-                    {avatarColors.filter(c => !Object.values(departmentColors).includes(c)).slice(0, 8).map(c => (
-                      <button key={c} type="button" onClick={handleNewDeptColorSelect(c)}
-                        className={`w-5 h-5 rounded-full transition-all ${newDeptColor === c ? "ring-2 ring-white scale-110" : "opacity-60 hover:opacity-100"}`}
-                        style={{ background: c }} />
-                    ))}
-                  </div>
-                </div>
-                {errors.newDept && <p className="text-red-400" style={{ fontSize: 11 }}>{arabicSource("hierarchy.please_enter_the_department_name")}</p>}
-                <button type="button" onClick={handleBackToSectionsClick}
-                  className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>
-                  <ChevronLeft className="w-3 h-3" /> {arabicSource("hierarchy.return_to_current_sections")}
-                </button>
-              </div>
-            )}
+            <TypeAhead
+              items={departments}
+              getId={stringIdentity}
+              getLabel={stringIdentity}
+              value={department}
+              onChange={handleDepartmentChange}
+            />
           </div>
 
           <div>
