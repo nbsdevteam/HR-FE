@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Palette } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -33,6 +34,27 @@ const DepartmentColorsCard = ({
   const activeDept = openColorPicker
     ? departments.find((d) => d.id === openColorPicker)
     : undefined;
+
+  const handleToggleColorPicker = (deptId: string) => (): void => {
+    toggleColorPicker(deptId);
+  };
+
+  const handleSelectDeptColor = useCallback(
+    (color: string): void => {
+      if (!openColorPicker) return;
+      setDeptColor(openColorPicker, color);
+      closeColorPicker();
+    },
+    [openColorPicker, setDeptColor, closeColorPicker],
+  );
+
+  const handleCustomDeptColorChange = useCallback(
+    (color: string): void => {
+      if (!openColorPicker) return;
+      setDeptColor(openColorPicker, color);
+    },
+    [openColorPicker, setDeptColor],
+  );
 
   return (
     <motion.div
@@ -81,7 +103,7 @@ const DepartmentColorsCard = ({
                 currentColor={getDeptColor(dept.id)}
                 isOpen={openColorPicker === dept.id}
                 isEdited={!!deptColorEdits[dept.id]}
-                onClick={() => toggleColorPicker(dept.id)}
+                onClick={handleToggleColorPicker(dept.id)}
               />
             ))}
           </div>
@@ -91,13 +113,8 @@ const DepartmentColorsCard = ({
               activeColor={getDeptColor(openColorPicker)}
               activeDeptName={activeDept?.name}
               usedDeptColors={usedDeptColors}
-              onSelectColor={(color) => {
-                setDeptColor(openColorPicker, color);
-                closeColorPicker();
-              }}
-              onCustomColorChange={(color) =>
-                setDeptColor(openColorPicker, color)
-              }
+              onSelectColor={handleSelectDeptColor}
+              onCustomColorChange={handleCustomDeptColorChange}
               onClose={closeColorPicker}
             />
           )}

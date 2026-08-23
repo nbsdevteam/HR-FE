@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Calendar, Settings as SettingsIcon } from "lucide-react";
-import { useAppSettings } from "@/app/providers";
+import { useAppSettings, type MonthFormat } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import { cardCls } from "../styles";
 import { MONTH_FORMATS } from "../constants/settings";
@@ -8,6 +8,10 @@ import MonthFormatOption from "./MonthFormatOption";
 
 const SystemDisplayCard = () => {
   const { settings, updateSettings } = useAppSettings();
+
+  const handleMonthFormatSelect = (value: MonthFormat) => (): void => {
+    updateSettings({ monthFormat: value });
+  };
 
   return (
     <motion.div
@@ -58,7 +62,7 @@ const SystemDisplayCard = () => {
                 label={fmt.label}
                 example={fmt.example}
                 isActive={settings.monthFormat === fmt.value}
-                onSelect={() => updateSettings({ monthFormat: fmt.value })}
+                onSelect={handleMonthFormatSelect(fmt.value)}
               />
             ))}
           </div>

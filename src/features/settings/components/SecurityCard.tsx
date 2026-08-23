@@ -8,6 +8,10 @@ import SettingsToggle from "./SettingsToggle";
 const SecurityCard = () => {
   const [twoFactor, setTwoFactor] = useState(false);
 
+  const handleToggleTwoFactor = (): void => {
+    setTwoFactor(!twoFactor);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -37,7 +41,7 @@ const SecurityCard = () => {
           <span className="text-foreground" style={{ fontSize: 13 }}>
             {arabicSource("settings.two_factor_authentication")}
           </span>
-          <SettingsToggle on={twoFactor} onClick={() => setTwoFactor(!twoFactor)} />
+          <SettingsToggle on={twoFactor} onClick={handleToggleTwoFactor} />
         </div>
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
           <span className="text-foreground" style={{ fontSize: 13 }}>

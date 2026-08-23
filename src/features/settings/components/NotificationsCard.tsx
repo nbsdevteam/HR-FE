@@ -5,9 +5,14 @@ import { cardCls } from "../styles";
 import { NOTIFICATION_ITEMS } from "../constants/settings";
 import { useNotificationToggles } from "../hooks/useNotificationToggles";
 import NotificationToggleRow from "./NotificationToggleRow";
+import type { NotifKey } from "../types";
 
 const NotificationsCard = () => {
   const { notifToggles, toggleNotif } = useNotificationToggles();
+
+  const handleToggleNotification = (key: NotifKey) => (): void => {
+    toggleNotif(key);
+  };
 
   return (
     <motion.div
@@ -28,7 +33,7 @@ const NotificationsCard = () => {
             key={item.key}
             label={item.label}
             on={notifToggles[item.key]}
-            onToggle={() => toggleNotif(item.key)}
+            onToggle={handleToggleNotification(item.key)}
           />
         ))}
       </div>

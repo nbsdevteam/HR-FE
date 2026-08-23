@@ -32,6 +32,28 @@ const ShiftList = ({
   onEditFieldChange,
   onEditDayChange,
 }: TShiftListProps) => {
+  const handleToggleExpand = (shiftId: string) => (): void => {
+    onToggleExpand(shiftId);
+  };
+
+  const handleInitEdit = (shift: DbShift) => (): void => {
+    onInitEdit(shift);
+  };
+
+  const handleDeleteShift = (shiftId: string) => (): void => {
+    onDelete(shiftId);
+  };
+
+  const handleSetDefault = (shiftId: string) => (): void => {
+    onSetDefault(shiftId);
+  };
+
+  const handleSaveEdit = (form: ShiftEditState | null) => (): void => {
+    if (form) {
+      onSaveEdit(form);
+    }
+  };
+
   if (loading) {
     return (
       <div
@@ -60,12 +82,12 @@ const ShiftList = ({
           shift={shift}
           isExpanded={expandedShift === shift.id}
           editingForm={editingForm}
-          onToggleExpand={() => onToggleExpand(shift.id)}
-          onInitEdit={() => onInitEdit(shift)}
-          onDelete={() => onDelete(shift.id)}
-          onSetDefault={() => onSetDefault(shift.id)}
+          onToggleExpand={handleToggleExpand(shift.id)}
+          onInitEdit={handleInitEdit(shift)}
+          onDelete={handleDeleteShift(shift.id)}
+          onSetDefault={handleSetDefault(shift.id)}
           onCancelEdit={onCancelEdit}
-          onSaveEdit={() => editingForm && onSaveEdit(editingForm)}
+          onSaveEdit={handleSaveEdit(editingForm)}
           onEditFieldChange={onEditFieldChange}
           onEditDayChange={onEditDayChange}
         />

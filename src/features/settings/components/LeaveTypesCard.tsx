@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Calendar, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -27,6 +28,14 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     deleteLeaveTypeEntry,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
+  const handleToggleNewLeaveTypeForm = (): void => {
+    setShowNewLeaveTypeForm(!showNewLeaveTypeForm);
+  };
+
+  const handleCancelNewLeaveTypeForm = useCallback((): void => {
+    setShowNewLeaveTypeForm(false);
+  }, [setShowNewLeaveTypeForm]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -49,7 +58,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
           </div>
         </div>
         <button
-          onClick={() => setShowNewLeaveTypeForm(!showNewLeaveTypeForm)}
+          onClick={handleToggleNewLeaveTypeForm}
           className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -62,7 +71,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
           form={newLeaveType}
           onFieldChange={updateNewLeaveType}
           onSave={createLeaveType}
-          onCancel={() => setShowNewLeaveTypeForm(false)}
+          onCancel={handleCancelNewLeaveTypeForm}
         />
       )}
 

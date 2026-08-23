@@ -12,19 +12,25 @@ const ModuleCategoryGroup = ({
   category,
   modules,
   onToggleModule,
-}: TModuleCategoryGroupProps) => (
-  <div>
-    <CategoryGroupHeader category={category} />
-    <div className="space-y-2">
-      {modules?.map((module) => (
-        <ModuleToggleRow
-          key={module.id}
-          module={module}
-          onToggle={() => onToggleModule(module)}
-        />
-      ))}
+}: TModuleCategoryGroupProps) => {
+  const handleToggleModule = (module: DbSystemModule) => (): void => {
+    onToggleModule(module);
+  };
+
+  return (
+    <div>
+      <CategoryGroupHeader category={category} />
+      <div className="space-y-2">
+        {modules?.map((module) => (
+          <ModuleToggleRow
+            key={module.id}
+            module={module}
+            onToggle={handleToggleModule(module)}
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default ModuleCategoryGroup;

@@ -8,6 +8,10 @@ type THolidayListProps = {
 };
 
 const HolidayList = ({ holidays, onDelete }: THolidayListProps) => {
+  const handleDeleteHoliday = (holidayId: string) => (): void => {
+    onDelete(holidayId);
+  };
+
   if (holidays.length === 0) {
     return (
       <div className="text-muted-foreground text-center py-6">
@@ -21,7 +25,7 @@ const HolidayList = ({ holidays, onDelete }: THolidayListProps) => {
         <HolidayListItem
           key={holiday.id}
           holiday={holiday}
-          onDelete={() => onDelete(holiday.id)}
+          onDelete={handleDeleteHoliday(holiday.id)}
         />
       ))}
     </div>

@@ -27,6 +27,10 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
     deleteContractTypeEntry,
   } = useContractTypeManagement(refetchContractTypes, showToast);
 
+  const handleToggleNewContractTypeForm = (): void => {
+    setShowNewContractTypeForm(!showNewContractTypeForm);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -51,7 +55,7 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
           </div>
         </div>
         <button
-          onClick={() => setShowNewContractTypeForm(!showNewContractTypeForm)}
+          onClick={handleToggleNewContractTypeForm}
           className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
         >
           {showNewContractTypeForm ? (

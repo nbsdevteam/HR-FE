@@ -27,6 +27,10 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
     deleteDocumentTypeEntry,
   } = useDocumentTypeManagement(refetchDocumentTypes, showToast);
 
+  const handleToggleNewDocTypeForm = (): void => {
+    setShowNewDocTypeForm(!showNewDocTypeForm);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -51,7 +55,7 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
           </div>
         </div>
         <button
-          onClick={() => setShowNewDocTypeForm(!showNewDocTypeForm)}
+          onClick={handleToggleNewDocTypeForm}
           className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
         >
           {showNewDocTypeForm ? (

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Clock, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
@@ -51,6 +52,18 @@ const ShiftsScheduleCard = ({
     saveDeptAssignments,
   } = useDepartmentShiftAssignments(departments, showToast);
 
+  const handleShowNewShiftForm = (): void => {
+    setShowNewShiftForm(true);
+  };
+
+  const handleCreateShift = useCallback((): void => {
+    createShift(newShiftForm);
+  }, [createShift, newShiftForm]);
+
+  const handleCancelNewShift = useCallback((): void => {
+    setShowNewShiftForm(false);
+  }, [setShowNewShiftForm]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -76,7 +89,7 @@ const ShiftsScheduleCard = ({
         </div>
         {!showNewShiftForm && (
           <button
-            onClick={() => setShowNewShiftForm(true)}
+            onClick={handleShowNewShiftForm}
             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -90,8 +103,8 @@ const ShiftsScheduleCard = ({
           form={newShiftForm}
           onFieldChange={updateNewShiftForm}
           onDayChange={updateNewShiftDay}
-          onSave={() => createShift(newShiftForm)}
-          onCancel={() => setShowNewShiftForm(false)}
+          onSave={handleCreateShift}
+          onCancel={handleCancelNewShift}
         />
       )}
 
