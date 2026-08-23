@@ -35,7 +35,16 @@ const PoliciesList = ({
   onPageChange,
   onToggleStatus,
   onViewPolicy,
-}: PoliciesListProps) => (
+}: PoliciesListProps) => {
+  const handlePrevPage = (): void => {
+    onPageChange((page) => Math.max(1, page - 1));
+  };
+
+  const handleNextPage = (): void => {
+    onPageChange((page) => Math.min(totalPages, page + 1));
+  };
+
+  return (
   <div className="space-y-4">
     {filteredCount === 0 ? (
       <EmptyState
@@ -72,7 +81,7 @@ const PoliciesList = ({
           <button
             type="button"
             disabled={currentPage <= 1}
-            onClick={() => onPageChange((page) => Math.max(1, page - 1))}
+            onClick={handlePrevPage}
             className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
           >
             ‹
@@ -83,9 +92,7 @@ const PoliciesList = ({
           <button
             type="button"
             disabled={currentPage >= totalPages}
-            onClick={() =>
-              onPageChange((page) => Math.min(totalPages, page + 1))
-            }
+            onClick={handleNextPage}
             className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
           >
             ›
@@ -94,6 +101,7 @@ const PoliciesList = ({
       </div>
     )}
   </div>
-);
+  );
+};
 
 export default PoliciesList;

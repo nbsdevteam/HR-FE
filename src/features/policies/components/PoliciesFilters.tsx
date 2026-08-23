@@ -23,7 +23,20 @@ const PoliciesFilters = ({
   onSearchChange,
   onSortChange,
   onStatusFilterChange,
-}: PoliciesFiltersProps) => (
+}: PoliciesFiltersProps) => {
+  const handleCategoryClick = (category: string) => (): void => {
+    onCategoryChange(category);
+  };
+
+  const handleStatusFilterClick = (status: string) => (): void => {
+    onStatusFilterChange(status);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onSortChange(e.target.value as PolicySortKey);
+  };
+
+  return (
   <div className="flex flex-col gap-4">
     <SearchInput
       value={search}
@@ -35,7 +48,7 @@ const PoliciesFilters = ({
       {policyCategories.map((category) => (
         <button
           key={category}
-          onClick={() => onCategoryChange(category)}
+          onClick={handleCategoryClick(category)}
           className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer whitespace-nowrap flex-shrink-0 ${
             selectedCategory === category ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
           }`}
@@ -50,7 +63,7 @@ const PoliciesFilters = ({
         {[arabicSource("common.all"), ...policyStatusOptions].map((status) => (
           <button
             key={status}
-            onClick={() => onStatusFilterChange(status)}
+            onClick={handleStatusFilterClick(status)}
             className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
               statusFilter === status ? "bg-primary/90 text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"
             }`}
@@ -62,7 +75,7 @@ const PoliciesFilters = ({
       </div>
       <Select
         value={sortBy}
-        onChange={(e) => onSortChange(e.target.value as PolicySortKey)}
+        onChange={handleSortChange}
         options={[
           { value: "updated", label: arabicSource("policies.latest_update") },
           { value: "title", label: arabicSource("common.address") },
@@ -73,6 +86,7 @@ const PoliciesFilters = ({
       />
     </div>
   </div>
-);
+  );
+};
 
 export default PoliciesFilters;

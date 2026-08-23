@@ -40,6 +40,26 @@ const PolicyListItem = ({
   const Icon = POLICY_CATEGORY_ICONS[policy.category] || FileText;
   const localizedContent = localizePolicyText(policy.content);
 
+  const handleToggleExpand = (): void => {
+    onExpandPolicy(isExpanded ? null : policy.id);
+  };
+
+  const handleViewClick = (): void => {
+    onViewPolicy(policy);
+  };
+
+  const handleEditClick = (): void => {
+    onEditPolicy(policy);
+  };
+
+  const handleToggleStatusClick = (): void => {
+    onToggleStatus(policy);
+  };
+
+  const handleDeleteClick = (): void => {
+    onDeletePolicy(policy.id);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -48,7 +68,7 @@ const PolicyListItem = ({
       className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
     >
       <button
-        onClick={() => onExpandPolicy(isExpanded ? null : policy.id)}
+        onClick={handleToggleExpand}
         className="w-full flex items-center justify-between p-5 hover:bg-muted/10 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-4 flex-1">
@@ -137,14 +157,14 @@ const PolicyListItem = ({
 
               <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <button
-                  onClick={() => onViewPolicy(policy)}
+                  onClick={handleViewClick}
                   className="flex items-center gap-1 px-3 py-1.5 bg-primary/20 text-primary rounded text-xs hover:bg-primary/30 transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
                   {arabicSource("policies.full_view")}
                 </button>
                 <button
-                  onClick={() => onEditPolicy(policy)}
+                  onClick={handleEditClick}
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded text-xs hover:bg-blue-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
                 >
@@ -152,7 +172,7 @@ const PolicyListItem = ({
                   {arabicSource("common.edit")}
                 </button>
                 <button
-                  onClick={() => onToggleStatus(policy)}
+                  onClick={handleToggleStatusClick}
                   className="flex items-center gap-1 px-3 py-1.5 bg-amber-500/20 text-amber-400 rounded text-xs hover:bg-amber-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
                 >
@@ -160,7 +180,7 @@ const PolicyListItem = ({
                   {arabicSource("policies.change_status")}
                 </button>
                 <button
-                  onClick={() => onDeletePolicy(policy.id)}
+                  onClick={handleDeleteClick}
                   className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
                 >

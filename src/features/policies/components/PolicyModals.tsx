@@ -40,12 +40,25 @@ const PolicyModals = ({
   onShowCreateModalChange,
   onShowEditModalChange,
   onShowViewModalChange,
-}: PolicyModalsProps) => (
+}: PolicyModalsProps) => {
+  const handleCloseCreateModal = (): void => {
+    onShowCreateModalChange(false);
+  };
+
+  const handleCloseEditModal = (): void => {
+    onShowEditModalChange(false);
+  };
+
+  const handleCloseViewModal = (): void => {
+    onShowViewModalChange(false);
+  };
+
+  return (
   <>
     <AnimatePresence>
       {showCreateModal && (
         <ModalOverlay
-          onClose={() => onShowCreateModalChange(false)}
+          onClose={handleCloseCreateModal}
           overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           contentMotionProps={{
@@ -59,7 +72,7 @@ const PolicyModals = ({
               {arabicSource("policies.add_a_new_policy")}
             </h2>
             <button
-              onClick={() => onShowCreateModalChange(false)}
+              onClick={handleCloseCreateModal}
               className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -83,7 +96,7 @@ const PolicyModals = ({
               </button>
               <button
                 type="button"
-                onClick={() => onShowCreateModalChange(false)}
+                onClick={handleCloseCreateModal}
                 className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
               >
                 {arabicSource("common.cancel")}
@@ -97,7 +110,7 @@ const PolicyModals = ({
     <AnimatePresence>
       {showEditModal && editingPolicy && (
         <ModalOverlay
-          onClose={() => onShowEditModalChange(false)}
+          onClose={handleCloseEditModal}
           overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           contentMotionProps={{
@@ -111,7 +124,7 @@ const PolicyModals = ({
               {arabicSource("policies.modify_the_policy")}
             </h2>
             <button
-              onClick={() => onShowEditModalChange(false)}
+              onClick={handleCloseEditModal}
               className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -148,7 +161,7 @@ const PolicyModals = ({
               </button>
               <button
                 type="button"
-                onClick={() => onShowEditModalChange(false)}
+                onClick={handleCloseEditModal}
                 className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
               >
                 {arabicSource("common.cancel")}
@@ -162,7 +175,7 @@ const PolicyModals = ({
     <AnimatePresence>
       {showViewModal && viewingPolicy && (
         <ModalOverlay
-          onClose={() => onShowViewModalChange(false)}
+          onClose={handleCloseViewModal}
           overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           contentClassName="bg-card border border-border/40 rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
           contentMotionProps={{
@@ -181,7 +194,7 @@ const PolicyModals = ({
               </p>
             </div>
             <button
-              onClick={() => onShowViewModalChange(false)}
+              onClick={handleCloseViewModal}
               className="p-1 hover:bg-muted rounded-lg transition-colors cursor-pointer shrink-0"
             >
               <X className="w-5 h-5" />
@@ -238,7 +251,7 @@ const PolicyModals = ({
             </div>
 
             <button
-              onClick={() => onShowViewModalChange(false)}
+              onClick={handleCloseViewModal}
               className="w-full px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
             >
               {arabicSource("common.close")}
@@ -248,6 +261,7 @@ const PolicyModals = ({
       )}
     </AnimatePresence>
   </>
-);
+  );
+};
 
 export default PolicyModals;
