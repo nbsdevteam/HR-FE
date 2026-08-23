@@ -23,7 +23,20 @@ const WarningsFiltersBar = ({
   onFilterStatusChange,
   warningTypes,
   warningStatuses,
-}: TWarningsFiltersBarProps) => (
+}: TWarningsFiltersBarProps) => {
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchQueryChange(e.target.value);
+  };
+
+  const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFilterTypeChange(e.target.value);
+  };
+
+  const handleFilterStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFilterStatusChange(e.target.value);
+  };
+
+  return (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -37,14 +50,14 @@ const WarningsFiltersBar = ({
           type="text"
           placeholder={arabicSource("warnings.find_an_employee_or_cause")}
           value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
+          onChange={handleSearchQueryChange}
           className="w-full h-11 px-4 pe-10 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
         />
       </div>
 
       <Select
         value={filterType}
-        onChange={(e) => onFilterTypeChange(e.target.value)}
+        onChange={handleFilterTypeChange}
         options={warningTypes}
         blankLabel={arabicSource("common.all_types")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -52,13 +65,14 @@ const WarningsFiltersBar = ({
 
       <Select
         value={filterStatus}
-        onChange={(e) => onFilterStatusChange(e.target.value)}
+        onChange={handleFilterStatusChange}
         options={warningStatuses}
         blankLabel={arabicSource("warnings.all_cases")}
         className="h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
       />
     </div>
   </motion.div>
-);
+  );
+};
 
 export default WarningsFiltersBar;

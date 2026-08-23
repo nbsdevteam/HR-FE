@@ -18,7 +18,12 @@ const WarningKanbanCard = ({
   typeColors,
   typeSeverity,
   onSelect,
-}: TWarningKanbanCardProps) => (
+}: TWarningKanbanCardProps) => {
+  const handleSelectClick = (): void => {
+    onSelect(warning);
+  };
+
+  return (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -67,13 +72,14 @@ const WarningKanbanCard = ({
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => onSelect(warning)}
+        onClick={handleSelectClick}
         className="flex-1 py-1 text-xs rounded hover:bg-primary/20 transition-colors cursor-pointer text-primary"
       >
         {arabicSource("common.details")}
       </motion.button>
     </div>
   </motion.div>
-);
+  );
+};
 
 export default memo(WarningKanbanCard);

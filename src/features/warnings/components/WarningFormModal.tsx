@@ -29,7 +29,28 @@ const WarningFormModal = ({
   onFieldChange,
   onSubmit,
   onClose,
-}: TWarningFormModalProps) => (
+}: TWarningFormModalProps) => {
+  const handleEmployeeChange = (id: string): void => {
+    onFieldChange({ employeeId: String(id) });
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFieldChange({ type: e.target.value });
+  };
+
+  const handleReasonChange = (reason: string): void => {
+    onFieldChange({ reason });
+  };
+
+  const handleDetailsChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    onFieldChange({ details: e.target.value });
+  };
+
+  const handleExpiryDateChange = (expiryDate: string): void => {
+    onFieldChange({ expiryDate });
+  };
+
+  return (
   <Modal
     onClose={onClose}
     contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
@@ -54,7 +75,7 @@ const WarningFormModal = ({
             employees.map((e) => [String(e.id), empDisplayName(e)]),
           )}
           value={form.employeeId}
-          onChange={(id) => onFieldChange({ employeeId: String(id) })}
+          onChange={handleEmployeeChange}
           placeholder={arabicSource("warnings.find_the_employee")}
         />
       </div>
@@ -68,7 +89,7 @@ const WarningFormModal = ({
         </label>
         <Select
           value={form.type}
-          onChange={(e) => onFieldChange({ type: e.target.value })}
+          onChange={handleTypeChange}
           options={warningTypes}
           blankLabel={arabicSource("warnings.choose_the_alarm_type")}
           className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -85,7 +106,7 @@ const WarningFormModal = ({
         <InputField
           placeholder={arabicSource("warnings.cause_of_alarm")}
           value={form.reason}
-          onChange={(reason) => onFieldChange({ reason })}
+          onChange={handleReasonChange}
           className={inputCls}
         />
       </div>
@@ -101,7 +122,7 @@ const WarningFormModal = ({
           rows={3}
           placeholder={arabicSource("warnings.alarm_details_2")}
           value={form.details}
-          onChange={(e) => onFieldChange({ details: e.target.value })}
+          onChange={handleDetailsChange}
           className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none resize-none"
         />
       </div>
@@ -116,7 +137,7 @@ const WarningFormModal = ({
         <InputField
           type="date"
           value={form.expiryDate}
-          onChange={(expiryDate) => onFieldChange({ expiryDate })}
+          onChange={handleExpiryDateChange}
           className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
         />
       </div>
@@ -147,6 +168,7 @@ const WarningFormModal = ({
       </div>
     </form>
   </Modal>
-);
+  );
+};
 
 export default memo(WarningFormModal);

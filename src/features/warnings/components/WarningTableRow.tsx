@@ -23,7 +23,12 @@ const WarningTableRow = ({
   typeSeverity,
   duplicateCount,
   onSelect,
-}: TWarningTableRowProps) => (
+}: TWarningTableRowProps) => {
+  const handleSelectClick = (): void => {
+    onSelect(warning);
+  };
+
+  return (
   <motion.tr
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -81,7 +86,7 @@ const WarningTableRow = ({
     <td className="px-4 py-3">
       <div className="flex items-center gap-2">
         <button
-          onClick={() => onSelect(warning)}
+          onClick={handleSelectClick}
           className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
           title={arabicSource("common.show_details")}
         >
@@ -90,6 +95,7 @@ const WarningTableRow = ({
       </div>
     </td>
   </motion.tr>
-);
+  );
+};
 
 export default memo(WarningTableRow);
