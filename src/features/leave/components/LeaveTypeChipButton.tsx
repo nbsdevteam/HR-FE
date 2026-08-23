@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbLeaveType } from "@/shared/hooks";
 
 type LeaveTypeChipButtonProps = {
@@ -9,6 +10,7 @@ type LeaveTypeChipButtonProps = {
 };
 
 const LeaveTypeChipButton = ({ leaveType, isSelected, onSelect }: LeaveTypeChipButtonProps) => {
+  const { primary } = useLocalizedName(leaveType.name_ar, leaveType.name_en);
   const handleClick = useCallback(() => onSelect(leaveType), [onSelect, leaveType]);
 
   return (
@@ -21,7 +23,7 @@ const LeaveTypeChipButton = ({ leaveType, isSelected, onSelect }: LeaveTypeChipB
       }`}
       style={{ fontSize: 13, backgroundColor: isSelected ? leaveType.color + "15" : undefined }}
     >
-      <span data-i18n-ignore>{leaveType.name_ar}</span>
+      <span data-i18n-ignore>{primary}</span>
       {!leaveType.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.without_salary")}</span>}
     </button>
   );
