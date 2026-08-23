@@ -10,6 +10,11 @@ type ReportTemplateRowProps = {
 
 const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
   const Icon = categoryIcons[template.category] || FileText;
+
+  const handleSelectClick = (): void => {
+    onSelect(template);
+  };
+
   return (
     <tr className="border-b border-border/20 hover:bg-muted/10">
       <td className="p-3">
@@ -30,7 +35,7 @@ const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
       <td className="p-3 text-muted-foreground">{template.format}</td>
       <td className="p-3">
         <button
-          onClick={() => onSelect(template)}
+          onClick={handleSelectClick}
           className="px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer text-xs"
         >
           {arabicSource("common.create")}

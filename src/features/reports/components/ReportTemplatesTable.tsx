@@ -24,7 +24,12 @@ const ReportTemplatesTable = ({
   onSortByChange,
   onSortDirChange,
   onSelect,
-}: ReportTemplatesTableProps) => (
+}: ReportTemplatesTableProps) => {
+  const handleSort = (key: ReportSortBy): void => {
+    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+  };
+
+  return (
   <DataTable
     wrapperClassName={cardCls}
     tableClassName="w-full text-sm"
@@ -34,9 +39,7 @@ const ReportTemplatesTable = ({
         columns={reportTemplatesTableColumns}
         sortBy={sortBy}
         sortDir={sortDir}
-        onSort={(key) =>
-          toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange)
-        }
+        onSort={handleSort}
       />
     }
     renderRow={(template) => (
@@ -47,6 +50,7 @@ const ReportTemplatesTable = ({
       />
     )}
   />
-);
+  );
+};
 
 export default ReportTemplatesTable;

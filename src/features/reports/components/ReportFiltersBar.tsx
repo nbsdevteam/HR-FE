@@ -5,6 +5,7 @@ import { Select } from "@/shared/components";
 import { categoryLabels } from "../constants/reports";
 import { cardCls } from "../styles";
 import type { ReportViewMode } from "../types";
+import { selectStyle } from "@/styles/sharedClasses";
 
 type ReportFiltersBarProps = {
   searchQuery: string;
@@ -36,7 +37,36 @@ const ReportFiltersBar = ({
   onDateFromChange,
   onDateToChange,
   onViewModeChange,
-}: ReportFiltersBarProps) => (
+}: ReportFiltersBarProps) => {
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onSearchQueryChange(e.target.value);
+  };
+
+  const handleFilterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFilterCategoryChange(e.target.value);
+  };
+
+  const handleFilterDeptChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onFilterDeptChange(e.target.value);
+  };
+
+  const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onDateFromChange(e.target.value);
+  };
+
+  const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onDateToChange(e.target.value);
+  };
+
+  const handleGridViewClick = (): void => {
+    onViewModeChange("grid");
+  };
+
+  const handleTableViewClick = (): void => {
+    onViewModeChange("table");
+  };
+
+  return (
   <div className={cardCls}>
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -44,30 +74,34 @@ const ReportFiltersBar = ({
         <input
           placeholder={arabicSource("reports.search_reports")}
           value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
+          onChange={handleSearchQueryChange}
           className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
       <Select
         value={filterCategory}
-        onChange={(e) => onFilterCategoryChange(e.target.value)}
+        onChange={handleFilterCategoryChange}
         options={[
           { value: "all", label: arabicSource("common.all_categories") },
-          ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+          ...Object.entries(categoryLabels).map(([value, label]) => ({
+            value,
+            label,
+          })),
         ]}
-        className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        className={selectStyle}
       />
       <Select
         value={filterDept}
-        onChange={(e) => onFilterDeptChange(e.target.value)}
+        onChange={handleFilterDeptChange}
         options={departments.map((d) => ({ value: d.name, label: d.name }))}
         blankLabel={arabicSource("reports.all_sections")}
-        className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
+        className={selectStyle}
       />
+
       <input
         type="date"
         value={dateFrom}
-        onChange={(e) => onDateFromChange(e.target.value)}
+        onChange={handleDateFromChange}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
         dir="ltr"
       />
@@ -77,19 +111,19 @@ const ReportFiltersBar = ({
       <input
         type="date"
         value={dateTo}
-        onChange={(e) => onDateToChange(e.target.value)}
+        onChange={handleDateToChange}
         className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
         dir="ltr"
       />
       <div className="flex items-center border border-border/50 rounded-lg overflow-hidden">
         <button
-          onClick={() => onViewModeChange("grid")}
+          onClick={handleGridViewClick}
           className={`p-2 cursor-pointer ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           <LayoutGrid className="w-4 h-4" />
         </button>
         <button
-          onClick={() => onViewModeChange("table")}
+          onClick={handleTableViewClick}
           className={`p-2 cursor-pointer ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           <Table className="w-4 h-4" />
@@ -97,6 +131,7 @@ const ReportFiltersBar = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default ReportFiltersBar;

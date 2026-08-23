@@ -17,6 +17,11 @@ const ReportTemplateCard = ({
   onSelect,
 }: ReportTemplateCardProps) => {
   const Icon = categoryIcons[template.category] || FileText;
+
+  const handleSelectClick = (): void => {
+    onSelect(template);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -52,7 +57,7 @@ const ReportTemplateCard = ({
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={() => onSelect(template)}
+        onClick={handleSelectClick}
         className="w-full flex items-center justify-center gap-2 h-9 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
       >
         <Eye className="w-4 h-4" />
