@@ -3,6 +3,7 @@ import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import type { DbTrainingProgram } from "@/shared/hooks";
+import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { TRAINING_STATUS_TO_ODOO } from "../constants/training";
 import type { CreateProgramForm, ToastType } from "../types";
 
@@ -55,7 +56,7 @@ export const useProgramForm = ({
       return;
     }
 
-    try {
+    await runAsyncAction(async () => {
       const objectives = createForm.objectives
         ? createForm.objectives.split("\n").filter((o) => o.trim())
         : [];
@@ -80,15 +81,15 @@ export const useProgramForm = ({
       setCreateForm(buildInitialCreateForm(trainingCategories, trainingStatuses, defaultWeight));
       setShowCreateModal(false);
       refetchPrograms();
-    } catch {
-      showToast("error", arabicSource("training.error_creating_the_program"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.error_creating_the_program")),
+    });
   }, [createForm, defaultWeight, refetchPrograms, showToast, trainingCategories, trainingStatuses]);
 
   const handleUpdateProgram = useCallback(async () => {
     if (!editingProgram) return;
 
-    try {
+    await runAsyncAction(async () => {
       const status = TRAINING_STATUS_TO_ODOO[editingProgram.status] || editingProgram.status;
       await odooData.updateTrainingProgram(editingProgram.id, {
         status,
@@ -100,23 +101,23 @@ export const useProgramForm = ({
       showToast("success", arabicSource("training.the_software_has_been_updated_successfully"));
       setEditingProgram(null);
       refetchPrograms();
-    } catch {
-      showToast("error", arabicSource("training.software_update_error"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.software_update_error")),
+    });
   }, [editingProgram, refetchPrograms, showToast]);
 
   const handleDeleteProgram = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_training_program"))) return;
 
-    try {
+    await runAsyncAction(async () => {
       await odooData.deleteTrainingProgram(id);
 
       showToast("success", arabicSource("training.the_program_was_deleted_successfully"));
       refetchPrograms();
       refetchParticipants();
-    } catch {
-      showToast("error", arabicSource("training.error_deleting_the_program"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.error_deleting_the_program")),
+    });
   }, [refetchParticipants, refetchPrograms, showToast]);
 
   return {

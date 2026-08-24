@@ -6,6 +6,7 @@ import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
 import { translateArabicSource } from "@/i18n/legacy";
 import { usePolicies } from "@/shared/hooks";
+import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { countBy } from "@/shared/utils/collections";
 import {
   ODOO_STATUS_TO_POLICY,
@@ -103,8 +104,7 @@ export const usePoliciesPage = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
+    await runAsyncAction(async () => {
       await odooData.createPolicy({
         title: createForm.title,
         category: createForm.category,
@@ -118,19 +118,17 @@ export const usePoliciesPage = () => {
       setCreateForm({ title: "", category: arabicSource("common.general"), description: "", content: "" });
       setShowCreateModal(false);
       await refetch();
-    } catch (error: any) {
-      showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_creation_failed")));
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, {
+      setLoading: setIsSubmitting,
+      onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_creation_failed"))),
+    });
   }, [createForm, refetch, showToast]);
 
   const handleUpdatePolicy = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
     if (!editingPolicy) return;
 
-    setIsSubmitting(true);
-    try {
+    await runAsyncAction(async () => {
       await odooData.updatePolicy(editingPolicy.id, {
         title: editingPolicy.title,
         category: editingPolicy.category,
@@ -144,26 +142,23 @@ export const usePoliciesPage = () => {
       setEditingPolicy(null);
       setShowEditModal(false);
       await refetch();
-    } catch (error: any) {
-      showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_update_failed")));
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, {
+      setLoading: setIsSubmitting,
+      onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_update_failed"))),
+    });
   }, [editingPolicy, refetch, showToast]);
 
   const handleDeletePolicy = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("policies.are_you_sure_you_want_to_delete_this_policy"))) return;
 
-    setIsSubmitting(true);
-    try {
+    await runAsyncAction(async () => {
       await odooData.deletePolicy(id);
       showToast(arabicSource("policies.the_policy_was_deleted_successfully"));
       await refetch();
-    } catch (error: any) {
-      showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_deletion_failed")));
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, {
+      setLoading: setIsSubmitting,
+      onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_deletion_failed"))),
+    });
   }, [refetch, showToast]);
 
   const handleToggleStatus = useCallback(async (policy: DisplayPolicy) => {
@@ -174,19 +169,17 @@ export const usePoliciesPage = () => {
     };
     const newStatus = statusMap[policy.status] || arabicSource("common.is_active");
 
-    setIsSubmitting(true);
-    try {
+    await runAsyncAction(async () => {
       await odooData.updatePolicy(policy.id, {
         status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus,
       });
 
       showToast(`${arabicSource("policies.status_changed_to")} ${newStatus}`);
       await refetch();
-    } catch (error: any) {
-      showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.status_change_failed")));
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, {
+      setLoading: setIsSubmitting,
+      onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.status_change_failed"))),
+    });
   }, [refetch, showToast]);
 
   const openEditModal = useCallback((policy: DisplayPolicy) => {

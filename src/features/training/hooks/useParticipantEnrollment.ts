@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { PARTICIPANT_STATUS_TO_ODOO } from "../constants/training";
 import type { EnrollParticipantForm, ToastType } from "../types";
 
@@ -39,7 +40,7 @@ export const useParticipantEnrollment = ({ participantStatuses, refetchParticipa
       return;
     }
 
-    try {
+    await runAsyncAction(async () => {
       await odooData.createTrainingParticipant({
         training_program_id: selectedProgramForParticipants,
         employee_id: enrollForm.employee_id,
@@ -51,13 +52,13 @@ export const useParticipantEnrollment = ({ participantStatuses, refetchParticipa
       setEnrollForm(buildInitialEnrollForm(participantStatuses));
       setShowEnrollModal(false);
       refetchParticipants();
-    } catch {
-      showToast("error", arabicSource("training.error_in_employee_registration"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.error_in_employee_registration")),
+    });
   }, [enrollForm, participantStatuses, refetchParticipants, selectedProgramForParticipants, showToast]);
 
   const handleMarkCompleted = useCallback(async (participantId: string, score: number) => {
-    try {
+    await runAsyncAction(async () => {
       await odooData.updateTrainingParticipant(participantId, {
         completion_status: "completed",
         score,
@@ -65,22 +66,22 @@ export const useParticipantEnrollment = ({ participantStatuses, refetchParticipa
 
       showToast("success", arabicSource("training.participant_status_has_been_updated"));
       refetchParticipants();
-    } catch {
-      showToast("error", arabicSource("training.update_error"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.update_error")),
+    });
   }, [refetchParticipants, showToast]);
 
   const handleDeleteParticipant = useCallback(async (participantId: string) => {
     if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_participant_from_the_program"))) return;
 
-    try {
+    await runAsyncAction(async () => {
       await odooData.deleteTrainingParticipant(participantId);
 
       showToast("success", arabicSource("training.participant_has_been_successfully_deleted"));
       refetchParticipants();
-    } catch {
-      showToast("error", arabicSource("training.error_deleting_participant"));
-    }
+    }, {
+      onError: () => showToast("error", arabicSource("training.error_deleting_participant")),
+    });
   }, [refetchParticipants, showToast]);
 
   return {
