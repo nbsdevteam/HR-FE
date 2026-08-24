@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { arabicSource } from "@/i18n/source";
+import { StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
 
@@ -49,12 +50,9 @@ const WarningKanbanCard = ({
         </div>
       </div>
       <div className="space-y-1.5 mb-3">
-        <span
-          className={`inline-block px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`}
-          style={{ fontSize: 11 }}
-        >
+        <StatusBadge colorClassName={typeColors[warning.type]} fontSize={11} extraClassName="inline-block">
           {warning.type}
-        </span>
+        </StatusBadge>
         <p className="text-muted-foreground" style={{ fontSize: 11 }}>
           {warning.reason}
         </p>

@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Bell, Check, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { useNotifications } from "@/shared/hooks";
@@ -10,10 +10,11 @@ import { selectStyle } from "@/styles/sharedClasses";
 import { allCategoriesOptions, allTypesOptions } from "../data/auditMeta";
 
 const NotificationsTab = () => {
-  const { notifications, unreadCount, loading, refetch } = useNotifications();
   const [filterType, setFilterType] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { notifications, unreadCount, loading, refetch } = useNotifications();
 
   const filtered = useMemo(() => {
     return notifications.filter((n) => {
@@ -30,40 +31,40 @@ const NotificationsTab = () => {
     });
   }, [notifications, filterType, filterCategory, searchQuery]);
 
-  const markRead = async (id: string) => {
+  const markRead = useCallback(async (id: string) => {
     try {
       await odooData.markNotificationRead(id);
       refetch();
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
-  };
+  }, [refetch]);
 
-  const markAllRead = async () => {
+  const markAllRead = useCallback(async () => {
     try {
       await odooData.markAllNotificationsRead();
       refetch();
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
     }
-  };
+  }, [refetch]);
 
-  const dismiss = async (id: string) => {
+  const dismiss = useCallback(async (id: string) => {
     try {
       await odooData.dismissNotification(id);
       refetch();
     } catch (error) {
       console.error("Failed to dismiss notification:", error);
     }
-  };
+  }, [refetch]);
 
-  const handleFilterTypeChange = (value: string): void => {
+  const handleFilterTypeChange = useCallback((value: string): void => {
     setFilterType(value);
-  };
+  }, []);
 
-  const handleFilterCategoryChange = (value: string): void => {
+  const handleFilterCategoryChange = useCallback((value: string): void => {
     setFilterCategory(value);
-  };
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -95,8 +96,7 @@ const NotificationsTab = () => {
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer text-sm"
             >
               <Check className="w-4 h-4" />
-              {arabicSource("auditcenter.read_all")}
-              {unreadCount})
+              {arabicSource("auditcenter.read_all")} ({unreadCount})
             </button>
           )}
         </div>

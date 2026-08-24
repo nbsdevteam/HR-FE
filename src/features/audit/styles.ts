@@ -21,3 +21,12 @@ export const notifTypeColors: Record<string, string> = {
   error: "border-red-500/30 bg-red-500/10",
   action: "border-primary/30 bg-primary/10",
 };
+
+/** Icon text colour per notification type — kept alongside notifTypeColors so a type has one place its colours are defined. */
+export const notifTypeIconColors: Record<string, string> = {
+  info: "text-primary",
+  warning: "text-amber-400",
+  success: "text-emerald-400",
+  error: "text-red-400",
+  action: "text-primary",
+};

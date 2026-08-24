@@ -4,7 +4,7 @@ import type { DbNotification } from "@/shared/hooks";
 import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { notifTypeIcons } from "../data/auditMeta";
-import { notifTypeColors } from "../styles";
+import { notifTypeColors, notifTypeIconColors } from "../styles";
 
 type NotificationItemProps = {
   notification: DbNotification;
@@ -40,17 +40,7 @@ const NotificationItem = ({
           : notifTypeColors[notification.type] || "border-border/40 bg-card/30"
       }`}
     >
-      <div
-        className={`mt-0.5 ${
-          notification.type === "warning"
-            ? "text-amber-400"
-            : notification.type === "error"
-              ? "text-red-400"
-              : notification.type === "success"
-                ? "text-emerald-400"
-                : "text-primary"
-        }`}
-      >
+      <div className={`mt-0.5 ${notifTypeIconColors[notification.type] || "text-primary"}`}>
         <TypeIcon className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">

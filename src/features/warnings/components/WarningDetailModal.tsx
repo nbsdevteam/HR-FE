@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { CheckCircle, Trash2, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { Modal } from "@/shared/components";
+import { Modal, StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import WarningDetailRow from "./WarningDetailRow";
 
@@ -83,12 +83,7 @@ const WarningDetailModal = ({
         <span className="text-foreground">{warning.employeeDepartment}</span>
       </WarningDetailRow>
       <WarningDetailRow label={arabicSource("warnings.alarm_type")}>
-        <span
-          className={`px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`}
-          style={{ fontSize: 12 }}
-        >
-          {warning.type}
-        </span>
+        <StatusBadge colorClassName={typeColors[warning.type]}>{warning.type}</StatusBadge>
       </WarningDetailRow>
       <WarningDetailRow label={arabicSource("warnings.reason")}>
         <span className="text-foreground">{warning.reason}</span>
@@ -114,12 +109,7 @@ const WarningDetailModal = ({
         <span className="text-foreground">{warning.issued_by || "—"}</span>
       </WarningDetailRow>
       <WarningDetailRow label={arabicSource("warnings.condition")}>
-        <span
-          className={`px-2 py-0.5 rounded-md border ${statusColors[warning.status]}`}
-          style={{ fontSize: 12 }}
-        >
-          {warning.status}
-        </span>
+        <StatusBadge colorClassName={statusColors[warning.status]}>{warning.status}</StatusBadge>
       </WarningDetailRow>
   </Modal>
 );

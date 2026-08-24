@@ -2,6 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
 
@@ -55,12 +56,7 @@ const WarningTableRow = ({
       {warning.employeeDepartment}
     </td>
     <td className="px-4 py-3">
-      <span
-        className={`px-2 py-0.5 rounded-md border ${typeColors[warning.type]}`}
-        style={{ fontSize: 12 }}
-      >
-        {warning.type}
-      </span>
+      <StatusBadge colorClassName={typeColors[warning.type]}>{warning.type}</StatusBadge>
     </td>
     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
       {warning.reason}
@@ -76,12 +72,7 @@ const WarningTableRow = ({
       {warning.issued_by || "—"}
     </td>
     <td className="px-4 py-3">
-      <span
-        className={`px-2 py-0.5 rounded-md border ${statusColors[warning.status]}`}
-        style={{ fontSize: 12 }}
-      >
-        {warning.status}
-      </span>
+      <StatusBadge colorClassName={statusColors[warning.status]}>{warning.status}</StatusBadge>
     </td>
     <td className="px-4 py-3">
       <div className="flex items-center gap-2">
