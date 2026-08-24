@@ -126,7 +126,7 @@ const Select = ({
       {open && !disabled && popupRect
         ? createPortal(
             <div
-              className="dropdown-scrollbar fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
+              className="fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
               style={{ top: popupRect.top, left: popupRect.left, width: popupRect.width }}
               role="listbox"
               onPointerDown={handleDropdownPointerDown}

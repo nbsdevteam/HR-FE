@@ -153,6 +153,8 @@
 
   html {
     font-size: var(--font-size);
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
   }
 
   h1 {
@@ -198,6 +200,26 @@
   }
 }
 
+/* Themed scrollbar applied to every scrollable region (sidebar nav, main
+   content, dropdowns, etc.) so no panel falls back to the browser default. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--gold);
+}
+
 .text-gradient-gold {
   background: var(--gold-gradient);
   background-size: 200% auto;
@@ -226,25 +248,3 @@
   50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); }
 }
 
-/* Themed scrollbar for the Select/TypeAhead dropdown popups. */
-.dropdown-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--muted-foreground) transparent;
-}
-
-.dropdown-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dropdown-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.dropdown-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--muted-foreground);
-  border-radius: 9999px;
-}
-
-.dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: var(--gold);
-}
