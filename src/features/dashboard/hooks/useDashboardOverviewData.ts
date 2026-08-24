@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ROUTE_SEGMENT } from "@/app/router/routePaths";
 import { formatIQD } from "../utils/dashboardFormat";
 import type { DashboardSectionData } from "./useDashboardData";
 
@@ -109,6 +110,7 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
         sub: `${activeEmployees} ${arabicSource("dashboard.active")} ${inactiveEmployees} ${arabicSource("common.is_inactive")}`,
         icon: Users,
         color: "text-primary",
+        href: `/${ROUTE_SEGMENT.employees}`,
       },
       {
         label: arabicSource("dashboard.attendance_7_days"),
@@ -117,6 +119,7 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
         icon: ClipboardCheck,
         color: "text-emerald-400",
         trend: attendanceStats.attendanceTrend,
+        href: `/${ROUTE_SEGMENT.attendance}`,
       },
       {
         label: arabicSource("common.total_compensation"),
@@ -124,6 +127,7 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
         sub: `${arabicSource("dashboard.cost_employee")} ${formatIQD(compensationStats.costPerEmployee)}`,
         icon: Wallet,
         color: "text-blue-400",
+        href: `/${ROUTE_SEGMENT.payroll}`,
       },
       {
         label: arabicSource("common.turnover_rate_annual"),

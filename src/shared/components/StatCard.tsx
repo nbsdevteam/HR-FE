@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { motion } from "motion/react";
+import { Link } from "react-router";
 
 type StatCardLayout = "row" | "center";
 type StatCardDecoration = "none" | "blob" | "glow";
@@ -29,7 +30,10 @@ type StatCardProps = {
   sub?: ReactNode;
   trailing?: ReactNode;
   dir?: "ltr";
+  href?: string;
 };
+
+const MotionLink = motion.create(Link);
 
 /** Animated icon+value card for stat grids. For a static colored tile use ColorStatTile; for an inline label:value row use LabeledMetricRow. */
 const StatCard = ({
@@ -57,55 +61,118 @@ const StatCard = ({
   sub,
   trailing,
   dir,
+  href,
 }: StatCardProps) => {
   const icon = iconBox ? (
-    <div className={`rounded-lg ${iconBoxPadding ?? (layout === "center" ? "p-2" : "p-2.5")} ${iconBoxClassName}`}>
+    <div
+      className={`rounded-lg ${iconBoxPadding ?? (layout === "center" ? "p-2" : "p-2.5")} ${iconBoxClassName}`}
+    >
       <Icon className={iconClassName} />
     </div>
   ) : (
     <Icon className={iconClassName} />
   );
 
-  const decorationEl = decoration === "none" ? null : decoration === "blob" ? (
-    <div className={`absolute top-0 end-0 ${decorationSizeClassName} bg-gradient-to-bl ${decorationClassName} to-transparent rounded-bl-full`} />
-  ) : (
-    <div className={`absolute inset-0 bg-gradient-to-br ${decorationClassName} via-transparent to-transparent w-28 pointer-events-none`} />
-  );
+  const decorationEl =
+    decoration === "none" ? null : decoration === "blob" ? (
+      <div
+        className={`absolute top-0 end-0 ${decorationSizeClassName} bg-gradient-to-bl ${decorationClassName} to-transparent rounded-bl-full`}
+      />
+    ) : (
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${decorationClassName} via-transparent to-transparent w-28 pointer-events-none`}
+      />
+    );
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * delayStep }}
-      whileHover={hoverLift ? { y: -4, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.15)" } : undefined}
-      className={`relative ${cardClassName} rounded-xl ${padding} shadow-lg overflow-hidden ${hoverLift ? "hover:border-primary/30 transition-colors" : ""} ${layout === "center" ? "text-center" : ""}`}
-    >
+  const motionProps = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: index * delayStep },
+    whileHover: hoverLift
+      ? { y: -4, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.15)" }
+      : undefined,
+    className: `relative ${cardClassName} rounded-xl ${padding} shadow-lg overflow-hidden ${hoverLift ? "hover:border-primary/30 transition-colors" : ""} ${href ? "cursor-pointer" : ""} ${layout === "center" ? "text-center" : ""}`,
+  };
+
+  const content = (
+    <>
       {decorationEl}
       {layout === "center" ? (
         <>
           <div className="flex justify-center mb-2 relative z-10">{icon}</div>
-          <p className="text-muted-foreground relative z-10" style={{ fontSize: labelSize }}>{label}</p>
-          <span className={`block mt-1 relative z-10 ${valueClassName}`} style={{ fontSize: valueSize }}>{value}</span>
+          <p
+            className="text-muted-foreground relative z-10"
+            style={{ fontSize: labelSize }}
+          >
+            {label}
+          </p>
+          <span
+            className={`block mt-1 relative z-10 ${valueClassName}`}
+            style={{ fontSize: valueSize }}
+          >
+            {value}
+          </span>
         </>
       ) : (
         <div className="flex items-start justify-between relative z-10">
           <div>
-            <p className="text-muted-foreground" style={{ fontSize: labelSize }}>{label}</p>
+            <p
+              className="text-muted-foreground"
+              style={{ fontSize: labelSize }}
+            >
+              {label}
+            </p>
             {suffix || trailing ? (
-              <div className={`flex items-baseline gap-1.5 ${valueMarginClassName}`}>
-                <span className={valueClassName} style={{ fontSize: valueSize }} dir={dir}>{value}</span>
-                {suffix && <span className="text-muted-foreground" style={{ fontSize: 11 }}>{suffix}</span>}
+              <div
+                className={`flex items-baseline gap-1.5 ${valueMarginClassName}`}
+              >
+                <span
+                  className={valueClassName}
+                  style={{ fontSize: valueSize }}
+                  dir={dir}
+                >
+                  {value}
+                </span>
+                {suffix && (
+                  <span
+                    className="text-muted-foreground"
+                    style={{ fontSize: 11 }}
+                  >
+                    {suffix}
+                  </span>
+                )}
                 {trailing}
               </div>
             ) : (
-              <span className={`block ${valueMarginClassName} ${valueClassName}`} style={{ fontSize: valueSize }} dir={dir}>{value}</span>
+              <span
+                className={`block ${valueMarginClassName} ${valueClassName}`}
+                style={{ fontSize: valueSize }}
+                dir={dir}
+              >
+                {value}
+              </span>
             )}
-            {sub && <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>{sub}</p>}
+            {sub && (
+              <p
+                className="text-muted-foreground mt-1"
+                style={{ fontSize: 11 }}
+              >
+                {sub}
+              </p>
+            )}
           </div>
           {icon}
         </div>
       )}
-    </motion.div>
+    </>
+  );
+
+  return href ? (
+    <MotionLink to={href} {...motionProps}>
+      {content}
+    </MotionLink>
+  ) : (
+    <motion.div {...motionProps}>{content}</motion.div>
   );
 };
 

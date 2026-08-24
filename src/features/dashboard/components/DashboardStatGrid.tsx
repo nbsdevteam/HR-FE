@@ -9,6 +9,7 @@ export type DashboardStatCardItem = {
   icon: ComponentType<{ className?: string }>;
   color?: string;
   trend?: number;
+  href?: string;
 };
 
 type DashboardStatGridProps = {
@@ -17,7 +18,11 @@ type DashboardStatGridProps = {
   hoverLift?: boolean;
 };
 
-const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardStatGridProps) => (
+const DashboardStatGrid = ({
+  stats,
+  compactValue,
+  hoverLift,
+}: DashboardStatGridProps) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
     {stats.map((stat, index) => (
       <StatCard
@@ -34,8 +39,13 @@ const DashboardStatGrid = ({ stats, compactValue, hoverLift }: DashboardStatGrid
         valueSize={compactValue ? 20 : 24}
         valueClassName={`font-semibold ${stat.color ?? "text-primary"}`}
         dir="ltr"
+        href={stat.href}
         sub={stat.sub}
-        trailing={stat.trend !== undefined ? <DashboardTrendBadge value={stat.trend} suffix="%" /> : undefined}
+        trailing={
+          stat.trend !== undefined ? (
+            <DashboardTrendBadge value={stat.trend} suffix="%" />
+          ) : undefined
+        }
       />
     ))}
   </div>
