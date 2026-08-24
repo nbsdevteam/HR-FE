@@ -31,6 +31,14 @@ export const dashboardRiskScoreTextColor: Record<DashboardRiskLevel, string> = {
   critical: "text-red-400",
 };
 
+/** Chip bg/border for the risk indicator in DashboardHeader — deliberately omits text colour, since the Shield icon and score carry their own via dashboardRiskScoreTextColor. */
+export const dashboardRiskContainerClass: Record<DashboardRiskLevel, string> = {
+  low: "bg-emerald-500/10 border-emerald-500/30",
+  medium: "bg-amber-500/10 border-amber-500/30",
+  high: "bg-orange-500/10 border-orange-500/30",
+  critical: "bg-red-500/10 border-red-500/30",
+};
+
 export const dashboardRiskBadgeConfig: Record<
   DashboardRiskLevel,
   { label: string; cls: string }

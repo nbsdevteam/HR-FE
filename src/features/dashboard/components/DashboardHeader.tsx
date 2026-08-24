@@ -1,5 +1,6 @@
 import { Bell, Shield } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { dashboardRiskContainerClass, dashboardRiskScoreTextColor } from "../data";
 import type { DashboardRiskLevel } from "../types";
 import DashboardRiskBadge from "./DashboardRiskBadge";
 
@@ -20,27 +21,9 @@ const DashboardHeader = ({ riskLevel, unreadCount }: DashboardHeaderProps) => (
     </div>
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0">
       <div
-        className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border ${
-          riskLevel === "critical"
-            ? "bg-red-500/10 border-red-500/30"
-            : riskLevel === "high"
-              ? "bg-orange-500/10 border-orange-500/30"
-              : riskLevel === "medium"
-                ? "bg-amber-500/10 border-amber-500/30"
-                : "bg-emerald-500/10 border-emerald-500/30"
-        }`}
+        className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border ${dashboardRiskContainerClass[riskLevel]}`}
       >
-        <Shield
-          className={`w-4 h-4 flex-shrink-0 ${
-            riskLevel === "critical"
-              ? "text-red-400"
-              : riskLevel === "high"
-                ? "text-orange-400"
-                : riskLevel === "medium"
-                  ? "text-amber-400"
-                  : "text-emerald-400"
-          }`}
-        />
+        <Shield className={`w-4 h-4 flex-shrink-0 ${dashboardRiskScoreTextColor[riskLevel]}`} />
         <span className="text-sm whitespace-nowrap">
           {arabicSource("dashboard.risks")}{" "}
           <DashboardRiskBadge level={riskLevel} />
