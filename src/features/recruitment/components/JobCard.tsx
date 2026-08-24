@@ -14,7 +14,7 @@ import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbJobOpening } from "@/shared/hooks";
 import { JOB_STATUSES, statusColors } from "../constants/recruitment";
-import JobRequirementChip from "./JobRequirementChip";
+import Chip from "./Chip";
 import RequirementOverflowBadge from "./RequirementOverflowBadge";
 
 interface IJobCardProps {
@@ -111,9 +111,10 @@ const JobCard = ({
     {job.requirements && job.requirements.length > 0 && (
       <div className="flex flex-wrap gap-2">
         {job.requirements.slice(0, 2).map((requirement, requirementIndex) => (
-          <JobRequirementChip
+          <Chip
             key={`${requirement}-${requirementIndex}`}
-            requirement={requirement}
+            label={requirement}
+            variant="requirement"
           />
         ))}
         <RequirementOverflowBadge hiddenCount={job.requirements.length - 2} />

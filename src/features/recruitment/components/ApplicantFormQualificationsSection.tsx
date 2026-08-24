@@ -4,7 +4,7 @@ import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { sourceOptions } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
-import ApplicantFormSkillChip from "./ApplicantFormSkillChip";
+import Chip from "./Chip";
 
 type ApplicantFormQualificationsSectionProps = {
   education: string;
@@ -130,7 +130,7 @@ const ApplicantFormQualificationsSection = ({
         {skillPreview.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {skillPreview.map((s, i) => (
-              <ApplicantFormSkillChip key={`${s}-${i}`} skill={s} />
+              <Chip key={`${s}-${i}`} label={s} variant="form" />
             ))}
           </div>
         )}

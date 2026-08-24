@@ -9,7 +9,7 @@ import { MISSING_INFO_LABELS } from "../constants/recruitment";
 import { rankLabel } from "../utils/recruitmentRanking";
 import IrComponentRow from "./IrComponentRow";
 import IrPenaltyRow from "./IrPenaltyRow";
-import SkillTag from "./SkillTag";
+import Chip from "./Chip";
 import RedFlagRow from "./RedFlagRow";
 import MissingInfoTag from "./MissingInfoTag";
 
@@ -121,7 +121,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.matched_skills!.map((skill, i) => (
-                  <SkillTag key={`${skill}-${i}`} skill={skill} variant="matched" />
+                  <Chip key={`${skill}-${i}`} label={skill} variant="matchedTag" />
                 ))}
               </div>
             </div>
@@ -133,7 +133,7 @@ const IrDetail = ({ applicant }: { applicant: DbApplicant }) => {
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {applicant.missing_skills!.map((skill, i) => (
-                  <SkillTag key={`${skill}-${i}`} skill={skill} variant="missing" />
+                  <Chip key={`${skill}-${i}`} label={skill} variant="missingTag" />
                 ))}
               </div>
             </div>

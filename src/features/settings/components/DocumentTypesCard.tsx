@@ -2,11 +2,18 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { FileCheck, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useDocumentTypes } from "@/shared/hooks";
+import { useDocumentTypes, type DbDocumentType } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useDocumentTypeManagement } from "../hooks/useDocumentTypeManagement";
-import DocumentTypeList from "./DocumentTypeList";
+import TypeList from "./TypeList";
 import NewDocTypeForm from "./NewDocTypeForm";
+
+const documentTypeDescriptionLine = (documentType: DbDocumentType): string =>
+  `${
+    documentType.has_expiry
+      ? `${arabicSource("settings.warning_before")} ${documentType.expiry_warning_days} ${arabicSource("common.days_2")}`
+      : arabicSource("settings.without_ending")
+  }${documentType.is_required ? " " + arabicSource("settings.mandatory") : ""}`;
 
 type TDocumentTypesCardProps = {
   showToast: (message: string) => void;
@@ -75,9 +82,10 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
         />
       )}
 
-      <DocumentTypeList
-        documentTypes={documentTypes}
+      <TypeList
+        items={documentTypes}
         loading={documentTypesLoading}
+        descriptionLine={documentTypeDescriptionLine}
         onToggleActive={toggleDocumentTypeActive}
         onDelete={deleteDocumentTypeEntry}
       />

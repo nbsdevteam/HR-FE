@@ -2,11 +2,20 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Briefcase, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useContractTypes } from "@/shared/hooks";
+import { useContractTypes, type DbContractType } from "@/shared/hooks";
 import { cardCls } from "../styles";
 import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
-import ContractTypeList from "./ContractTypeList";
+import TypeList from "./TypeList";
 import NewContractTypeForm from "./NewContractTypeForm";
+
+const contractTypeDescriptionLine = (contractType: DbContractType): string =>
+  `${
+    contractType.default_duration_months
+      ? `${contractType.default_duration_months} ${arabicSource("settings.month")}`
+      : arabicSource("common.not_specified")
+  } ${arabicSource("settings.experiment")} ${contractType.probation_days} ${arabicSource("settings.day_notice")} ${contractType.notice_period_days} ${arabicSource("common.days_2")}${
+    contractType.is_renewable ? " " + arabicSource("settings.renewable") : ""
+  }`;
 
 type TContractTypesCardProps = {
   showToast: (message: string) => void;
@@ -75,9 +84,10 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
         />
       )}
 
-      <ContractTypeList
-        contractTypes={contractTypes}
+      <TypeList
+        items={contractTypes}
         loading={contractTypesLoading}
+        descriptionLine={contractTypeDescriptionLine}
         onToggleActive={toggleContractTypeActive}
         onDelete={deleteContractTypeEntry}
       />

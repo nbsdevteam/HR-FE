@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { arabicSource } from "@/i18n/source";
-import ApplicantSkillChip from "./ApplicantSkillChip";
+import Chip from "./Chip";
 
 type ApplicantSkillsSectionProps = {
   skills: string[];
@@ -13,7 +13,7 @@ const ApplicantSkillsSection = ({ skills }: ApplicantSkillsSectionProps) => (
     </label>
     <div className="flex flex-wrap gap-2">
       {skills.map((s) => (
-        <ApplicantSkillChip key={s} skill={s} />
+        <Chip key={s} label={s} variant="applicant" />
       ))}
     </div>
   </div>
