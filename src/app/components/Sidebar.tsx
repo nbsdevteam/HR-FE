@@ -93,7 +93,7 @@ const Sidebar = () => {
         initial={false}
         animate={{ width: collapsed ? 72 : 256 }}
         transition={{ duration: 0.25 }}
-        className="hidden md:flex h-screen bg-sidebar border-e border-sidebar-border flex-col relative overflow-hidden flex-shrink-0"
+        className="hidden md:flex h-screen bg-sidebar/90 backdrop-blur-md border-e border-sidebar-border shadow-xl flex-col relative overflow-hidden flex-shrink-0"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-accent/5 pointer-events-none" />
 
@@ -148,7 +148,7 @@ const Sidebar = () => {
             animate={{ x: 0 }}
             exit={{ x: offscreenX }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="fixed inset-y-0 start-0 z-[70] w-[min(288px,85vw)] bg-sidebar border-e border-sidebar-border flex flex-col shadow-2xl md:hidden"
+            className="fixed inset-y-0 start-0 z-[70] w-[min(288px,85vw)] bg-sidebar/95 backdrop-blur-md border-e border-sidebar-border flex flex-col shadow-2xl md:hidden"
             role="dialog"
             aria-modal="true"
             aria-label={arabicSource("shared.human_resources_system")}
