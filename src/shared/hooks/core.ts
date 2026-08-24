@@ -1,6 +1,25 @@
-import { useCallback } from "react";
+import { useCallback, type DependencyList } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useAsyncList } from "./useAsyncList";
+
+/**
+ * Thin wrapper over `useAsyncList` for the common case of "fetch a list,
+ * expose it under a resource-specific name". Collapses the repeated
+ * `const {data: x, loading, refetch} = useAsyncList(...); return {x, loading, refetch}`
+ * shape duplicated across the domain hook files (lifecycle.ts, payroll.ts,
+ * performance.ts, etc.) into one call.
+ */
+export const useCachedList = <T,>(
+  cacheKey: string,
+  fetcher: () => Promise<T[]>,
+  errorFallback = "Failed to load data",
+  deps: DependencyList = [],
+) => {
+  const { data, loading, error, refetch } = useAsyncList(fetcher, deps, errorFallback, undefined, {
+    cacheKey,
+  });
+  return { data, loading, error, refetch };
+};
 
 // ——— Raw DB types ———
 export interface DbEmployee {

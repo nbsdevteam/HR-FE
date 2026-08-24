@@ -2,6 +2,7 @@
  * Odoo data fetchers for dual-mode hooks (Phase 7).
  * Used when VITE_API_BASE is set.
  */
+export * from "./crud";
 export * from "./core";
 export * from "./attendance";
 export * from "./shifts";

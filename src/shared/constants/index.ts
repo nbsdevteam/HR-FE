@@ -29,35 +29,30 @@ export const DEPARTMENTS = [
 
 export type Department = (typeof DEPARTMENTS)[number];
 
-/** Border color classes per department (for cards & avatars) */
-export const DEPT_BORDER_COLORS: Record<string, string> = {
-  [arabicSource("common.information_technology")]: "border-cyan-500/40",
-  [arabicSource("common.finance")]: "border-emerald-500/40",
-  [arabicSource("common.marketing")]: "border-purple-500/40",
-  [arabicSource("common.human_resources")]: "border-primary/40",
-  [arabicSource("common.operations")]: "border-blue-500/40",
-  [arabicSource("common.sales")]: "border-red-400/40",
-  [arabicSource("common.management")]: "border-amber-500/40",
+/** Border/dot/hex colors per department, one entry per department. */
+export const DEPARTMENT_COLORS: Record<string, { border: string; dot: string; hex: string }> = {
+  [arabicSource("common.information_technology")]: { border: "border-cyan-500/40", dot: "bg-cyan-500", hex: "#06B6D4" },
+  [arabicSource("common.finance")]: { border: "border-emerald-500/40", dot: "bg-emerald-500", hex: "#3B82F6" },
+  [arabicSource("common.marketing")]: { border: "border-purple-500/40", dot: "bg-purple-500", hex: "#EC4899" },
+  [arabicSource("common.human_resources")]: { border: "border-primary/40", dot: "bg-primary", hex: "#F43F5E" },
+  [arabicSource("common.operations")]: { border: "border-blue-500/40", dot: "bg-blue-500", hex: "#EF4444" },
+  [arabicSource("common.sales")]: { border: "border-red-400/40", dot: "bg-red-400", hex: "#F59E0B" },
+  [arabicSource("common.management")]: { border: "border-amber-500/40", dot: "bg-amber-500", hex: "#F97316" },
 };
 
-/** Dot/badge solid color classes per department */
-export const DEPT_DOT_COLORS: Record<string, string> = {
-  [arabicSource("common.information_technology")]: "bg-cyan-500",
-  [arabicSource("common.finance")]: "bg-emerald-500",
-  [arabicSource("common.marketing")]: "bg-purple-500",
-  [arabicSource("common.human_resources")]: "bg-primary",
-  [arabicSource("common.operations")]: "bg-blue-500",
-  [arabicSource("common.sales")]: "bg-red-400",
-  [arabicSource("common.management")]: "bg-amber-500",
-};
+const deptColorEntries = Object.entries(DEPARTMENT_COLORS);
 
-/** Hex colors per department (for charts & hierarchy) */
-export const DEPT_HEX_COLORS: Record<string, string> = {
-  [arabicSource("common.information_technology")]: "#06B6D4",
-  [arabicSource("common.finance")]: "#3B82F6",
-  [arabicSource("common.marketing")]: "#EC4899",
-  [arabicSource("common.human_resources")]: "#F43F5E",
-  [arabicSource("common.operations")]: "#EF4444",
-  [arabicSource("common.sales")]: "#F59E0B",
-  [arabicSource("common.management")]: "#F97316",
-};
+/** @deprecated use `DEPARTMENT_COLORS[dept].border` — kept for existing call sites. */
+export const DEPT_BORDER_COLORS: Record<string, string> = Object.fromEntries(
+  deptColorEntries.map(([dept, c]) => [dept, c.border]),
+);
+
+/** @deprecated use `DEPARTMENT_COLORS[dept].dot` — kept for existing call sites. */
+export const DEPT_DOT_COLORS: Record<string, string> = Object.fromEntries(
+  deptColorEntries.map(([dept, c]) => [dept, c.dot]),
+);
+
+/** @deprecated use `DEPARTMENT_COLORS[dept].hex` — kept for existing call sites. */
+export const DEPT_HEX_COLORS: Record<string, string> = Object.fromEntries(
+  deptColorEntries.map(([dept, c]) => [dept, c.hex]),
+);

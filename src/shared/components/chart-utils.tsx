@@ -40,3 +40,47 @@ export const useChartTheme = () => {
 
   return { colors, tooltipStyle };
 };
+
+/**
+ * Layout constants shared by the custom-*-chart SVG components. Extracted
+ * because bar/grouped-bar/line charts each redeclared the same width/tick
+ * numbers independently (padding-bottom is the one axis that legitimately
+ * varies per chart, so it stays a per-file constant).
+ */
+export const CHART_WIDTH = 600;
+export const CHART_PADDING_LEFT = 50;
+export const CHART_PADDING_RIGHT = 16;
+export const CHART_TICK_COUNT = 5;
+
+export type ChartTick = { value: number; y: number };
+
+/** Round a max value up to the nearest `step`, e.g. bar charts use step 10, grouped bars use 50. */
+export const niceMax = (maxValue: number, step = 10): number =>
+  Math.max(step, Math.ceil(maxValue / step) * step);
+
+/**
+ * Nice min/max for a series that can go below zero (line charts) — pads the
+ * range by ~10% on each end so the plotted line doesn't touch the axes.
+ */
+export const niceRange = (minValue: number, maxValue: number, step = 10): { niceMin: number; niceMax: number } => {
+  const range = maxValue - minValue;
+  const pad = Math.max(step, Math.ceil(range * 0.1));
+  return {
+    niceMin: Math.floor(minValue / step) * step - pad,
+    niceMax: Math.ceil(maxValue / step) * step + pad,
+  };
+};
+
+/** Build the evenly-spaced Y-axis ticks between `min` and `max`, mapped to plot-space via `getY`. */
+export const buildYTicks = (
+  min: number,
+  max: number,
+  tickCount: number,
+  getY: (value: number) => number,
+): ChartTick[] => {
+  const span = max - min;
+  return Array.from({ length: tickCount + 1 }, (_, index) => {
+    const value = Math.round(min + (span / tickCount) * index);
+    return { value, y: getY(value) };
+  });
+};
