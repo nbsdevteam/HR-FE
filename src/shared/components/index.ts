@@ -12,6 +12,8 @@ export { default as Modal } from "./Modal";
 export { default as ModalFooterActions } from "./ModalFooterActions";
 export { default as ModalHeader } from "./ModalHeader";
 export { default as ModalOverlay } from "./ModalOverlay";
+export { default as MultiSelect } from "./MultiSelect";
+export type { MultiSelectItem } from "./MultiSelect";
 export { default as NodeAvatar } from "./NodeAvatar";
 export { default as SearchInput } from "./SearchInput";
 export { default as Select } from "./Select";

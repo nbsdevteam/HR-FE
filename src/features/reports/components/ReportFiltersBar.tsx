@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 import { LayoutGrid, Search, Table } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import type { DbDepartment } from "@/shared/hooks";
-import { Select } from "@/shared/components";
+import { empDisplayName, type DbDepartment, type DbEmployee } from "@/shared/hooks";
+import { MultiSelect, Select, type MultiSelectItem } from "@/shared/components";
 import { categoryLabels } from "../constants/reports";
 import { cardCls } from "../styles";
 import type { ReportViewMode } from "../types";
@@ -13,6 +13,11 @@ const CATEGORY_OPTIONS = [
   ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
 ];
 
+const formatEmployeeSummary = (selected: MultiSelectItem[]): string => {
+  if (selected.length <= 2) return selected.map((item) => item.label).join("، ");
+  return `${selected.length} ${arabicSource("reports.employees")} ${arabicSource("reports.selected_suffix")}`;
+};
+
 type ReportFiltersBarProps = {
   searchQuery: string;
   filterCategory: string;
@@ -20,12 +25,15 @@ type ReportFiltersBarProps = {
   dateFrom: string;
   dateTo: string;
   departments: DbDepartment[];
+  employees: DbEmployee[];
+  selectedEmployeeIds: string[];
   viewMode: ReportViewMode;
   onSearchQueryChange: (value: string) => void;
   onFilterCategoryChange: (value: string) => void;
   onFilterDeptChange: (value: string) => void;
   onDateFromChange: (value: string) => void;
   onDateToChange: (value: string) => void;
+  onSelectedEmployeeIdsChange: (ids: string[]) => void;
   onViewModeChange: (mode: ReportViewMode) => void;
 };
 
@@ -36,17 +44,24 @@ const ReportFiltersBar = ({
   dateFrom,
   dateTo,
   departments,
+  employees,
+  selectedEmployeeIds,
   viewMode,
   onSearchQueryChange,
   onFilterCategoryChange,
   onFilterDeptChange,
   onDateFromChange,
   onDateToChange,
+  onSelectedEmployeeIdsChange,
   onViewModeChange,
 }: ReportFiltersBarProps) => {
   const departmentOptions = useMemo(
     () => departments.map((d) => ({ value: d.name, label: d.name })),
     [departments],
+  );
+  const employeeOptions = useMemo(
+    () => employees.map((e) => ({ value: e.id, label: empDisplayName(e) })),
+    [employees],
   );
 
   const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -67,6 +82,10 @@ const ReportFiltersBar = ({
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onDateToChange(e.target.value);
+  };
+
+  const handleSelectedEmployeeIdsChange = (ids: string[]): void => {
+    onSelectedEmployeeIdsChange(ids);
   };
 
   const handleGridViewClick = (): void => {
@@ -100,6 +119,15 @@ const ReportFiltersBar = ({
         onChange={handleFilterDeptChange}
         options={departmentOptions}
         blankLabel={arabicSource("reports.all_sections")}
+        className={selectStyle}
+      />
+      <MultiSelect
+        items={employeeOptions}
+        selectedValues={selectedEmployeeIds}
+        onChange={handleSelectedEmployeeIdsChange}
+        placeholder={arabicSource("reports.all_employees")}
+        searchPlaceholder={arabicSource("common.search")}
+        formatSummary={formatEmployeeSummary}
         className={selectStyle}
       />
 

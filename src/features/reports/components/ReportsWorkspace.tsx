@@ -20,7 +20,9 @@ import {
 } from "@/shared/hooks";
 import type { ReportSortBy, ReportSortDir, ReportViewMode } from "../types";
 import { useEmployeeLookups } from "../hooks/useEmployeeLookups";
+import { useReportFields } from "../hooks/useReportFields";
 import { useReportGeneration } from "../hooks/useReportGeneration";
+import { getCurrentMonthRange } from "../utils/dateRange";
 import ReportFiltersBar from "./ReportFiltersBar";
 import ReportHistoryPanel from "./ReportHistoryPanel";
 import ReportsHeader from "./ReportsHeader";
@@ -30,14 +32,17 @@ import ReportViewerModal from "./ReportViewerModal";
 
 const ReportTemplatesTable = lazy(() => import("./ReportTemplatesTable"));
 
+const DEFAULT_DATE_RANGE = getCurrentMonthRange();
+
 const ReportsWorkspace = () => {
   const [selectedTemplate, setSelectedTemplate] =
     useState<DbReportTemplate | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(DEFAULT_DATE_RANGE.from);
+  const [dateTo, setDateTo] = useState(DEFAULT_DATE_RANGE.to);
   const [filterDept, setFilterDept] = useState("");
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<ReportViewMode>("grid");
   const [rptSortBy, setRptSortBy] = useState<ReportSortBy>("name");
@@ -62,8 +67,18 @@ const ReportsWorkspace = () => {
   const { types: documentTypes } = useDocumentTypes();
   const { empMap, empDeptMap } = useEmployeeLookups(employees);
   const {
+    fields: availableFields,
+    selected: selectedFieldKeys,
+    toggle: toggleField,
+    selectAll: selectAllFields,
+    clearAll: clearAllFields,
+    loading: fieldsLoading,
+  } = useReportFields(selectedTemplate?.code ?? null);
+  const {
     generatedData,
+    generatedColumns,
     generating,
+    generateError,
     generateReport,
     exportCSV,
     resetGeneratedData,
@@ -80,9 +95,12 @@ const ReportsWorkspace = () => {
     documentTypes,
     empMap,
     empDeptMap,
+    departments,
     dateFrom,
     dateTo,
     filterDept,
+    selectedEmployeeIds,
+    selectedFieldKeys,
     refetchHistory,
   });
 
@@ -115,6 +133,7 @@ const ReportsWorkspace = () => {
   const handleSelectTemplate = useCallback(
     (template: DbReportTemplate) => {
       setSelectedTemplate(template);
+      setSelectedEmployeeIds([]);
       resetGeneratedData();
     },
     [resetGeneratedData],
@@ -122,6 +141,7 @@ const ReportsWorkspace = () => {
 
   const handleCloseViewer = useCallback(() => {
     setSelectedTemplate(null);
+    setSelectedEmployeeIds([]);
     resetGeneratedData();
   }, [resetGeneratedData]);
 
@@ -134,6 +154,32 @@ const ReportsWorkspace = () => {
     [exportCSV, selectedTemplate],
   );
   const handlePrint = useCallback(() => window.print(), []);
+
+  const handleSelectedEmployeeIdsChange = useCallback(
+    (ids: string[]) => {
+      setSelectedEmployeeIds(ids);
+      resetGeneratedData();
+    },
+    [resetGeneratedData],
+  );
+
+  const handleToggleField = useCallback(
+    (key: string) => {
+      toggleField(key);
+      resetGeneratedData();
+    },
+    [toggleField, resetGeneratedData],
+  );
+
+  const handleSelectAllFields = useCallback(() => {
+    selectAllFields();
+    resetGeneratedData();
+  }, [selectAllFields, resetGeneratedData]);
+
+  const handleClearAllFields = useCallback(() => {
+    clearAllFields();
+    resetGeneratedData();
+  }, [clearAllFields, resetGeneratedData]);
 
   return (
     <div className="space-y-6">
@@ -162,12 +208,15 @@ const ReportsWorkspace = () => {
         dateFrom={dateFrom}
         dateTo={dateTo}
         departments={departments}
+        employees={employees}
+        selectedEmployeeIds={selectedEmployeeIds}
         viewMode={viewMode}
         onSearchQueryChange={setSearchQuery}
         onFilterCategoryChange={setFilterCategory}
         onFilterDeptChange={setFilterDept}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
+        onSelectedEmployeeIdsChange={handleSelectedEmployeeIdsChange}
         onViewModeChange={setViewMode}
       />
 
@@ -198,10 +247,18 @@ const ReportsWorkspace = () => {
           <ReportViewerModal
             template={selectedTemplate}
             generating={generating}
+            generateError={generateError}
             generatedData={generatedData}
+            generatedColumns={generatedColumns}
             filterDept={filterDept}
             dateFrom={dateFrom}
             dateTo={dateTo}
+            fields={availableFields}
+            selectedFieldKeys={selectedFieldKeys}
+            fieldsLoading={fieldsLoading}
+            onToggleField={handleToggleField}
+            onSelectAllFields={handleSelectAllFields}
+            onClearAllFields={handleClearAllFields}
             onClose={handleCloseViewer}
             onGenerate={handleGenerate}
             onExportCSV={handleExportCSV}

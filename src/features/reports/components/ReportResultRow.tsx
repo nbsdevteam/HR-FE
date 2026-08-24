@@ -1,11 +1,10 @@
 import { memo } from "react";
-import type { DbReportTemplate } from "@/shared/hooks";
-import type { ReportRow } from "../types";
+import type { ReportColumn, ReportRow } from "../types";
 
 interface IReportResultRowProps {
   row: ReportRow;
   index: number;
-  columns: DbReportTemplate["columns"];
+  columns: ReportColumn[];
 }
 
 const ReportResultRow = ({ row, index, columns }: IReportResultRowProps) => (

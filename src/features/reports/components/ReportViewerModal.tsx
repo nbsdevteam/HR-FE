@@ -1,5 +1,6 @@
 import { memo } from "react";
 import {
+  AlertTriangle,
   BarChart3,
   Download,
   FileText,
@@ -10,16 +11,26 @@ import {
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalOverlay } from "@/shared/components";
 import type { DbReportTemplate } from "@/shared/hooks";
-import type { ReportRow } from "../types";
+import { isBackendReportCode } from "../constants/reports";
+import type { ReportColumn, ReportField, ReportRow } from "../types";
+import ReportFieldPicker from "./ReportFieldPicker";
 import ReportResultsTable from "./ReportResultsTable";
 
 type ReportViewerModalProps = {
   template: DbReportTemplate;
   generating: boolean;
+  generateError: string | null;
   generatedData: ReportRow[] | null;
+  generatedColumns: ReportColumn[] | null;
   filterDept: string;
   dateFrom: string;
   dateTo: string;
+  fields: ReportField[];
+  selectedFieldKeys: string[];
+  fieldsLoading: boolean;
+  onToggleField: (key: string) => void;
+  onSelectAllFields: () => void;
+  onClearAllFields: () => void;
   onClose: () => void;
   onGenerate: () => void;
   onExportCSV: () => void;
@@ -29,15 +40,27 @@ type ReportViewerModalProps = {
 const ReportViewerModal = ({
   template,
   generating,
+  generateError,
   generatedData,
+  generatedColumns,
   filterDept,
   dateFrom,
   dateTo,
+  fields,
+  selectedFieldKeys,
+  fieldsLoading,
+  onToggleField,
+  onSelectAllFields,
+  onClearAllFields,
   onClose,
   onGenerate,
   onExportCSV,
   onPrint,
-}: ReportViewerModalProps) => (
+}: ReportViewerModalProps) => {
+  const requiresFieldSelection = isBackendReportCode(template.code);
+  const canGenerate = !requiresFieldSelection || selectedFieldKeys.length > 0;
+
+  return (
   <ModalOverlay
     onClose={onClose}
     overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -61,6 +84,7 @@ const ReportViewerModal = ({
             variant="primary"
             icon={BarChart3}
             loading={generating}
+            disabled={!canGenerate}
             onClick={onGenerate}
             className="shadow cursor-pointer"
           >
@@ -95,7 +119,24 @@ const ReportViewerModal = ({
       </div>
     </div>
 
+    {generateError && (
+      <div className="mx-6 mt-4 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive flex items-center gap-2" style={{ fontSize: 13 }}>
+        <AlertTriangle className="w-4 h-4 shrink-0" />
+        <span dir="auto">{generateError}</span>
+      </div>
+    )}
+
     <div className="flex-1 overflow-auto p-6">
+      {requiresFieldSelection && (
+        <ReportFieldPicker
+          fields={fields}
+          selected={selectedFieldKeys}
+          onToggle={onToggleField}
+          onSelectAll={onSelectAllFields}
+          onClearAll={onClearAllFields}
+          loading={fieldsLoading}
+        />
+      )}
       {generating ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -127,7 +168,7 @@ const ReportViewerModal = ({
       ) : (
         <ReportResultsTable
           data={generatedData}
-          template={template}
+          columns={generatedColumns ?? template.columns}
           filterDept={filterDept}
           dateFrom={dateFrom}
           dateTo={dateTo}
@@ -135,6 +176,7 @@ const ReportViewerModal = ({
       )}
     </div>
   </ModalOverlay>
-);
+  );
+};
 
 export default memo(ReportViewerModal);

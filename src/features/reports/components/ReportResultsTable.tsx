@@ -1,8 +1,7 @@
 import { memo, useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
 import DataTable from "@/shared/components/DataTable";
-import type { DbReportTemplate } from "@/shared/hooks";
-import type { ReportRow } from "../types";
+import type { ReportColumn, ReportRow } from "../types";
 import { buildReportRowKeys } from "../utils/reportRowKeys";
 import ReportResultRow from "./ReportResultRow";
 import ReportResultsHeaderCell from "./ReportResultsHeaderCell";
@@ -11,7 +10,7 @@ const MAX_VISIBLE_ROWS = 200;
 
 interface IReportResultsTableProps {
   data: ReportRow[];
-  template: DbReportTemplate;
+  columns: ReportColumn[];
   filterDept: string;
   dateFrom: string;
   dateTo: string;
@@ -19,15 +18,15 @@ interface IReportResultsTableProps {
 
 const ReportResultsTable = ({
   data,
-  template,
+  columns,
   filterDept,
   dateFrom,
   dateTo,
 }: IReportResultsTableProps) => {
   const visibleRows = useMemo(() => data.slice(0, MAX_VISIBLE_ROWS), [data]);
   const rowKeys = useMemo(
-    () => buildReportRowKeys(visibleRows, template.columns),
-    [visibleRows, template.columns],
+    () => buildReportRowKeys(visibleRows, columns),
+    [visibleRows, columns],
   );
 
   const renderRow = (row: ReportRow, index: number) => (
@@ -35,7 +34,7 @@ const ReportResultsTable = ({
       key={rowKeys[index]}
       row={row}
       index={index}
-      columns={template.columns}
+      columns={columns}
     />
   );
 
@@ -57,7 +56,7 @@ const ReportResultsTable = ({
         header={
           <tr className="bg-muted/30 border-b border-border/40">
             <ReportResultsHeaderCell label="#" />
-            {template.columns.map((col) => (
+            {columns.map((col) => (
               <ReportResultsHeaderCell key={col.key} label={col.label} />
             ))}
           </tr>

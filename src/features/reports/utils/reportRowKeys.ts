@@ -1,5 +1,4 @@
-import type { DbReportTemplate } from "@/shared/hooks";
-import type { ReportRow } from "../types";
+import type { ReportColumn, ReportRow } from "../types";
 
 /**
  * Report rows are plain `Record<string, any>` bags with no id, so the table used
@@ -11,7 +10,7 @@ import type { ReportRow } from "../types";
  */
 export const buildReportRowKeys = (
   rows: ReportRow[],
-  columns: DbReportTemplate["columns"],
+  columns: ReportColumn[],
 ): string[] => {
   const seen = new Map<string, number>();
   return rows.map((row) => {

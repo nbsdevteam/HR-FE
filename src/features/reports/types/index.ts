@@ -11,3 +11,8 @@ export type ReportFilters = {
   dateTo: string;
   filterDept: string;
 };
+
+/** A single rendered/exported report column — key to read off a row, label to display. */
+export type ReportColumn = { key: string; label: string };
+
+export type { HrReportGenerateResult, ReportField, ReportFieldsResult } from "@/shared/api/reporting";
