@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 // ——— Recruitment Hooks ———
 
@@ -148,12 +148,12 @@ export interface ApplicationLink {
 }
 
 export const useJobOpenings = () => {
-  const { data: jobs, loading, refetch } = useAsyncList(() => odooData.fetchJobOpenings(), [], "Failed to load job openings", undefined, { cacheKey: "jobOpenings" });
+  const { data: jobs, loading, refetch } = useCachedList("jobOpenings", () => odooData.fetchJobOpenings(), "Failed to load job openings");
   return { jobs, loading, refetch };
 }
 
 export const useApplicants = () => {
-  const { data: applicants, loading, refetch } = useAsyncList(() => odooData.fetchApplicants(), [], "Failed to load applicants", undefined, { cacheKey: "applicants" });
+  const { data: applicants, loading, refetch } = useCachedList("applicants", () => odooData.fetchApplicants(), "Failed to load applicants");
   return { applicants, loading, refetch };
 }
 

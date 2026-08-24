@@ -1,5 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 export interface DbAllowanceType {
   id: string;
@@ -75,44 +75,41 @@ export interface DbLoan {
 }
 
 export const useAllowanceTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchAllowanceTypes(), [], "Failed to load allowance types", undefined, { cacheKey: "allowanceTypes" });
+  const { data: types, loading, refetch } = useCachedList("allowanceTypes", () => odooData.fetchAllowanceTypes(), "Failed to load allowance types");
   return { types, loading, refetch };
 }
 
 export const useEmployeeAllowances = (employeeId?: string) => {
-  const { data: allowances, loading, refetch } = useAsyncList(
+  const { data: allowances, loading, refetch } = useCachedList(
+    "employeeAllowances",
     () => odooData.fetchEmployeeAllowances(employeeId),
-    [employeeId],
     "Failed to load allowances",
-    undefined,
-    { cacheKey: "employeeAllowances" }
+    [employeeId],
   );
   return { allowances, loading, refetch };
 }
 
 export const useDeductionTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchDeductionTypes(), [], "Failed to load deduction types", undefined, { cacheKey: "deductionTypes" });
+  const { data: types, loading, refetch } = useCachedList("deductionTypes", () => odooData.fetchDeductionTypes(), "Failed to load deduction types");
   return { types, loading, refetch };
 }
 
 export const useEmployeeDeductions = (employeeId?: string) => {
-  const { data: deductions, loading, refetch } = useAsyncList(
+  const { data: deductions, loading, refetch } = useCachedList(
+    "employeeDeductions",
     () => odooData.fetchEmployeeDeductions(employeeId),
-    [employeeId],
     "Failed to load deductions",
-    undefined,
-    { cacheKey: "employeeDeductions" }
+    [employeeId],
   );
   return { deductions, loading, refetch };
 }
 
 export const useLoans = (employeeId?: string) => {
-  const { data: loans, loading, refetch } = useAsyncList(
+  const { data: loans, loading, refetch } = useCachedList(
+    "loans",
     () => odooData.fetchLoans(employeeId),
-    [employeeId],
     "Failed to load loans",
-    undefined,
-    { cacheKey: "loans" }
+    [employeeId],
   );
   return { loans, loading, refetch };
 }

@@ -1,5 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 // ——— Evaluations, Warnings, Training, Policies Hooks ———
 
@@ -79,44 +79,41 @@ export interface DbPolicy {
 }
 
 export const useEvaluations = (filters?: { employeeId?: string; period?: string }) => {
-  const { data: evaluations, loading, refetch } = useAsyncList(
+  const { data: evaluations, loading, refetch } = useCachedList(
+    "evaluations",
     () => odooData.fetchEvaluations(filters?.employeeId),
-    [filters?.employeeId, filters?.period],
     "Failed to load evaluations",
-    undefined,
-    { cacheKey: "evaluations" }
+    [filters?.employeeId, filters?.period],
   );
   return { evaluations, loading, refetch };
 }
 
 export const useWarnings = (filters?: { employeeId?: string; status?: string }) => {
-  const { data: warnings, loading, refetch } = useAsyncList(
+  const { data: warnings, loading, refetch } = useCachedList(
+    "warnings",
     () => odooData.fetchWarnings(filters?.employeeId),
-    [filters?.employeeId, filters?.status],
     "Failed to load warnings",
-    undefined,
-    { cacheKey: "warnings" }
+    [filters?.employeeId, filters?.status],
   );
   return { warnings, loading, refetch };
 }
 
 export const useTrainingPrograms = () => {
-  const { data: programs, loading, refetch } = useAsyncList(() => odooData.fetchTrainingPrograms(), [], "Failed to load training programs", undefined, { cacheKey: "trainingPrograms" });
+  const { data: programs, loading, refetch } = useCachedList("trainingPrograms", () => odooData.fetchTrainingPrograms(), "Failed to load training programs");
   return { programs, loading, refetch };
 }
 
 export const useTrainingParticipants = (programId?: string) => {
-  const { data: participants, loading, refetch } = useAsyncList(
+  const { data: participants, loading, refetch } = useCachedList(
+    "trainingParticipants",
     () => odooData.fetchTrainingParticipants(programId),
-    [programId],
     "Failed to load participants",
-    undefined,
-    { cacheKey: "trainingParticipants" }
+    [programId],
   );
   return { participants, loading, refetch };
 }
 
 export const usePolicies = () => {
-  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchPolicies(), [], "Failed to load policies", undefined, { cacheKey: "policies" });
+  const { data: policies, loading, refetch } = useCachedList("policies", () => odooData.fetchPolicies(), "Failed to load policies");
   return { policies, loading, refetch };
 }

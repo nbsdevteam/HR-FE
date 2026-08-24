@@ -1,5 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 // ——— Phase 5: Notifications, Audit Trail & Reports ———
 
@@ -60,35 +60,33 @@ export interface DbReportHistory {
 }
 
 export const useNotifications = (employeeId?: string) => {
-  const { data: notifications, loading, refetch } = useAsyncList(
+  const { data: notifications, loading, refetch } = useCachedList(
+    "notifications",
     () => odooData.fetchNotifications(),
-    [employeeId],
     "Failed to load notifications",
-    undefined,
-    { cacheKey: "notifications" }
+    [employeeId],
   );
   const unreadCount = notifications.filter(n => !n.is_read).length;
   return { notifications, unreadCount, loading, refetch };
 }
 
 export const useAuditLog = (filters?: { entityType?: string; action?: string; limit?: number }) => {
-  const { data: logs, loading, refetch } = useAsyncList(
+  const { data: logs, loading, refetch } = useCachedList(
+    "auditLog",
     () => odooData.fetchAuditLog({ entityType: filters?.entityType, action: filters?.action }),
-    [filters?.entityType, filters?.action, filters?.limit],
     "Failed to load audit log",
-    undefined,
-    { cacheKey: "auditLog" }
+    [filters?.entityType, filters?.action, filters?.limit],
   );
   return { logs, loading, refetch };
 }
 
 export const useReportTemplates = () => {
-  const { data: templates, loading, refetch } = useAsyncList(() => odooData.fetchReportTemplates(), [], "Failed to load report templates", undefined, { cacheKey: "reportTemplates" });
+  const { data: templates, loading, refetch } = useCachedList("reportTemplates", () => odooData.fetchReportTemplates(), "Failed to load report templates");
   return { templates, loading, refetch };
 }
 
 export const useReportHistory = () => {
-  const { data: history, loading, refetch } = useAsyncList(() => odooData.fetchReportHistory(), [], "Failed to load report history", undefined, { cacheKey: "reportHistory" });
+  const { data: history, loading, refetch } = useCachedList("reportHistory", () => odooData.fetchReportHistory(), "Failed to load report history");
   return { history, loading, refetch };
 }
 

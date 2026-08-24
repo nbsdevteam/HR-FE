@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 export interface DbAttendanceRecord {
   id: string;
@@ -74,40 +74,37 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
       ? { date: dateOrFilter }
       : dateOrFilter;
 
-  const { data: records, loading, refetch } = useAsyncList(
+  const { data: records, loading, refetch } = useCachedList(
+    "attendance",
     () => odooData.fetchAttendance({
       date: filter.date,
       date_from: filter.date_from,
       date_to: filter.date_to,
       employee_id: filter.employeeId,
     }),
-    [filter.date, filter.date_from, filter.date_to, filter.employeeId],
     "Failed to load attendance",
-    undefined,
-    { cacheKey: "attendance" }
+    [filter.date, filter.date_from, filter.date_to, filter.employeeId],
   );
 
   return { records, loading, refetch };
 }
 
 export const useMonthlyRecords = (monthYear?: string) => {
-  const { data: records, loading, refetch } = useAsyncList(
+  const { data: records, loading, refetch } = useCachedList(
+    "monthlyRecords",
     () => odooData.fetchMonthlyRecords(monthYear),
-    [monthYear],
     "Failed to load monthly records",
-    undefined,
-    { cacheKey: "monthlyRecords" }
+    [monthYear],
   );
   return { records, loading, refetch };
 }
 
 export const useMonthlyLedgers = (monthYear?: string) => {
-  const { data: ledgers, loading, refetch } = useAsyncList(
+  const { data: ledgers, loading, refetch } = useCachedList(
+    "monthlyLedgers",
     () => odooData.fetchMonthlyLedgers(monthYear),
-    [monthYear],
     "Failed to load monthly ledgers",
-    undefined,
-    { cacheKey: "monthlyLedgers" }
+    [monthYear],
   );
   return { ledgers, loading, refetch };
 }

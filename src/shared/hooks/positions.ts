@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 
 export interface DbPosition {
   id: string;
@@ -29,7 +29,7 @@ const _mockPositions: DbPosition[] = [
 ];
 
 export const usePositions = () => {
-  const { data: positions, loading, refetch } = useAsyncList(async () => {
+  const { data: positions, loading, refetch } = useCachedList("positions", async () => {
     try {
       const data = await odooData.fetchPositions();
       return data.length > 0 ? data : _mockPositions;
@@ -37,6 +37,6 @@ export const usePositions = () => {
       console.error(e);
       return _mockPositions;
     }
-  }, [], "Failed to load positions", undefined, { cacheKey: "positions" });
+  }, "Failed to load positions");
   return { positions, loading, refetch };
 }

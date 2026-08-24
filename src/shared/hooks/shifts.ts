@@ -1,6 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 import type { DbEmployee, DbDepartment } from "./core";
 
 export interface DbShift {
@@ -89,7 +89,7 @@ const _mockShifts: DbShift[] = [
 ];
 
 export const useShifts = () => {
-  const { data: shifts, loading, refetch } = useAsyncList(async () => {
+  const { data: shifts, loading, refetch } = useCachedList("shifts", async () => {
     try {
       const data = await odooData.fetchShifts();
       return data.length > 0 ? data : _mockShifts;
@@ -97,7 +97,7 @@ export const useShifts = () => {
       console.error(e);
       return _mockShifts;
     }
-  }, [], "Failed to load shifts", undefined, { cacheKey: "shifts" });
+  }, "Failed to load shifts");
   return { shifts, loading, refetch };
 }
 

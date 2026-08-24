@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { useAsyncList } from "./useAsyncList";
+import { useCachedList } from "./core";
 import type { DbEmployee } from "./core";
 
 // ——— Phase 3: Leave Management Types ———
@@ -152,44 +152,41 @@ export const useLeaveEmployeeScope = () => {
 }
 
 export const useLeaveTypes = () => {
-  const { data: types, loading, refetch } = useAsyncList(() => odooData.fetchLeaveTypes(), [], "Failed to load leave types", undefined, { cacheKey: "leaveTypes" });
+  const { data: types, loading, refetch } = useCachedList("leaveTypes", () => odooData.fetchLeaveTypes(), "Failed to load leave types");
   return { types, loading, refetch };
 }
 
 export const useLeavePolicies = () => {
-  const { data: policies, loading, refetch } = useAsyncList(() => odooData.fetchLeavePolicies(), [], "Failed to load leave policies", undefined, { cacheKey: "leavePolicies" });
+  const { data: policies, loading, refetch } = useCachedList("leavePolicies", () => odooData.fetchLeavePolicies(), "Failed to load leave policies");
   return { policies, loading, refetch };
 }
 
 export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
-  const { data: requests, loading, refetch } = useAsyncList(
+  const { data: requests, loading, refetch } = useCachedList(
+    "leaveRequests",
     () => odooData.fetchLeaveRequests(filters),
-    [filters?.employeeId, filters?.status, filters?.month],
     "Failed to load leave requests",
-    undefined,
-    { cacheKey: "leaveRequests" }
+    [filters?.employeeId, filters?.status, filters?.month],
   );
   return { requests, loading, refetch };
 }
 
 export const useLeaveBalances = (year?: number) => {
-  const { data: balances, loading, refetch } = useAsyncList(
+  const { data: balances, loading, refetch } = useCachedList(
+    "leaveBalances",
     () => odooData.fetchLeaveBalances(year),
-    [year],
     "Failed to load leave balances",
-    undefined,
-    { cacheKey: "leaveBalances" }
+    [year],
   );
   return { balances, loading, refetch };
 }
 
 export const useLeavePermissions = (employeeId?: string) => {
-  const { data: permissions, loading, refetch } = useAsyncList(
+  const { data: permissions, loading, refetch } = useCachedList(
+    "leavePermissions",
     () => odooData.fetchLeavePermissions(employeeId),
-    [employeeId],
     "Failed to load leave permissions",
-    undefined,
-    { cacheKey: "leavePermissions" }
+    [employeeId],
   );
   return { permissions, loading, refetch };
 }
