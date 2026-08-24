@@ -4,6 +4,7 @@ import { Check, UserX, X } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbContractType, type DbEmployee, type DbEmployeeContract } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import Td from "./shared/Td";
 
 type ContractTableRowProps = {
   contract: DbEmployeeContract;
@@ -45,11 +46,11 @@ const ContractTableRow = ({
       transition={{ delay: i * 0.02 }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors"
     >
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp ? empDisplayName(emp) : "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{ct?.name_ar || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.contract_number || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.start_date}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{c.end_date || arabicSource("common.not_specified")}</td>
+      <Td>{emp ? empDisplayName(emp) : "—"}</Td>
+      <Td muted>{ct?.name_ar || "—"}</Td>
+      <Td muted dir="ltr">{c.contract_number || "—"}</Td>
+      <Td muted dir="ltr">{c.start_date}</Td>
+      <Td muted dir="ltr">{c.end_date || arabicSource("common.not_specified")}</Td>
       <td className="px-4 py-3">
         {c.probation_status === "pending" && probDaysLeft !== null ? (
           <span className={`text-xs ${probDaysLeft <= 14 ? "text-amber-400" : "text-muted-foreground"}`}>

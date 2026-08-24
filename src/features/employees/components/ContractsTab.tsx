@@ -10,6 +10,8 @@ import {
   type DbEmployeeContract,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { localizedAlert } from "@/i18n/native";
+import { errorMessage } from "../utils/errorMessage";
 import {
   lifecycleCardClass as cardCls,
   lifecycleInputClass as inputCls,
@@ -117,7 +119,7 @@ const ContractsTab = ({
       setFormData(EMPTY_CONTRACT_FORM);
     } catch (e) {
       console.error(e);
-      alert("خطأ في حفظ العقد");
+      localizedAlert("خطأ في حفظ العقد " + errorMessage(e));
     }
     setSaving(false);
   }, [formData, contractTypeById, refetch]);
@@ -129,7 +131,7 @@ const ContractsTab = ({
         refetch();
       } catch (e) {
         console.error(e);
-        alert("خطأ في تحديث حالة التجربة");
+        localizedAlert("خطأ في تحديث حالة التجربة " + errorMessage(e));
       }
     },
     [refetch],
@@ -142,7 +144,7 @@ const ContractsTab = ({
         refetch();
       } catch (e) {
         console.error(e);
-        alert("خطأ في إنهاء العقد");
+        localizedAlert("خطأ في إنهاء العقد " + errorMessage(e));
       }
     },
     [refetch],

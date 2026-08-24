@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Trash2 } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbDocumentType, type DbEmployee, type DbEmployeeDocument } from "@/shared/hooks";
+import Td from "./shared/Td";
 
 type DocumentTableRowProps = {
   doc: DbEmployeeDocument & { computedStatus: string };
@@ -20,11 +21,11 @@ const DocumentTableRow = ({ doc: d, index: i, emp, docType: dt, statusLabels, st
   return (
     <motion.tr key={d.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp ? empDisplayName(emp) : "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{dt?.name_ar || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{d.document_number || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{d.issue_date || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{d.expiry_date || "—"}</td>
+      <Td>{emp ? empDisplayName(emp) : "—"}</Td>
+      <Td muted>{dt?.name_ar || "—"}</Td>
+      <Td muted dir="ltr">{d.document_number || "—"}</Td>
+      <Td muted dir="ltr">{d.issue_date || "—"}</Td>
+      <Td muted dir="ltr">{d.expiry_date || "—"}</Td>
       <td className="px-4 py-3">
         <StatusBadge colorClassName={statusColors[d.computedStatus] || ""}>{statusLabels[d.computedStatus] || d.computedStatus}</StatusBadge>
       </td>

@@ -4,6 +4,7 @@ import { Eye } from "lucide-react";
 import { StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbEmployee, type DbExitProcess } from "@/shared/hooks";
 import { formatNumber } from "@/i18n/format";
+import Td from "./shared/Td";
 
 type ExitProcessTableRowProps = {
   process: DbExitProcess;
@@ -23,12 +24,12 @@ const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, status
   return (
     <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp ? empDisplayName(emp) : "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{exitTypeLabels[p.exit_type] || p.exit_type}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{p.exit_date}</td>
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">
+      <Td>{emp ? empDisplayName(emp) : "—"}</Td>
+      <Td muted>{exitTypeLabels[p.exit_type] || p.exit_type}</Td>
+      <Td muted dir="ltr">{p.exit_date}</Td>
+      <Td dir="ltr">
         {p.eos_amount ? `${formatNumber(Number(p.eos_amount))} ${p.eos_currency}` : "—"}
-      </td>
+      </Td>
       <td className="px-4 py-3">
         <StatusBadge colorClassName={statusColors[p.status] || ""}>{statusLabels[p.status] || p.status}</StatusBadge>
       </td>

@@ -13,6 +13,8 @@ import {
   type DbDocumentType, type DbEmployee, type DbEmployeeDocument,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { localizedAlert } from "@/i18n/native";
+import { errorMessage } from "../utils/errorMessage";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
 import FormFieldLabel from "./FormFieldLabel";
@@ -96,7 +98,7 @@ const DocumentsTab = ({
       setFormData(EMPTY_DOCUMENT_FORM);
     } catch (e) {
       console.error(e);
-      alert("خطأ في حفظ الوثيقة");
+      localizedAlert("خطأ في حفظ الوثيقة " + errorMessage(e));
     }
     setSaving(false);
   }, [formData, refetch]);
@@ -107,7 +109,7 @@ const DocumentsTab = ({
       refetch();
     } catch (e) {
       console.error(e);
-      alert("خطأ في حذف الوثيقة");
+      localizedAlert("خطأ في حذف الوثيقة " + errorMessage(e));
     }
   }, [refetch]);
 

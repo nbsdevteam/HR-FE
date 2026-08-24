@@ -1,14 +1,9 @@
 import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import { statusColors } from "../styles";
 import type { Employee } from "../types";
 
 const avatarStyle = { border: "3px solid var(--primary)", boxShadow: "0 4px 20px rgba(var(--primary-rgb, 212,175,55), 0.25)" };
-
-const statusColors: Record<string, string> = {
-  [arabicSource("common.is_active")]: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
-  [arabicSource("common.leave")]: "bg-primary/15 border-primary/30 text-primary",
-  [arabicSource("common.finished")]: "bg-destructive/15 border-destructive/30 text-destructive",
-};
 
 type EmployeeIdentityCardProps = {
   editData: Employee;

@@ -9,6 +9,8 @@ import {
 } from "@/shared/hooks";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
+import { localizedAlert } from "@/i18n/native";
+import { errorMessage } from "../utils/errorMessage";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
 
@@ -80,7 +82,7 @@ const ExitTab = ({
       setFormData(EMPTY_EXIT_FORM);
     } catch (e) {
       console.error(e);
-      alert("خطأ في إنشاء إجراء إنهاء الخدمة");
+      localizedAlert("خطأ في إنشاء إجراء إنهاء الخدمة " + errorMessage(e));
     }
     setSaving(false);
   }, [formData, empMap, refetch]);
@@ -91,7 +93,7 @@ const ExitTab = ({
       refetchChecklist();
     } catch (e) {
       console.error(e);
-      alert("خطأ في تحديث قائمة إخلاء الطرف");
+      localizedAlert("خطأ في تحديث قائمة إخلاء الطرف " + errorMessage(e));
     }
   }, [refetchChecklist]);
 
@@ -124,7 +126,7 @@ const ExitTab = ({
       refetch();
     } catch (e) {
       console.error(e);
-      alert("خطأ في تحديث حالة إجراء الإنهاء");
+      localizedAlert("خطأ في تحديث حالة إجراء الإنهاء " + errorMessage(e));
     }
   }, [processes, refetch]);
 
