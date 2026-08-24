@@ -5,18 +5,13 @@ import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import type { DeviceFacePreview, DevicePerson } from "../types";
 import {
   DEVICE_SYNC_API,
+  fetchDevicePersons,
   fileToBase64,
   filterDevicePersons,
 } from "../utils/deviceManagement";
 import DeviceFaceModal from "./DeviceFaceModal";
 import DeviceFacePersonCard from "./DeviceFacePersonCard";
 import DeviceFaceToolbar from "./DeviceFaceToolbar";
-
-const fetchDevicePersons = async (): Promise<DevicePerson[]> => {
-  const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
-  const data = await response.json();
-  return data.success ? data.persons : [];
-};
 
 const DeviceFaceTab = () => {
   const [search, setSearch] = useState("");

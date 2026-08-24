@@ -6,6 +6,7 @@ import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, ExcuseForm } from "../types";
 import { statusColors, statusDotColors } from "../styles";
 import { statusDetail, VerifyIcon, verifyModeLabel } from "../utils/attendanceDisplay";
+import DeptAvatarBadge from "./DeptAvatarBadge";
 import ElapsedTime from "./ElapsedTime";
 
 type AttendanceTableRowProps = {
@@ -45,12 +46,7 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className={`w-1.5 h-8 rounded-full ${statusDotColors[record.status] || "bg-muted"}`} />
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${!record.deptColor ? "bg-primary/15 border-primary/25" : ""}`}
-            style={record.deptColor ? { backgroundColor: `${record.deptColor}20`, borderColor: `${record.deptColor}40` } : undefined}
-          >
-            <span style={{ fontSize: 12, color: record.deptColor || undefined }} className={!record.deptColor ? "text-primary" : ""}>{record.employee.charAt(0)}</span>
-          </div>
+          <DeptAvatarBadge initial={record.employee.charAt(0)} deptColor={record.deptColor} fontSize={12} />
           <div className="min-w-0">
             <p className="text-foreground truncate" style={{ fontSize: 13 }}>{record.employee}</p>
           </div>

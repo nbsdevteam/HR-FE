@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import ChartGridLine from "./charts/ChartGridLine";
 import ChartLinePoint from "./charts/ChartLinePoint";
 import ChartTooltip from "./charts/ChartTooltip";
+import { CHART_PADDING_LEFT, CHART_PADDING_RIGHT, CHART_TICK_COUNT, CHART_WIDTH, buildYTicks, niceRange } from "./chart-utils";
 
 interface LineChartItem {
   label: string;
@@ -19,11 +20,7 @@ interface CustomLineChartProps {
 
 const PADDING_TOP = 30;
 const PADDING_BOTTOM = 50;
-const PADDING_LEFT = 50;
-const PADDING_RIGHT = 16;
-const CHART_WIDTH = 600;
-const PLOT_WIDTH = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
-const TICK_COUNT = 5;
+const PLOT_WIDTH = CHART_WIDTH - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
 const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
 
 const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = arabicSource("common.value") }: CustomLineChartProps) => {
@@ -48,19 +45,14 @@ const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = a
     const minValue = safeData.length > 0 ? Math.min(...safeData.map((item) => item.value)) : 0;
 
     // Nice axis range
-    const range = maxValue - minValue;
-    const niceMin = Math.floor(minValue / 10) * 10 - Math.max(10, Math.ceil(range * 0.1));
-    const niceMax = Math.ceil(maxValue / 10) * 10 + Math.max(10, Math.ceil(range * 0.1));
+    const { niceMin, niceMax } = niceRange(minValue, maxValue);
     const span = Math.max(1, niceMax - niceMin);
 
     const getX = (index: number) =>
-      safeData.length <= 1 ? PADDING_LEFT + PLOT_WIDTH / 2 : PADDING_LEFT + (PLOT_WIDTH / (safeData.length - 1)) * index;
+      safeData.length <= 1 ? CHART_PADDING_LEFT + PLOT_WIDTH / 2 : CHART_PADDING_LEFT + (PLOT_WIDTH / (safeData.length - 1)) * index;
     const getY = (value: number) => PADDING_TOP + plotHeight - ((value - niceMin) / span) * plotHeight;
 
-    const ticks = Array.from({ length: TICK_COUNT + 1 }, (_, index) => {
-      const value = Math.round(niceMin + (span / TICK_COUNT) * index);
-      return { value, y: getY(value) };
-    });
+    const ticks = buildYTicks(niceMin, niceMax, CHART_TICK_COUNT, getY);
 
     const nextPoints = safeData.map((item, index) => ({
       label: item.label,
@@ -114,9 +106,9 @@ const CustomLineChart = ({ data, color = "#D4AF37", height = 250, valueLabel = a
           <ChartGridLine
             key={`grid-${index}`}
             y={tick.y}
-            x1={PADDING_LEFT}
-            x2={CHART_WIDTH - PADDING_RIGHT}
-            labelX={PADDING_LEFT - 8}
+            x1={CHART_PADDING_LEFT}
+            x2={CHART_WIDTH - CHART_PADDING_RIGHT}
+            labelX={CHART_PADDING_LEFT - 8}
             label={tick.value}
           />
         ))}

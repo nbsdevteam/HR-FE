@@ -6,18 +6,13 @@ import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
 import {
   DEVICE_SYNC_API,
+  fetchDevicePersons,
   filterDevicePersons,
 } from "../utils/deviceManagement";
 import DevicePersonCard from "./DevicePersonCard";
 import DevicePersonsToolbar from "./DevicePersonsToolbar";
 
 const FACE_BATCH_SIZE = 5;
-
-const fetchDevicePersons = async (): Promise<DevicePerson[]> => {
-  const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
-  const data = await response.json();
-  return data.success ? data.persons : [];
-};
 
 /** Pull the enrolled face photos a few at a time so the device isn't flooded. */
 const fetchFacePhotos = async (

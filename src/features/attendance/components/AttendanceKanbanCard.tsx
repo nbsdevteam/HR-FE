@@ -4,6 +4,7 @@ import { Timer } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow } from "../types";
 import { VerifyIcon } from "../utils/attendanceDisplay";
+import DeptAvatarBadge from "./DeptAvatarBadge";
 import ElapsedTime from "./ElapsedTime";
 
 type AttendanceKanbanCardProps = {
@@ -26,12 +27,7 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
       onClick={handleCardClick}
     >
       <div className="flex items-center gap-2.5 mb-2">
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${!record.deptColor ? "bg-primary/15 border-primary/25" : ""}`}
-          style={record.deptColor ? { backgroundColor: `${record.deptColor}20`, borderColor: `${record.deptColor}40` } : undefined}
-        >
-          <span style={{ fontSize: 11, color: record.deptColor || undefined }} className={!record.deptColor ? "text-primary" : ""}>{record.employee.charAt(0)}</span>
-        </div>
+        <DeptAvatarBadge initial={record.employee.charAt(0)} deptColor={record.deptColor} fontSize={11} />
         <div className="flex-1 min-w-0">
           <p className="text-foreground truncate" style={{ fontSize: 13 }}>{record.employee}</p>
           <div className="flex items-center gap-2">

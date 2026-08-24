@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { GripVertical, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
   useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
   type DbEmployee,
 } from "@/shared/hooks";
-import { SearchInput } from "@/shared/components";
+import { SearchInput, Toast } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import DragEmpCard from "./DragEmpCard";
 import ShiftDropZone from "./ShiftDropZone";
@@ -172,12 +172,13 @@ const ShiftAssigner = () => {
       {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-6 inset-x-0 flex justify-center z-40 pointer-events-none">
-            <div className={`border rounded-full px-5 py-2.5 shadow-xl flex items-center gap-2 pointer-events-auto ${toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}`}>
-              <span className="text-foreground" style={{ fontSize: 12 }}>{toast}</span>
-            </div>
-          </motion.div>
+          <Toast
+            message={toast}
+            position="bottom-center"
+            textSize={12}
+            exit={{ opacity: 0, y: 10 }}
+            toneClassName={toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}
+          />
         )}
       </AnimatePresence>
     </div>

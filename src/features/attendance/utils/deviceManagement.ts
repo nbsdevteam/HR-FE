@@ -9,6 +9,12 @@ import type {
 
 export const DEVICE_SYNC_API = SYNC_API;
 
+export const fetchDevicePersons = async (): Promise<DevicePerson[]> => {
+  const response = await fetch(`${DEVICE_SYNC_API}/device/persons`);
+  const data = await response.json();
+  return data.success ? data.persons : [];
+};
+
 /** Static tab definitions — module-level so the array identity stays stable. */
 export const DEVICE_MANAGEMENT_TABS: ReadonlyArray<{
   key: DeviceManagementTab;

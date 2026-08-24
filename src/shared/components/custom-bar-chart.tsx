@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import ChartBar from "./charts/ChartBar";
 import ChartGridLine from "./charts/ChartGridLine";
 import ChartTooltip from "./charts/ChartTooltip";
+import { CHART_PADDING_LEFT, CHART_PADDING_RIGHT, CHART_TICK_COUNT, CHART_WIDTH, buildYTicks, niceMax } from "./chart-utils";
 
 interface BarChartItem {
   label: string;
@@ -19,12 +20,8 @@ interface CustomBarChartProps {
 
 const PADDING_TOP = 30;
 const PADDING_BOTTOM = 60;
-const PADDING_LEFT = 50;
-const PADDING_RIGHT = 16;
-const CHART_WIDTH = 600;
-const PLOT_WIDTH = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+const PLOT_WIDTH = CHART_WIDTH - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
 const BAR_GAP = 8;
-const TICK_COUNT = 5;
 const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
 
 const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) => {
@@ -52,29 +49,26 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
   }, [safeData.length]);
 
   // Y-axis ticks
-  const { niceMax, yTicks } = useMemo(() => {
+  const { chartMax, yTicks } = useMemo(() => {
     const maxValue = safeData.length > 0 ? Math.max(...safeData.map((item) => item.value)) : 0;
-    const nextNiceMax = Math.max(1, Math.ceil(maxValue / 10) * 10);
-    const ticks = Array.from({ length: TICK_COUNT + 1 }, (_, index) => {
-      const value = Math.round((nextNiceMax / TICK_COUNT) * index);
-      return { value, y: PADDING_TOP + plotHeight - (value / nextNiceMax) * plotHeight };
-    });
-    return { niceMax: nextNiceMax, yTicks: ticks };
+    const nextChartMax = niceMax(maxValue);
+    const getY = (value: number) => PADDING_TOP + plotHeight - (value / nextChartMax) * plotHeight;
+    return { chartMax: nextChartMax, yTicks: buildYTicks(0, nextChartMax, CHART_TICK_COUNT, getY) };
   }, [safeData, plotHeight]);
 
   const bars = useMemo(
     () =>
       safeData.map((item, index) => {
-        const barHeight = (item.value / niceMax) * plotHeight;
+        const barHeight = (item.value / chartMax) * plotHeight;
         return {
           label: item.label,
           value: item.value,
-          x: PADDING_LEFT + slotWidth * index + (slotWidth - barWidth) / 2,
+          x: CHART_PADDING_LEFT + slotWidth * index + (slotWidth - barWidth) / 2,
           y: PADDING_TOP + plotHeight - barHeight,
           barHeight,
         };
       }),
-    [safeData, niceMax, plotHeight, slotWidth, barWidth],
+    [safeData, chartMax, plotHeight, slotWidth, barWidth],
   );
 
   const hoveredBar = hoveredIndex !== null ? bars[hoveredIndex] : undefined;
@@ -97,9 +91,9 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
           <ChartGridLine
             key={`grid-${index}`}
             y={tick.y}
-            x1={PADDING_LEFT}
-            x2={CHART_WIDTH - PADDING_RIGHT}
-            labelX={PADDING_LEFT - 8}
+            x1={CHART_PADDING_LEFT}
+            x2={CHART_WIDTH - CHART_PADDING_RIGHT}
+            labelX={CHART_PADDING_LEFT - 8}
             label={tick.value}
           />
         ))}

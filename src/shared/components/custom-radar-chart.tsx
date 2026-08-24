@@ -19,15 +19,19 @@ interface CustomRadarChartProps {
   height?: number;
 }
 
-const SIZE = 300;
-const CENTER = SIZE / 2;
-const RADIUS = 110;
-const LABEL_RADIUS = RADIUS + 24;
+/** Proportions of the original fixed 300px chart, kept so a taller/shorter `height` scales the whole shape instead of just cropping it. */
+const RADIUS_RATIO = 110 / 300;
+const LABEL_OFFSET_RATIO = 24 / 300;
 const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
-const SVG_STYLE: CSSProperties = { maxWidth: SIZE };
 
 const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 }: CustomRadarChartProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const size = height;
+  const center = size / 2;
+  const radius = size * RADIUS_RATIO;
+  const labelRadius = radius + size * LABEL_OFFSET_RATIO;
+  const svgStyle = useMemo<CSSProperties>(() => ({ maxWidth: size }), [size]);
 
   const { points, dataPath, gridLevels, axisLines, axisLabels } = useMemo(() => {
     const angleSlice = (Math.PI * 2) / data.length;
@@ -35,10 +39,10 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
     // Get point position
     const getPoint = (index: number, value: number) => {
       const angle = angleSlice * index - Math.PI / 2;
-      const r = (value / maxValue) * RADIUS;
+      const r = (value / maxValue) * radius;
       return {
-        x: CENTER + r * Math.cos(angle),
-        y: CENTER + r * Math.sin(angle),
+        x: center + r * Math.cos(angle),
+        y: center + r * Math.sin(angle),
       };
     };
 
@@ -52,26 +56,26 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
       nextPoints.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ") + " Z";
 
     const nextGridLevels = Array.from({ length: maxValue }, (_, level) => {
-      const levelRadius = ((level + 1) / maxValue) * RADIUS;
+      const levelRadius = ((level + 1) / maxValue) * radius;
       return data
         .map((_, index) => {
           const angle = angleSlice * index - Math.PI / 2;
-          return `${CENTER + levelRadius * Math.cos(angle)},${CENTER + levelRadius * Math.sin(angle)}`;
+          return `${center + levelRadius * Math.cos(angle)},${center + levelRadius * Math.sin(angle)}`;
         })
         .join(" ");
     });
 
     const nextAxisLines = data.map((_, index) => {
       const angle = angleSlice * index - Math.PI / 2;
-      return { x2: CENTER + RADIUS * Math.cos(angle), y2: CENTER + RADIUS * Math.sin(angle) };
+      return { x2: center + radius * Math.cos(angle), y2: center + radius * Math.sin(angle) };
     });
 
     const nextAxisLabels = data.map((item, index) => {
       const angle = angleSlice * index - Math.PI / 2;
       return {
         name: item.name,
-        x: CENTER + LABEL_RADIUS * Math.cos(angle),
-        y: CENTER + LABEL_RADIUS * Math.sin(angle),
+        x: center + labelRadius * Math.cos(angle),
+        y: center + labelRadius * Math.sin(angle),
       };
     });
 
@@ -82,7 +86,7 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
       axisLines: nextAxisLines,
       axisLabels: nextAxisLabels,
     };
-  }, [data, maxValue]);
+  }, [data, maxValue, center, radius, labelRadius]);
 
   const hoveredPoint = hoveredIndex !== null ? points[hoveredIndex] : undefined;
 
@@ -93,11 +97,11 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
   return (
     <div className="relative w-full flex justify-center" style={CONTAINER_STYLE}>
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox={`0 0 ${size} ${size}`}
         width="100%"
         height={height}
         className="overflow-visible"
-        style={SVG_STYLE}
+        style={svgStyle}
       >
         {/* Grid levels */}
         {gridLevels.map((levelPoints, level) => (
@@ -106,7 +110,7 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
 
         {/* Axis lines */}
         {axisLines.map((axis, index) => (
-          <ChartRadarAxisLine key={`axis-${index}`} x1={CENTER} y1={CENTER} x2={axis.x2} y2={axis.y2} />
+          <ChartRadarAxisLine key={`axis-${index}`} x1={center} y1={center} x2={axis.x2} y2={axis.y2} />
         ))}
 
         {/* Data area */}
@@ -140,8 +144,8 @@ const CustomRadarChart = ({ data, maxValue = 5, color = "#D4AF37", height = 280 
       {/* Tooltip */}
       {hoveredPoint && (
         <ChartTooltip
-          left={`calc(50% + ${hoveredPoint.x - CENTER}px)`}
-          top={`${((hoveredPoint.y / SIZE) * 100)}%`}
+          left={`calc(50% + ${hoveredPoint.x - center}px)`}
+          top={`${((hoveredPoint.y / size) * 100)}%`}
           transform="translate(-50%, -130%)"
           title={hoveredPoint.name}
           value={`${arabicSource("shared.rating")} ${hoveredPoint.score}/${maxValue}`}

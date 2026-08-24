@@ -5,6 +5,7 @@ import ChartGridLine from "./charts/ChartGridLine";
 import ChartLegendItem from "./charts/ChartLegendItem";
 import ChartTooltip from "./charts/ChartTooltip";
 import type { GroupedBarPosition } from "./charts/ChartGroupedBar";
+import { CHART_PADDING_LEFT, CHART_PADDING_RIGHT, CHART_TICK_COUNT, CHART_WIDTH, buildYTicks, niceMax } from "./chart-utils";
 
 interface GroupedBarSeries {
   key: string;
@@ -21,12 +22,8 @@ interface CustomGroupedBarChartProps {
 
 const PADDING_TOP = 30;
 const PADDING_BOTTOM = 60;
-const PADDING_LEFT = 50;
-const PADDING_RIGHT = 16;
-const CHART_WIDTH = 600;
-const PLOT_WIDTH = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+const PLOT_WIDTH = CHART_WIDTH - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
 const BAR_GAP = 3;
-const TICK_COUNT = 5;
 const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
 const LEGEND_STYLE: CSSProperties = { direction: "rtl" };
 
@@ -41,9 +38,9 @@ const CustomGroupedBarChart = ({
   const plotHeight = height - PADDING_TOP - PADDING_BOTTOM;
 
   // Y-axis ticks
-  const niceMax = useMemo(() => {
+  const chartMax = useMemo(() => {
     const maxValue = Math.max(...data.flatMap((item) => series.map((s) => Number(item[s.key]) || 0)));
-    return Math.ceil(maxValue / 50) * 50 || 50;
+    return niceMax(maxValue, 50);
   }, [data, series]);
 
   const { groupWidth, barWidth } = useMemo(() => {
@@ -55,23 +52,19 @@ const CustomGroupedBarChart = ({
     };
   }, [data.length, series.length]);
 
-  const yTicks = useMemo(
-    () =>
-      Array.from({ length: TICK_COUNT + 1 }, (_, index) => {
-        const value = Math.round((niceMax / TICK_COUNT) * index);
-        return { value, y: PADDING_TOP + plotHeight - (value / niceMax) * plotHeight };
-      }),
-    [niceMax, plotHeight],
-  );
+  const yTicks = useMemo(() => {
+    const getY = (value: number) => PADDING_TOP + plotHeight - (value / chartMax) * plotHeight;
+    return buildYTicks(0, chartMax, CHART_TICK_COUNT, getY);
+  }, [chartMax, plotHeight]);
 
   const groups = useMemo(
     () =>
       data.map((item, groupIndex) => {
-        const groupX = PADDING_LEFT + groupWidth * groupIndex;
+        const groupX = CHART_PADDING_LEFT + groupWidth * groupIndex;
         const barsStartX = groupX + (groupWidth - (barWidth * series.length + BAR_GAP * (series.length - 1))) / 2;
         const bars = series.map((s, seriesIndex) => {
           const value = Number(item[s.key]) || 0;
-          const barHeight = (value / niceMax) * plotHeight;
+          const barHeight = (value / chartMax) * plotHeight;
           return {
             x: barsStartX + seriesIndex * (barWidth + BAR_GAP),
             y: PADDING_TOP + plotHeight - barHeight,
@@ -83,7 +76,7 @@ const CustomGroupedBarChart = ({
         });
         return { label: String(item[categoryKey]), labelX: groupX + groupWidth / 2, bars };
       }),
-    [data, series, categoryKey, groupWidth, barWidth, niceMax, plotHeight],
+    [data, series, categoryKey, groupWidth, barWidth, chartMax, plotHeight],
   );
 
   const hoveredGroup = hovered ? groups[hovered.groupIdx] : undefined;
@@ -107,9 +100,9 @@ const CustomGroupedBarChart = ({
           <ChartGridLine
             key={`grid-${tick.value}`}
             y={tick.y}
-            x1={PADDING_LEFT}
-            x2={CHART_WIDTH - PADDING_RIGHT}
-            labelX={PADDING_LEFT - 8}
+            x1={CHART_PADDING_LEFT}
+            x2={CHART_WIDTH - CHART_PADDING_RIGHT}
+            labelX={CHART_PADDING_LEFT - 8}
             label={tick.value}
           />
         ))}

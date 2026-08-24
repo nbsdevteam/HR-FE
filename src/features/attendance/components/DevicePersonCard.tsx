@@ -1,9 +1,10 @@
 import { memo } from "react";
 import { motion } from "motion/react";
-import { CreditCard, Fingerprint, ScanFace, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
 import { userTypeColor, userTypeLabel } from "../utils/deviceManagement";
+import DeviceCredentialIcons from "./DeviceCredentialIcons";
 
 type DevicePersonCardProps = {
   person: DevicePerson;
@@ -46,19 +47,8 @@ const DevicePersonCard = ({ person, index, facePhoto }: DevicePersonCardProps) =
         <p className="text-sm font-medium text-foreground truncate">{person.name}</p>
       </div>
 
-      <div className="flex items-center justify-center gap-3">
-        <div className={`flex items-center gap-0.5 ${person.numOfFP > 0 ? "text-emerald-400" : "text-muted-foreground/25"}`} title={arabicSource("common.fingerprint")}>
-          <Fingerprint className="w-3.5 h-3.5" />
-          <span className="text-xs">{person.numOfFP}</span>
-        </div>
-        <div className={`flex items-center gap-0.5 ${person.numOfFace > 0 ? "text-blue-400" : "text-muted-foreground/25"}`} title={arabicSource("common.face")}>
-          <ScanFace className="w-3.5 h-3.5" />
-          <span className="text-xs">{person.numOfFace}</span>
-        </div>
-        <div className={`flex items-center gap-0.5 ${person.numOfCard > 0 ? "text-amber-400" : "text-muted-foreground/25"}`} title={arabicSource("common.card")}>
-          <CreditCard className="w-3.5 h-3.5" />
-          <span className="text-xs">{person.numOfCard}</span>
-        </div>
+      <div className="flex justify-center">
+        <DeviceCredentialIcons fp={person.numOfFP} face={person.numOfFace} card={person.numOfCard} dimZero />
       </div>
     </div>
   </motion.div>
