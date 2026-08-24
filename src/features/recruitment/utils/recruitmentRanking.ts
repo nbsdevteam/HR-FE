@@ -1,18 +1,18 @@
 import type { DbApplicant, IrBand } from "@/shared/hooks";
+import { applicantIrFallbackFields } from "../data";
 import { BAND_STYLES, STAGES } from "../constants/recruitment";
 
+/**
+ * Sums the same weighted rating/stage/experience/skills components
+ * `applicantIrFallbackFields` displays individually, so the two never drift
+ * out of sync on their weights or caps.
+ */
 export const calcRankScore = function calcRankScore(a: DbApplicant): number {
-  // Rating weight: 40%
-  const ratingScore = (a.rating / 5) * 40;
-  // Stage progress weight: 20%
-  const stageIdx = (STAGES as readonly string[]).indexOf(a.stage);
-  const stageScore = stageIdx >= 0 ? (stageIdx / (STAGES.length - 1)) * 20 : 0;
-  // Experience weight: 25%
-  const expScore = Math.min(a.experience_years / 15, 1) * 25;
-  // Skills count weight: 15%
-  const skillsCount = a.skills?.length || 0;
-  const skillsScore = Math.min(skillsCount / 8, 1) * 15;
-  return Math.round(ratingScore + stageScore + expScore + skillsScore);
+  const total = applicantIrFallbackFields.reduce((sum, field) => {
+    const weightFraction = parseInt(field.weight, 10) / 100;
+    return sum + field.getValue(a, STAGES) * weightFraction;
+  }, 0);
+  return Math.round(total);
 }
 
 /** True when the backend produced a real Initial Rating for this applicant. */

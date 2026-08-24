@@ -31,16 +31,18 @@ const RecruitmentHeader = ({
     </div>
     <div className="flex items-center gap-3 flex-wrap">
       <ViewToggle view={viewMode} onChange={onViewModeChange} />
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onApplicantFormOpen}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-lg cursor-pointer"
-        style={{ fontSize: 13 }}
-      >
-        <UserPlus className="w-4 h-4" />{" "}
-        {arabicSource("recruitment.add_advanced_2")}
-      </motion.button>
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          variant="unstyled"
+          size="lg"
+          icon={UserPlus}
+          onClick={onApplicantFormOpen}
+          className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg cursor-pointer"
+          style={{ fontSize: 13 }}
+        >
+          {arabicSource("recruitment.add_advanced_2")}
+        </Button>
+      </motion.div>
 
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <Button

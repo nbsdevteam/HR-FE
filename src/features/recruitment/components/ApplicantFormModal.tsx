@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo, memo } from "react";
-import { UserPlus, X, FileCheck, Loader2 } from "lucide-react";
+import { UserPlus, X, FileCheck } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { ModalOverlay } from "@/shared/components";
+import { Button, ModalOverlay } from "@/shared/components";
 import { type DbJobOpening, type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { GENDER_TO_ODOO, STAGE_TO_ODOO } from "../constants/recruitment";
@@ -221,26 +221,22 @@ const ApplicantFormModal = ({
       {/* ── Sticky Footer ── */}
       <div className="px-6 py-4 border-t border-border/40 bg-card/95 backdrop-blur-sm flex-shrink-0">
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="primary"
+            rounded="rounded-xl"
+            icon={FileCheck}
+            loading={saving}
             onClick={handleSave}
             disabled={saving || !form.name.trim() || !form.job_opening_id}
-            className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-gold-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 h-12 shadow-lg shadow-primary/20"
             style={{ fontSize: 14 }}
           >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />{" "}
-                {arabicSource("common.saving")}
-              </>
-            ) : (
-              <>
-                <FileCheck className="w-4 h-4" />{" "}
-                {isEdit
-                  ? arabicSource("recruitment.update_data")
-                  : arabicSource("recruitment.add_advanced")}
-              </>
-            )}
-          </button>
+            {saving
+              ? arabicSource("common.saving")
+              : isEdit
+                ? arabicSource("recruitment.update_data")
+                : arabicSource("recruitment.add_advanced")}
+          </Button>
           <button
             onClick={onClose}
             className="px-6 h-12 rounded-xl border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"

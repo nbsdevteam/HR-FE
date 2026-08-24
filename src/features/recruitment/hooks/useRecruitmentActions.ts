@@ -138,9 +138,9 @@ export const useRecruitmentActions = (
         });
         setSelectedApplicant(null);
         refetchApps();
-        alert(`تم إضافة "${app.name}" كموظف بنجاح!`);
+        localizedAlert(`تم إضافة "${app.name}" كموظف بنجاح!`);
       } catch (e: any) {
-        alert("خطأ في تحويل المتقدم: " + e.message);
+        localizedAlert("خطأ في تحويل المتقدم: " + e.message);
       }
     },
     [refetchApps],
