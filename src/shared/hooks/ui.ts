@@ -2,8 +2,13 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 
 /**
  * Closes when a pointerdown/mousedown lands outside `ref` (or all of them,
- * if given an array) while `active`, and optionally on Escape. `onOutside`
- * is read through a ref so callers don't need to memoize it.
+ * if given an array) while `active`. `onOutside` is read through a ref so
+ * callers don't need to memoize it.
+ *
+ * `escape` controls Escape-key handling: `true` (default) re-runs
+ * `onOutside`, `false` disables it, and a function runs instead of
+ * `onOutside` for callers that need different behavior on keyboard dismiss
+ * (e.g. also returning focus to the trigger button).
  *
  * Shared by the app's outside-click dropdowns (TopBar's notification/device/
  * user menus, the language and theme switchers) — previously each hand-rolled
@@ -11,23 +16,28 @@ import { useEffect, useRef, useState, type RefObject } from "react";
  */
 export const useClickOutside = (
   active: boolean,
-  ref: RefObject<HTMLElement | null> | RefObject<HTMLElement | null>[],
+  ref: RefObject<HTMLElement> | RefObject<HTMLElement>[],
   onOutside: () => void,
-  closeOnEscape = true,
+  escape: boolean | (() => void) = true,
 ): void => {
   const onOutsideRef = useRef(onOutside);
   onOutsideRef.current = onOutside;
+  const onEscapeRef = useRef(escape);
+  onEscapeRef.current = escape;
 
   useEffect(() => {
     if (!active) return;
     const refs = Array.isArray(ref) ? ref : [ref];
     const isInside = (target: Node): boolean => refs.some((r) => r.current?.contains(target));
+    const closeOnEscape = onEscapeRef.current !== false;
 
     const handlePointerDown = (ev: MouseEvent): void => {
       if (!isInside(ev.target as Node)) onOutsideRef.current();
     };
     const handleKeyDown = (ev: KeyboardEvent): void => {
-      if (closeOnEscape && ev.key === "Escape") onOutsideRef.current();
+      if (ev.key !== "Escape") return;
+      const handler = onEscapeRef.current;
+      (typeof handler === "function" ? handler : onOutsideRef.current)();
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -37,7 +47,7 @@ export const useClickOutside = (
       if (closeOnEscape) document.removeEventListener("keydown", handleKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, closeOnEscape]);
+  }, [active]);
 };
 
 export type PopupRect = { top: number; left: number; width: number };
@@ -54,7 +64,7 @@ export const usePopupPosition = (
   open: boolean,
   onClose: () => void,
   gapPx = 4,
-): { anchorRef: RefObject<HTMLDivElement | null>; rect: PopupRect | null } => {
+): { anchorRef: RefObject<HTMLDivElement>; rect: PopupRect | null } => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const [rect, setRect] = useState<PopupRect | null>(null);
   const onCloseRef = useRef(onClose);

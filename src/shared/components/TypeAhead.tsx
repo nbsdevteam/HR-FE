@@ -2,11 +2,8 @@ import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronsUpDown, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { usePopupPosition } from "@/shared/hooks/ui";
 import TypeAheadPopup from "./TypeAheadPopup";
-
-const POPUP_GAP_PX = 4;
-
-type PopupRect = { top: number; left: number; width: number };
 
 type TypeAheadProps<T> = {
   items: T[];
@@ -52,8 +49,11 @@ const TypeAhead = <T,>({
 }: TypeAheadProps<T>) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [popupRect, setPopupRect] = useState<PopupRect | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const handleClose = useCallback((): void => {
+    setOpen(false);
+    setQuery("");
+  }, []);
+  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(open, handleClose);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const exclude = useMemo(
@@ -158,39 +158,6 @@ const TypeAhead = <T,>({
     },
     [pick],
   );
-
-  useEffect(() => {
-    if (!open) return;
-    const updatePosition = (): void => {
-      const rect = rootRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setPopupRect({ top: rect.bottom + POPUP_GAP_PX, left: rect.left, width: rect.width });
-    };
-    updatePosition();
-    const onPointerDown = (ev: MouseEvent) => {
-      if (!rootRef.current?.contains(ev.target as Node)) {
-        setOpen(false);
-        setQuery("");
-      }
-    };
-    const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        setOpen(false);
-        setQuery("");
-      }
-    };
-    // pointerdown bubble (not capture-click) avoids racing option selection.
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [open]);
 
   useEffect(() => {
     // The search input only exists once the portaled popup has actually

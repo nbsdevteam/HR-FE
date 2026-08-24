@@ -1,12 +1,9 @@
-import { useState, useRef, useCallback, useEffect, type CSSProperties } from "react";
+import { useState, useCallback, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { ChevronsUpDown } from "lucide-react";
 import { twMerge } from "tailwind-merge";
+import { usePopupPosition } from "@/shared/hooks/ui";
 import SelectOptionRow from "./SelectOption";
-
-const POPUP_GAP_PX = 4;
-
-type PopupRect = { top: number; left: number; width: number };
 
 export type SelectOption =
   | string
@@ -57,8 +54,8 @@ const Select = ({
   onBlur,
 }: SelectProps) => {
   const [open, setOpen] = useState(false);
-  const [popupRect, setPopupRect] = useState<PopupRect | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const handleClose = useCallback((): void => setOpen(false), []);
+  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(open, handleClose);
 
   const normalized = options.map(normalizeOption);
   const selected = normalized.find(
@@ -97,34 +94,6 @@ const Select = ({
     },
     [pick],
   );
-
-  useEffect(() => {
-    if (!open) return;
-    const updatePosition = (): void => {
-      const rect = rootRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setPopupRect({ top: rect.bottom + POPUP_GAP_PX, left: rect.left, width: rect.width });
-    };
-    updatePosition();
-    const onPointerDown = (ev: MouseEvent) => {
-      if (!rootRef.current?.contains(ev.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [open]);
 
   const boxClassName = twMerge(
     "h-11 px-4 rounded-lg border border-border bg-input-background focus-within:ring-2 focus-within:ring-ring",

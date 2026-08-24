@@ -1,8 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { MessageSquare, Settings, Search, Menu } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { MessageSquare, Search, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
 import { useDeviceStatus, useNotifications } from "@/shared/hooks";
+import { useClickOutside } from "@/shared/hooks/ui";
 import { LanguageSwitcher } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
@@ -68,7 +69,9 @@ const TopBar = () => {
   const handleBellToggle = useCallback(() => setBellOpen((o) => !o), []);
   const handleBellClose = useCallback(() => setBellOpen(false), []);
   const handleDeviceToggle = useCallback(() => setDeviceOpen((o) => !o), []);
+  const handleDeviceClose = useCallback(() => setDeviceOpen(false), []);
   const handleUserToggle = useCallback(() => setUserOpen((v) => !v), []);
+  const handleUserClose = useCallback(() => setUserOpen(false), []);
   const handleSearchOpenToggle = useCallback(
     () => setSearchOpen((v) => !v),
     [],
@@ -122,18 +125,9 @@ const TopBar = () => {
     }
   }, [signOut]);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node))
-        setBellOpen(false);
-      if (deviceRef.current && !deviceRef.current.contains(e.target as Node))
-        setDeviceOpen(false);
-      if (userRef.current && !userRef.current.contains(e.target as Node))
-        setUserOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(bellOpen, bellRef, handleBellClose, false);
+  useClickOutside(deviceOpen, deviceRef, handleDeviceClose, false);
+  useClickOutside(userOpen, userRef, handleUserClose, false);
 
   return (
     <header className="min-h-[56px] h-auto md:h-[60px] bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between gap-2 px-3 sm:px-4 md:px-6 relative z-50 py-2 md:py-0">

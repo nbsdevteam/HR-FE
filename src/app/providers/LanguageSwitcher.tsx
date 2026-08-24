@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Languages } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,7 @@ import {
   normalizeLanguage,
   type AppLanguage,
 } from "@/i18n";
+import { useClickOutside } from "@/shared/hooks/ui";
 import LanguageOption from "./components/LanguageOption";
 
 const LanguageSwitcher = () => {
@@ -30,23 +31,13 @@ const LanguageSwitcher = () => {
     triggerRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-    document.addEventListener("mousedown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
+  const handleClose = useCallback((): void => setOpen(false), []);
+  const handleEscapeClose = useCallback((): void => {
+    setOpen(false);
+    triggerRef.current?.focus();
   }, []);
+
+  useClickOutside(open, rootRef, handleClose, handleEscapeClose);
 
   return (
     <div className="relative" ref={rootRef} data-i18n-ignore>
