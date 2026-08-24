@@ -1,5 +1,5 @@
 import type { DbAllowanceType, DbEmployeeAllowance, DbDeductionType, DbEmployeeDeduction, DbLoan } from "../../hooks";
-import { sid, num, bool, empty } from "./mapHelpers";
+import { sid, num, bool, empty, isActive } from "./mapHelpers";
 
 export const mapAllowanceType = (r: any): DbAllowanceType => {
   return {
@@ -10,7 +10,7 @@ export const mapAllowanceType = (r: any): DbAllowanceType => {
     default_amount: num(r.default_amount),
     percentage_of: r.percentage_of || "basic",
     is_taxable: bool(r.is_taxable),
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     sort_order: num(r.sort_order),
     created_at: r.created_at || empty,
   };
@@ -23,7 +23,7 @@ export const mapEmployeeAllowance = (r: any): DbEmployeeAllowance => {
     allowance_type_id: sid(r.allowance_type_id),
     amount: num(r.amount),
     currency: r.currency || "IQD",
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     start_date: r.start_date || null,
     end_date: r.end_date || null,
     created_at: r.created_at || empty,
@@ -40,7 +40,7 @@ export const mapDeductionType = (r: any): DbDeductionType => {
     default_percentage: num(r.default_percentage),
     percentage_of: r.percentage_of || "basic",
     is_mandatory: bool(r.is_mandatory),
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     sort_order: num(r.sort_order),
     created_at: r.created_at || empty,
   };
@@ -55,7 +55,7 @@ export const mapEmployeeDeduction = (r: any): DbEmployeeDeduction => {
     percentage: num(r.percentage),
     calc_method: r.calc_method || "fixed",
     currency: r.currency || "IQD",
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     start_date: r.start_date || null,
     end_date: r.end_date || null,
     created_at: r.created_at || empty,

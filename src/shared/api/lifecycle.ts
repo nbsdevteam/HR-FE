@@ -21,92 +21,58 @@ import type {
   DbExitChecklist,
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import { crudFactory, fetchList, withEid } from "./crud";
 
-export const createDocumentType = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/document_types/create", payload);
-}
+const documentTypes = crudFactory("/api/hr/document_types");
+const documents = crudFactory("/api/hr/documents");
+const contractTypes = crudFactory("/api/hr/contract_types");
+const contracts = crudFactory("/api/hr/contracts");
+const exitProcesses = crudFactory("/api/hr/exit");
+const exitChecklist = crudFactory("/api/hr/exit/checklist");
+const custodies = crudFactory("/api/hr/custodies");
+const issues = crudFactory("/api/hr/issues");
+const approvalWorkflows = crudFactory("/api/hr/approvals/workflows");
 
-export const updateDocumentType = async (typeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/document_types/${eid(typeId)}/update`, payload);
-}
+export const createDocumentType = documentTypes.create;
+export const updateDocumentType = documentTypes.update;
+export const deleteDocumentType = documentTypes.remove;
 
-export const deleteDocumentType = async (typeId: string | number) => {
-  return hrCall(`/api/hr/document_types/${eid(typeId)}/delete`, {});
-}
+export const fetchDocumentTypes = (): Promise<DbDocumentType[]> =>
+  fetchList("/api/hr/document_types/list", mapDocumentType);
 
-export const fetchDocumentTypes = async (): Promise<DbDocumentType[]> => {
-  const rows = await items<any>("/api/hr/document_types/list");
-  return rows.map(mapDocumentType);
-}
-
-export const fetchDocuments = async (employeeId?: string): Promise<DbEmployeeDocument[]> => {
+export const fetchDocuments = (employeeId?: string): Promise<DbEmployeeDocument[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
-  const rows = await items<any>("/api/hr/documents/list", params);
-  return rows.map(mapDocument);
+  return fetchList("/api/hr/documents/list", mapDocument, params);
 }
 
-export const createDocument = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  if (params.document_type_id != null) {
-    params.document_type_id = eid(params.document_type_id as string | number);
-  }
-  return hrCall("/api/hr/documents/create", params);
-}
-
-export const updateDocument = async (documentId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/documents/${eid(documentId)}/update`, payload);
-}
-
-export const deleteDocument = async (documentId: string | number) => {
-  return hrCall(`/api/hr/documents/${eid(documentId)}/delete`, {});
-}
+export const createDocument = (payload: Record<string, unknown>) =>
+  documents.create(withEid(payload, ["employee_id", "document_type_id"]));
+export const updateDocument = documents.update;
+export const deleteDocument = documents.remove;
 
 // ─── Slice A: Lifecycle (contracts / exit / custodies) ───────────────
 
-export const fetchContractTypes = async (): Promise<DbContractType[]> => {
-  const rows = await items<any>("/api/hr/contract_types/list", { active_only: true });
-  return rows.map(mapContractType);
-}
+export const fetchContractTypes = (): Promise<DbContractType[]> =>
+  fetchList("/api/hr/contract_types/list", mapContractType, { active_only: true });
 
-export const createContractType = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/contract_types/create", payload);
-}
+export const createContractType = contractTypes.create;
+export const updateContractType = contractTypes.update;
+export const deleteContractType = contractTypes.remove;
 
-export const updateContractType = async (typeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/contract_types/${eid(typeId)}/update`, payload);
-}
-
-export const deleteContractType = async (typeId: string | number) => {
-  return hrCall(`/api/hr/contract_types/${eid(typeId)}/delete`, {});
-}
-
-export const fetchContracts = async (employeeId?: string | number): Promise<DbEmployeeContract[]> => {
+export const fetchContracts = (employeeId?: string | number): Promise<DbEmployeeContract[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
-  const rows = await items<any>("/api/hr/contracts/list", params);
-  return rows.map(mapEmployeeContract);
+  return fetchList("/api/hr/contracts/list", mapEmployeeContract, params);
 }
 
-export const createContract = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/contracts/create", params);
-}
+export const createContract = (payload: Record<string, unknown>) =>
+  contracts.create(withEid(payload, ["employee_id"]));
+export const updateContract = contracts.update;
+export const deleteContract = contracts.remove;
 
-export const updateContract = async (contractId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/contracts/${eid(contractId)}/update`, payload);
-}
-
-export const deleteContract = async (contractId: string | number) => {
-  return hrCall(`/api/hr/contracts/${eid(contractId)}/delete`, {});
-}
-
-export const fetchExitChecklistItems = async (): Promise<DbExitChecklistItem[]> => {
-  const rows = await items<any>("/api/hr/exit/checklist_items/list", { active_only: true });
-  return rows.map(mapExitChecklistItem);
-}
+export const fetchExitChecklistItems = (): Promise<DbExitChecklistItem[]> =>
+  fetchList("/api/hr/exit/checklist_items/list", mapExitChecklistItem, { active_only: true });
 
 export const fetchExitProcesses = async (
   employeeId?: string | number,
@@ -124,41 +90,23 @@ export const fetchExitProcesses = async (
   return { processes, checklist };
 }
 
-export const createExitProcess = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/exit/create", params);
-}
+export const createExitProcess = (payload: Record<string, unknown>) =>
+  exitProcesses.create(withEid(payload, ["employee_id"]));
+export const updateExitProcess = exitProcesses.update;
+export const updateExitChecklistLine = exitChecklist.update;
 
-export const updateExitProcess = async (exitId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/exit/${eid(exitId)}/update`, payload);
-}
-
-export const updateExitChecklistLine = async (lineId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/exit/checklist/${eid(lineId)}/update`, payload);
-}
-
-export const fetchCustodies = async (employeeId?: string | number): Promise<any[]> => {
+export const fetchCustodies = (employeeId?: string | number): Promise<any[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   return items<any>("/api/hr/custodies/list", params);
 }
 
-export const createCustody = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/custodies/create", params);
-}
+export const createCustody = (payload: Record<string, unknown>) =>
+  custodies.create(withEid(payload, ["employee_id"]));
+export const updateCustody = custodies.update;
+export const deleteCustody = custodies.remove;
 
-export const updateCustody = async (custodyId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/custodies/${eid(custodyId)}/update`, payload);
-}
-
-export const deleteCustody = async (custodyId: string | number) => {
-  return hrCall(`/api/hr/custodies/${eid(custodyId)}/delete`, {});
-}
-
-export const fetchIssues = async (filters?: {
+export const fetchIssues = (filters?: {
   employeeId?: string | number;
   state?: string;
   category?: string;
@@ -167,19 +115,12 @@ export const fetchIssues = async (filters?: {
   if (filters?.employeeId != null) params.employee_id = eid(filters.employeeId);
   if (filters?.state) params.state = filters.state;
   if (filters?.category) params.category = filters.category;
-  const rows = await items<any>("/api/hr/issues/list", params);
-  return rows.map(mapIssue);
+  return fetchList("/api/hr/issues/list", mapIssue, params);
 }
 
-export const createIssue = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/issues/create", params);
-}
-
-export const updateIssue = async (issueId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/issues/${eid(issueId)}/update`, payload);
-}
+export const createIssue = (payload: Record<string, unknown>) =>
+  issues.create(withEid(payload, ["employee_id"]));
+export const updateIssue = issues.update;
 
 export const resolveIssue = async (
   issueId: string | number,
@@ -198,18 +139,10 @@ export const fetchApprovalWorkflows = async (entityType = "leave_request"): Prom
   return rows.map(mapApprovalWorkflow);
 }
 
-export const createApprovalWorkflow = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/approvals/workflows/create", payload);
-}
+export const createApprovalWorkflow = approvalWorkflows.create;
+export const updateApprovalWorkflow = approvalWorkflows.update;
 
-export const updateApprovalWorkflow = async (
-  workflowId: string | number,
-  payload: Record<string, unknown>,
-) => {
-  return hrCall(`/api/hr/approvals/workflows/${eid(workflowId)}/update`, payload);
-}
-
-export const fetchApprovalRequests = async (filters?: {
+export const fetchApprovalRequests = (filters?: {
   entityType?: string;
   status?: string;
   mineOnly?: boolean;
@@ -220,8 +153,7 @@ export const fetchApprovalRequests = async (filters?: {
   };
   if (filters?.entityType) params.entity_type = filters.entityType;
   if (filters?.mineOnly) params.mine_only = true;
-  const rows = await items<any>("/api/hr/approvals/requests/list", params);
-  return rows.map(mapApprovalRequest);
+  return fetchList("/api/hr/approvals/requests/list", mapApprovalRequest, params);
 }
 
 export const approveApprovalRequest = async (requestId: string | number, comment?: string) => {

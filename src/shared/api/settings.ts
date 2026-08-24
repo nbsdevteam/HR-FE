@@ -1,23 +1,19 @@
 import { hrCall } from "./client";
 import { mapModule, mapConfig, mapHoliday } from "./mappers";
 import type { DbSystemModule, DbConfiguration, DbPublicHoliday } from "../hooks";
-import { items, eid } from "./httpHelpers";
+import { eid } from "./httpHelpers";
+import { crudFactory, fetchList } from "./crud";
 
-export const fetchModules = async (): Promise<DbSystemModule[]> => {
-  const rows = await items<any>("/api/hr/modules/list");
-  return rows.map(mapModule);
-}
+const holidays = crudFactory("/api/hr/holidays");
 
-export const fetchConfigs = async (): Promise<DbConfiguration[]> => {
-  const rows = await items<any>("/api/hr/configs/list");
-  return rows.map(mapConfig);
-}
+export const fetchModules = (): Promise<DbSystemModule[]> => fetchList("/api/hr/modules/list", mapModule);
 
-export const fetchHolidays = async (year?: number): Promise<DbPublicHoliday[]> => {
+export const fetchConfigs = (): Promise<DbConfiguration[]> => fetchList("/api/hr/configs/list", mapConfig);
+
+export const fetchHolidays = (year?: number): Promise<DbPublicHoliday[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (year) params.year = year;
-  const rows = await items<any>("/api/hr/holidays/list", params);
-  return rows.map(mapHoliday);
+  return fetchList("/api/hr/holidays/list", mapHoliday, params);
 }
 
 export const updateConfig = async (configId: string | number, config_value: unknown) => {
@@ -34,18 +30,15 @@ export const updateModule = async (moduleId: string | number, is_enabled: boolea
   });
 }
 
-export const createHoliday = async (payload: {
+export const createHoliday = (payload: {
   name_ar?: string;
   name?: string;
   date: string;
-}) => {
-  return hrCall("/api/hr/holidays/create", {
+}) =>
+  holidays.create({
     name: payload.name_ar || payload.name,
     name_ar: payload.name_ar,
     date: payload.date,
   });
-}
 
-export const deleteHoliday = async (holidayId: string | number) => {
-  return hrCall(`/api/hr/holidays/${eid(holidayId)}/delete`, {});
-}
+export const deleteHoliday = holidays.remove;

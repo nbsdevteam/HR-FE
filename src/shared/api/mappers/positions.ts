@@ -1,5 +1,5 @@
 import type { DbPosition } from "../../hooks";
-import { sid, sornull, num, empty } from "./mapHelpers";
+import { sid, sornull, num, empty, isActive } from "./mapHelpers";
 
 export const mapPosition = (r: any): DbPosition => {
   return {
@@ -10,7 +10,7 @@ export const mapPosition = (r: any): DbPosition => {
     reports_to_position_id: sornull(r.reports_to_job_id || r.reports_to_position_id),
     level: num(r.level),
     max_headcount: num(r.max_headcount),
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     description: r.description || null,
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,

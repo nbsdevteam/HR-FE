@@ -1,6 +1,6 @@
 import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeavePermission, DbLeavePolicy } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
-import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel } from "./mapHelpers";
+import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
 
 export const mapLeaveType = (r: any): DbLeaveType => {
   return {
@@ -25,7 +25,7 @@ export const mapLeaveType = (r: any): DbLeaveType => {
     accrual_method: r.accrual_method || "yearly",
     color: r.color || "#888888",
     icon: r.icon || "",
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     sort_order: num(r.sort_order),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
@@ -120,7 +120,7 @@ export const mapLeavePolicy = (r: any): DbLeavePolicy => {
     days_per_year: num(r.days_per_year),
     max_days_per_request: r.max_days_per_request ?? null,
     allow_half_day: r.allow_half_day ?? null,
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
   };

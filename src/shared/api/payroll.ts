@@ -14,34 +14,33 @@ import type {
   DbLoan,
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import { crudFactory, fetchList, withEid } from "./crud";
+
+const loans = crudFactory("/api/hr/payroll/loans");
+const allowanceTypes = crudFactory("/api/hr/payroll/allowance_types");
+const employeeAllowances = crudFactory("/api/hr/payroll/employee_allowances");
+const deductionTypes = crudFactory("/api/hr/payroll/deduction_types");
+const employeeDeductions = crudFactory("/api/hr/payroll/employee_deductions");
 
 /** Server-side payroll compute (same snapshot contract as FE generate). */
-export const computePayrollServer = async (month: string) => {
-  return hrCall("/api/hr/payroll/compute", { month });
-}
+export const computePayrollServer = (month: string) => hrCall("/api/hr/payroll/compute", { month });
 
-export const fetchAllowanceTypes = async (): Promise<DbAllowanceType[]> => {
-  const rows = await items<any>("/api/hr/payroll/allowance_types/list");
-  return rows.map(mapAllowanceType);
-}
+export const fetchAllowanceTypes = (): Promise<DbAllowanceType[]> =>
+  fetchList("/api/hr/payroll/allowance_types/list", mapAllowanceType);
 
-export const fetchEmployeeAllowances = async (employeeId?: string): Promise<DbEmployeeAllowance[]> => {
+export const fetchEmployeeAllowances = (employeeId?: string): Promise<DbEmployeeAllowance[]> => {
   const params: Record<string, unknown> = {};
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
-  const rows = await items<any>("/api/hr/payroll/employee_allowances/list", params);
-  return rows.map(mapEmployeeAllowance);
+  return fetchList("/api/hr/payroll/employee_allowances/list", mapEmployeeAllowance, params);
 }
 
-export const fetchDeductionTypes = async (): Promise<DbDeductionType[]> => {
-  const rows = await items<any>("/api/hr/payroll/deduction_types/list");
-  return rows.map(mapDeductionType);
-}
+export const fetchDeductionTypes = (): Promise<DbDeductionType[]> =>
+  fetchList("/api/hr/payroll/deduction_types/list", mapDeductionType);
 
-export const fetchEmployeeDeductions = async (employeeId?: string): Promise<DbEmployeeDeduction[]> => {
+export const fetchEmployeeDeductions = (employeeId?: string): Promise<DbEmployeeDeduction[]> => {
   const params: Record<string, unknown> = {};
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
-  const rows = await items<any>("/api/hr/payroll/employee_deductions/list", params);
-  return rows.map(mapEmployeeDeduction);
+  return fetchList("/api/hr/payroll/employee_deductions/list", mapEmployeeDeduction, params);
 }
 
 export const generatePayslips = async (payload: {
@@ -59,84 +58,34 @@ export const generatePayslips = async (payload: {
   });
 }
 
-export const fetchLoans = async (employeeId?: string | number): Promise<DbLoan[]> => {
+export const fetchLoans = (employeeId?: string | number): Promise<DbLoan[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
-  const rows = await items<any>("/api/hr/payroll/loans/list", params);
-  return rows.map(mapLoan);
+  return fetchList("/api/hr/payroll/loans/list", mapLoan, params);
 }
 
-export const createLoan = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/payroll/loans/create", params);
-}
+export const createLoan = (payload: Record<string, unknown>) =>
+  loans.create(withEid(payload, ["employee_id"]));
+export const updateLoan = loans.update;
+export const deleteLoan = loans.remove;
 
-export const updateLoan = async (loanId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/update`, payload);
-}
+export const createAllowanceType = allowanceTypes.create;
+export const updateAllowanceType = allowanceTypes.update;
+export const deleteAllowanceType = allowanceTypes.remove;
 
-export const deleteLoan = async (loanId: string | number) => {
-  return hrCall(`/api/hr/payroll/loans/${eid(loanId)}/delete`, {});
-}
+export const createEmployeeAllowance = (payload: Record<string, unknown>) =>
+  employeeAllowances.create(withEid(payload, ["employee_id", "allowance_type_id"]));
+export const updateEmployeeAllowance = employeeAllowances.update;
+export const deleteEmployeeAllowance = employeeAllowances.remove;
 
-export const createAllowanceType = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/payroll/allowance_types/create", payload);
-}
+export const createDeductionType = deductionTypes.create;
+export const updateDeductionType = deductionTypes.update;
+export const deleteDeductionType = deductionTypes.remove;
 
-export const updateAllowanceType = async (typeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/update`, payload);
-}
-
-export const deleteAllowanceType = async (typeId: string | number) => {
-  return hrCall(`/api/hr/payroll/allowance_types/${eid(typeId)}/delete`, {});
-}
-
-export const createEmployeeAllowance = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  if (params.allowance_type_id != null) {
-    params.allowance_type_id = eid(params.allowance_type_id as string | number);
-  }
-  return hrCall("/api/hr/payroll/employee_allowances/create", params);
-}
-
-export const updateEmployeeAllowance = async (allowanceId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/update`, payload);
-}
-
-export const deleteEmployeeAllowance = async (allowanceId: string | number) => {
-  return hrCall(`/api/hr/payroll/employee_allowances/${eid(allowanceId)}/delete`, {});
-}
-
-export const createDeductionType = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/payroll/deduction_types/create", payload);
-}
-
-export const updateDeductionType = async (typeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/update`, payload);
-}
-
-export const deleteDeductionType = async (typeId: string | number) => {
-  return hrCall(`/api/hr/payroll/deduction_types/${eid(typeId)}/delete`, {});
-}
-
-export const createEmployeeDeduction = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  if (params.deduction_type_id != null) {
-    params.deduction_type_id = eid(params.deduction_type_id as string | number);
-  }
-  return hrCall("/api/hr/payroll/employee_deductions/create", params);
-}
-
-export const updateEmployeeDeduction = async (deductionId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/update`, payload);
-}
-
-export const deleteEmployeeDeduction = async (deductionId: string | number) => {
-  return hrCall(`/api/hr/payroll/employee_deductions/${eid(deductionId)}/delete`, {});
-}
+export const createEmployeeDeduction = (payload: Record<string, unknown>) =>
+  employeeDeductions.create(withEid(payload, ["employee_id", "deduction_type_id"]));
+export const updateEmployeeDeduction = employeeDeductions.update;
+export const deleteEmployeeDeduction = employeeDeductions.remove;
 
 export const fetchCurrencies = async () => {
   return hrCall("/api/hr/currencies/list", {});

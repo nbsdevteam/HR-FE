@@ -1,29 +1,20 @@
 import { hrCall } from "./client";
 import { mapShift, mapShiftAssignment } from "./mappers";
 import type { DbShift, DbEmployeeShiftAssignment } from "../hooks";
-import { items, eid } from "./httpHelpers";
+import { eid } from "./httpHelpers";
+import { crudFactory, fetchList } from "./crud";
 
-export const fetchShifts = async (): Promise<DbShift[]> => {
-  const rows = await items<any>("/api/hr/shifts/list", { limit: 200 });
-  return rows.map(mapShift);
-}
+const shifts = crudFactory("/api/hr/shifts");
 
-export const fetchShiftAssignments = async (): Promise<DbEmployeeShiftAssignment[]> => {
-  const rows = await items<any>("/api/hr/shift_assignments/list", { active_only: true, limit: 500 });
-  return rows.map(mapShiftAssignment);
-}
+export const fetchShifts = (): Promise<DbShift[]> =>
+  fetchList("/api/hr/shifts/list", mapShift, { limit: 200 });
 
-export const createShift = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/shifts/create", payload);
-}
+export const fetchShiftAssignments = (): Promise<DbEmployeeShiftAssignment[]> =>
+  fetchList("/api/hr/shift_assignments/list", mapShiftAssignment, { active_only: true, limit: 500 });
 
-export const updateShift = async (shiftId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/shifts/${eid(shiftId)}/update`, payload);
-}
-
-export const deleteShift = async (shiftId: string | number) => {
-  return hrCall(`/api/hr/shifts/${eid(shiftId)}/delete`, {});
-}
+export const createShift = shifts.create;
+export const updateShift = shifts.update;
+export const deleteShift = shifts.remove;
 
 export const createShiftAssignment = async (payload: {
   employee_id: string | number;

@@ -1,21 +1,12 @@
-import { hrCall } from "./client";
 import { mapPosition } from "./mappers";
 import type { DbPosition } from "../hooks";
-import { items, eid } from "./httpHelpers";
+import { crudFactory, fetchList } from "./crud";
 
-export const fetchPositions = async (): Promise<DbPosition[]> => {
-  const rows = await items<any>("/api/hr/designations/list", { limit: 200 });
-  return rows.map(mapPosition);
-}
+const designations = crudFactory("/api/hr/designations");
 
-export const createDesignation = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/designations/create", payload);
-}
+export const fetchPositions = (): Promise<DbPosition[]> =>
+  fetchList("/api/hr/designations/list", mapPosition, { limit: 200 });
 
-export const updateDesignation = async (jobId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/designations/${eid(jobId)}/update`, payload);
-}
-
-export const deleteDesignation = async (jobId: string | number) => {
-  return hrCall(`/api/hr/designations/${eid(jobId)}/delete`, {});
-}
+export const createDesignation = designations.create;
+export const updateDesignation = designations.update;
+export const deleteDesignation = designations.remove;

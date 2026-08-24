@@ -34,10 +34,15 @@ export const withEid = (
   return next;
 };
 
-/** The create → update → delete triplet, generated once per entity's base path. */
-export const crudFactory = (basePath: string) => ({
-  create: (payload: Record<string, unknown>) => hrCall(`${basePath}/create`, payload),
+/**
+ * The create → update → delete triplet, generated once per entity's base
+ * path. Pass a type param when a call site needs its typed result back
+ * (defaults to `unknown`, matching the untyped `hrCall(...)` most domain
+ * files previously wrote by hand).
+ */
+export const crudFactory = <TResult = unknown>(basePath: string) => ({
+  create: (payload: Record<string, unknown>) => hrCall<TResult>(`${basePath}/create`, payload),
   update: (id: string | number, payload: Record<string, unknown>) =>
-    hrCall(`${basePath}/${eid(id)}/update`, payload),
-  remove: (id: string | number) => hrCall(`${basePath}/${eid(id)}/delete`, {}),
+    hrCall<TResult>(`${basePath}/${eid(id)}/update`, payload),
+  remove: (id: string | number) => hrCall<TResult>(`${basePath}/${eid(id)}/delete`, {}),
 });

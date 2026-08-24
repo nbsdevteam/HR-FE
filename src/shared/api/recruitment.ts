@@ -2,46 +2,29 @@ import { hrCall } from "./client";
 import { mapJobOpening, mapApplicant } from "./mappers";
 import type { DbJobOpening, DbApplicant, JobRankingStats, ApplicationLink } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import { crudFactory, fetchList, withEid } from "./crud";
 
-export const fetchJobOpenings = async (): Promise<DbJobOpening[]> => {
-  const rows = await items<any>("/api/hr/jobs/list", { limit: 200 });
-  return rows.map(mapJobOpening);
-}
+const jobOpenings = crudFactory("/api/hr/jobs");
+const applicants = crudFactory("/api/hr/applicants");
+const applicationLinks = crudFactory<ApplicationLink>("/api/hr/recruitment/links");
 
-export const createJobOpening = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/jobs/create", payload);
-}
+export const fetchJobOpenings = (): Promise<DbJobOpening[]> =>
+  fetchList("/api/hr/jobs/list", mapJobOpening, { limit: 200 });
 
-export const updateJobOpening = async (jobId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/jobs/${eid(jobId)}/update`, payload);
-}
+export const createJobOpening = jobOpenings.create;
+export const updateJobOpening = jobOpenings.update;
+export const deleteJobOpening = jobOpenings.remove;
 
-export const deleteJobOpening = async (jobId: string | number) => {
-  return hrCall(`/api/hr/jobs/${eid(jobId)}/delete`, {});
-}
-
-export const fetchApplicants = async (jobOpeningId?: string | number): Promise<DbApplicant[]> => {
+export const fetchApplicants = (jobOpeningId?: string | number): Promise<DbApplicant[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (jobOpeningId) params.job_opening_id = eid(jobOpeningId);
-  const rows = await items<any>("/api/hr/applicants/list", params);
-  return rows.map(mapApplicant);
+  return fetchList("/api/hr/applicants/list", mapApplicant, params);
 }
 
-export const createApplicant = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.job_opening_id != null) {
-    params.job_opening_id = eid(params.job_opening_id as string | number);
-  }
-  return hrCall("/api/hr/applicants/create", params);
-}
-
-export const updateApplicant = async (applicantId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/applicants/${eid(applicantId)}/update`, payload);
-}
-
-export const deleteApplicant = async (applicantId: string | number) => {
-  return hrCall(`/api/hr/applicants/${eid(applicantId)}/delete`, {});
-}
+export const createApplicant = (payload: Record<string, unknown>) =>
+  applicants.create(withEid(payload, ["job_opening_id"]));
+export const updateApplicant = applicants.update;
+export const deleteApplicant = applicants.remove;
 
 export const uploadApplicantResume = async (
   applicantId: string | number,
@@ -159,16 +142,8 @@ export const fetchApplicationLinks = async (jobOpeningId?: string | number): Pro
   });
 }
 
-export const updateApplicationLink = async (
-  linkId: string | number,
-  payload: Record<string, unknown>,
-): Promise<ApplicationLink> => {
-  return hrCall<ApplicationLink>(`/api/hr/recruitment/links/${eid(linkId)}/update`, payload);
-}
-
-export const deleteApplicationLink = async (linkId: string | number) => {
-  return hrCall(`/api/hr/recruitment/links/${eid(linkId)}/delete`, {});
-}
+export const updateApplicationLink = applicationLinks.update;
+export const deleteApplicationLink = applicationLinks.remove;
 
 export const fetchScreeningSettings = async (): Promise<ScreeningSettings> => {
   return hrCall<ScreeningSettings>("/api/hr/recruitment/screening_settings", {});

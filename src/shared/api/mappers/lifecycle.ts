@@ -7,7 +7,7 @@ import type {
   DbExitProcess,
   DbExitChecklist,
 } from "../../hooks";
-import { sid, sornull, num, bool, empty } from "./mapHelpers";
+import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
 export const mapDocumentType = (r: any): DbDocumentType => {
   return {
@@ -19,7 +19,7 @@ export const mapDocumentType = (r: any): DbDocumentType => {
     expiry_warning_days: num(r.before_days ?? r.expiry_warning_days, 30),
     is_required: bool(r.is_required),
     required_for_contract_types: r.required_for_contract_types || null,
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     sort_order: num(r.sort_order),
     created_at: r.created_at || empty,
   };
@@ -55,7 +55,7 @@ export const mapContractType = (r: any): DbContractType => {
     is_renewable: bool(r.is_renewable),
     probation_days: num(r.probation_days),
     notice_period_days: num(r.notice_period_days),
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     sort_order: num(r.sort_order),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
@@ -92,7 +92,7 @@ export const mapExitChecklistItem = (r: any): DbExitChecklistItem => {
     category: r.category || "general",
     responsible_role: r.responsible_role || "",
     sort_order: num(r.sort_order),
-    is_active: r.active !== false && r.is_active !== false,
+    is_active: isActive(r),
     created_at: r.created_at || empty,
   };
 }

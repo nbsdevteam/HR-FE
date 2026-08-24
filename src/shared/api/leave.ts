@@ -14,9 +14,13 @@ import type {
   DbLeaveBalance,
   DbLeavePermission,
 } from "../hooks";
-import { items, eid } from "./httpHelpers";
+import { eid } from "./httpHelpers";
+import { crudFactory, fetchList, withEid } from "./crud";
 import { fetchEmployees, fetchCurrentEmployee } from "./core";
 import { timeToFloat } from "./attendance";
+
+const leaveTypes = crudFactory("/api/hr/leave/types");
+const leavePolicies = crudFactory("/api/hr/leave/policies");
 
 const UNLINKED_EMPLOYEE_MSG =
   "Your user account is not linked to an employee. Please contact HR.";
@@ -94,27 +98,15 @@ export const leaveRequestEmployeeIdField = (
   return { employee_id: employeeId };
 }
 
-export const fetchLeaveTypes = async (): Promise<DbLeaveType[]> => {
-  const rows = await items<any>("/api/hr/leave/types");
-  return rows.map(mapLeaveType);
-}
+export const fetchLeaveTypes = (): Promise<DbLeaveType[]> =>
+  fetchList("/api/hr/leave/types", mapLeaveType);
 
-export const createLeaveType = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/leave/types/create", payload);
-}
+export const createLeaveType = leaveTypes.create;
+export const updateLeaveType = leaveTypes.update;
+export const deleteLeaveType = leaveTypes.remove;
 
-export const updateLeaveType = async (typeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/leave/types/${eid(typeId)}/update`, payload);
-}
-
-export const deleteLeaveType = async (typeId: string | number) => {
-  return hrCall(`/api/hr/leave/types/${eid(typeId)}/delete`, {});
-}
-
-export const fetchLeavePolicies = async (): Promise<DbLeavePolicy[]> => {
-  const rows = await items<any>("/api/hr/leave/policies/list");
-  return rows.map(mapLeavePolicy);
-}
+export const fetchLeavePolicies = (): Promise<DbLeavePolicy[]> =>
+  fetchList("/api/hr/leave/policies/list", mapLeavePolicy);
 
 export const fetchLeaveRequests = async (filters?: {
   employeeId?: string;
@@ -128,10 +120,9 @@ export const fetchLeaveRequests = async (filters?: {
     params.date_to = `${filters.month}-31`;
   }
   // FE may pass Arabic status; leave raw and filter client-side if needed
-  const rows = await items<any>("/api/hr/leave/list", params);
-  let mapped = rows.map(mapLeaveRequest);
+  const mapped = await fetchList("/api/hr/leave/list", mapLeaveRequest, params);
   if (filters?.status) {
-    mapped = mapped.filter((r) => r.status === filters.status || r.status.includes(filters.status!));
+    return mapped.filter((r) => r.status === filters.status || r.status.includes(filters.status!));
   }
   return mapped;
 }
@@ -144,11 +135,10 @@ export const fetchLeaveBalances = async (year?: number): Promise<DbLeaveBalance[
   return rows.map(mapLeaveBalance);
 }
 
-export const fetchLeavePermissions = async (employeeId?: string): Promise<DbLeavePermission[]> => {
+export const fetchLeavePermissions = (employeeId?: string): Promise<DbLeavePermission[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
-  const rows = await items<any>("/api/hr/leave/permissions/list", params);
-  return rows.map(mapLeavePermission);
+  return fetchList("/api/hr/leave/permissions/list", mapLeavePermission, params);
 }
 
 export const requestLeave = async (payload: {
@@ -222,16 +212,8 @@ export const updateLeavePermission = async (
   });
 }
 
-export const createLeavePolicy = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.leave_type_id != null) params.leave_type_id = eid(params.leave_type_id as string | number);
-  return hrCall("/api/hr/leave/policies/create", params);
-}
+export const createLeavePolicy = (payload: Record<string, unknown>) =>
+  leavePolicies.create(withEid(payload, ["leave_type_id"]));
 
-export const updateLeavePolicy = async (policyId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/leave/policies/${eid(policyId)}/update`, payload);
-}
-
-export const deleteLeavePolicy = async (policyId: string | number) => {
-  return hrCall(`/api/hr/leave/policies/${eid(policyId)}/delete`, {});
-}
+export const updateLeavePolicy = leavePolicies.update;
+export const deleteLeavePolicy = leavePolicies.remove;

@@ -1,4 +1,3 @@
-import { hrCall } from "./client";
 import {
   mapEvaluation,
   mapEvaluationCriterion,
@@ -16,24 +15,33 @@ import type {
   DbTrainingParticipant,
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import { crudFactory, fetchList, withEid } from "./crud";
 
-export const fetchEvaluations = async (employeeId?: string | number): Promise<DbEvaluation[]> => {
+const evaluations = crudFactory("/api/hr/evaluations");
+const warnings = crudFactory("/api/hr/warnings");
+const policies = crudFactory("/api/hr/policies");
+const trainingPrograms = crudFactory("/api/hr/training/programs");
+const trainingParticipants = crudFactory("/api/hr/training/participants");
+
+/** Criteria arrive embedded in each evaluation row; flatten them out once. */
+const flattenCriteria = (rows: any[]): DbEvaluationCriteria[] => {
+  const criteria: DbEvaluationCriteria[] = [];
+  for (const r of rows) {
+    if (Array.isArray(r.criteria)) criteria.push(...r.criteria.map(mapEvaluationCriterion));
+  }
+  return criteria;
+}
+
+export const fetchEvaluations = (employeeId?: string | number): Promise<DbEvaluation[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
-  const rows = await items<any>("/api/hr/evaluations/list", params);
-  return rows.map(mapEvaluation);
+  return fetchList("/api/hr/evaluations/list", mapEvaluation, params);
 }
 
 export const fetchEvaluationCriteria = async (): Promise<DbEvaluationCriteria[]> => {
   // Criteria are embedded in evaluations/list responses; provided for API parity.
   const rows = await items<any>("/api/hr/evaluations/list", { limit: 500 });
-  const criteria: DbEvaluationCriteria[] = [];
-  for (const r of rows as any[]) {
-    if (Array.isArray(r.criteria)) {
-      criteria.push(...r.criteria.map(mapEvaluationCriterion));
-    }
-  }
-  return criteria;
+  return flattenCriteria(rows);
 }
 
 export const fetchEvaluationsWithCriteria = async (
@@ -42,115 +50,57 @@ export const fetchEvaluationsWithCriteria = async (
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   const rows = await items<any>("/api/hr/evaluations/list", params);
-  const evaluations = rows.map(mapEvaluation);
-  const criteria: DbEvaluationCriteria[] = [];
-  for (const r of rows as any[]) {
-    if (Array.isArray(r.criteria)) {
-      criteria.push(...r.criteria.map(mapEvaluationCriterion));
-    }
-  }
-  return { evaluations, criteria };
+  return { evaluations: rows.map(mapEvaluation), criteria: flattenCriteria(rows) };
 }
 
-export const createEvaluation = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/evaluations/create", params);
-}
+export const createEvaluation = (payload: Record<string, unknown>) =>
+  evaluations.create(withEid(payload, ["employee_id"]));
+export const updateEvaluation = evaluations.update;
+export const deleteEvaluation = evaluations.remove;
 
-export const updateEvaluation = async (evaluationId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/update`, payload);
-}
-
-export const deleteEvaluation = async (evaluationId: string | number) => {
-  return hrCall(`/api/hr/evaluations/${eid(evaluationId)}/delete`, {});
-}
-
-export const fetchWarnings = async (employeeId?: string | number): Promise<DbWarning[]> => {
+export const fetchWarnings = (employeeId?: string | number): Promise<DbWarning[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
-  const rows = await items<any>("/api/hr/warnings/list", params);
-  return rows.map(mapWarning);
+  return fetchList("/api/hr/warnings/list", mapWarning, params);
 }
 
-export const createWarning = async (payload: Record<string, unknown>) => {
-  const params = { ...payload };
-  if (params.employee_id != null) params.employee_id = eid(params.employee_id as string | number);
-  return hrCall("/api/hr/warnings/create", params);
-}
+export const createWarning = (payload: Record<string, unknown>) =>
+  warnings.create(withEid(payload, ["employee_id"]));
+export const updateWarning = warnings.update;
+export const deleteWarning = warnings.remove;
 
-export const updateWarning = async (warningId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/warnings/${eid(warningId)}/update`, payload);
-}
+export const fetchPolicies = (): Promise<DbPolicy[]> =>
+  fetchList("/api/hr/policies/list", mapPolicy, { limit: 200 });
+export const createPolicy = policies.create;
+export const updatePolicy = policies.update;
+export const deletePolicy = policies.remove;
 
-export const deleteWarning = async (warningId: string | number) => {
-  return hrCall(`/api/hr/warnings/${eid(warningId)}/delete`, {});
-}
+export const fetchTrainingPrograms = (): Promise<DbTrainingProgram[]> =>
+  fetchList("/api/hr/training/programs/list", mapTrainingProgram, { limit: 200 });
+export const createTrainingProgram = trainingPrograms.create;
+export const updateTrainingProgram = trainingPrograms.update;
+export const deleteTrainingProgram = trainingPrograms.remove;
 
-export const fetchPolicies = async (): Promise<DbPolicy[]> => {
-  const rows = await items<any>("/api/hr/policies/list", { limit: 200 });
-  return rows.map(mapPolicy);
-}
-
-export const createPolicy = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/policies/create", payload);
-}
-
-export const updatePolicy = async (policyId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/policies/${eid(policyId)}/update`, payload);
-}
-
-export const deletePolicy = async (policyId: string | number) => {
-  return hrCall(`/api/hr/policies/${eid(policyId)}/delete`, {});
-}
-
-export const fetchTrainingPrograms = async (): Promise<DbTrainingProgram[]> => {
-  const rows = await items<any>("/api/hr/training/programs/list", { limit: 200 });
-  return rows.map(mapTrainingProgram);
-}
-
-export const createTrainingProgram = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/training/programs/create", payload);
-}
-
-export const updateTrainingProgram = async (programId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/training/programs/${eid(programId)}/update`, payload);
-}
-
-export const deleteTrainingProgram = async (programId: string | number) => {
-  return hrCall(`/api/hr/training/programs/${eid(programId)}/delete`, {});
-}
-
-export const fetchTrainingParticipants = async (
+export const fetchTrainingParticipants = (
   programId?: string | number,
 ): Promise<DbTrainingParticipant[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (programId) params.program_id = eid(programId);
-  const rows = await items<any>("/api/hr/training/participants/list", params);
-  return rows.map(mapTrainingParticipant);
+  return fetchList("/api/hr/training/participants/list", mapTrainingParticipant, params);
 }
 
-export const createTrainingParticipant = async (payload: {
+export const createTrainingParticipant = (payload: {
   training_program_id: string | number;
   employee_id: string | number;
   completion_status?: string;
   score?: number | null;
-}) => {
-  return hrCall("/api/hr/training/participants/create", {
+}) =>
+  trainingParticipants.create({
     program_id: eid(payload.training_program_id),
     employee_id: eid(payload.employee_id),
     completion_status: payload.completion_status,
     score: payload.score,
   });
-}
 
-export const updateTrainingParticipant = async (
-  participantId: string | number,
-  payload: Record<string, unknown>,
-) => {
-  return hrCall(`/api/hr/training/participants/${eid(participantId)}/update`, payload);
-}
-
-export const deleteTrainingParticipant = async (participantId: string | number) => {
-  return hrCall(`/api/hr/training/participants/${eid(participantId)}/delete`, {});
-}
+export const updateTrainingParticipant = trainingParticipants.update;
+export const deleteTrainingParticipant = trainingParticipants.remove;
