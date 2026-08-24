@@ -86,6 +86,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
   }, []);
 
+  // Declared after the useCallbacks above (not before, per the usual
+  // useMemo-then-useCallback ordering) because it closes over them directly.
   const value = useMemo(
     () => ({ user, session, loading, signIn, signUp, signOut }),
     [user, session, loading, signIn, signUp, signOut],

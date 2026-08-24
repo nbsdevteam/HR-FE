@@ -1,8 +1,9 @@
 ﻿import { useCallback, useMemo, useState } from "react";
-import { CheckCircle, Clock, Loader2, Shield, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, Shield, Trash2 } from "lucide-react";
 import { useAuditLog } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import DataTable from "@/shared/components/DataTable";
+import LoadingState from "@/shared/components/LoadingState";
 import StatCard from "@/shared/components/StatCard";
 import SearchInput from "@/shared/components/SearchInput";
 import Select from "@/shared/components/Select";
@@ -149,9 +150,10 @@ const AuditTrailTab = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        </div>
+        <LoadingState
+          wrapperClassName="flex items-center justify-center py-16"
+          iconClassName="w-8 h-8 text-primary animate-spin"
+        />
       ) : filtered.length === 0 ? (
         <div className={`${auditCardCls} text-center py-12`}>
           <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />

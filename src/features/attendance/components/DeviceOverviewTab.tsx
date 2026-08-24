@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { LoadingState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceCapacity, DeviceInfo } from "../types";
 import { DEVICE_SYNC_API } from "../utils/deviceManagement";
@@ -50,10 +50,11 @@ const DeviceOverviewTab = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        <span className="text-muted-foreground ms-3">{arabicSource("devicemanagement.loading_device_information")}</span>
-      </div>
+      <LoadingState
+        message={arabicSource("devicemanagement.loading_device_information")}
+        wrapperClassName="flex items-center justify-center py-20"
+        iconClassName="w-6 h-6 animate-spin text-primary"
+      />
     );
   }
 

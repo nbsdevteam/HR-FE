@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Loader2 } from "lucide-react";
+import LoadingState from "@/shared/components/LoadingState";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import type { DeviceFacePreview, DevicePerson } from "../types";
 import {
@@ -110,9 +110,10 @@ const DeviceFaceTab = () => {
       </AnimatePresence>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
+        <LoadingState
+          wrapperClassName="flex items-center justify-center py-16"
+          iconClassName="w-6 h-6 animate-spin text-primary"
+        />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {filtered.map((person) => (

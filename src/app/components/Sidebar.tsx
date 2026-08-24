@@ -8,26 +8,27 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { arabicSource } from "@/i18n/source";
+import { ROUTE_SEGMENT } from "@/app/router/routePaths";
 import { useNavShell } from "./NavShellContext";
 import SidebarNavItem, { type SidebarMenuItem } from "./SidebarNavItem";
 
 const menuItems: SidebarMenuItem[] = [
   { id: "dashboard", label: arabicSource("common.control_panel"), icon: Home, path: "/" },
-  { id: "employees", label: arabicSource("common.employees"), icon: Users, path: "/employees" },
-  { id: "attendance", label: arabicSource("common.attendance_and_departure"), icon: Clock, path: "/attendance" },
-  { id: "leave", label: arabicSource("common.vacations"), icon: CalendarDays, path: "/leave" },
-  { id: "payroll", label: arabicSource("common.salaries"), icon: Wallet, path: "/payroll" },
-  { id: "evaluation", label: arabicSource("common.performance_evaluation"), icon: ClipboardCheck, path: "/evaluation" },
-  { id: "warnings", label: arabicSource("common.alarms"), icon: AlertTriangle, path: "/warnings" },
-  { id: "policies", label: arabicSource("shared.policies"), icon: FileText, path: "/policies" },
-  { id: "hierarchy", label: arabicSource("common.organizational_structure"), icon: GitBranch, path: "/hierarchy" },
-  { id: "recruitment", label: arabicSource("common.recruitment"), icon: UserPlus, path: "/recruitment" },
-  { id: "training", label: arabicSource("common.training_and_development"), icon: GraduationCap, path: "/training" },
-  { id: "lifecycle", label: arabicSource("common.employee_life_cycle"), icon: Briefcase, path: "/lifecycle" },
-  { id: "reports", label: arabicSource("common.reports"), icon: BarChart3, path: "/reports" },
-  { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: "/devices" },
-  { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: "/audit" },
-  { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: "/settings" },
+  { id: "employees", label: arabicSource("common.employees"), icon: Users, path: `/${ROUTE_SEGMENT.employees}` },
+  { id: "attendance", label: arabicSource("common.attendance_and_departure"), icon: Clock, path: `/${ROUTE_SEGMENT.attendance}` },
+  { id: "leave", label: arabicSource("common.vacations"), icon: CalendarDays, path: `/${ROUTE_SEGMENT.leave}` },
+  { id: "payroll", label: arabicSource("common.salaries"), icon: Wallet, path: `/${ROUTE_SEGMENT.payroll}` },
+  { id: "evaluation", label: arabicSource("common.performance_evaluation"), icon: ClipboardCheck, path: `/${ROUTE_SEGMENT.evaluation}` },
+  { id: "warnings", label: arabicSource("common.alarms"), icon: AlertTriangle, path: `/${ROUTE_SEGMENT.warnings}` },
+  { id: "policies", label: arabicSource("shared.policies"), icon: FileText, path: `/${ROUTE_SEGMENT.policies}` },
+  { id: "hierarchy", label: arabicSource("common.organizational_structure"), icon: GitBranch, path: `/${ROUTE_SEGMENT.hierarchy}` },
+  { id: "recruitment", label: arabicSource("common.recruitment"), icon: UserPlus, path: `/${ROUTE_SEGMENT.recruitment}` },
+  { id: "training", label: arabicSource("common.training_and_development"), icon: GraduationCap, path: `/${ROUTE_SEGMENT.training}` },
+  { id: "lifecycle", label: arabicSource("common.employee_life_cycle"), icon: Briefcase, path: `/${ROUTE_SEGMENT.lifecycle}` },
+  { id: "reports", label: arabicSource("common.reports"), icon: BarChart3, path: `/${ROUTE_SEGMENT.reports}` },
+  { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: `/${ROUTE_SEGMENT.devices}` },
+  { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: `/${ROUTE_SEGMENT.audit}` },
+  { id: "settings", label: arabicSource("common.settings"), icon: Settings, path: `/${ROUTE_SEGMENT.settings}` },
 ];
 
 const SidebarNav = ({
@@ -65,10 +66,10 @@ const SidebarNav = ({
 };
 
 const Sidebar = () => {
+  const [collapsed, setCollapsed] = useState(false);
   const { mobileNavOpen, closeMobileNav, isDesktop } = useNavShell();
   const { i18n } = useTranslation();
   const isRtl = i18n.dir() === "rtl";
-  const [collapsed, setCollapsed] = useState(false);
   const offscreenX = isRtl ? "100%" : "-100%";
 
   const handleToggleCollapsed = useCallback((): void => {

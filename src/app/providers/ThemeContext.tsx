@@ -54,6 +54,8 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("hr-theme", newTheme);
   }, []);
 
+  // Declared after setTheme (not before, per the usual
+  // useMemo-then-useCallback ordering) because it closes over it directly.
   const value = useMemo(
     () => ({ theme, setTheme, themeInfo }),
     [theme, setTheme, themeInfo],

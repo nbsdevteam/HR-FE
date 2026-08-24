@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
-import { Bell, Check, Loader2 } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { useNotifications } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { SearchInput, Select } from "@/shared/components";
+import { LoadingState, SearchInput, Select } from "@/shared/components";
 import { auditCardCls } from "../styles";
 import NotificationItem from "./NotificationItem";
 import { selectStyle } from "@/styles/sharedClasses";
@@ -103,9 +103,10 @@ const NotificationsTab = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        </div>
+        <LoadingState
+          wrapperClassName="flex items-center justify-center py-16"
+          iconClassName="w-8 h-8 text-primary animate-spin"
+        />
       ) : filtered.length === 0 ? (
         <div className={`${auditCardCls} text-center py-12`}>
           <Bell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />

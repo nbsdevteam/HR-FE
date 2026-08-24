@@ -32,12 +32,14 @@ const NavShellProvider = ({ children }: { children: ReactNode }) => {
   const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
   const toggleMobileNav = useCallback(() => setMobileNavOpen((v) => !v), []);
 
+  // Declared after the useCallbacks above (not before, per the usual
+  // useMemo-then-useCallback ordering) because it closes over them directly.
   const value = useMemo(
     () => ({ mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop }),
     [mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop],
   );
 
-    useEffect(() => {
+  useEffect(() => {
     const mq = window.matchMedia(DESKTOP_MQ);
     const onChange = () => {
       setIsDesktop(mq.matches);

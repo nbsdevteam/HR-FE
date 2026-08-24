@@ -37,6 +37,8 @@ const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setSettings((prev) => ({ ...prev, ...patch }));
   }, []);
 
+  // Declared after updateSettings (not before, per the usual
+  // useMemo-then-useCallback ordering) because it closes over it directly.
   const value = useMemo(
     () => ({ settings, updateSettings }),
     [settings, updateSettings],

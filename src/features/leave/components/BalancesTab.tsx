@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, Loader2, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import {
   empDisplayName, resolveLeaveEntitlement,
   type DbLeaveType, type DbLeaveBalance,
 } from "@/shared/hooks";
+import LoadingState from "@/shared/components/LoadingState";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 import LeaveBalanceCard from "./LeaveBalanceCard";
@@ -49,9 +50,10 @@ const BalancesTab = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <Loader2 className="w-6 h-6 text-primary animate-spin" />
-      </div>
+      <LoadingState
+        wrapperClassName="flex items-center justify-center h-32"
+        iconClassName="w-6 h-6 text-primary animate-spin"
+      />
     );
   }
 

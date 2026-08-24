@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import EmptyState from "@/shared/components/EmptyState";
+import LoadingState from "@/shared/components/LoadingState";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import { arabicSource } from "@/i18n/source";
 import type { DevicePerson } from "../types";
@@ -98,10 +99,11 @@ const DevicePersonsTab = () => {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground ms-3">{arabicSource("devicemanagement.loading_people")}</span>
-        </div>
+        <LoadingState
+          message={arabicSource("devicemanagement.loading_people")}
+          wrapperClassName="flex items-center justify-center py-16"
+          iconClassName="w-6 h-6 animate-spin text-primary"
+        />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filtered.map((person, index) => (

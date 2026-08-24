@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { Loader2, Timer } from "lucide-react";
-import { DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
+import { Timer } from "lucide-react";
+import { DataTable, EmptyState, LoadingState, TableHeaderRow } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName, type DbLeavePermission } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -27,9 +27,10 @@ const PermissionsTab = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <Loader2 className="w-6 h-6 text-primary animate-spin" />
-      </div>
+      <LoadingState
+        wrapperClassName="flex items-center justify-center h-32"
+        iconClassName="w-6 h-6 text-primary animate-spin"
+      />
     );
   }
 
