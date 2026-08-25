@@ -22,3 +22,5 @@ export type ReportSelectionTabId = "employees" | "columns";
 export type ReportSelectionItem = { value: string; label: string; initials?: string };
 
 export type { HrReportGenerateResult, ReportField, ReportFieldsResult } from "@/shared/api/reporting";
+
+export type { ReportConfigColumn, ReportConfigFilterPair, ReportConfigFormData } from "./reportConfig";

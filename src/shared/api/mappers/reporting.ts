@@ -1,4 +1,4 @@
-import type { DbNotification, DbAuditLog, DbReportTemplate, DbReportHistory } from "../../hooks";
+import type { DbNotification, DbAuditLog, DbReportTemplate, DbReportHistory, ReportTemplateMetadata } from "../../hooks";
 import { sid, sornull, num, bool, empty } from "./mapHelpers";
 
 export const mapNotification = (r: any): DbNotification => {
@@ -37,6 +37,7 @@ export const mapAuditLog = (r: any): DbAuditLog => {
 export const mapReportTemplate = (r: any): DbReportTemplate => {
   return {
     id: sid(r.id),
+    legacy_id: r.legacy_id || "",
     name_ar: r.name_ar || "",
     name_en: r.name_en || null,
     code: r.code || "",
@@ -48,8 +49,23 @@ export const mapReportTemplate = (r: any): DbReportTemplate => {
     format: r.format || "table",
     is_active: bool(r.active ?? r.is_active ?? true),
     sort_order: num(r.sort_order),
+    supports_field_selection: bool(r.supports_field_selection),
+    can_generate: bool(r.can_generate),
+    available_fields: r.available_fields || [],
+    default_fields: r.default_fields || [],
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+  };
+}
+
+export const mapReportTemplateMetadata = (r: any): ReportTemplateMetadata => {
+  return {
+    categories: r.categories || [],
+    formats: r.formats || [],
+    generatableCodes: r.generatable_codes || [],
+    codeAliases: r.code_aliases || {},
+    codePattern: r.code_pattern || "^[a-z0-9_]{2,64}$",
+    canManage: bool(r.can_manage),
   };
 }
 

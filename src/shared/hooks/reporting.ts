@@ -34,6 +34,7 @@ export interface DbAuditLog {
 
 export interface DbReportTemplate {
   id: string;
+  legacy_id: string;
   name_ar: string;
   name_en: string | null;
   code: string;
@@ -45,8 +46,21 @@ export interface DbReportTemplate {
   format: string;
   is_active: boolean;
   sort_order: number;
+  supports_field_selection: boolean;
+  can_generate: boolean;
+  available_fields: { key: string; label: string }[];
+  default_fields: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ReportTemplateMetadata {
+  categories: { value: string; label: string }[];
+  formats: { value: string; label: string }[];
+  generatableCodes: string[];
+  codeAliases: Record<string, string>;
+  codePattern: string;
+  canManage: boolean;
 }
 
 export interface DbReportHistory {
@@ -83,6 +97,16 @@ export const useAuditLog = (filters?: { entityType?: string; action?: string; li
 export const useReportTemplates = () => {
   const { data: templates, loading, refetch } = useCachedList("reportTemplates", () => odooData.fetchReportTemplates(), "Failed to load report templates");
   return { templates, loading, refetch };
+}
+
+/** Form choices + `can_manage` for the report-configuration admin screen (backend §2.8). */
+export const useReportTemplateMetadata = () => {
+  const { data, loading, refetch } = useCachedList(
+    "reportTemplateMetadata",
+    async () => [await odooData.fetchReportTemplatesMetadata()],
+    "Failed to load report metadata",
+  );
+  return { metadata: data[0] ?? null, loading, refetch };
 }
 
 export const useReportHistory = () => {

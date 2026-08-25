@@ -1,9 +1,11 @@
 import { lazy, Suspense } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import {
   useReportTemplates,
+  useReportTemplateMetadata,
   useReportHistory,
   useEmployees,
   useHierarchyData,
@@ -48,7 +50,9 @@ const ReportsWorkspace = () => {
   const [rptSortBy, setRptSortBy] = useState<ReportSortBy>("name");
   const [rptSortDir, setRptSortDir] = useState<ReportSortDir>("asc");
 
+  const navigate = useNavigate();
   const { templates, loading: templatesLoading } = useReportTemplates();
+  const { metadata } = useReportTemplateMetadata();
   const {
     history,
     loading: historyLoading,
@@ -130,6 +134,10 @@ const ReportsWorkspace = () => {
 
   const handleToggleHistory = useCallback(() => setShowHistory((v) => !v), []);
 
+  const handleOpenManagement = useCallback(() => {
+    navigate("?tab=manage");
+  }, [navigate]);
+
   const handleSelectTemplate = useCallback(
     (template: DbReportTemplate) => {
       setSelectedTemplate(template);
@@ -186,6 +194,8 @@ const ReportsWorkspace = () => {
       <ReportsHeader
         showHistory={showHistory}
         onToggleHistory={handleToggleHistory}
+        canManage={metadata?.canManage}
+        onOpenManagement={handleOpenManagement}
       />
 
       <ReportsStats

@@ -1,7 +1,26 @@
 import { hrCall } from "./client";
-import { mapNotification, mapAuditLog, mapReportTemplate, mapReportHistory } from "./mappers";
-import type { DbNotification, DbAuditLog, DbReportTemplate, DbReportHistory } from "../hooks";
+import { mapNotification, mapAuditLog, mapReportTemplate, mapReportHistory, mapReportTemplateMetadata } from "./mappers";
+import type { DbNotification, DbAuditLog, DbReportTemplate, DbReportHistory, ReportTemplateMetadata } from "../hooks";
 import { items, eid } from "./httpHelpers";
+
+export type ReportTemplateListParams = {
+  category?: string;
+  search?: string;
+  includeArchived?: boolean;
+};
+
+export type ReportTemplateListResult = {
+  items: DbReportTemplate[];
+  total: number;
+};
+
+export type ReportTemplateDeleteResult = {
+  id: number;
+  deleted: boolean;
+  hard: boolean;
+  active: boolean;
+  history_detached: number;
+};
 
 /** A single selectable report column, as described by `/api/hr/reports/fields`. */
 export type ReportField = {
@@ -86,16 +105,46 @@ export const fetchReportTemplates = async (): Promise<DbReportTemplate[]> => {
   return rows.map(mapReportTemplate);
 }
 
-export const createReportTemplate = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/reports/templates/create", payload);
+/** Full list for the admin management screen — search/category/archived filters, plus `total` (backend §2.2). */
+export const fetchReportTemplatesAdmin = async (params: ReportTemplateListParams = {}): Promise<ReportTemplateListResult> => {
+  const data = await hrCall<{ items?: any[]; total?: number } | any[]>("/api/hr/reports/templates/list", {
+    category: params.category,
+    search: params.search,
+    include_archived: params.includeArchived,
+  });
+  const rows = Array.isArray(data) ? data : data?.items || [];
+  const total = Array.isArray(data) ? rows.length : Number(data?.total) || rows.length;
+  return { items: rows.map(mapReportTemplate), total };
 }
 
-export const updateReportTemplate = async (templateId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/reports/templates/${eid(templateId)}/update`, payload);
+export const fetchReportTemplate = async (templateId: string | number): Promise<DbReportTemplate> => {
+  const row = await hrCall<any>(`/api/hr/reports/templates/${eid(templateId)}`, {});
+  return mapReportTemplate(row);
 }
 
-export const deleteReportTemplate = async (templateId: string | number) => {
-  return hrCall(`/api/hr/reports/templates/${eid(templateId)}/delete`, {});
+export const createReportTemplate = async (payload: Record<string, unknown>): Promise<DbReportTemplate> => {
+  const row = await hrCall<any>("/api/hr/reports/templates/create", payload);
+  return mapReportTemplate(row);
+}
+
+export const updateReportTemplate = async (templateId: string | number, payload: Record<string, unknown>): Promise<DbReportTemplate> => {
+  const row = await hrCall<any>(`/api/hr/reports/templates/${eid(templateId)}/update`, payload);
+  return mapReportTemplate(row);
+}
+
+export const deleteReportTemplate = async (templateId: string | number, opts: { hard?: boolean } = {}): Promise<ReportTemplateDeleteResult> => {
+  return hrCall<ReportTemplateDeleteResult>(`/api/hr/reports/templates/${eid(templateId)}/delete`, { hard: !!opts.hard });
+}
+
+export const restoreReportTemplate = async (templateId: string | number): Promise<DbReportTemplate> => {
+  const row = await hrCall<any>(`/api/hr/reports/templates/${eid(templateId)}/restore`, {});
+  return mapReportTemplate(row);
+}
+
+/** Category/format choices, generatable codes and `can_manage` for the admin screen (backend §2.8). */
+export const fetchReportTemplatesMetadata = async (): Promise<ReportTemplateMetadata> => {
+  const data = await hrCall<any>("/api/hr/reports/templates/metadata", {});
+  return mapReportTemplateMetadata(data);
 }
 
 export const fetchReportHistory = async (templateId?: string | number): Promise<DbReportHistory[]> => {

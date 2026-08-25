@@ -1,16 +1,20 @@
 import { memo } from "react";
-import { History } from "lucide-react";
+import { History, Settings } from "lucide-react";
 import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 interface IReportsHeaderProps {
   showHistory: boolean;
   onToggleHistory: () => void;
+  canManage?: boolean;
+  onOpenManagement?: () => void;
 }
 
 const ReportsHeader = ({
   showHistory,
   onToggleHistory,
+  canManage = false,
+  onOpenManagement,
 }: IReportsHeaderProps) => (
   <div className="flex items-center justify-between">
     <div>
@@ -20,6 +24,16 @@ const ReportsHeader = ({
       </p>
     </div>
     <div className="flex items-center gap-2">
+      {canManage && onOpenManagement && (
+        <Button
+          variant="outline"
+          icon={Settings}
+          onClick={onOpenManagement}
+          className="cursor-pointer"
+        >
+          {arabicSource("reports.manage_configurations")}
+        </Button>
+      )}
       <Button
         variant={showHistory ? "primary" : "outline"}
         icon={History}
