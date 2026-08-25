@@ -35,9 +35,18 @@ const ReportTemplateCard = ({
         <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20">
           <Icon className="w-5 h-5 text-primary" />
         </div>
-        <div className="flex-1">
-          <h3 className="text-foreground">{template.name_ar}</h3>
-          <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>
+        <div className="flex-1 min-w-0">
+          <h3
+            className="text-foreground line-clamp-1"
+            title={template.name_ar}
+          >
+            {template.name_ar}
+          </h3>
+          <p
+            className="text-muted-foreground mt-1 line-clamp-2"
+            style={{ fontSize: 12 }}
+            title={template.description}
+          >
             {template.description}
           </p>
         </div>

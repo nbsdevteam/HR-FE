@@ -40,6 +40,7 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             onApprove={page.handleApprove}
             onReject={page.handleReject}
             onDelete={page.handleDelete}
+            onViewAttachments={page.handleViewAttachments}
           />
         ) : (
           <Suspense fallback={null}>
@@ -48,6 +49,7 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
               empMap={page.empMap}
               onApprove={page.handleApprove}
               onReject={page.handleReject}
+              onViewAttachments={page.handleViewAttachments}
             />
           </Suspense>
         )}

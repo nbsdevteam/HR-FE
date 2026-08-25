@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending, normalizeLeaveStatus } from "@/i18n/status";
@@ -10,8 +10,10 @@ import {
   useLeavePermissions,
   useLeavePolicies,
   useLeaveRequests,
+  useLeaveSettings,
   useLeaveTypes,
 } from "@/shared/hooks";
+import type { DbLeaveRequest } from "@/shared/hooks";
 import type { LeaveSortKey, LeaveTabId, LeaveViewMode } from "../types";
 
 export const useLeavePage = () => {
@@ -20,6 +22,7 @@ export const useLeavePage = () => {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showPermForm, setShowPermForm] = useState(false);
+  const [viewingAttachmentsFor, setViewingAttachmentsFor] = useState<DbLeaveRequest | null>(null);
   const [viewMode, setViewMode] = useState<LeaveViewMode>("list");
   const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>("start");
   const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">("desc");
@@ -36,6 +39,7 @@ export const useLeavePage = () => {
   const currentYear = new Date().getFullYear();
   const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(currentYear);
   const { permissions, loading: permLoading, refetch: refetchPermissions } = useLeavePermissions();
+  const { settings: leaveSettings } = useLeaveSettings();
 
   const empMap = useMemo(() => {
     const mappedEmployees: Record<string, (typeof employees)[number]> = {};
@@ -148,6 +152,23 @@ export const useLeavePage = () => {
     setShowPermForm(false);
   }, [refetchPermissions]);
 
+  const handleViewAttachments = useCallback((leave: DbLeaveRequest) => {
+    setViewingAttachmentsFor(leave);
+  }, []);
+
+  const handleCloseAttachments = useCallback(() => {
+    setViewingAttachmentsFor(null);
+  }, []);
+
+  // Keep the open attachments modal's leave in sync after an upload/delete
+  // triggers a refetch — `requests` gets a fresh object, `viewingAttachmentsFor`
+  // otherwise stays pinned to the stale snapshot it was opened with.
+  useEffect(() => {
+    if (!viewingAttachmentsFor) return;
+    const updated = requests.find((request) => request.id === viewingAttachmentsFor.id);
+    if (updated && updated !== viewingAttachmentsFor) setViewingAttachmentsFor(updated);
+  }, [requests, viewingAttachmentsFor]);
+
   return {
     activeLeaveTypes,
     activeTab,
@@ -162,10 +183,13 @@ export const useLeavePage = () => {
     filter,
     filteredRequests,
     handleApprove,
+    handleCloseAttachments,
     handleDelete,
     handleLeaveSubmit,
     handlePermissionSubmit,
     handleReject,
+    handleViewAttachments,
+    leaveSettings,
     leaveSortBy,
     leaveSortDir,
     loading,
@@ -174,6 +198,7 @@ export const useLeavePage = () => {
     permLoading,
     policies,
     refetchPermissions,
+    refetchRequests,
     rejectedCount,
     search,
     selfOnly,
@@ -187,6 +212,7 @@ export const useLeavePage = () => {
     setViewMode,
     showForm,
     showPermForm,
+    viewingAttachmentsFor,
     viewMode,
   };
 };

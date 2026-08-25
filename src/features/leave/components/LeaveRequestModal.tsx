@@ -1,20 +1,23 @@
-import { FileText } from "lucide-react";
 import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
-import { type DbLeaveType, type DbLeaveBalance } from "@/shared/hooks";
+import { type DbLeaveType, type DbLeaveBalance, type DbLeaveSettings } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { useLeaveRequestForm } from "../hooks/useLeaveRequestForm";
 import { leaveInputClass as inputCls } from "../styles";
 import LeaveFormError from "./LeaveFormError";
 import LeaveModalActions from "./LeaveModalActions";
+import LeaveRequestAttachmentField from "./LeaveRequestAttachmentField";
 import LeaveRequestDurationSummary from "./LeaveRequestDurationSummary";
+import LeaveRequestDurationToggle from "./LeaveRequestDurationToggle";
 import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
 import LeaveRequestHalfDayRow from "./LeaveRequestHalfDayRow";
+import LeaveRequestHoursRow from "./LeaveRequestHoursRow";
 import LeaveTypeChipButton from "./LeaveTypeChipButton";
 
 type LeaveRequestModalProps = {
   employees: any[];
   leaveTypes: DbLeaveType[];
   balances: DbLeaveBalance[];
+  settings: DbLeaveSettings | null;
   selfOnly: boolean;
   linkError: string | null;
   employeesLoading: boolean;
@@ -26,6 +29,7 @@ const LeaveRequestModal = ({
   employees,
   leaveTypes,
   balances,
+  settings,
   selfOnly,
   linkError,
   employeesLoading,
@@ -35,10 +39,10 @@ const LeaveRequestModal = ({
   const {
     days, employeeId, endDate, error, halfDayPeriod, handleEmployeeChange,
     handleEndDateChange, handleIsHalfDayChange, handleReasonChange,
-    handleSelectLeaveType, handleSubmit, isHalfDay, leaveTypeId, reason,
-    remainingBalance, saving, selectedType, selfEmployee, setHalfDayPeriod,
-    setStartDate, startDate,
-  } = useLeaveRequestForm({ employees, leaveTypes, balances, selfOnly, linkError, onSubmit });
+    handleSelectLeaveType, handleSubmit, hourly, isHalfDay, isHourly,
+    leaveTypeId, reason, remainingBalance, saving, selectedType, selfEmployee,
+    setHalfDayPeriod, setStartDate, startDate,
+  } = useLeaveRequestForm({ employees, leaveTypes, balances, selfOnly, linkError, settings, onSubmit });
 
   const submitDisabled = employeesLoading || (selfOnly && (!!linkError || !selfEmployee));
 
@@ -81,39 +85,68 @@ const LeaveRequestModal = ({
           </div>
         </div>
 
-        {/* Half Day Toggle */}
-        {selectedType?.allow_half_day && (
-          <LeaveRequestHalfDayRow
-            isHalfDay={isHalfDay}
-            halfDayPeriod={halfDayPeriod}
-            onIsHalfDayChange={handleIsHalfDayChange}
-            onHalfDayPeriodChange={setHalfDayPeriod}
+        {/* Day / Hour Toggle — only for types that allow hourly requests */}
+        {selectedType?.allow_hourly && (
+          <LeaveRequestDurationToggle
+            durationUnit={hourly.durationUnit}
+            onSelect={hourly.handleSelectDurationUnit}
           />
         )}
 
-        {/* Dates */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
-              {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
-            </label>
-            <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
-          </div>
-          {!isHalfDay && (
-            <div>
-              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
-              {/* Raw input rather than the shared InputField: `min` needs to be
-                  the start date string, and InputField types `min` as a number. */}
-              <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate} />
-            </div>
-          )}
-        </div>
+        {!isHourly && (
+          <>
+            {/* Half Day Toggle */}
+            {selectedType?.allow_half_day && (
+              <LeaveRequestHalfDayRow
+                isHalfDay={isHalfDay}
+                halfDayPeriod={halfDayPeriod}
+                onIsHalfDayChange={handleIsHalfDayChange}
+                onHalfDayPeriodChange={setHalfDayPeriod}
+              />
+            )}
 
-        <LeaveRequestDurationSummary
-          days={days}
-          isHalfDay={isHalfDay}
-          remainingBalance={remainingBalance}
-        />
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
+                  {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
+                </label>
+                <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
+              </div>
+              {!isHalfDay && (
+                <div>
+                  <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
+                  {/* Raw input rather than the shared InputField: `min` needs to be
+                      the start date string, and InputField types `min` as a number. */}
+                  <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate} />
+                </div>
+              )}
+            </div>
+
+            <LeaveRequestDurationSummary
+              days={days}
+              isHalfDay={isHalfDay}
+              remainingBalance={remainingBalance}
+            />
+          </>
+        )}
+
+        {isHourly && (
+          <>
+            {/* Single date for an hourly request */}
+            <div>
+              <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.date_2")}</label>
+              <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
+            </div>
+            <LeaveRequestHoursRow
+              hours={hourly.hours}
+              hourFrom={hourly.hourFrom}
+              maxHours={hourly.maxHours}
+              onHoursChange={hourly.handleHoursChange}
+              onHourFromChange={hourly.handleHourFromChange}
+            />
+          </>
+        )}
 
         {/* Reason */}
         <div>
@@ -125,10 +158,18 @@ const LeaveRequestModal = ({
           />
         </div>
 
-        {/* Attachment notice */}
+        {/* Attachment */}
+        <LeaveRequestAttachmentField
+          requiresAttachment={!!selectedType?.requires_attachment}
+          attachmentFile={hourly.attachmentFile}
+          attachmentError={hourly.attachmentError}
+          acceptedFormats={hourly.acceptedFormats}
+          maxBytes={hourly.maxBytes}
+          onFileSelected={hourly.handleAttachmentSelected}
+          onRemove={hourly.handleRemoveAttachment}
+        />
         {selectedType?.requires_attachment && (
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400" style={{ fontSize: 12 }}>
-            <FileText className="w-4 h-4" />
+          <div className="flex items-center gap-2 -mt-2 text-amber-400" style={{ fontSize: 12 }}>
             {arabicSource("leave.this_type_of_leave_requires_an_attachment_medical_report_etc")}
             {selectedType.attachment_after_days && ` ${arabicSource("leave.after")} ${selectedType.attachment_after_days} ${arabicSource("common.days")}`}
           </div>

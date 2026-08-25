@@ -22,6 +22,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
         default_days_per_year: newLeaveType.default_days_per_year,
         allow_half_day: newLeaveType.allow_half_day,
         requires_attachment: newLeaveType.requires_attachment,
+        allow_hourly: newLeaveType.allow_hourly,
         is_carryover_allowed: newLeaveType.is_carryover_allowed,
         max_carryover_days: newLeaveType.max_carryover_days,
         is_encashable: newLeaveType.is_encashable,

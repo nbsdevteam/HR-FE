@@ -5,7 +5,9 @@ import { NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending, leaveStatusKeys, normalizeLeaveStatus, translateBackendCode } from "@/i18n/status";
 import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
+import { formatLeaveDuration } from "../utils/formatLeaveDuration";
 import { leaveStatusColors } from "../styles";
+import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
 
 type LeaveRequestTableRowProps = {
   leave: DbLeaveRequest;
@@ -15,9 +17,10 @@ type LeaveRequestTableRowProps = {
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
+  onViewAttachments: (leave: DbLeaveRequest) => void;
 };
 
-const LeaveRequestTableRow = ({ leave, index, employeeName, leaveType, onApprove, onReject, onDelete }: LeaveRequestTableRowProps) => {
+const LeaveRequestTableRow = ({ leave, index, employeeName, leaveType, onApprove, onReject, onDelete, onViewAttachments }: LeaveRequestTableRowProps) => {
   const handleApprove = useCallback(() => onApprove(leave.id), [onApprove, leave.id]);
   const handleReject = useCallback(() => onReject(leave.id), [onReject, leave.id]);
   const handleDelete = useCallback(() => onDelete(leave.id), [onDelete, leave.id]);
@@ -54,14 +57,18 @@ const LeaveRequestTableRow = ({ leave, index, employeeName, leaveType, onApprove
         >
           {leave.leave_type}
           {leave.is_half_day && <span className="ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.half_a_day")}</span>}
+          {leave.is_hourly && <span className="ms-1" style={{ fontSize: 10 }}>({arabicSource("leave.hourly")})</span>}
         </StatusBadge>
       </td>
       <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{leave.start_date}</td>
       <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{leave.end_date}</td>
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>
-        {leave.days} {leave.is_half_day ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}
+      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir={leave.is_hourly ? "ltr" : undefined}>
+        {formatLeaveDuration(leave)}
       </td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{leave.reason || "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
+        <div>{leave.reason || "—"}</div>
+        <LeaveAttachmentIndicator leave={leave} onViewAttachments={onViewAttachments} />
+      </td>
       <td className="px-4 py-3">
         <StatusBadge colorClassName={leaveStatusColors[normalizeLeaveStatus(leave.status)] || ""}>
           {translateBackendCode(leave.status, leaveStatusKeys)}

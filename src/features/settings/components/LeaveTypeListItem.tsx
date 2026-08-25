@@ -60,6 +60,11 @@ const LeaveTypeListItem = ({
                 {arabicSource("common.half_a_day")}
               </span>
             )}
+            {leaveType.allow_hourly && (
+              <span className="text-cyan-400 text-xs">
+                {arabicSource("leave.hourly")}
+              </span>
+            )}
             {leaveType.is_carryover_allowed && (
               <span className="text-purple-400 text-xs">
                 {arabicSource("common.relay")} {leaveType.max_carryover_days}d

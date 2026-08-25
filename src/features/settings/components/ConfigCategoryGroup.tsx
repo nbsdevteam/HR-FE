@@ -9,7 +9,7 @@ interface IConfigCategoryGroupProps {
   configs: DbConfiguration[];
   configEdits: Record<string, ConfigValue>;
   onEdit: (configId: string, value: ConfigValue) => void;
-  onSave: (configId: string, value: ConfigValue) => void;
+  onSave: (configId: string, value: ConfigValue, configKey?: string) => void;
 }
 
 const ConfigCategoryGroup = ({

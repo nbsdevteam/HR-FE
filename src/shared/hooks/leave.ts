@@ -17,6 +17,7 @@ export interface DbLeaveType {
   allow_half_day: boolean;
   requires_attachment: boolean;
   attachment_after_days: number | null;
+  allow_hourly: boolean;
   gender_restriction: string | null;
   min_service_months: number;
   is_carryover_allowed: boolean;
@@ -85,6 +86,14 @@ export interface DbLeaveBalance {
   updated_at: string;
 }
 
+export interface DbLeaveAttachment {
+  id: string;
+  file_name: string;
+  mimetype: string;
+  file_size: number;
+  created_at: string;
+}
+
 export interface DbLeaveRequest {
   id: string;
   employee_id: string;
@@ -102,6 +111,27 @@ export interface DbLeaveRequest {
   attachment_url: string | null;
   created_at: string;
   updated_at: string;
+  duration_unit: "day" | "hour";
+  is_hourly: boolean;
+  number_of_hours: number;
+  requested_hours: number;
+  max_hours_at_request: number;
+  hour_from: number;
+  hour_to: number;
+  attachment_ids: string[];
+  attachment_count: number;
+  attachments: DbLeaveAttachment[];
+  requires_attachment: boolean;
+}
+
+export interface DbLeaveSettings {
+  max_hours_per_request: number;
+  max_hours_config_key: string;
+  max_hours_default: number;
+  max_hours_ceiling: number;
+  attachment_max_mb: number;
+  attachment_max_bytes: number;
+  attachment_accepted_formats: string[];
 }
 
 /**
@@ -179,6 +209,34 @@ export const useLeaveBalances = (year?: number) => {
     [year],
   );
   return { balances, loading, refetch };
+}
+
+/**
+ * Live hour/attachment leave settings — a single object rather than a list,
+ * so it doesn't fit `useCachedList`'s `T[]` contract (mirrors `useLeaveEmployeeScope`).
+ */
+export const useLeaveSettings = () => {
+  const [settings, setSettings] = useState<DbLeaveSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await odooData.fetchLeaveSettings();
+      setSettings(data);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load leave settings");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetch();
+  }, []);
+
+  return { settings, loading, error, refetch: fetch };
 }
 
 export const useLeavePermissions = (employeeId?: string) => {

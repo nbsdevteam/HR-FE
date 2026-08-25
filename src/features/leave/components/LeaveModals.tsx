@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { AnimatePresence } from "motion/react";
+import LeaveAttachmentsModal from "./LeaveAttachmentsModal";
 import LeaveRequestModal from "./LeaveRequestModal";
 import PermissionModal from "./PermissionModal";
 import type { useLeavePage } from "../hooks/useLeavePage";
@@ -27,6 +28,7 @@ const LeaveModals = ({ page }: LeaveModalsProps) => {
             employees={page.employees}
             leaveTypes={page.activeLeaveTypes}
             balances={page.balances}
+            settings={page.leaveSettings}
             selfOnly={page.selfOnly}
             linkError={page.employeeLinkError}
             employeesLoading={page.empLoading}
@@ -42,6 +44,17 @@ const LeaveModals = ({ page }: LeaveModalsProps) => {
             employees={page.employees}
             onClose={handleClosePermissionForm}
             onSubmit={page.handlePermissionSubmit}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {page.viewingAttachmentsFor && (
+          <LeaveAttachmentsModal
+            leave={page.viewingAttachmentsFor}
+            settings={page.leaveSettings}
+            onClose={page.handleCloseAttachments}
+            onChanged={page.refetchRequests}
           />
         )}
       </AnimatePresence>

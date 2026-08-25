@@ -30,6 +30,7 @@ export interface NewLeaveTypeForm {
   allow_half_day: boolean;
   requires_attachment: boolean;
   attachment_after_days: number;
+  allow_hourly: boolean;
   accrual_method: string;
   is_carryover_allowed: boolean;
   max_carryover_days: number;

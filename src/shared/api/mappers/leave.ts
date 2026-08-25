@@ -1,4 +1,4 @@
-import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeavePermission, DbLeavePolicy } from "../../hooks";
+import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
 
@@ -15,6 +15,7 @@ export const mapLeaveType = (r: any): DbLeaveType => {
     allow_half_day: bool(r.allow_half_day),
     requires_attachment: bool(r.requires_attachment),
     attachment_after_days: r.attachment_after_days ?? null,
+    allow_hourly: bool(r.allow_hourly),
     gender_restriction: r.gender_restriction || null,
     min_service_months: num(r.min_service_months),
     is_carryover_allowed: bool(r.is_carryover_allowed),
@@ -58,6 +59,16 @@ function mapLeaveStatus(state: string): string {
   return m[state] || m[String(state || "").toLowerCase()] || state || "";
 }
 
+export const mapLeaveAttachment = (r: any): DbLeaveAttachment => {
+  return {
+    id: sid(r.id),
+    file_name: r.file_name || "",
+    mimetype: r.mimetype || "",
+    file_size: num(r.file_size),
+    created_at: r.created_at || empty,
+  };
+}
+
 export const mapLeaveRequest = (r: any): DbLeaveRequest => {
   return {
     id: sid(r.id),
@@ -76,6 +87,31 @@ export const mapLeaveRequest = (r: any): DbLeaveRequest => {
     attachment_url: r.attachment_url || null,
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+    duration_unit: r.duration_unit === "hour" ? "hour" : "day",
+    is_hourly: bool(r.is_hourly),
+    number_of_hours: num(r.number_of_hours),
+    requested_hours: num(r.requested_hours),
+    max_hours_at_request: num(r.max_hours_at_request),
+    hour_from: num(r.hour_from),
+    hour_to: num(r.hour_to),
+    attachment_ids: Array.isArray(r.attachment_ids) ? r.attachment_ids.map(sid) : [],
+    attachment_count: num(r.attachment_count),
+    attachments: Array.isArray(r.attachments) ? r.attachments.map(mapLeaveAttachment) : [],
+    requires_attachment: bool(r.requires_attachment),
+  };
+}
+
+export const mapLeaveSettings = (r: any): DbLeaveSettings => {
+  return {
+    max_hours_per_request: num(r.max_hours_per_request, 4),
+    max_hours_config_key: r.max_hours_config_key || "leave.max_hours_per_request",
+    max_hours_default: num(r.max_hours_default, 4),
+    max_hours_ceiling: num(r.max_hours_ceiling, 24),
+    attachment_max_mb: num(r.attachment_max_mb, 10),
+    attachment_max_bytes: num(r.attachment_max_bytes, 10485760),
+    attachment_accepted_formats: Array.isArray(r.attachment_accepted_formats)
+      ? r.attachment_accepted_formats
+      : [".pdf", ".doc", ".docx", ".txt", ".rtf", ".png", ".jpg", ".jpeg"],
   };
 }
 

@@ -5,6 +5,8 @@ import {
   mapLeaveRequest,
   mapLeaveBalance,
   mapLeavePermission,
+  mapLeaveAttachment,
+  mapLeaveSettings,
 } from "./mappers";
 import type {
   DbEmployee,
@@ -13,6 +15,8 @@ import type {
   DbLeaveRequest,
   DbLeaveBalance,
   DbLeavePermission,
+  DbLeaveAttachment,
+  DbLeaveSettings,
 } from "../hooks";
 import { eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
@@ -148,6 +152,11 @@ export const requestLeave = async (payload: {
   reason?: string | null;
   half_day?: boolean;
   employee_id?: string | number;
+  duration_unit?: "day" | "hour";
+  hours?: number;
+  hour_from?: number;
+  attachment?: { file_name: string; file_data: string };
+  attachment_ids?: (string | number)[];
 }) => {
   const params: Record<string, unknown> = {
     leave_type_id: eid(payload.leave_type_id),
@@ -157,7 +166,49 @@ export const requestLeave = async (payload: {
     half_day: Boolean(payload.half_day),
   };
   if (payload.employee_id != null) params.employee_id = eid(payload.employee_id);
+  if (payload.duration_unit === "hour") {
+    params.duration_unit = "hour";
+    params.hours = payload.hours;
+    if (payload.hour_from != null) params.hour_from = payload.hour_from;
+  }
+  if (payload.attachment) params.attachment = payload.attachment;
+  if (payload.attachment_ids?.length) params.attachment_ids = payload.attachment_ids.map(eid);
   return hrCall("/api/hr/leave/request", params);
+}
+
+export const fetchLeaveSettings = async (): Promise<DbLeaveSettings> => {
+  const data = await hrCall<any>("/api/hr/leave/settings", {});
+  return mapLeaveSettings(data);
+}
+
+/** Dedicated max-hours writer (backend §3.2) — range-validates and audit-logs, unlike the generic `/api/hr/configs/update`. */
+export const updateLeaveSettingsMaxHours = async (maxHoursPerRequest: number) => {
+  return hrCall("/api/hr/leave/settings/update", { max_hours_per_request: maxHoursPerRequest });
+}
+
+export const uploadLeaveAttachment = async (
+  leaveId: string | number,
+  file: { file_name: string; file_data: string },
+): Promise<DbLeaveAttachment> => {
+  const data = await hrCall<any>(`/api/hr/leave/${eid(leaveId)}/attachments/upload`, file);
+  return mapLeaveAttachment(data.attachment);
+}
+
+export const fetchLeaveAttachments = async (leaveId: string | number): Promise<DbLeaveAttachment[]> => {
+  const data = await hrCall<any>(`/api/hr/leave/${eid(leaveId)}/attachments`, {});
+  const rows = Array.isArray(data) ? data : data?.items || [];
+  return rows.map(mapLeaveAttachment);
+}
+
+export const downloadLeaveAttachment = async (
+  leaveId: string | number,
+  attachmentId: string | number,
+): Promise<{ file_name: string; mimetype: string; file_data: string }> => {
+  return hrCall(`/api/hr/leave/${eid(leaveId)}/attachments/${eid(attachmentId)}/download`, {});
+}
+
+export const deleteLeaveAttachment = async (leaveId: string | number, attachmentId: string | number) => {
+  return hrCall(`/api/hr/leave/${eid(leaveId)}/attachments/${eid(attachmentId)}/delete`, {});
 }
 
 export const managerApproveLeave = async (leaveId: string | number) => {

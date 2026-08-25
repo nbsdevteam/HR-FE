@@ -11,7 +11,7 @@ interface IConfigRowProps {
   currentValue: ConfigValue;
   hasChanged: boolean;
   onEdit: (configId: string, value: ConfigValue) => void;
-  onSave: (configId: string, value: ConfigValue) => void;
+  onSave: (configId: string, value: ConfigValue, configKey?: string) => void;
 }
 
 const ABSENCE_BASIS_OPTIONS = [
@@ -43,8 +43,8 @@ const ConfigRow = ({
   const handleToggleClick = useCallback((): void => {
     const newVal = !(currentValue === true || currentValue === "true");
     onEdit(config.id, newVal);
-    onSave(config.id, newVal);
-  }, [config.id, currentValue, onEdit, onSave]);
+    onSave(config.id, newVal, config.config_key);
+  }, [config.config_key, config.id, currentValue, onEdit, onSave]);
 
   const handleSelectChange = useCallback((value: string): void => {
     onEdit(config.id, value);
@@ -59,8 +59,8 @@ const ConfigRow = ({
   }, [config.id, onEdit]);
 
   const handleSaveCurrentValue = useCallback((): void => {
-    onSave(config.id, currentValue);
-  }, [config.id, currentValue, onSave]);
+    onSave(config.id, currentValue, config.config_key);
+  }, [config.config_key, config.id, currentValue, onSave]);
 
   return (
     <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">

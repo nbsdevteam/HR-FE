@@ -56,6 +56,7 @@ const CHECKBOXES: TypeFormCheckboxConfig<NewLeaveTypeFormState>[] = [
   { key: "is_paid", label: arabicSource("settings.driven") },
   { key: "allow_half_day", label: arabicSource("common.half_a_day") },
   { key: "requires_attachment", label: arabicSource("settings.attachment_required") },
+  { key: "allow_hourly", label: arabicSource("settings.allow_hourly_leave") },
   { key: "is_carryover_allowed", label: arabicSource("common.relay") },
   { key: "is_encashable", label: arabicSource("common.exchangeable") },
 ];

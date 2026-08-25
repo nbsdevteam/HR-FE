@@ -52,6 +52,7 @@ export const INITIAL_NEW_HOLIDAY: NewHolidayForm = { name_ar: "", name_en: "", d
 export const INITIAL_NEW_LEAVE_TYPE: NewLeaveTypeForm = {
   name_ar: "", name_en: "", code: "", is_paid: true, default_days_per_year: 0,
   allow_half_day: false, requires_attachment: false, attachment_after_days: 0,
+  allow_hourly: false,
   accrual_method: "annual", is_carryover_allowed: false, max_carryover_days: 0,
   carryover_expiry_months: 3, is_encashable: false, encashment_percentage: 100,
   color: "#3b82f6", sort_order: 0,

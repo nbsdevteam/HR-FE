@@ -5,6 +5,8 @@ import { NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending } from "@/i18n/status";
 import type { DbLeaveRequest } from "@/shared/hooks";
+import { formatLeaveDuration } from "../utils/formatLeaveDuration";
+import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
 
 type LeaveRequestKanbanCardProps = {
   leave: DbLeaveRequest;
@@ -12,9 +14,10 @@ type LeaveRequestKanbanCardProps = {
   employeeName: string;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onViewAttachments: (leave: DbLeaveRequest) => void;
 };
 
-const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onReject }: LeaveRequestKanbanCardProps) => {
+const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onReject, onViewAttachments }: LeaveRequestKanbanCardProps) => {
   const handleApprove = useCallback(() => onApprove(leave.id), [onApprove, leave.id]);
   const handleReject = useCallback(() => onReject(leave.id), [onReject, leave.id]);
 
@@ -39,14 +42,16 @@ const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onRejec
       <div className="space-y-1.5">
         <StatusBadge colorClassName="bg-primary/10 border-primary/20 text-primary" fontSize={11} extraClassName="inline-block">
           {leave.leave_type}
+          {leave.is_hourly && <span className="ms-1" style={{ fontSize: 10 }}>({arabicSource("leave.hourly")})</span>}
         </StatusBadge>
         {leave.reason && <p className="text-muted-foreground" style={{ fontSize: 11 }}>{leave.reason}</p>}
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground" style={{ fontSize: 11 }}>
-            {leave.days} {leave.is_half_day ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}
+          <span className="text-muted-foreground" style={{ fontSize: 11 }} dir={leave.is_hourly ? "ltr" : undefined}>
+            {formatLeaveDuration(leave)}
           </span>
           <span className="text-muted-foreground" style={{ fontSize: 10 }} dir="ltr">{leave.start_date}</span>
         </div>
+        <LeaveAttachmentIndicator leave={leave} onViewAttachments={onViewAttachments} />
       </div>
       {isLeavePending(leave.status) && (
         <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/20">

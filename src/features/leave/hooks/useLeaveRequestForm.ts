@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { indexBy } from "@/shared/utils/collections";
-import type { DbLeaveType, DbLeaveBalance } from "@/shared/hooks";
+import type { DbLeaveType, DbLeaveBalance, DbLeaveSettings } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { leaveErrorMessage } from "../utils/leaveErrorMessage";
+import { useLeaveHourlyAttachment } from "./useLeaveHourlyAttachment";
 
 type UseLeaveRequestFormArgs = {
   employees: any[];
@@ -10,6 +11,7 @@ type UseLeaveRequestFormArgs = {
   balances: DbLeaveBalance[];
   selfOnly: boolean;
   linkError: string | null;
+  settings: DbLeaveSettings | null;
   onSubmit: () => Promise<void>;
 };
 
@@ -29,6 +31,7 @@ export const useLeaveRequestForm = ({
   balances,
   selfOnly,
   linkError,
+  settings,
   onSubmit,
 }: UseLeaveRequestFormArgs) => {
   const selfEmployee = selfOnly ? employees[0] || null : null;
@@ -44,12 +47,10 @@ export const useLeaveRequestForm = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const leaveTypesById = useMemo(
-    () => indexBy(leaveTypes, (leaveType) => leaveType.id),
-    [leaveTypes],
-  );
+  const selectedType = leaveTypes.find((leaveType) => leaveType.id === leaveTypeId) ?? null;
 
-  const selectedType = leaveTypesById.get(leaveTypeId) ?? null;
+  const hourly = useLeaveHourlyAttachment({ selectedType, settings });
+  const isHourly = hourly.durationUnit === "hour";
 
   // Working days between the two dates, excluding the weekend.
   const days = useMemo(() => {
@@ -87,7 +88,8 @@ export const useLeaveRequestForm = ({
   const handleSelectLeaveType = useCallback((leaveType: DbLeaveType) => {
     setLeaveTypeId(leaveType.id);
     if (!leaveType.allow_half_day) setIsHalfDay(false);
-  }, []);
+    hourly.resetForType(leaveType);
+  }, [hourly]);
 
   const handleEmployeeChange = useCallback((id: string): void => {
     setEmployeeId(String(id));
@@ -116,8 +118,14 @@ export const useLeaveRequestForm = ({
     }
     if (!selectedType) return;
 
-    if (remainingBalance !== null && days > remainingBalance) {
+    if (!isHourly && remainingBalance !== null && days > remainingBalance) {
       setError(`${arabicSource("leave.remaining_balance")}${remainingBalance} ${arabicSource("leave.day_is_not_enough_for_the_required_number_of_days")}${days} ${arabicSource("common.days_3")}`);
+      return;
+    }
+
+    const hourlyError = hourly.validate();
+    if (hourlyError) {
+      setError(hourlyError);
       return;
     }
 
@@ -132,21 +140,24 @@ export const useLeaveRequestForm = ({
       const payload: Parameters<typeof odooData.requestLeave>[0] = {
         leave_type_id: selectedType.id,
         date_from: startDate,
-        date_to: isHalfDay ? startDate : (endDate || startDate),
+        date_to: isHourly || isHalfDay ? startDate : (endDate || startDate),
         reason: reason || null,
-        half_day: isHalfDay,
+        half_day: isHalfDay && !isHourly,
         ...odooData.leaveRequestEmployeeIdField(selfOnly, employeeId),
+        ...(await hourly.buildRequestFields()),
       };
       await odooData.requestLeave(payload);
       setSaving(false);
+      hourly.reset();
       await onSubmit();
     } catch (e: any) {
-      setError(e?.message || "فشل إنشاء طلب الإجازة");
+      setError(leaveErrorMessage(e, "فشل إنشاء طلب الإجازة"));
       setSaving(false);
     }
   }, [
-    days, employeeId, endDate, isHalfDay, leaveTypeId, linkError, onSubmit,
-    reason, remainingBalance, selectedType, selfEmployee, selfOnly, startDate,
+    days, employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId,
+    linkError, onSubmit, reason, remainingBalance, selectedType, selfEmployee,
+    selfOnly, startDate,
   ]);
 
   useEffect(() => {
@@ -167,7 +178,9 @@ export const useLeaveRequestForm = ({
     handleReasonChange,
     handleSelectLeaveType,
     handleSubmit,
+    hourly,
     isHalfDay,
+    isHourly,
     leaveTypeId,
     reason,
     remainingBalance,

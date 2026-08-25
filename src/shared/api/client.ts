@@ -55,6 +55,10 @@ export interface HrAuthUser {
   odoo_id?: number;
 }
 
+export interface HrApiError extends Error {
+  code?: string;
+}
+
 async function parseJsonrpc(res: Response) {
   const envelope = await res.json();
   if (envelope.error) {
@@ -140,7 +144,9 @@ export const hrCall = async <T = unknown>(
   });
   const result = await parseJsonrpc(res);
   if (result && result.success === false) {
-    throw new Error(result.error || result.message || "HR API error");
+    const error: HrApiError = new Error(result.error || result.message || "HR API error");
+    if (result.error_code) error.code = result.error_code;
+    throw error;
   }
   // Some auth endpoints return tokens at top level
   if (result?.data !== undefined) return result.data as T;
