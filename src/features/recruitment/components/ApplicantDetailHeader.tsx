@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { Bookmark, BookmarkCheck, Edit3, Trash2, X } from "lucide-react";
+import { Button } from "@/shared/components";
 import NodeAvatar from "@/shared/components/NodeAvatar";
 import StatusBadge from "@/shared/components/StatusBadge";
 import { type DbApplicant } from "@/shared/hooks";
@@ -40,11 +41,11 @@ const ApplicantDetailHeader = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-foreground">{applicant.name}</h2>
-              <button onClick={handleToggleBookmark} className="cursor-pointer">
+              <Button onClick={handleToggleBookmark} variant="unstyled" size="unstyled" rounded="">
                 {applicant.is_bookmarked
                   ? <BookmarkCheck className="w-5 h-5 text-primary" />
                   : <Bookmark className="w-5 h-5 text-muted-foreground/40" />}
-              </button>
+              </Button>
             </div>
             <p className="text-muted-foreground" style={{ fontSize: 13 }}>
               {applicant.job_title || "—"} — {applicant.job_department || ""}
@@ -56,15 +57,35 @@ const ApplicantDetailHeader = ({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={handleEdit} className="p-2 rounded-lg hover:bg-secondary cursor-pointer" title={arabicSource("common.edit")}>
-            <Edit3 className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button onClick={handleDelete} className="p-2 rounded-lg hover:bg-destructive/10 cursor-pointer" title={arabicSource("common.delete")}>
-            <Trash2 className="w-4 h-4 text-destructive" />
-          </button>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <Button
+            onClick={handleEdit}
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            className="hover:bg-secondary"
+            icon={Edit3}
+            iconClassName="w-4 h-4 text-muted-foreground"
+            title={arabicSource("common.edit")}
+          />
+          <Button
+            onClick={handleDelete}
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            className="hover:bg-destructive/10"
+            icon={Trash2}
+            iconClassName="w-4 h-4 text-destructive"
+            title={arabicSource("common.delete")}
+          />
+          <Button
+            onClick={onClose}
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            className="hover:bg-secondary"
+            icon={X}
+            iconClassName="w-5 h-5 text-muted-foreground"
+          />
         </div>
       </div>
     </div>

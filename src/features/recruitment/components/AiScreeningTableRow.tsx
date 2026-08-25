@@ -1,6 +1,7 @@
 import { useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { Download, Eye } from "lucide-react";
+import { Button } from "@/shared/components";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import IrBadge from "./IrBadge";
@@ -73,11 +74,16 @@ const AiScreeningTableRow = ({ app, index, onSelect, onUpdateStage }: AiScreenin
               <Download className="w-3.5 h-3.5" />
             </a>
           )}
-          <button onClick={handleSelect}
-            className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer"
-            title={arabicSource("common.show_details")}>
-            <Eye className="w-3.5 h-3.5" />
-          </button>
+          <Button
+            onClick={handleSelect}
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            className="p-1 hover:bg-primary/10 text-muted-foreground"
+            icon={Eye}
+            iconClassName="w-3.5 h-3.5"
+            title={arabicSource("common.show_details")}
+          />
         </div>
       </td>
     </motion.tr>

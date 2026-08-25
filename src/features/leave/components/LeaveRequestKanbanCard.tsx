@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Check, X } from "lucide-react";
-import { NodeAvatar, StatusBadge } from "@/shared/components";
+import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending } from "@/i18n/status";
 import type { DbLeaveRequest } from "@/shared/hooks";
@@ -55,12 +55,32 @@ const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onRejec
       </div>
       {isLeavePending(leave.status) && (
         <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/20">
-          <button onClick={handleApprove} className="flex-1 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors cursor-pointer" style={{ fontSize: 11 }}>
-            <Check className="w-3.5 h-3.5 inline-block" /> {arabicSource("common.accept")}
-          </button>
-          <button onClick={handleReject} className="flex-1 py-1 rounded-md bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors cursor-pointer" style={{ fontSize: 11 }}>
-            <X className="w-3.5 h-3.5 inline-block" /> {arabicSource("common.rejected_2")}
-          </button>
+          <Button
+            onClick={handleApprove}
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded-md"
+            icon={Check}
+            iconClassName="w-3.5 h-3.5 inline-block"
+            className="flex-1 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400"
+            style={{ fontSize: 11 }}
+          >
+            {" "}
+            {arabicSource("common.accept")}
+          </Button>
+          <Button
+            onClick={handleReject}
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded-md"
+            icon={X}
+            iconClassName="w-3.5 h-3.5 inline-block"
+            className="flex-1 py-1 bg-destructive/10 hover:bg-destructive/20 text-destructive"
+            style={{ fontSize: 11 }}
+          >
+            {" "}
+            {arabicSource("common.rejected_2")}
+          </Button>
         </div>
       )}
     </motion.div>

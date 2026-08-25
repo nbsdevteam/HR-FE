@@ -145,14 +145,17 @@ const AiScreeningView = ({
               </span>
             </div>
             {minIr > 0 && (
-              <button
+              <Button
                 onClick={shortlistAbove}
                 disabled={busy}
-                className="px-4 py-2 rounded-lg border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer disabled:opacity-50"
+                variant="unstyled"
+                size="unstyled"
+                rounded="rounded-lg"
+                className="px-4 py-2 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
                 style={{ fontSize: 13 }}
               >
                 {arabicSource("recruitment.shortlist_above")}
-              </button>
+              </Button>
             )}
           </>
         )}

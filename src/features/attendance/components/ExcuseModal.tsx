@@ -106,12 +106,15 @@ const ExcuseModal = ({
                 {excuseModal.record.employee} — {excuseModal.record.date}
               </p>
             </div>
-            <button
+            <Button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-lg"
+              className="p-1.5 hover:bg-secondary"
+              icon={X}
+              iconClassName="w-4 h-4 text-muted-foreground"
+            />
           </div>
 
           {/* Body */}

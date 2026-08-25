@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
 import { useDeviceStatus, useNotifications } from "@/shared/hooks";
 import { useClickOutside } from "@/shared/hooks/ui";
+import { Button } from "@/shared/components";
 import { LanguageSwitcher } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
@@ -134,14 +135,17 @@ const TopBar = () => {
       {/* Left: menu + greeting */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         {!isDesktop && (
-          <button
+          <Button
             type="button"
             onClick={toggleMobileNav}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer flex-shrink-0"
+            icon={Menu}
+            iconClassName="w-5 h-5 text-foreground"
+            size="icon"
+            variant="unstyled"
+            rounded="rounded-lg"
+            className="hover:bg-secondary flex-shrink-0"
             aria-label="Open menu"
-          >
-            <Menu className="w-5 h-5 text-foreground" />
-          </button>
+          />
         )}
         <div className="min-w-0">
           <p className="text-foreground truncate" style={{ fontSize: 14 }}>
@@ -174,14 +178,17 @@ const TopBar = () => {
             className="h-9 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none w-[160px] lg:w-[220px]"
           />
         </div>
-        <button
+        <Button
           type="button"
-          className="md:hidden p-2 rounded-lg hover:bg-secondary cursor-pointer"
+          icon={Search}
+          iconClassName="w-5 h-5 text-muted-foreground"
+          size="icon"
+          variant="unstyled"
+          rounded="rounded-lg"
+          className="md:hidden hover:bg-secondary"
           onClick={handleSearchOpenToggle}
           aria-label={arabicSource("common.search")}
-        >
-          <Search className="w-5 h-5 text-muted-foreground" />
-        </button>
+        />
 
         {deviceStatus.status !== "no_device" && (
           <DeviceStatusDropdown

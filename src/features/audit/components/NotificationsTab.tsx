@@ -3,7 +3,7 @@ import { Bell, Check } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { useNotifications } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { LoadingState, SearchInput, Select } from "@/shared/components";
+import { Button, LoadingState, SearchInput, Select } from "@/shared/components";
 import { auditCardCls } from "../styles";
 import NotificationItem from "./NotificationItem";
 import { selectStyle } from "@/styles/sharedClasses";
@@ -91,13 +91,16 @@ const NotificationsTab = () => {
             className={selectStyle}
           />
           {unreadCount > 0 && (
-            <button
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-lg"
+              icon={Check}
               onClick={markAllRead}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-sm"
             >
-              <Check className="w-4 h-4" />
               {arabicSource("auditcenter.read_all")} ({unreadCount})
-            </button>
+            </Button>
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { Eye, FileText } from "lucide-react";
 import type { DbAuditLog } from "@/shared/hooks";
+import { Button } from "@/shared/components";
 import { formatDateTime } from "@/i18n/format";
 import { actionIcons, actionLabels, entityLabels } from "../data/auditMeta";
 import { actionColors } from "../styles";
@@ -41,12 +42,14 @@ const AuditLogRow = ({ log, isExpanded, onToggleExpanded }: AuditLogRowProps) =>
         </td>
         <td className="p-3">
           {hasDetails && (
-            <button
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={Eye}
               onClick={handleToggleExpandedClick}
-              className="p-1 rounded text-muted-foreground hover:text-primary cursor-pointer"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
+              className="p-1 text-muted-foreground hover:text-primary"
+            />
           )}
         </td>
       </tr>

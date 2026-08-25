@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Clock, Edit2, GraduationCap, Plus, Trash2, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { Button } from "@/shared/components";
 import type { DbTrainingParticipant, DbTrainingProgram } from "@/shared/hooks";
 import { statusColorPalette } from "../constants/training";
 import ProgramObjectiveItem from "./ProgramObjectiveItem";
@@ -76,18 +77,24 @@ const TrainingProgramCard = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            icon={Edit2}
+            iconClassName="w-4 h-4 text-primary"
             onClick={handleEdit}
-            className="p-2 hover:bg-primary/20 rounded-lg transition-colors"
-          >
-            <Edit2 className="w-4 h-4 text-primary" />
-          </button>
-          <button
+            className="hover:bg-primary/20"
+          />
+          <Button
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            icon={Trash2}
+            iconClassName="w-4 h-4 text-red-400"
             onClick={handleDelete}
-            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
-          >
-            <Trash2 className="w-4 h-4 text-red-400" />
-          </button>
+            className="hover:bg-red-500/20"
+          />
         </div>
       </div>
 
@@ -160,13 +167,17 @@ const TrainingProgramCard = ({
           <h4 className="text-sm text-foreground">
             {arabicSource("training.participants")}
           </h4>
-          <button
+          <Button
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            icon={Plus}
+            iconClassName="w-3 h-3"
             onClick={handleEnroll}
-            className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 bg-primary/20 text-primary hover:bg-primary/30 text-xs"
           >
-            <Plus className="w-3 h-3" />
             {arabicSource("common.addition")}
-          </button>
+          </Button>
         </div>
 
         {participants.length > 0 ? (

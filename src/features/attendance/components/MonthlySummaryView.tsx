@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Timer, TrendingUp, XCircle } from "lucide-react";
+import { Button } from "@/shared/components";
 import DataTable from "@/shared/components/DataTable";
 import { formatWorkHours, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -37,13 +38,25 @@ const MonthlySummaryView = ({ stats, monthLabel, records, onPrev, onNext }: Mont
     <div className="space-y-5">
       {/* Month navigator */}
       <div className="flex items-center justify-center gap-4 mb-2">
-        <button onClick={onPrev} className="p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer">
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <Button
+          onClick={onPrev}
+          variant="unstyled"
+          size="icon"
+          rounded="rounded-lg"
+          className="hover:bg-muted/30"
+          icon={ChevronRight}
+          iconClassName="w-5 h-5 text-muted-foreground"
+        />
         <h3 className="text-foreground text-lg">{monthLabel}</h3>
-        <button onClick={onNext} className="p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer">
-          <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <Button
+          onClick={onNext}
+          variant="unstyled"
+          size="icon"
+          rounded="rounded-lg"
+          className="hover:bg-muted/30"
+          icon={ChevronLeft}
+          iconClassName="w-5 h-5 text-muted-foreground"
+        />
       </div>
 
       {/* Stats grid */}

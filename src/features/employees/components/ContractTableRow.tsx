@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Check, UserX, X } from "lucide-react";
-import { StatusBadge } from "@/shared/components";
+import { Button, StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbContractType, type DbEmployee, type DbEmployeeContract } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import Td from "./shared/Td";
@@ -69,18 +69,39 @@ const ContractTableRow = ({
         <div className="flex items-center gap-1">
           {c.probation_status === "pending" && (
             <>
-              <button onClick={handleProbationPassedClick} className="p-1 rounded hover:bg-emerald-500/20 cursor-pointer" title={arabicSource("lifecycle.passed_the_test")}>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-              </button>
-              <button onClick={handleProbationFailedClick} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("lifecycle.did_not_pass")}>
-                <X className="w-3.5 h-3.5 text-destructive" />
-              </button>
+              <Button
+                variant="unstyled"
+                size="unstyled"
+                rounded="rounded"
+                onClick={handleProbationPassedClick}
+                className="p-1 hover:bg-emerald-500/20"
+                title={arabicSource("lifecycle.passed_the_test")}
+                icon={Check}
+                iconClassName="w-3.5 h-3.5 text-emerald-400"
+              />
+              <Button
+                variant="unstyled"
+                size="unstyled"
+                rounded="rounded"
+                onClick={handleProbationFailedClick}
+                className="p-1 hover:bg-destructive/20"
+                title={arabicSource("lifecycle.did_not_pass")}
+                icon={X}
+                iconClassName="w-3.5 h-3.5 text-destructive"
+              />
             </>
           )}
           {c.status === "active" && (
-            <button onClick={handleTerminateClick} className="p-1 rounded hover:bg-destructive/20 cursor-pointer" title={arabicSource("common.end")}>
-              <UserX className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              onClick={handleTerminateClick}
+              className="p-1 hover:bg-destructive/20"
+              title={arabicSource("common.end")}
+              icon={UserX}
+              iconClassName="w-3.5 h-3.5 text-muted-foreground"
+            />
           )}
         </div>
       </td>

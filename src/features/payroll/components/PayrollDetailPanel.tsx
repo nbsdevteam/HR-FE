@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
+import { Button } from "@/shared/components";
 import type { PayrollDetailPanelProps } from "../types";
 import { usePayrollDetailPanel } from "../hooks/usePayrollDetailPanel";
 import PayrollSummaryChips from "./PayrollSummaryChips";
@@ -105,13 +106,16 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
             <div className="p-6 space-y-6 pb-24">
               {/* Close Button & Employee Header */}
               <div className="flex items-center gap-4">
-                <button
+                <Button
                   onClick={onClose}
-                  className="p-2 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                  variant="unstyled"
+                  size="icon"
+                  rounded="rounded-lg"
+                  className="border border-border hover:bg-muted/30"
+                  icon={X}
+                  iconClassName="w-5 h-5 text-foreground"
                   aria-label={arabicSource("common.close")}
-                >
-                  <X className="w-5 h-5 text-foreground" />
-                </button>
+                />
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
                     <span className="text-primary" style={{ fontSize: 18 }}>

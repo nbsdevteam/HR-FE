@@ -11,6 +11,7 @@ import { arabicSource } from "@/i18n/source";
 import { ROUTE_SEGMENT } from "@/app/router/routePaths";
 import { useNavShell } from "./NavShellContext";
 import SidebarNavItem, { type SidebarMenuItem } from "./SidebarNavItem";
+import { Button } from "@/shared/components";
 
 const menuItems: SidebarMenuItem[] = [
   { id: "dashboard", label: arabicSource("common.control_panel"), icon: Home, path: "/" },
@@ -114,15 +115,18 @@ const Sidebar = () => {
 
         <SidebarNav collapsed={collapsed} />
 
-        <button
+        <Button
           onClick={handleToggleCollapsed}
-          className="p-3 border-t border-sidebar-border text-muted-foreground hover:text-foreground transition-colors relative z-10 flex items-center justify-center cursor-pointer"
+          variant="unstyled"
+          size="unstyled"
+          rounded=""
+          className="p-3 border-t border-sidebar-border text-muted-foreground hover:text-foreground relative z-10 flex"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <motion.div animate={{ rotate: collapsed ? 0 : 180 }}>
             <ChevronRight className="w-5 h-5" />
           </motion.div>
-        </button>
+        </Button>
       </motion.aside>
     );
   }
@@ -164,13 +168,16 @@ const Sidebar = () => {
                   {arabicSource("shared.human_resources_system")}
                 </p>
               </div>
-              <button
+              <Button
                 onClick={closeMobileNav}
-                className="p-2 rounded-lg hover:bg-sidebar-accent text-muted-foreground hover:text-foreground cursor-pointer flex-shrink-0"
+                icon={X}
+                iconClassName="w-5 h-5"
+                size="icon"
+                variant="unstyled"
+                rounded="rounded-lg"
+                className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex-shrink-0"
                 aria-label="Close menu"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              />
             </div>
 
             <SidebarNav collapsed={false} onNavigate={closeMobileNav} />

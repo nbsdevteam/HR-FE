@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback, memo } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
+import { Button } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import type { DbEmployee } from "@/shared/hooks";
 import { parseAttendanceFile } from "@/features/payroll/services/payslip-parsing";
@@ -233,10 +234,13 @@ const UploadTab = ({
 
           {/* Save Button */}
           <div className="flex justify-center">
-            <button
+            <Button
               onClick={handleSaveToSupabase}
               disabled={saving || saved || summary.matched.length === 0}
-              className="flex items-center gap-3 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+              variant="primary"
+              size="unstyled"
+              rounded="rounded-xl"
+              className="flex items-center gap-3 px-8 py-3.5 shadow-lg shadow-primary/20"
               style={{ fontSize: 14 }}
             >
               {saving ? (
@@ -256,7 +260,7 @@ const UploadTab = ({
                   {arabicSource("payroll.database_employee")}
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       )}

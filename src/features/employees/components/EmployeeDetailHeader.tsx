@@ -45,12 +45,15 @@ const EmployeeDetailHeader = ({ isEditing, saving, onStartEdit, onSave, onCancel
           {arabicSource("common.edit")}
         </motion.button>
       )}
-      <button
+      <Button
+        variant="unstyled"
+        size="icon"
+        rounded="rounded-lg"
         onClick={onClose}
-        className="p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
-      >
-        <X className="w-5 h-5 text-muted-foreground" />
-      </button>
+        className="hover:bg-muted/30"
+        icon={X}
+        iconClassName="w-5 h-5 text-muted-foreground"
+      />
     </div>
   </div>
 );

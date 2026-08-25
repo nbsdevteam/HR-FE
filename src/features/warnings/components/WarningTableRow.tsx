@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { StatusBadge } from "@/shared/components";
+import { Button, StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
 
@@ -76,13 +76,16 @@ const WarningTableRow = ({
     </td>
     <td className="px-4 py-3">
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded"
+          icon={Eye}
+          iconClassName="w-4 h-4 text-muted-foreground"
           onClick={handleSelectClick}
-          className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
           title={arabicSource("common.show_details")}
-        >
-          <Eye className="w-4 h-4 text-muted-foreground" />
-        </button>
+          className="p-1.5 hover:bg-secondary"
+        />
       </div>
     </td>
   </motion.tr>

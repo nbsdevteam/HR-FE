@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { HardDrive, RefreshCw } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceInfo } from "../types";
 import DeviceStatusBadge from "./DeviceStatusBadge";
@@ -37,9 +38,15 @@ const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: DeviceInfo
         </h3>
         <div className="flex items-center gap-2">
           <DeviceStatusBadge active={!!info} />
-          <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-muted/20 transition-colors">
-            <RefreshCw className="w-4 h-4 text-muted-foreground" />
-          </button>
+          <Button
+            onClick={onRefresh}
+            variant="unstyled"
+            size="icon"
+            rounded="rounded-lg"
+            className="hover:bg-muted/20"
+            icon={RefreshCw}
+            iconClassName="w-4 h-4 text-muted-foreground"
+          />
         </div>
       </div>
       {info && (

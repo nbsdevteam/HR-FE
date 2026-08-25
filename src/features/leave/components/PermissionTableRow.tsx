@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Check, X } from "lucide-react";
-import { StatusBadge } from "@/shared/components";
+import { Button, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbLeavePermission } from "@/shared/hooks";
 import { leaveStatusColors as statusColors } from "../styles";
@@ -36,12 +36,24 @@ const PermissionTableRow = ({ permission: p, index: i, empName, onApprove, onRej
       <td className="px-4 py-3">
         {p.status === arabicSource("common.pending") && (
           <div className="flex items-center gap-1">
-            <button onClick={handleApprove} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer">
-              <Check className="w-4 h-4 text-emerald-400" />
-            </button>
-            <button onClick={handleReject} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer">
-              <X className="w-4 h-4 text-destructive" />
-            </button>
+            <Button
+              onClick={handleApprove}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={Check}
+              iconClassName="w-4 h-4 text-emerald-400"
+              className="p-1.5 hover:bg-emerald-500/20"
+            />
+            <Button
+              onClick={handleReject}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={X}
+              iconClassName="w-4 h-4 text-destructive"
+              className="p-1.5 hover:bg-destructive/20"
+            />
           </div>
         )}
       </td>

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { ChevronRight, ClipboardList, LogOut } from "lucide-react";
+import { Button } from "@/shared/components";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import { formatNumber } from "@/i18n/format";
@@ -107,18 +108,40 @@ const ExitProcessDetailView = ({
       {proc.status !== "completed" && proc.status !== "cancelled" && (
         <div className="flex gap-2">
           {proc.status === "initiated" && (
-            <button onClick={handleStatusUpdateClick("in_progress")} className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs cursor-pointer hover:bg-amber-500/30">{arabicSource("common.initiate_procedures")}</button>
+            <Button variant="warning" size="unstyled" rounded="rounded-lg" onClick={handleStatusUpdateClick("in_progress")} className="px-4 py-2 text-xs">
+              {arabicSource("common.initiate_procedures")}
+            </Button>
           )}
           {proc.status === "in_progress" && (
-            <button onClick={handleStatusUpdateClick("clearance")} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-xs cursor-pointer hover:bg-blue-500/30">{arabicSource("common.disclaimer")}</button>
+            <Button variant="info" size="unstyled" rounded="rounded-lg" onClick={handleStatusUpdateClick("clearance")} className="px-4 py-2 text-xs">
+              {arabicSource("common.disclaimer")}
+            </Button>
           )}
           {proc.status === "clearance" && (
-            <button onClick={handleStatusUpdateClick("settlement")} className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs cursor-pointer hover:bg-purple-500/30">{arabicSource("lifecycle.financial_settlement")}</button>
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-lg"
+              onClick={handleStatusUpdateClick("settlement")}
+              className="px-4 py-2 bg-purple-500/20 text-purple-400 text-xs hover:bg-purple-500/30"
+            >
+              {arabicSource("lifecycle.financial_settlement")}
+            </Button>
           )}
           {proc.status === "settlement" && (
-            <button onClick={handleStatusUpdateClick("completed")} className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs cursor-pointer hover:bg-emerald-500/30">{arabicSource("lifecycle.complete")}</button>
+            <Button variant="success" size="unstyled" rounded="rounded-lg" onClick={handleStatusUpdateClick("completed")} className="px-4 py-2 text-xs">
+              {arabicSource("lifecycle.complete")}
+            </Button>
           )}
-          <button onClick={handleStatusUpdateClick("cancelled")} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-xs cursor-pointer hover:bg-destructive/20">{arabicSource("common.cancel")}</button>
+          <Button
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded-lg"
+            onClick={handleStatusUpdateClick("cancelled")}
+            className="px-4 py-2 bg-destructive/10 text-destructive text-xs hover:bg-destructive/20"
+          >
+            {arabicSource("common.cancel")}
+          </Button>
         </div>
       )}
 

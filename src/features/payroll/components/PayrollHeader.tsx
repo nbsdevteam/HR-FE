@@ -1,5 +1,5 @@
-import { Download, Calculator, CheckCircle, Loader2 } from "lucide-react";
-import { Select } from "@/shared/components";
+import { Download, Calculator, CheckCircle } from "lucide-react";
+import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { payrollSelectClass } from "../styles";
 
@@ -30,6 +30,13 @@ const PayrollHeader = ({
     onMonthChange(value);
   };
 
+  const saveButtonIcon = payslipsSaved ? CheckCircle : Download;
+  const saveButtonLabel = savingPayslips
+    ? arabicSource("common.saving")
+    : payslipsSaved
+      ? arabicSource("payroll.saved")
+      : arabicSource("payroll.save_statements");
+
   return (
   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
@@ -49,35 +56,31 @@ const PayrollHeader = ({
         className={payrollSelectClass}
         style={{ width: 180 }}
       />
-      <button
+      <Button
         onClick={onSavePayslips}
         disabled={savingPayslips || payslipsSaved || payrollCount === 0}
-        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50"
+        loading={savingPayslips}
+        icon={saveButtonIcon}
+        variant="primary"
+        rounded="rounded-lg"
+        className="flex items-center gap-2 px-4 py-2.5 shadow-lg shadow-primary/20"
         style={{ fontSize: 13 }}
       >
-        {savingPayslips ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : payslipsSaved ? (
-          <CheckCircle className="w-4 h-4" />
-        ) : (
-          <Download className="w-4 h-4" />
-        )}
-        {savingPayslips
-          ? arabicSource("common.saving")
-          : payslipsSaved
-            ? arabicSource("payroll.saved")
-            : arabicSource("payroll.save_statements")}
-      </button>
-      <button
+        {saveButtonLabel}
+      </Button>
+      <Button
         onClick={onServerComputePayslips}
         disabled={savingPayslips || !selectedMonth}
         title="Server compute from attendance/leave/holidays"
-        className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50"
+        variant="outline"
+        size="unstyled"
+        rounded="rounded-lg"
+        className="flex items-center gap-2 px-4 py-2.5"
         style={{ fontSize: 13 }}
+        icon={Calculator}
       >
-        <Calculator className="w-4 h-4" />
         Server compute
-      </button>
+      </Button>
     </div>
   </div>
   );

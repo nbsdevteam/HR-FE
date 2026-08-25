@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
-import { StatusBadge } from "@/shared/components";
+import { Button, StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbEmployee, type DbExitProcess } from "@/shared/hooks";
 import { formatNumber } from "@/i18n/format";
 import Td from "./shared/Td";
@@ -34,9 +34,14 @@ const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, status
         <StatusBadge colorClassName={statusColors[p.status] || ""}>{statusLabels[p.status] || p.status}</StatusBadge>
       </td>
       <td className="px-4 py-3">
-        <button onClick={handleViewClick} className="p-1.5 rounded hover:bg-primary/10 text-primary cursor-pointer">
-          <Eye className="w-4 h-4" />
-        </button>
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded"
+          onClick={handleViewClick}
+          className="p-1.5 hover:bg-primary/10 text-primary"
+          icon={Eye}
+        />
       </td>
     </motion.tr>
   );

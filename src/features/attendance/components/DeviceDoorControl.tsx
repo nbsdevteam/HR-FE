@@ -1,4 +1,5 @@
 import { DoorClosed, DoorOpen, Shield } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DeviceDoorControlProps = {
@@ -22,22 +23,28 @@ const DeviceDoorControl = ({ loading, onDoorAction }: DeviceDoorControlProps) =>
       {arabicSource("devicemanagement.door_control")}
     </h3>
     <div className="flex gap-3">
-      <button
+      <Button
         onClick={handleOpenDoorClick}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+        variant="success"
+        size="unstyled"
+        rounded="rounded-lg"
+        className="flex gap-2 px-4 py-2 border border-emerald-500/30"
+        icon={DoorOpen}
       >
-        <DoorOpen className="w-4 h-4" />
         {arabicSource("devicemanagement.the_door_opened")}
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={handleCloseDoorClick}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+        variant="unstyled"
+        size="unstyled"
+        rounded="rounded-lg"
+        className="flex gap-2 px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+        icon={DoorClosed}
       >
-        <DoorClosed className="w-4 h-4" />
         {arabicSource("devicemanagement.close_the_door")}
-      </button>
+      </Button>
     </div>
   </div>
   );

@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  X, Loader2, Pencil,
+  X, Pencil,
   Trash2,
 } from "lucide-react";
 import { localizedConfirm } from "@/i18n/native";
 import * as odooData from "@/shared/api/odooData";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
-import { ModalOverlay, StatusBadge } from "@/shared/components";
+import { Button, ModalOverlay, StatusBadge } from "@/shared/components";
 import CustomRadarChart from "@/shared/components/custom-radar-chart";
 import { arabicSource } from "@/i18n/source";
 import {
@@ -137,25 +137,37 @@ const EvalDetailModal = ({
           </div>
           <div className="flex items-center gap-2">
             {evaluation.status !== arabicSource("common.complete") && !editing && (
-              <button
+              <Button
                 onClick={startEditing}
-                className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+                variant="unstyled"
+                size="icon"
+                rounded="rounded-lg"
+                className="hover:bg-secondary"
+                icon={Pencil}
+                iconClassName="w-4 h-4 text-muted-foreground"
                 title={arabicSource("common.edit")}
-              >
-                <Pencil className="w-4 h-4 text-muted-foreground" />
-              </button>
+              />
             )}
-            <button
+            <Button
               onClick={handleDelete}
-              disabled={deleting}
-              className="p-2 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer"
+              loading={deleting}
+              variant="unstyled"
+              size="icon"
+              rounded="rounded-lg"
+              className="hover:bg-destructive/10"
+              icon={Trash2}
+              iconClassName="w-4 h-4 text-destructive"
               title={arabicSource("common.delete")}
-            >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin text-destructive" /> : <Trash2 className="w-4 h-4 text-destructive" />}
-            </button>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
+            />
+            <Button
+              onClick={onClose}
+              variant="unstyled"
+              size="icon"
+              rounded="rounded-lg"
+              className="hover:bg-secondary"
+              icon={X}
+              iconClassName="w-5 h-5 text-muted-foreground"
+            />
           </div>
         </div>
 
@@ -224,13 +236,16 @@ const EvalDetailModal = ({
 
         {/* Edit button for completed evaluations */}
         {!editing && evaluation.status === arabicSource("common.complete") && (
-          <button
+          <Button
             onClick={startEditing}
-            className="w-full h-10 rounded-lg border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer flex items-center justify-center gap-2"
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded-lg"
+            className="w-full h-10 border border-border text-muted-foreground hover:border-primary/40 hover:text-primary flex gap-2"
+            icon={Pencil}
           >
-            <Pencil className="w-4 h-4" />
             {arabicSource("evaluation.edit_rating")}
-          </button>
+          </Button>
         )}
     </ModalOverlay>
   );

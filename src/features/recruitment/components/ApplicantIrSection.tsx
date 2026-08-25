@@ -1,5 +1,6 @@
 import { useState, useCallback, memo } from "react";
 import { AlertCircle, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Button } from "@/shared/components";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { IR_STATUS_LABELS } from "../constants/recruitment";
@@ -30,15 +31,20 @@ const ApplicantIrSection = ({ applicant, onScreen }: ApplicantIrSectionProps) =>
           {applicantHasIr && <Sparkles className="w-3.5 h-3.5 text-primary" />}
           {applicantHasIr ? arabicSource("recruitment.ir_score") : arabicSource("recruitment.arrangement_details")}
         </label>
-        <button
+        <Button
           onClick={handleScreen}
           disabled={screening}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer disabled:opacity-50"
+          loading={screening}
+          icon={RefreshCw}
+          iconClassName="w-3.5 h-3.5"
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded-lg"
+          className="gap-1.5 px-3 py-1.5 border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
           style={{ fontSize: 11 }}
         >
-          {screening ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
           {applicantHasIr ? arabicSource("recruitment.rescreen") : arabicSource("recruitment.screen_now")}
-        </button>
+        </Button>
       </div>
 
       {applicantHasIr ? (

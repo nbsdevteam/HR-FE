@@ -10,6 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { Button } from "@/shared/components";
 import { POLICY_CATEGORY_ICONS, policyStatusColors } from "../constants/policies";
 import type { DisplayPolicy } from "../types";
 
@@ -157,37 +158,49 @@ const PolicyListItem = ({
               </div>
 
               <div className="flex items-center gap-2 pt-2 flex-wrap">
-                <button
+                <Button
+                  variant="unstyled"
+                  size="unstyled"
+                  rounded="rounded"
+                  icon={Eye}
                   onClick={handleViewClick}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-primary/20 text-primary rounded text-xs hover:bg-primary/30 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-primary/20 text-primary hover:bg-primary/30 text-xs"
                 >
-                  <Eye className="w-4 h-4" />
                   {arabicSource("policies.full_view")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="info"
+                  size="unstyled"
+                  rounded="rounded"
+                  icon={Edit2}
                   onClick={handleEditClick}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded text-xs hover:bg-blue-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs"
                 >
-                  <Edit2 className="w-4 h-4" />
                   {arabicSource("common.edit")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="warning"
+                  size="unstyled"
+                  rounded="rounded"
+                  icon={RotateCcw}
                   onClick={handleToggleStatusClick}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-amber-500/20 text-amber-400 rounded text-xs hover:bg-amber-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs"
                 >
-                  <RotateCcw className="w-4 h-4" />
                   {arabicSource("policies.change_status")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="unstyled"
+                  size="unstyled"
+                  rounded="rounded"
+                  icon={Trash2}
                   onClick={handleDeleteClick}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors cursor-pointer"
                   disabled={isSubmitting}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs"
                 >
-                  <Trash2 className="w-4 h-4" />
                   {arabicSource("common.delete")}
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>

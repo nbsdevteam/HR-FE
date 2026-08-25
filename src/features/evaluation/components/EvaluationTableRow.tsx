@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Eye } from "lucide-react";
-import { NodeAvatar, StatusBadge } from "@/shared/components";
+import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -67,13 +67,16 @@ const EvaluationTableRow = ({ evaluation, index, employee, evaluator, onSelectEv
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
-          <button
+          <Button
             onClick={handleSelect}
-            className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer"
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            className="p-1.5 hover:bg-secondary"
+            icon={Eye}
+            iconClassName="w-4 h-4 text-muted-foreground"
             title={arabicSource("common.show_details")}
-          >
-            <Eye className="w-4 h-4 text-muted-foreground" />
-          </button>
+          />
         </div>
       </td>
     </motion.tr>

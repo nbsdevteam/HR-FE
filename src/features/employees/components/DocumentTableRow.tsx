@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Trash2 } from "lucide-react";
-import { StatusBadge } from "@/shared/components";
+import { Button, StatusBadge } from "@/shared/components";
 import { empDisplayName, type DbDocumentType, type DbEmployee, type DbEmployeeDocument } from "@/shared/hooks";
 import Td from "./shared/Td";
 
@@ -30,7 +30,15 @@ const DocumentTableRow = ({ doc: d, index: i, emp, docType: dt, statusLabels, st
         <StatusBadge colorClassName={statusColors[d.computedStatus] || ""}>{statusLabels[d.computedStatus] || d.computedStatus}</StatusBadge>
       </td>
       <td className="px-4 py-3">
-        <button onClick={handleDelete} className="p-1 rounded hover:bg-destructive/20 cursor-pointer"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded"
+          onClick={handleDelete}
+          className="p-1 hover:bg-destructive/20"
+          icon={Trash2}
+          iconClassName="w-3.5 h-3.5 text-muted-foreground"
+        />
       </td>
     </motion.tr>
   );

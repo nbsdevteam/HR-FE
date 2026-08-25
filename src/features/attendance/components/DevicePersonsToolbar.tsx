@@ -1,5 +1,5 @@
 import { Loader2, RefreshCw } from "lucide-react";
-import { SearchInput } from "@/shared/components";
+import { Button, SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DevicePersonsToolbarProps = {
@@ -27,9 +27,16 @@ const DevicePersonsToolbar = ({
       onChange={onSearchChange}
       placeholder={arabicSource("devicemanagement.search_by_name_or_employee_number")}
     />
-    <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-muted/20 transition-colors" title={arabicSource("common.update")}>
-      <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
-    </button>
+    <Button
+      onClick={onRefresh}
+      variant="unstyled"
+      size="icon"
+      rounded="rounded-lg"
+      className="hover:bg-muted/20"
+      title={arabicSource("common.update")}
+      icon={RefreshCw}
+      iconClassName={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`}
+    />
     <span className="text-xs text-muted-foreground">{totalPeople} {arabicSource("devicemanagement.registered_person")}</span>
     {loadingFaces && (
       <span className="text-xs text-blue-400 flex items-center gap-1">

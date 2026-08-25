@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { AlertCircle, Edit, Eye, Fingerprint, Trash2 } from "lucide-react";
-import { NodeAvatar, StatusBadge } from "@/shared/components";
+import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { formatCurrency } from "@/shared/utils/currency";
@@ -93,16 +93,34 @@ const EmployeesTableRow = ({
       <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">{formatCurrency(emp.salary, emp.currency)}</td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
-          <button onClick={handleSelect} className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer">
-            <Eye className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button onClick={handleSelect} className="p-1.5 rounded hover:bg-secondary transition-colors cursor-pointer">
-            <Edit className="w-4 h-4 text-muted-foreground" />
-          </button>
+          <Button
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            onClick={handleSelect}
+            className="p-1.5 hover:bg-secondary"
+            icon={Eye}
+            iconClassName="w-4 h-4 text-muted-foreground"
+          />
+          <Button
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            onClick={handleSelect}
+            className="p-1.5 hover:bg-secondary"
+            icon={Edit}
+            iconClassName="w-4 h-4 text-muted-foreground"
+          />
           {dbEmp && (
-            <button onClick={handleDeleteTargetChange} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer">
-              <Trash2 className="w-4 h-4 text-destructive" />
-            </button>
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              onClick={handleDeleteTargetChange}
+              className="p-1.5 hover:bg-destructive/20"
+              icon={Trash2}
+              iconClassName="w-4 h-4 text-destructive"
+            />
           )}
         </div>
       </td>

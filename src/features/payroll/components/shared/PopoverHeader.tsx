@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/shared/components";
 
 type PopoverHeaderProps = {
   icon: LucideIcon;
@@ -22,9 +23,15 @@ const PopoverHeader = ({ icon: Icon, iconBgClassName, iconColorClassName, title,
         <p className="text-muted-foreground" style={{ fontSize: 12 }}>{subtitle}</p>
       </div>
     </div>
-    <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary cursor-pointer">
-      <X className="w-5 h-5 text-muted-foreground" />
-    </button>
+    <Button
+      onClick={onClose}
+      variant="unstyled"
+      size="icon"
+      rounded="rounded-lg"
+      className="hover:bg-secondary"
+      icon={X}
+      iconClassName="w-5 h-5 text-muted-foreground"
+    />
   </div>
 );
 

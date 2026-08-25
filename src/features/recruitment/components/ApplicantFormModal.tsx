@@ -164,12 +164,15 @@ const ApplicantFormModal = ({
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={onClose}
-          className="p-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-        >
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
+          variant="unstyled"
+          size="icon"
+          rounded="rounded-lg"
+          className="hover:bg-secondary"
+          icon={X}
+          iconClassName="w-5 h-5 text-muted-foreground"
+        />
       </div>
 
       {/* ── Scrollable Body ── */}
@@ -237,13 +240,16 @@ const ApplicantFormModal = ({
                 ? arabicSource("recruitment.update_data")
                 : arabicSource("recruitment.add_advanced")}
           </Button>
-          <button
+          <Button
             onClick={onClose}
-            className="px-6 h-12 rounded-xl border-2 border-border text-foreground hover:bg-secondary transition-colors cursor-pointer"
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded-xl"
+            className="px-6 h-12 border-2 border-border text-foreground hover:bg-secondary"
             style={{ fontSize: 14 }}
           >
             {arabicSource("common.cancel")}
-          </button>
+          </Button>
         </div>
       </div>
     </ModalOverlay>

@@ -94,28 +94,37 @@ const ReportViewerModal = ({
           </Button>
         ) : (
           <>
-            <button
+            <Button
+              variant="success"
+              size="unstyled"
+              rounded="rounded-lg"
+              icon={Download}
               onClick={onExportCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 border border-emerald-500/30"
             >
-              <Download className="w-4 h-4" />
               {arabicSource("reports.csv_export")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="info"
+              size="unstyled"
+              rounded="rounded-lg"
+              icon={Printer}
               onClick={onPrint}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/30 transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 border border-blue-500/30"
             >
-              <Printer className="w-4 h-4" />
               {arabicSource("common.print")}
-            </button>
+            </Button>
           </>
         )}
-        <button
+        <Button
+          variant="unstyled"
+          size="icon"
+          rounded="rounded-lg"
+          icon={X}
+          iconClassName="w-5 h-5"
           onClick={onClose}
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/20 cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
+          className="text-muted-foreground hover:text-foreground hover:bg-muted/20"
+        />
       </div>
     </div>
 

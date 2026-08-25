@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Bookmark, BookmarkCheck, Download, Eye } from "lucide-react";
+import { Button } from "@/shared/components";
 import NodeAvatar from "@/shared/components/NodeAvatar";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -35,11 +36,17 @@ const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRat
       className="border-b border-border/20 hover:bg-muted/10 transition-colors"
     >
       <td className="px-3 py-3">
-        <button onClick={handleToggleBookmark} className="cursor-pointer p-1 rounded hover:bg-primary/10">
+        <Button
+          onClick={handleToggleBookmark}
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded"
+          className="p-1 hover:bg-primary/10"
+        >
           {app.is_bookmarked
             ? <BookmarkCheck className="w-4 h-4 text-primary" />
             : <Bookmark className="w-4 h-4 text-muted-foreground/40" />}
-        </button>
+        </Button>
       </td>
       <td className="px-4 py-3">
         <button onClick={handleSelect} className="flex items-center gap-3 cursor-pointer hover:text-primary transition-colors">
@@ -71,14 +78,28 @@ const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRat
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
           {app.resume_url && (
-            <button type="button" onClick={handleDownloadResumeClick}
-              className="p-1 rounded hover:bg-primary/10 text-primary cursor-pointer" title={arabicSource("recruitment.download_cv_2")}>
-              <Download className="w-3.5 h-3.5" />
-            </button>
+            <Button
+              type="button"
+              onClick={handleDownloadResumeClick}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              className="p-1 hover:bg-primary/10 text-primary"
+              icon={Download}
+              iconClassName="w-3.5 h-3.5"
+              title={arabicSource("recruitment.download_cv_2")}
+            />
           )}
-          <button onClick={handleSelect} className="p-1 rounded hover:bg-primary/10 text-muted-foreground cursor-pointer" title={arabicSource("common.show_details")}>
-            <Eye className="w-3.5 h-3.5" />
-          </button>
+          <Button
+            onClick={handleSelect}
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            className="p-1 hover:bg-primary/10 text-muted-foreground"
+            icon={Eye}
+            iconClassName="w-3.5 h-3.5"
+            title={arabicSource("common.show_details")}
+          />
         </div>
       </td>
     </motion.tr>

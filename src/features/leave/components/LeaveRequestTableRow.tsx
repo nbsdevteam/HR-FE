@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Check, Trash2, X } from "lucide-react";
-import { NodeAvatar, StatusBadge } from "@/shared/components";
+import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending, leaveStatusKeys, normalizeLeaveStatus, translateBackendCode } from "@/i18n/status";
 import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
@@ -77,15 +77,36 @@ const LeaveRequestTableRow = ({ leave, index, employeeName, leaveType, onApprove
       <td className="px-4 py-3">
         {isLeavePending(leave.status) ? (
           <div className="flex items-center gap-1">
-            <button onClick={handleApprove} className="p-1.5 rounded hover:bg-emerald-500/20 transition-colors cursor-pointer" title={arabicSource("common.accept")}>
-              <Check className="w-4 h-4 text-emerald-400" />
-            </button>
-            <button onClick={handleReject} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title={arabicSource("common.rejected_2")}>
-              <X className="w-4 h-4 text-destructive" />
-            </button>
-            <button onClick={handleDelete} className="p-1.5 rounded hover:bg-destructive/20 transition-colors cursor-pointer" title={arabicSource("common.delete")}>
-              <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
+            <Button
+              onClick={handleApprove}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={Check}
+              iconClassName="w-4 h-4 text-emerald-400"
+              className="p-1.5 hover:bg-emerald-500/20"
+              title={arabicSource("common.accept")}
+            />
+            <Button
+              onClick={handleReject}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={X}
+              iconClassName="w-4 h-4 text-destructive"
+              className="p-1.5 hover:bg-destructive/20"
+              title={arabicSource("common.rejected_2")}
+            />
+            <Button
+              onClick={handleDelete}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              icon={Trash2}
+              iconClassName="w-3.5 h-3.5 text-muted-foreground"
+              className="p-1.5 hover:bg-destructive/20"
+              title={arabicSource("common.delete")}
+            />
           </div>
         ) : (
           <span className="text-muted-foreground" style={{ fontSize: 11 }}>

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { AlertCircle, Loader2, Send } from "lucide-react";
-import { Select } from "@/shared/components";
+import { AlertCircle, Send } from "lucide-react";
+import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { ApplyLinkInfo } from "@/features/recruitment/api/publicApi";
 import type { PublicApplyForm as PublicApplyFormState } from "../types";
@@ -162,16 +162,19 @@ const PublicApplyForm = ({
       </div>
     )}
 
-    <button
+    <Button
       onClick={onSubmit}
       disabled={!canSubmit || submitting}
-      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground hover:bg-gold-dark transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      loading={submitting}
+      icon={Send}
+      variant="primary"
+      size="unstyled"
+      rounded="rounded-xl"
+      className="w-full py-3.5 gap-2"
       style={{ fontSize: 15 }}
     >
-      {submitting
-        ? <><Loader2 className="w-4 h-4 animate-spin" />{arabicSource("apply.submitting")}</>
-        : <><Send className="w-4 h-4" />{arabicSource("apply.submit")}</>}
-    </button>
+      {submitting ? arabicSource("apply.submitting") : arabicSource("apply.submit")}
+    </Button>
   </motion.div>
   );
 };

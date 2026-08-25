@@ -1,5 +1,5 @@
 import { RefreshCw } from "lucide-react";
-import { SearchInput } from "@/shared/components";
+import { Button, SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DeviceFaceToolbarProps = {
@@ -18,9 +18,15 @@ const DeviceFaceToolbar = ({ search, loading, onSearchChange, onRefresh }: Devic
       onChange={onSearchChange}
       placeholder={arabicSource("common.search")}
     />
-    <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-muted/20 transition-colors">
-      <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
-    </button>
+    <Button
+      onClick={onRefresh}
+      variant="unstyled"
+      size="icon"
+      rounded="rounded-lg"
+      className="hover:bg-muted/20"
+      icon={RefreshCw}
+      iconClassName={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`}
+    />
   </div>
 );
 

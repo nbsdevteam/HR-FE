@@ -1,4 +1,5 @@
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DeviceEventsFiltersProps = {
@@ -70,14 +71,18 @@ const DeviceEventsFilters = ({
             dir="ltr"
           />
         </div>
-        <button
+        <Button
           onClick={onSearch}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 transition-colors text-sm"
+          loading={loading}
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded-lg"
+          className="flex gap-2 px-4 py-2 text-sm bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30"
+          icon={Search}
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           {arabicSource("devicemanagement.search")}
-        </button>
+        </Button>
         <span className="text-xs text-muted-foreground">{eventCount} {arabicSource("devicemanagement.event")}</span>
       </div>
       <p className="text-xs text-muted-foreground mt-3">
