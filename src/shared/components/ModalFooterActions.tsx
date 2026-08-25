@@ -1,6 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
-import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import Button from "./Button";
 
 interface ModalFooterActionsProps {
   onCancel: () => void;
@@ -46,17 +46,34 @@ const ModalFooterActions = ({
   wrapperClassName = DEFAULT_WRAPPER,
 }: ModalFooterActionsProps) => {
   const cancelButton = (
-    <button key="cancel" onClick={onCancel} disabled={cancelDisabled} className={`${cancelClassName} disabled:opacity-50`} style={{ fontSize: 13 }}>
+    <Button
+      key="cancel"
+      variant="unstyled"
+      size="unstyled"
+      rounded=""
+      onClick={onCancel}
+      disabled={cancelDisabled}
+      className={`${cancelClassName} disabled:opacity-50`}
+      style={{ fontSize: 13 }}
+    >
       {cancelLabel}
-    </button>
+    </Button>
   );
   const confirmButton = (
-    <button key="confirm" onClick={onConfirm} disabled={disabled}
-      className={`px-5 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 ${confirmClassName}`}
-      style={{ fontSize: 13, ...confirmStyle }}>
-      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : ConfirmIcon ? <ConfirmIcon className="w-4 h-4" /> : null}
+    <Button
+      key="confirm"
+      variant="unstyled"
+      size="unstyled"
+      rounded=""
+      onClick={onConfirm}
+      disabled={disabled}
+      loading={loading}
+      icon={ConfirmIcon}
+      className={`px-5 py-2 rounded-lg gap-2 disabled:opacity-50 ${confirmClassName}`}
+      style={{ fontSize: 13, ...confirmStyle }}
+    >
       {loading && loadingLabel ? loadingLabel : confirmLabel}
-    </button>
+    </Button>
   );
 
   return (

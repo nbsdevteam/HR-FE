@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { X } from "lucide-react";
+import Button from "./Button";
 
 interface ModalHeaderProps {
   title: ReactNode;
@@ -63,12 +64,14 @@ const ModalHeader = ({
             )}
           </div>
         </div>
-        <button
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded-lg"
+          icon={X}
           onClick={onClose}
-          className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          className="w-8 h-8 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+        />
       </div>
     );
   }
@@ -83,12 +86,15 @@ const ModalHeader = ({
           </p>
         )}
       </div>
-      <button
+      <Button
+        variant="unstyled"
+        size="unstyled"
+        rounded="rounded"
+        icon={X}
+        iconClassName="w-5 h-5 text-muted-foreground"
         onClick={onClose}
-        className="p-1 rounded hover:bg-secondary cursor-pointer"
-      >
-        <X className="w-5 h-5 text-muted-foreground" />
-      </button>
+        className="p-1 hover:bg-secondary"
+      />
     </div>
   );
 };

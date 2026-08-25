@@ -1,3 +1,5 @@
+import Button from "./Button";
+
 type FilterChipProps = {
   label: string;
   active: boolean;
@@ -24,15 +26,17 @@ const FilterChip = ({
   rounded = "rounded-md",
   className = "",
 }: FilterChipProps) => (
-  <button
+  <Button
+    variant="toggle"
+    active={active}
+    size="unstyled"
+    rounded={rounded}
     onClick={onClick}
-    className={`${padding} ${rounded} transition-colors cursor-pointer ${
-      active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-    } ${className}`}
+    className={`${padding} ${className}`}
     style={{ fontSize }}
   >
     {label}
-  </button>
+  </Button>
 );
 
 export default FilterChip;
