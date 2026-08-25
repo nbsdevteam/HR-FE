@@ -6,7 +6,7 @@ type ReportResultsHeaderCellProps = {
 
 const ReportResultsHeaderCell = ({ label }: ReportResultsHeaderCellProps) => (
   <th
-    className="p-3 text-start text-muted-foreground font-medium"
+    className="p-3 text-start text-muted-foreground font-medium whitespace-nowrap"
     style={{ fontSize: 12 }}
   >
     {label}

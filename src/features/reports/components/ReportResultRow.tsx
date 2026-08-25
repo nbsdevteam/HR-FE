@@ -9,13 +9,13 @@ interface IReportResultRowProps {
 
 const ReportResultRow = ({ row, index, columns }: IReportResultRowProps) => (
   <tr className="border-b border-border/20 hover:bg-muted/10">
-    <td className="p-3 text-muted-foreground" style={{ fontSize: 12 }}>
+    <td className="p-3 text-muted-foreground whitespace-nowrap" style={{ fontSize: 12 }}>
       {index + 1}
     </td>
     {columns.map((col) => (
       <td
         key={col.key}
-        className="p-3 text-foreground"
+        className="p-3 text-foreground whitespace-nowrap"
         style={{ fontSize: 12 }}
       >
         {row[col.key] ?? "—"}
