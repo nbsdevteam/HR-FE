@@ -208,15 +208,12 @@ const ReportsWorkspace = () => {
         dateFrom={dateFrom}
         dateTo={dateTo}
         departments={departments}
-        employees={employees}
-        selectedEmployeeIds={selectedEmployeeIds}
         viewMode={viewMode}
         onSearchQueryChange={setSearchQuery}
         onFilterCategoryChange={setFilterCategory}
         onFilterDeptChange={setFilterDept}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
-        onSelectedEmployeeIdsChange={handleSelectedEmployeeIdsChange}
         onViewModeChange={setViewMode}
       />
 
@@ -253,9 +250,12 @@ const ReportsWorkspace = () => {
             filterDept={filterDept}
             dateFrom={dateFrom}
             dateTo={dateTo}
+            employees={employees}
+            selectedEmployeeIds={selectedEmployeeIds}
             fields={availableFields}
             selectedFieldKeys={selectedFieldKeys}
             fieldsLoading={fieldsLoading}
+            onSelectedEmployeeIdsChange={handleSelectedEmployeeIdsChange}
             onToggleField={handleToggleField}
             onSelectAllFields={handleSelectAllFields}
             onClearAllFields={handleClearAllFields}

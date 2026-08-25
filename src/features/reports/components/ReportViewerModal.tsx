@@ -10,10 +10,10 @@ import {
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalOverlay } from "@/shared/components";
-import type { DbReportTemplate } from "@/shared/hooks";
+import type { DbEmployee, DbReportTemplate } from "@/shared/hooks";
 import { isBackendReportCode } from "../constants/reports";
 import type { ReportColumn, ReportField, ReportRow } from "../types";
-import ReportFieldPicker from "./ReportFieldPicker";
+import ReportSelectionPanel from "./ReportSelectionPanel";
 import ReportResultsTable from "./ReportResultsTable";
 
 type ReportViewerModalProps = {
@@ -25,9 +25,12 @@ type ReportViewerModalProps = {
   filterDept: string;
   dateFrom: string;
   dateTo: string;
+  employees: DbEmployee[];
+  selectedEmployeeIds: string[];
   fields: ReportField[];
   selectedFieldKeys: string[];
   fieldsLoading: boolean;
+  onSelectedEmployeeIdsChange: (ids: string[]) => void;
   onToggleField: (key: string) => void;
   onSelectAllFields: () => void;
   onClearAllFields: () => void;
@@ -46,9 +49,12 @@ const ReportViewerModal = ({
   filterDept,
   dateFrom,
   dateTo,
+  employees,
+  selectedEmployeeIds,
   fields,
   selectedFieldKeys,
   fieldsLoading,
+  onSelectedEmployeeIdsChange,
   onToggleField,
   onSelectAllFields,
   onClearAllFields,
@@ -59,6 +65,11 @@ const ReportViewerModal = ({
 }: ReportViewerModalProps) => {
   const requiresFieldSelection = isBackendReportCode(template.code);
   const canGenerate = !requiresFieldSelection || selectedFieldKeys.length > 0;
+  // Reports without a field catalogue always ship their template's fixed
+  // columns, so the footer stays truthful for them too.
+  const includedColumnCount = requiresFieldSelection
+    ? selectedFieldKeys.length
+    : template.columns.length;
 
   return (
   <ModalOverlay
@@ -136,16 +147,18 @@ const ReportViewerModal = ({
     )}
 
     <div className="flex-1 overflow-auto p-6">
-      {requiresFieldSelection && (
-        <ReportFieldPicker
-          fields={fields}
-          selected={selectedFieldKeys}
-          onToggle={onToggleField}
-          onSelectAll={onSelectAllFields}
-          onClearAll={onClearAllFields}
-          loading={fieldsLoading}
-        />
-      )}
+      <ReportSelectionPanel
+        employees={employees}
+        selectedEmployeeIds={selectedEmployeeIds}
+        fields={fields}
+        selectedFieldKeys={selectedFieldKeys}
+        fieldsLoading={fieldsLoading}
+        showColumns={requiresFieldSelection}
+        onSelectedEmployeeIdsChange={onSelectedEmployeeIdsChange}
+        onToggleField={onToggleField}
+        onSelectAllFields={onSelectAllFields}
+        onClearAllFields={onClearAllFields}
+      />
       {generating ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -153,19 +166,7 @@ const ReportViewerModal = ({
             {arabicSource("reports.collecting_report_data")}
           </p>
         </div>
-      ) : !generatedData ? (
-        <div className="flex flex-col items-center justify-center py-16">
-          <BarChart3 className="w-16 h-16 text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground mb-2">
-            {arabicSource("reports.click_generate_to_generate_the_report")}
-          </p>
-          <p className="text-muted-foreground/60 text-xs">
-            {arabicSource(
-              "reports.the_filters_specified_above_department_date_will_be_used",
-            )}
-          </p>
-        </div>
-      ) : generatedData.length === 0 ? (
+      ) : !generatedData ? null : generatedData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
           <FileText className="w-16 h-16 text-muted-foreground/30 mb-4" />
           <p className="text-muted-foreground">
@@ -183,6 +184,28 @@ const ReportViewerModal = ({
           dateTo={dateTo}
         />
       )}
+    </div>
+
+    <div className="p-4 border-t border-border/40 flex items-center justify-between gap-3">
+      <p className="text-muted-foreground flex items-center gap-1.5" style={{ fontSize: 12 }}>
+        <span>{selectedEmployeeIds.length}</span>
+        <span>{arabicSource("reports.employees_selected")}</span>
+        <span aria-hidden="true">·</span>
+        <span>{includedColumnCount}</span>
+        <span>{arabicSource("reports.columns_included")}</span>
+      </p>
+      <Button
+        variant="primary"
+        icon={BarChart3}
+        loading={generating}
+        disabled={!canGenerate}
+        onClick={onGenerate}
+        className="shadow"
+      >
+        {generating
+          ? arabicSource("reports.construction_underway")
+          : arabicSource("reports.generate")}
+      </Button>
     </div>
   </ModalOverlay>
   );

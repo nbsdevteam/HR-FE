@@ -2069,5 +2069,8 @@
   "recruitment.comp_logistics_fit": "گونجانی لۆجستی",
   "recruitment.queued_for_screening": "داواکارییەکان خرانە ڕیزی پاڵاوتنەوە",
   "recruitment.no_resume_for_screening": "ئەم داواکارە ژیاننامەی نییە",
-  "recruitment.screening_unavailable": "خزمەتگوزاری پاڵاوتن ڕێکنەخراوە. ڕێکخستنەکانی زیرەکی دەستکرد بپشکنە."
+  "recruitment.screening_unavailable": "خزمەتگوزاری پاڵاوتن ڕێکنەخراوە. ڕێکخستنەکانی زیرەکی دەستکرد بپشکنە.",
+  "reports.employees_selected": "فەرمانبەری هەڵبژێردراو",
+  "reports.columns_included": "ستوونی دانراو",
+  "reports.generate": "دروستکردن"
 }

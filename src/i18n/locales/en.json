@@ -2071,5 +2071,8 @@
   "recruitment.comp_logistics_fit": "Logistics fit",
   "recruitment.queued_for_screening": "The applications were queued for screening",
   "recruitment.no_resume_for_screening": "This applicant has no CV",
-  "recruitment.screening_unavailable": "The screening service is not configured. Check the AI settings."
+  "recruitment.screening_unavailable": "The screening service is not configured. Check the AI settings.",
+  "reports.employees_selected": "employees selected",
+  "reports.columns_included": "columns included",
+  "reports.generate": "Generate"
 }

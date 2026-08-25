@@ -2071,5 +2071,8 @@
   "recruitment.comp_logistics_fit": "الملاءمة اللوجستية",
   "recruitment.queued_for_screening": "تمت إضافة الطلبات إلى قائمة الفرز",
   "recruitment.no_resume_for_screening": "لا توجد سيرة ذاتية لهذا المتقدم",
-  "recruitment.screening_unavailable": "خدمة الفرز غير مهيأة. راجع إعدادات الذكاء الاصطناعي."
+  "recruitment.screening_unavailable": "خدمة الفرز غير مهيأة. راجع إعدادات الذكاء الاصطناعي.",
+  "reports.employees_selected": "موظف محدد",
+  "reports.columns_included": "عمود مُدرج",
+  "reports.generate": "توليد"
 }
