@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Check, ChevronDown, Edit2, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { Button } from "@/shared/components";
 import type { DbShift } from "@/shared/hooks";
 import { getWorkingDayLabels } from "../utils/shiftHelpers";
 import type { ShiftDaySchedule, ShiftEditState } from "../types";
@@ -99,29 +100,38 @@ const ShiftListItem = ({
           <ShiftScheduleTable shift={shift} />
 
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-lg"
               onClick={onInitEdit}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-600/20 border border-blue-500/50 text-blue-400 hover:bg-blue-600/30 rounded-lg transition-colors"
+              className="gap-1.5 px-2.5 py-1.5 bg-blue-600/20 border border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
               style={{ fontSize: 12 }}
             >
               <Edit2 className="w-3.5 h-3.5" /> {arabicSource("common.edit")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-lg"
               onClick={onDelete}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded-lg transition-colors"
+              className="gap-1.5 px-2.5 py-1.5 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30"
               style={{ fontSize: 12 }}
             >
               <Trash2 className="w-3.5 h-3.5" /> {arabicSource("common.delete")}
-            </button>
+            </Button>
             {!shift.is_default && (
-              <button
+              <Button
+                variant="unstyled"
+                size="unstyled"
+                rounded="rounded-lg"
                 onClick={onSetDefault}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/30 rounded-lg transition-colors"
+                className="gap-1.5 px-2.5 py-1.5 bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/30"
                 style={{ fontSize: 12 }}
               >
                 <Check className="w-3.5 h-3.5" />{" "}
                 {arabicSource("settings.set_as_default")}
-              </button>
+              </Button>
             )}
           </div>
         </motion.div>

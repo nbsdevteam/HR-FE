@@ -3,6 +3,7 @@ import { Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { formatDate } from "@/i18n/format";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
+import { Button } from "@/shared/components";
 import type { DbPublicHoliday } from "@/shared/hooks";
 
 type THolidayListItemProps = {
@@ -27,13 +28,16 @@ const HolidayListItem = ({ holiday, onDelete }: THolidayListItemProps) => {
             " " + arabicSource("settings.annual_frequency")}
         </p>
       </div>
-      <button
+      <Button
+        variant="unstyled"
+        size="unstyled"
+        rounded="rounded"
         onClick={handleDelete}
-        className="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 rounded text-xs transition-colors"
+        className="gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 text-xs"
       >
         <Trash2 className="w-4 h-4" />
         {arabicSource("common.delete")}
-      </button>
+      </Button>
     </div>
   );
 };

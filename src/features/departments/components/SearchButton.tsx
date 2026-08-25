@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { NodeAvatar } from "@/shared/components";
+import { Button, NodeAvatar } from "@/shared/components";
 import type { OrgNode } from "../types";
 
 interface SearchButtonProps {
@@ -15,9 +15,12 @@ const SearchButton = ({ node, onSelect, onClose }: SearchButtonProps) => {
   }, [node, onSelect, onClose]);
 
   return (
-    <button
+    <Button
+      variant="unstyled"
+      size="unstyled"
+      rounded=""
       onClick={handleClick}
-      className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted/50 transition-colors text-start border-b border-border/20 last:border-b-0"
+      className="w-full gap-2.5 px-3 py-2.5 hover:bg-muted/50 text-start border-b border-border/20 last:border-b-0"
     >
       <NodeAvatar
         photo={node.photo}
@@ -36,7 +39,7 @@ const SearchButton = ({ node, onSelect, onClose }: SearchButtonProps) => {
           {node.position} — {node.department}
         </p>
       </div>
-    </button>
+    </Button>
   );
 };
 

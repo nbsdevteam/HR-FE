@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Button } from "@/shared/components";
 
 type ToolbarTextButtonProps = {
   onClick: () => void;
@@ -6,9 +7,16 @@ type ToolbarTextButtonProps = {
 };
 
 const ToolbarTextButton = ({ onClick, children }: ToolbarTextButtonProps) => (
-  <button onClick={onClick} className="px-3 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 12 }}>
+  <Button
+    variant="unstyled"
+    size="unstyled"
+    rounded="rounded-lg"
+    onClick={onClick}
+    className="px-3 py-1.5 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+    style={{ fontSize: 12 }}
+  >
     {children}
-  </button>
+  </Button>
 );
 
 export default ToolbarTextButton;

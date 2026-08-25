@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { Button } from "@/shared/components";
 
 const CARD_TONE =
   "bg-card border border-border/60 hover:border-primary/30 text-foreground shadow-sm";
@@ -17,9 +18,9 @@ type HeaderActionButtonProps = {
 };
 
 /**
- * Secondary action in the hierarchy page header. The shared `Button` covers the
- * primary/outline shapes but not this card-on-card tone, which several header
- * actions repeat.
+ * Secondary action in the hierarchy page header — composes the shared
+ * `Button` (variant="unstyled") for this card-on-card tone, which several
+ * header actions repeat but which isn't one of `Button`'s named variants.
  */
 const HeaderActionButton = ({
   icon: Icon,
@@ -30,10 +31,13 @@ const HeaderActionButton = ({
   hideLabelOnMobile = false,
   children,
 }: HeaderActionButtonProps) => (
-  <button
+  <Button
+    variant="unstyled"
+    size="unstyled"
+    rounded="rounded-lg"
     onClick={onClick}
     title={title}
-    className={`flex items-center gap-1.5 rounded-lg transition-all ${paddingClassName} ${toneClassName}`}
+    className={`gap-1.5 ${paddingClassName} ${toneClassName}`}
     style={{ fontSize: 13 }}
   >
     <Icon className="w-4 h-4" />
@@ -42,7 +46,7 @@ const HeaderActionButton = ({
     ) : (
       children
     )}
-  </button>
+  </Button>
 );
 
 export default HeaderActionButton;

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Save, X } from "lucide-react";
-import { InputField } from "@/shared/components";
+import { Button, InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { NewHolidayForm as NewHolidayFormState } from "../types";
 import SettingsToggle from "./SettingsToggle";
@@ -74,20 +74,26 @@ const NewHolidayForm = ({
         </div>
       </div>
       <div className="flex gap-2 pt-2">
-        <button
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded-lg"
           onClick={onSave}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-600/30 rounded-lg transition-colors text-sm"
+          className="gap-2 px-4 py-2 bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-600/30 text-sm"
         >
           <Save className="w-4 h-4" />
           {arabicSource("common.save")}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
+          size="unstyled"
+          rounded="rounded-lg"
           onClick={onCancel}
-          className="flex items-center gap-2 px-4 py-2 bg-muted/30 border border-border/40 text-foreground hover:bg-muted/40 rounded-lg transition-colors text-sm"
+          className="gap-2 px-4 py-2 bg-muted/30 border border-border/40 text-foreground hover:bg-muted/40 text-sm"
         >
           <X className="w-4 h-4" />
           {arabicSource("common.cancel")}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
