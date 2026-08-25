@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { Button } from "@/shared/components";
 import type { AuditTabId } from "../types";
 
 type AuditTabButtonProps = {
@@ -19,17 +20,20 @@ const AuditTabButton = ({ tab, isActive, onClick }: AuditTabButtonProps) => {
   };
 
   return (
-    <button
+    <Button
+      variant="unstyled"
+      size="unstyled"
+      rounded="rounded-t-lg"
       onClick={handleTabClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
+      icon={Icon}
+      className={`gap-2 px-4 py-2.5 ${
         isActive
           ? "bg-primary/10 border border-b-0 border-primary/30 text-primary"
           : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      <Icon className="w-4 h-4" />
       {tab.label}
-    </button>
+    </Button>
   );
 };
 

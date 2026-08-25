@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import type { ComponentType } from "react";
+import { Button } from "@/shared/components";
 import type { EmployeeDetailModalTab } from "../types";
 
 type EmployeeDetailTabButtonProps = {
@@ -17,14 +18,17 @@ const EmployeeDetailTabButton = ({ tabKey, label, icon: TabIcon, count, isActive
   };
 
   return (
-  <button
+  <Button
+    variant="unstyled"
+    size="unstyled"
+    rounded=""
     onClick={handleTabClick}
-    className={`relative flex items-center gap-1.5 px-4 py-3 transition-colors cursor-pointer ${
+    icon={TabIcon}
+    className={`relative gap-1.5 px-4 py-3 ${
       isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
     }`}
     style={{ fontSize: 13 }}
   >
-    <TabIcon className="w-4 h-4" />
     {label}
     {count !== null && count > 0 && (
       <span className={`px-1.5 py-0.5 rounded-full ${isActive ? "bg-primary/15 text-primary" : "bg-muted/30 text-muted-foreground"}`} style={{ fontSize: 10 }}>
@@ -37,7 +41,7 @@ const EmployeeDetailTabButton = ({ tabKey, label, icon: TabIcon, count, isActive
         className="absolute bottom-0 inset-x-2 h-[2px] bg-primary rounded-full"
       />
     )}
-  </button>
+  </Button>
   );
 };
 
