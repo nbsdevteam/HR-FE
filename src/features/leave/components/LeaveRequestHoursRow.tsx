@@ -29,14 +29,12 @@ const LeaveRequestHoursRow = ({ hours, hourFrom, maxHours, onHoursChange, onHour
     </div>
     <div>
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.start_time")}</label>
+      {/* Held as "HH:MM"; converted to the backend's 24h float on submit. */}
       <input
-        type="number"
+        type="time"
         value={hourFrom}
         onChange={onHourFromChange}
-        min={0}
-        max={23.99}
-        step={0.5}
-        placeholder="9"
+        step={900}
         className={inputCls}
         dir="ltr"
       />

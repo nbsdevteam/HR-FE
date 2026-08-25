@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { arabicSource } from "@/i18n/source";
 import type { DbLeaveSettings, DbLeaveType } from "@/shared/hooks";
 import { fileToBase64 } from "@/shared/utils/fileToBase64";
+import { timeToFloat } from "../utils/hourFloat";
 
 export type LeaveDurationUnit = "day" | "hour";
 
@@ -34,6 +35,9 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
   const maxHours = settings?.max_hours_per_request ?? 4;
   const acceptedFormats = settings?.attachment_accepted_formats ?? DEFAULT_ACCEPTED_FORMATS;
   const maxBytes = settings?.attachment_max_bytes ?? DEFAULT_MAX_BYTES;
+
+  /** `hourFrom` is held as an `<input type="time">` string; the API wants a 24h float. */
+  const hourFromFloat = useMemo(() => timeToFloat(hourFrom), [hourFrom]);
 
   const handleSelectDurationUnit = useCallback((unit: LeaveDurationUnit): void => {
     setDurationUnit(unit);
@@ -76,29 +80,30 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
       if (!(hours > 0)) return arabicSource("leave.error_invalid_hours");
       if (hours > maxHours) return arabicSource("leave.error_hours_exceed_maximum");
       if (hourFrom !== "") {
-        const from = Number(hourFrom);
-        if (Number.isNaN(from) || from < 0 || from >= 24) return arabicSource("leave.error_invalid_hour_from");
-        if (from + hours > 24) return arabicSource("leave.error_invalid_hour_range");
+        if (hourFromFloat === null || hourFromFloat < 0 || hourFromFloat >= 24) {
+          return arabicSource("leave.error_invalid_hour_from");
+        }
+        if (hourFromFloat + hours > 24) return arabicSource("leave.error_invalid_hour_range");
       }
     }
     if (selectedType?.requires_attachment && !attachmentFile) {
       return arabicSource("leave.error_attachment_required");
     }
     return "";
-  }, [attachmentFile, durationUnit, hourFrom, hours, maxHours, selectedType]);
+  }, [attachmentFile, durationUnit, hourFrom, hourFromFloat, hours, maxHours, selectedType]);
 
   const buildRequestFields = useCallback(async (): Promise<LeaveRequestFields> => {
     const fields: LeaveRequestFields = {};
     if (durationUnit === "hour") {
       fields.duration_unit = "hour";
       fields.hours = hours;
-      if (hourFrom !== "") fields.hour_from = Number(hourFrom);
+      if (hourFromFloat !== null) fields.hour_from = hourFromFloat;
     }
     if (attachmentFile) {
       fields.attachment = { file_name: attachmentFile.name, file_data: await fileToBase64(attachmentFile) };
     }
     return fields;
-  }, [attachmentFile, durationUnit, hourFrom, hours]);
+  }, [attachmentFile, durationUnit, hourFromFloat, hours]);
 
   const reset = useCallback((): void => {
     setDurationUnit("day");
@@ -120,6 +125,7 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
     handleRemoveAttachment,
     handleSelectDurationUnit,
     hourFrom,
+    hourFromFloat,
     hours,
     maxBytes,
     maxHours,

@@ -1,11 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbLeaveRequest } from "@/shared/hooks";
-
-const formatHour = (h: number): string => {
-  const hours = Math.floor(h);
-  const minutes = Math.round((h - hours) * 60);
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-};
+import { formatHourFloat } from "./hourFloat";
 
 /**
  * "N hours (09:00–12:00)" for an hourly leave, or the existing "N days" label
@@ -15,7 +10,7 @@ const formatHour = (h: number): string => {
  */
 export const formatLeaveDuration = (leave: DbLeaveRequest): string => {
   if (leave.is_hourly) {
-    const base = `${leave.requested_hours} ${arabicSource("common.hours")} (${formatHour(leave.hour_from)}–${formatHour(leave.hour_to)})`;
+    const base = `${leave.requested_hours} ${arabicSource("common.hours")} (${formatHourFloat(leave.hour_from)}–${formatHourFloat(leave.hour_to)})`;
     if (leave.number_of_hours !== leave.requested_hours) {
       return `${base} · ${arabicSource("leave.effective_hours")}: ${leave.number_of_hours}`;
     }

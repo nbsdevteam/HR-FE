@@ -10,6 +10,7 @@ import LeaveRequestDurationSummary from "./LeaveRequestDurationSummary";
 import LeaveRequestDurationToggle from "./LeaveRequestDurationToggle";
 import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
 import LeaveRequestHalfDayRow from "./LeaveRequestHalfDayRow";
+import LeaveRequestHourlySummary from "./LeaveRequestHourlySummary";
 import LeaveRequestHoursRow from "./LeaveRequestHoursRow";
 import LeaveTypeChipButton from "./LeaveTypeChipButton";
 
@@ -145,6 +146,7 @@ const LeaveRequestModal = ({
               onHoursChange={hourly.handleHoursChange}
               onHourFromChange={hourly.handleHourFromChange}
             />
+            <LeaveRequestHourlySummary hours={hourly.hours} hourFromFloat={hourly.hourFromFloat} />
           </>
         )}
 
