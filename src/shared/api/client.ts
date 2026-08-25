@@ -57,6 +57,12 @@ export interface HrAuthUser {
 
 export interface HrApiError extends Error {
   code?: string;
+  /**
+   * The failing response envelope. Typed errors carry extra context alongside
+   * `error_code` — e.g. `probation_end_date` on a `probation_block` rejection —
+   * which call sites need to build a readable message.
+   */
+  details?: Record<string, unknown>;
 }
 
 async function parseJsonrpc(res: Response) {
@@ -146,6 +152,7 @@ export const hrCall = async <T = unknown>(
   if (result && result.success === false) {
     const error: HrApiError = new Error(result.error || result.message || "HR API error");
     if (result.error_code) error.code = result.error_code;
+    error.details = result as Record<string, unknown>;
     throw error;
   }
   // Some auth endpoints return tokens at top level

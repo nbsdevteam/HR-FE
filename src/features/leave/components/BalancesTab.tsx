@@ -10,6 +10,7 @@ import LoadingState from "@/shared/components/LoadingState";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 import LeaveBalanceCard from "./LeaveBalanceCard";
+import EmployeeAccrualPanel from "./EmployeeAccrualPanel";
 import EmployeeBalanceListItem from "./EmployeeBalanceListItem";
 
 const BalancesTab = ({
@@ -19,6 +20,7 @@ const BalancesTab = ({
   policies,
   loading,
   year,
+  selfOnly,
 }: {
   employees: any[];
   leaveTypes: DbLeaveType[];
@@ -26,6 +28,8 @@ const BalancesTab = ({
   policies: any[];
   loading: boolean;
   year: number;
+  /** Agent viewing only their own leave — read balances without an employee_id. */
+  selfOnly: boolean;
 }) => {
   const [selectedEmp, setSelectedEmp] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -96,6 +100,11 @@ const BalancesTab = ({
             </p>
           </div>
         </div>
+
+        <EmployeeAccrualPanel
+          employeeId={selfOnly ? null : selectedEmp}
+          leaveTypes={leaveTypes}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {leaveTypes.map((lt, i) => {

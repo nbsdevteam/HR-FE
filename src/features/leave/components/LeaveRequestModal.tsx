@@ -1,4 +1,4 @@
-import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
+import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { type DbLeaveType, type DbLeaveBalance, type DbLeaveSettings } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { useLeaveRequestForm } from "../hooks/useLeaveRequestForm";
@@ -12,6 +12,7 @@ import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
 import LeaveRequestHalfDayRow from "./LeaveRequestHalfDayRow";
 import LeaveRequestHourlySummary from "./LeaveRequestHourlySummary";
 import LeaveRequestHoursRow from "./LeaveRequestHoursRow";
+import LeaveRequestProbationNotice from "./LeaveRequestProbationNotice";
 import LeaveTypeChipButton from "./LeaveTypeChipButton";
 
 type LeaveRequestModalProps = {
@@ -38,14 +39,17 @@ const LeaveRequestModal = ({
   onSubmit,
 }: LeaveRequestModalProps) => {
   const {
-    days, employeeId, endDate, error, halfDayPeriod, handleEmployeeChange,
-    handleEndDateChange, handleIsHalfDayChange, handleReasonChange,
-    handleSelectLeaveType, handleSubmit, hourly, isHalfDay, isHourly,
-    leaveTypeId, reason, remainingBalance, saving, selectedType, selfEmployee,
-    setHalfDayPeriod, setStartDate, startDate,
+    balanceWarning, blockedByProbation, days, employeeId, endDate, error,
+    firstAccrualOn, halfDayPeriod, handleEmployeeChange, handleEndDateChange,
+    handleIsHalfDayChange, handleReasonChange, handleSelectLeaveType,
+    handleStartDateChange, handleSubmit, hourly, isHalfDay, isHourly,
+    leaveTypeId, minStartDate, outOfBalance, probationEndDate, reason,
+    remainingBalance, saving, selectedType, selfEmployee, setHalfDayPeriod,
+    startDate,
   } = useLeaveRequestForm({ employees, leaveTypes, balances, selfOnly, linkError, settings, onSubmit });
 
-  const submitDisabled = employeesLoading || (selfOnly && (!!linkError || !selfEmployee));
+  const submitDisabled =
+    employeesLoading || outOfBalance || (selfOnly && (!!linkError || !selfEmployee));
 
   return (
     <ModalOverlay
@@ -86,6 +90,14 @@ const LeaveRequestModal = ({
           </div>
         </div>
 
+        <LeaveRequestProbationNotice
+          blockedByProbation={blockedByProbation}
+          probationEndDate={probationEndDate}
+          minStartDate={minStartDate}
+          firstAccrualOn={firstAccrualOn}
+          outOfBalance={outOfBalance}
+        />
+
         {/* Day / Hour Toggle — only for types that allow hourly requests */}
         {selectedType?.allow_hourly && (
           <LeaveRequestDurationToggle
@@ -112,14 +124,14 @@ const LeaveRequestModal = ({
                 <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
                   {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
                 </label>
-                <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
+                {/* Raw input rather than the shared InputField: `min` is a date
+                    string (the probation floor), and InputField types `min` as a number. */}
+                <input type="date" value={startDate} onChange={handleStartDateChange} className={inputCls} dir="ltr" min={minStartDate || undefined} />
               </div>
               {!isHalfDay && (
                 <div>
                   <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
-                  {/* Raw input rather than the shared InputField: `min` needs to be
-                      the start date string, and InputField types `min` as a number. */}
-                  <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate} />
+                  <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate || minStartDate || undefined} />
                 </div>
               )}
             </div>
@@ -128,6 +140,7 @@ const LeaveRequestModal = ({
               days={days}
               isHalfDay={isHalfDay}
               remainingBalance={remainingBalance}
+              warning={balanceWarning}
             />
           </>
         )}
@@ -137,7 +150,7 @@ const LeaveRequestModal = ({
             {/* Single date for an hourly request */}
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.date_2")}</label>
-              <InputField type="date" value={startDate} onChange={setStartDate} className={inputCls} dir="ltr" />
+              <input type="date" value={startDate} onChange={handleStartDateChange} className={inputCls} dir="ltr" min={minStartDate || undefined} />
             </div>
             <LeaveRequestHoursRow
               hours={hourly.hours}

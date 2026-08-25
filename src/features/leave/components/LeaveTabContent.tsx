@@ -71,6 +71,7 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             policies={page.policies}
             loading={page.balLoading}
             year={page.currentYear}
+            selfOnly={page.selfOnly}
           />
         </Suspense>
       </motion.div>

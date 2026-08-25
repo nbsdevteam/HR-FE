@@ -3,9 +3,7 @@ import {
   mapLeaveType,
   mapLeavePolicy,
   mapLeaveRequest,
-  mapLeaveBalance,
   mapLeavePermission,
-  mapLeaveAttachment,
   mapLeaveSettings,
 } from "./mappers";
 import type {
@@ -13,9 +11,7 @@ import type {
   DbLeaveType,
   DbLeavePolicy,
   DbLeaveRequest,
-  DbLeaveBalance,
   DbLeavePermission,
-  DbLeaveAttachment,
   DbLeaveSettings,
 } from "../hooks";
 import { eid } from "./httpHelpers";
@@ -34,10 +30,10 @@ export const isEmployeesListForbiddenError = (error: unknown): boolean => {
   const msg = String(
     error && typeof error === "object" && "message" in error
       ? (error as { message?: unknown }).message
-      : error ?? "",
+      : (error ?? ""),
   );
   return /forbidden|hr\.employees\.list|permission required/i.test(msg);
-}
+};
 
 export type LeaveEmployeeScopeResult = {
   selfOnly: boolean;
@@ -77,7 +73,7 @@ export const resolveLeaveEmployeeScope = async (
     const msg = String(
       e && typeof e === "object" && "message" in e
         ? (e as { message?: unknown }).message
-        : e ?? "",
+        : (e ?? ""),
     );
     return {
       selfOnly: true,
@@ -87,7 +83,7 @@ export const resolveLeaveEmployeeScope = async (
         : msg || UNLINKED_EMPLOYEE_MSG,
     };
   }
-}
+};
 
 /**
  * Self-leave payloads must omit employee_id so the backend uses current_employee().
@@ -100,7 +96,7 @@ export const leaveRequestEmployeeIdField = (
   if (selfOnly) return {};
   if (employeeId == null || employeeId === "") return {};
   return { employee_id: employeeId };
-}
+};
 
 export const fetchLeaveTypes = (): Promise<DbLeaveType[]> =>
   fetchList("/api/hr/leave/types", mapLeaveType);
@@ -118,7 +114,8 @@ export const fetchLeaveRequests = async (filters?: {
   month?: string;
 }): Promise<DbLeaveRequest[]> => {
   const params: Record<string, unknown> = { limit: 200 };
-  if (filters?.employeeId) params.employee_id = Number(filters.employeeId) || filters.employeeId;
+  if (filters?.employeeId)
+    params.employee_id = Number(filters.employeeId) || filters.employeeId;
   if (filters?.month) {
     params.date_from = `${filters.month}-01`;
     params.date_to = `${filters.month}-31`;
@@ -126,24 +123,24 @@ export const fetchLeaveRequests = async (filters?: {
   // FE may pass Arabic status; leave raw and filter client-side if needed
   const mapped = await fetchList("/api/hr/leave/list", mapLeaveRequest, params);
   if (filters?.status) {
-    return mapped.filter((r) => r.status === filters.status || r.status.includes(filters.status!));
+    return mapped.filter(
+      (r) => r.status === filters.status || r.status.includes(filters.status!),
+    );
   }
   return mapped;
-}
+};
 
-export const fetchLeaveBalances = async (year?: number): Promise<DbLeaveBalance[]> => {
-  const params: Record<string, unknown> = {};
-  if (year) params.year = year;
-  const data = await hrCall<any>("/api/hr/leave/balances", params);
-  const rows = Array.isArray(data) ? data : data?.items || data?.balances || [];
-  return rows.map(mapLeaveBalance);
-}
-
-export const fetchLeavePermissions = (employeeId?: string): Promise<DbLeavePermission[]> => {
+export const fetchLeavePermissions = (
+  employeeId?: string,
+): Promise<DbLeavePermission[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
-  return fetchList("/api/hr/leave/permissions/list", mapLeavePermission, params);
-}
+  return fetchList(
+    "/api/hr/leave/permissions/list",
+    mapLeavePermission,
+    params,
+  );
+};
 
 export const requestLeave = async (payload: {
   leave_type_id: string | number;
@@ -160,72 +157,58 @@ export const requestLeave = async (payload: {
 }) => {
   const params: Record<string, unknown> = {
     leave_type_id: eid(payload.leave_type_id),
-    date_from: payload.date_from,
-    date_to: payload.date_to || payload.date_from,
-    reason: payload.reason || "",
+    date_from: payload?.date_from,
+    date_to: payload?.date_to || payload?.date_from,
+    reason: payload?.reason || "",
     half_day: Boolean(payload.half_day),
   };
-  if (payload.employee_id != null) params.employee_id = eid(payload.employee_id);
-  if (payload.duration_unit === "hour") {
+  if (payload?.employee_id != null)
+    params.employee_id = eid(payload.employee_id);
+  if (payload?.duration_unit === "hour") {
     params.duration_unit = "hour";
     params.hours = payload.hours;
     if (payload.hour_from != null) params.hour_from = payload.hour_from;
   }
-  if (payload.attachment) params.attachment = payload.attachment;
-  if (payload.attachment_ids?.length) params.attachment_ids = payload.attachment_ids.map(eid);
+  if (payload?.attachment) params.attachment = payload.attachment;
+  if (payload?.attachment_ids?.length)
+    params.attachment_ids = payload.attachment_ids.map(eid);
   return hrCall("/api/hr/leave/request", params);
-}
+};
 
 export const fetchLeaveSettings = async (): Promise<DbLeaveSettings> => {
   const data = await hrCall<any>("/api/hr/leave/settings", {});
   return mapLeaveSettings(data);
-}
+};
 
 /** Dedicated max-hours writer (backend §3.2) — range-validates and audit-logs, unlike the generic `/api/hr/configs/update`. */
-export const updateLeaveSettingsMaxHours = async (maxHoursPerRequest: number) => {
-  return hrCall("/api/hr/leave/settings/update", { max_hours_per_request: maxHoursPerRequest });
-}
-
-export const uploadLeaveAttachment = async (
-  leaveId: string | number,
-  file: { file_name: string; file_data: string },
-): Promise<DbLeaveAttachment> => {
-  const data = await hrCall<any>(`/api/hr/leave/${eid(leaveId)}/attachments/upload`, file);
-  return mapLeaveAttachment(data.attachment);
-}
-
-export const fetchLeaveAttachments = async (leaveId: string | number): Promise<DbLeaveAttachment[]> => {
-  const data = await hrCall<any>(`/api/hr/leave/${eid(leaveId)}/attachments`, {});
-  const rows = Array.isArray(data) ? data : data?.items || [];
-  return rows.map(mapLeaveAttachment);
-}
-
-export const downloadLeaveAttachment = async (
-  leaveId: string | number,
-  attachmentId: string | number,
-): Promise<{ file_name: string; mimetype: string; file_data: string }> => {
-  return hrCall(`/api/hr/leave/${eid(leaveId)}/attachments/${eid(attachmentId)}/download`, {});
-}
-
-export const deleteLeaveAttachment = async (leaveId: string | number, attachmentId: string | number) => {
-  return hrCall(`/api/hr/leave/${eid(leaveId)}/attachments/${eid(attachmentId)}/delete`, {});
-}
+export const updateLeaveSettingsMaxHours = async (
+  maxHoursPerRequest: number,
+) => {
+  return hrCall("/api/hr/leave/settings/update", {
+    max_hours_per_request: maxHoursPerRequest,
+  });
+};
 
 export const managerApproveLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/manager_approve`, {});
-}
+};
 
 export const hrApproveLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/hr_approve`, {});
-}
+};
 
-export const refuseLeave = async (leaveId: string | number, reason?: string | null) => {
-  return hrCall(`/api/hr/leave/${eid(leaveId)}/refuse`, { reason: reason || "" });
-}
+export const refuseLeave = async (
+  leaveId: string | number,
+  reason?: string | null,
+) => {
+  return hrCall(`/api/hr/leave/${eid(leaveId)}/refuse`, {
+    reason: reason || "",
+  });
+};
 
 export const cancelLeave = async (leaveId: string | number) => {
   return hrCall(`/api/hr/leave/${eid(leaveId)}/cancel`, {});
-}
+};
 
 export const createLeavePermission = async (payload: {
   employee_id: string | number;
@@ -236,14 +219,18 @@ export const createLeavePermission = async (payload: {
   reason?: string | null;
 }) => {
   return hrCall("/api/hr/leave/permissions/create", {
-    employee_id: eid(payload.employee_id),
-    date: payload.date,
-    start_time: timeToFloat(payload.start_time),
-    end_time: timeToFloat(payload.end_time),
-    hours: payload.hours ?? Math.abs(timeToFloat(payload.end_time) - timeToFloat(payload.start_time)),
-    reason: payload.reason || "",
+    employee_id: eid(payload?.employee_id),
+    date: payload?.date,
+    start_time: timeToFloat(payload?.start_time),
+    end_time: timeToFloat(payload?.end_time),
+    hours:
+      payload.hours ??
+      Math.abs(
+        timeToFloat(payload?.end_time) - timeToFloat(payload?.start_time),
+      ),
+    reason: payload?.reason || "",
   });
-}
+};
 
 export const updateLeavePermission = async (
   permissionId: string | number,
@@ -261,10 +248,10 @@ export const updateLeavePermission = async (
   return hrCall(`/api/hr/leave/permissions/${eid(permissionId)}/update`, {
     status: map[status] || status,
   });
-}
+};
 
 export const createLeavePolicy = (payload: Record<string, unknown>) =>
   leavePolicies.create(withEid(payload, ["leave_type_id"]));
 
-export const updateLeavePolicy = leavePolicies.update;
-export const deleteLeavePolicy = leavePolicies.remove;
+export const updateLeavePolicy = leavePolicies?.update;
+export const deleteLeavePolicy = leavePolicies?.remove;

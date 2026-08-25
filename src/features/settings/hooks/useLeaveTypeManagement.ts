@@ -28,6 +28,10 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
         is_encashable: newLeaveType.is_encashable,
         encashment_percentage: newLeaveType.encashment_percentage,
         accrual_method: newLeaveType.accrual_method === "annual" ? "yearly" : newLeaveType.accrual_method,
+        // v1.12.9 accrual policy — `/leave/types/create` accepts these directly.
+        accrual_enabled: newLeaveType.accrual_enabled,
+        accrual_days_per_month: newLeaveType.accrual_days_per_month,
+        probation_blocked: newLeaveType.probation_blocked,
         color: newLeaveType.color,
         sort_order: newLeaveType.sort_order,
       });

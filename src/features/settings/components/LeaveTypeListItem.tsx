@@ -70,6 +70,17 @@ const LeaveTypeListItem = ({
                 {arabicSource("common.relay")} {leaveType.max_carryover_days}d
               </span>
             )}
+            {leaveType.accrual_enabled && (
+              <span className="text-primary text-xs">
+                {arabicSource("leave.accrual_badge")}{" "}
+                {leaveType.monthly_accrual > 0 ? leaveType.monthly_accrual : ""}
+              </span>
+            )}
+            {leaveType.probation_blocked && (
+              <span className="text-amber-400 text-xs">
+                {arabicSource("settings.blocked_during_probation")}
+              </span>
+            )}
             {leaveType.is_encashable && (
               <span className="text-emerald-400 text-xs">
                 {arabicSource("settings.exchange")}{" "}

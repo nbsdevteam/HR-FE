@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useLeaveBalanceSummary } from "@/shared/hooks";
 import type { DbLeaveType, DbLeaveBalance, DbLeaveSettings } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { earliestLeaveStartDate, firstAccrualDate, formatLeaveDays } from "../utils/accrual";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
 import { useLeaveHourlyAttachment } from "./useLeaveHourlyAttachment";
 
@@ -52,6 +54,13 @@ export const useLeaveRequestForm = ({
   const hourly = useLeaveHourlyAttachment({ selectedType, settings });
   const isHourly = hourly.durationUnit === "hour";
 
+  // Accrual/probation figures for whoever the request is for. Self-service
+  // agents omit `employee_id` — sending it needs approver rights they lack.
+  const { summary: balanceSummary } = useLeaveBalanceSummary(
+    selfOnly ? null : employeeId || null,
+    { enabled: selfOnly || Boolean(employeeId) },
+  );
+
   // Working days between the two dates, excluding the weekend.
   const days = useMemo(() => {
     if (isHalfDay) return 0.5;
@@ -68,9 +77,44 @@ export const useLeaveRequestForm = ({
     return count;
   }, [startDate, endDate, isHalfDay]);
 
+  /** The `/leave/balances` row for the selected type, when the summary loaded. */
+  const balanceItem = useMemo(
+    () => balanceSummary?.items.find((item) => item.leave_type_id === leaveTypeId) ?? null,
+    [balanceSummary, leaveTypeId],
+  );
+
+  const probationEndDate = balanceSummary?.probation_end_date ?? null;
+  const blockedByProbation = Boolean(balanceItem?.blocked_by_probation);
+
+  /**
+   * `blocked_by_probation` is a *today* snapshot while the backend gates on the
+   * leave start date, so the form stays open and only the earliest start date
+   * moves — booking 1 April while on probation until 31 March is legitimate.
+   */
+  const minStartDate = useMemo(
+    () => (blockedByProbation ? earliestLeaveStartDate(probationEndDate) : ""),
+    [blockedByProbation, probationEndDate],
+  );
+
+  /** True once accrual has granted nothing at all — the employee's first month. */
+  const firstAccrualOn = useMemo(() => {
+    if (!balanceItem?.accrual_enabled) return "";
+    if (balanceItem.accrued > 0 || balanceItem.accrual_periods > 0) return "";
+    return firstAccrualDate(balanceSummary?.joining_date ?? null);
+  }, [balanceItem, balanceSummary]);
+
+  /** Zero balance only blocks types that actually consume an allocation. */
+  const outOfBalance = Boolean(
+    balanceItem && balanceItem.requires_allocation && balanceItem.remaining <= 0,
+  );
+
   // Remaining balance for the selected employee + leave type.
   const remainingBalance = useMemo(() => {
-    if (!employeeId || !leaveTypeId || !selectedType) return null;
+    if (!leaveTypeId || !selectedType) return null;
+    // `remaining` already nets off pending requests — prefer it over the
+    // legacy per-year row whenever the balances summary is available.
+    if (balanceItem) return balanceItem.remaining;
+    if (!employeeId) return null;
     const balance = balances.find(
       (b) =>
         b.employee_id === employeeId &&
@@ -83,7 +127,7 @@ export const useLeaveRequestForm = ({
       return (selectedType as any).default_days_per_year > 0 ? 0 : null;
     }
     return balance.total_days + balance.carryover_days + balance.accrued_days - balance.used_days;
-  }, [employeeId, leaveTypeId, balances, selectedType]);
+  }, [balanceItem, employeeId, leaveTypeId, balances, selectedType]);
 
   const handleSelectLeaveType = useCallback((leaveType: DbLeaveType) => {
     setLeaveTypeId(leaveType.id);
@@ -97,6 +141,10 @@ export const useLeaveRequestForm = ({
 
   const handleIsHalfDayChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     setIsHalfDay(e.target.checked);
+  }, []);
+
+  const handleStartDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    setStartDate(e.target.value);
   }, []);
 
   const handleEndDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -118,10 +166,21 @@ export const useLeaveRequestForm = ({
     }
     if (!selectedType) return;
 
-    if (!isHourly && remainingBalance !== null && days > remainingBalance) {
-      setError(`${arabicSource("leave.remaining_balance")}${remainingBalance} ${arabicSource("leave.day_is_not_enough_for_the_required_number_of_days")}${days} ${arabicSource("common.days_3")}`);
+    if (outOfBalance) {
+      setError(arabicSource("leave.no_balance_remaining"));
       return;
     }
+
+    if (minStartDate && startDate < minStartDate) {
+      setError(
+        `${arabicSource("leave.error_probation_block")} ${arabicSource("leave.earliest_start_date")} ${minStartDate}`,
+      );
+      return;
+    }
+
+    // Requested days over the balance is a warning, not a block: Odoo counts
+    // working days against the work calendar, so the FE estimate can differ —
+    // the backend decides (backend §12).
 
     const hourlyError = hourly.validate();
     if (hourlyError) {
@@ -155,8 +214,8 @@ export const useLeaveRequestForm = ({
       setSaving(false);
     }
   }, [
-    days, employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId,
-    linkError, onSubmit, reason, remainingBalance, selectedType, selfEmployee,
+    employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId, linkError,
+    minStartDate, onSubmit, outOfBalance, reason, selectedType, selfEmployee,
     selfOnly, startDate,
   ]);
 
@@ -166,9 +225,21 @@ export const useLeaveRequestForm = ({
     }
   }, [selfOnly, selfEmployeeId]);
 
+  const balanceWarning =
+    !isHourly && remainingBalance !== null && days > remainingBalance
+      ? `${arabicSource("leave.days_exceed_available_balance")} (${formatLeaveDays(remainingBalance)} ${arabicSource("common.days_2")})`
+      : "";
+
   return {
+    balanceItem,
+    balanceWarning,
+    blockedByProbation,
     days,
     employeeId,
+    firstAccrualOn,
+    minStartDate,
+    outOfBalance,
+    probationEndDate,
     endDate,
     error,
     halfDayPeriod,
@@ -177,6 +248,7 @@ export const useLeaveRequestForm = ({
     handleIsHalfDayChange,
     handleReasonChange,
     handleSelectLeaveType,
+    handleStartDateChange,
     handleSubmit,
     hourly,
     isHalfDay,
@@ -188,7 +260,6 @@ export const useLeaveRequestForm = ({
     selectedType,
     selfEmployee,
     setHalfDayPeriod,
-    setStartDate,
     startDate,
   };
 };

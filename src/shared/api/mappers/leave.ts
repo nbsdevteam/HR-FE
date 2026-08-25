@@ -1,4 +1,4 @@
-import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
+import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
 
@@ -24,6 +24,9 @@ export const mapLeaveType = (r: any): DbLeaveType => {
     is_encashable: bool(r.is_encashable),
     encashment_percentage: num(r.encashment_percentage),
     accrual_method: r.accrual_method || "yearly",
+    accrual_enabled: bool(r.accrual_enabled),
+    monthly_accrual: num(r.monthly_accrual ?? r.accrual_days_per_month),
+    probation_blocked: bool(r.probation_blocked),
     color: r.color || "#888888",
     icon: r.icon || "",
     is_active: isActive(r),
@@ -123,11 +126,73 @@ export const mapLeaveBalance = (r: any): DbLeaveBalance => {
     leave_type_id: sornull(r.leave_type_id),
     year: num(r.year),
     total_days: num(r.total_days ?? r.max_leaves),
-    used_days: num(r.used_days ?? r.leaves_taken),
+    used_days: num(r.used_days ?? r.used ?? r.leaves_taken),
     carryover_days: num(r.carryover_days),
-    accrued_days: num(r.accrued_days),
+    accrued_days: num(r.accrued_days ?? r.accrued),
+    // `remaining` already nets off pending requests (Odoo virtual_remaining_leaves),
+    // so it is the authoritative "available" figure — not total + accrued − used.
+    remaining_days: num(r.remaining ?? r.remaining_days),
+    blocked_by_probation: bool(r.blocked_by_probation),
+    can_apply: r.can_apply !== false,
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+  };
+}
+
+/** One `items[]` entry of `/api/hr/leave/balances` (backend §1). */
+export const mapLeaveBalanceItem = (r: any): DbLeaveBalanceItem => {
+  return {
+    leave_type_id: sid(r.leave_type_id),
+    leave_type_name: r.leave_type_name || r.leave_type || "",
+    max_leaves: num(r.max_leaves),
+    remaining: num(r.remaining),
+    requires_allocation: bool(r.requires_allocation),
+    accrual_enabled: bool(r.accrual_enabled),
+    annual_entitlement: num(r.annual_entitlement),
+    monthly_accrual: num(r.monthly_accrual),
+    accrued: num(r.accrued),
+    accrual_periods: num(r.accrual_periods),
+    used: num(r.used ?? (num(r.max_leaves) - num(r.remaining))),
+    blocked_by_probation: bool(r.blocked_by_probation),
+    // Absent on a backend that predates v1.12.9 → treat the type as appliable.
+    can_apply: r.can_apply !== false,
+  };
+}
+
+export const mapLeaveBalanceSummary = (r: any): DbLeaveBalanceSummary => {
+  const rows = Array.isArray(r) ? r : r?.items || r?.balances || [];
+  return {
+    employee_id: sid(r?.employee_id),
+    joining_date: r?.joining_date || null,
+    probation: bool(r?.probation),
+    probation_end_date: r?.probation_end_date || null,
+    items: rows.map(mapLeaveBalanceItem),
+  };
+}
+
+export const mapLeaveAccrualEntry = (r: any): DbLeaveAccrualEntry => {
+  return {
+    id: sid(r.id),
+    leave_type_id: sid(r.leave_type_id),
+    leave_type_name: r.leave_type_name || "",
+    period_date: r.period_date || "",
+    period_sequence: num(r.period_sequence),
+    days: num(r.days),
+    state: r.state || "",
+    name: r.name || "",
+  };
+}
+
+export const mapLeaveAccrualHistory = (r: any): DbLeaveAccrualHistory => {
+  const rows = Array.isArray(r) ? r : r?.items || [];
+  const items = rows.map(mapLeaveAccrualEntry);
+  return {
+    employee_id: sid(r?.employee_id),
+    joining_date: r?.joining_date || null,
+    probation: bool(r?.probation),
+    probation_end_date: r?.probation_end_date || null,
+    items,
+    total_days: num(r?.total_days ?? items.reduce((sum: number, item: DbLeaveAccrualEntry) => sum + item.days, 0)),
   };
 }
 

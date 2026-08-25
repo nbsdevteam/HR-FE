@@ -26,6 +26,12 @@ export interface DbLeaveType {
   is_encashable: boolean;
   encashment_percentage: number;
   accrual_method: string;
+  /** Monthly accrual engine is on for this type (backend v1.12.9 §5). */
+  accrual_enabled: boolean;
+  /** Days credited per completed month of service, e.g. 1.75. `0` when accrual is off. */
+  monthly_accrual: number;
+  /** Type cannot be taken while the employee is on probation. */
+  probation_blocked: boolean;
   color: string;
   icon: string;
   is_active: boolean;
@@ -82,6 +88,10 @@ export interface DbLeaveBalance {
   used_days: number;
   carryover_days: number;
   accrued_days: number;
+  /** Backend `remaining` — already nets off pending requests. */
+  remaining_days: number;
+  blocked_by_probation: boolean;
+  can_apply: boolean;
   created_at: string;
   updated_at: string;
 }

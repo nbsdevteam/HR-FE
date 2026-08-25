@@ -32,6 +32,12 @@ export interface NewLeaveTypeForm {
   attachment_after_days: number;
   allow_hourly: boolean;
   accrual_method: string;
+  /** Monthly accrual engine (backend v1.12.9) — 1.75 days per completed month, etc. */
+  accrual_enabled: boolean;
+  /** `0` lets the backend derive the rate from `default_days_per_year / 12`. */
+  accrual_days_per_month: number;
+  /** Type cannot be taken while the employee is on probation. */
+  probation_blocked: boolean;
   is_carryover_allowed: boolean;
   max_carryover_days: number;
   carryover_expiry_months: number;

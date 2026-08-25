@@ -50,6 +50,18 @@ const ROWS: TypeFormRowConfig<NewLeaveTypeFormState>[] = [
       },
     ],
   },
+  {
+    id: "accrual",
+    gridClassName: "grid grid-cols-2 md:grid-cols-4 gap-3",
+    fields: [
+      {
+        key: "accrual_days_per_month",
+        type: "number",
+        placeholder: arabicSource("settings.accrual_days_per_month"),
+        blankWhenFalsy: true,
+      },
+    ],
+  },
 ];
 
 const CHECKBOXES: TypeFormCheckboxConfig<NewLeaveTypeFormState>[] = [
@@ -57,6 +69,8 @@ const CHECKBOXES: TypeFormCheckboxConfig<NewLeaveTypeFormState>[] = [
   { key: "allow_half_day", label: arabicSource("common.half_a_day") },
   { key: "requires_attachment", label: arabicSource("settings.attachment_required") },
   { key: "allow_hourly", label: arabicSource("settings.allow_hourly_leave") },
+  { key: "accrual_enabled", label: arabicSource("settings.enable_monthly_accrual") },
+  { key: "probation_blocked", label: arabicSource("settings.blocked_during_probation") },
   { key: "is_carryover_allowed", label: arabicSource("common.relay") },
   { key: "is_encashable", label: arabicSource("common.exchangeable") },
 ];
