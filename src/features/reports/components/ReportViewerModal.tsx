@@ -64,7 +64,7 @@ const ReportViewerModal = ({
   <ModalOverlay
     onClose={onClose}
     overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    contentClassName="bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"
+    contentClassName="bg-card border border-border/40 rounded-2xl shadow-2xl w-full max-w-5xl min-w-0 max-h-[85vh] overflow-hidden flex flex-col"
     contentMotionProps={{
       initial: { scale: 0.95, opacity: 0 },
       animate: { scale: 1, opacity: 1 },
