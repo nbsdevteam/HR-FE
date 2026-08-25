@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { Button } from "@/shared/components";
 
 type HalfDayPeriodButtonProps = {
   value: "morning" | "afternoon";
@@ -11,9 +12,12 @@ const HalfDayPeriodButton = ({ value, label, isSelected, onSelect }: HalfDayPeri
   const handleClick = useCallback(() => onSelect(value), [onSelect, value]);
 
   return (
-    <button
+    <Button
+      variant="unstyled"
+      size="unstyled"
+      rounded="rounded-md"
       onClick={handleClick}
-      className={`px-3 py-1 rounded-md border transition-colors cursor-pointer ${
+      className={`px-3 py-1 border ${
         isSelected
           ? "bg-primary text-primary-foreground"
           : "border-border text-muted-foreground"
@@ -21,7 +25,7 @@ const HalfDayPeriodButton = ({ value, label, isSelected, onSelect }: HalfDayPeri
       style={{ fontSize: 12 }}
     >
       {label}
-    </button>
+    </Button>
   );
 };
 

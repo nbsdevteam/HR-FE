@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type CalendarExcuseButtonProps = {
@@ -8,9 +9,12 @@ type CalendarExcuseButtonProps = {
 };
 
 const CalendarExcuseButton = ({ excused, onClick, hoverClassName }: CalendarExcuseButtonProps) => (
-  <button
+  <Button
+    variant="unstyled"
+    size="unstyled"
+    rounded="rounded"
     onClick={onClick}
-    className={`mt-1 px-2 py-0.5 rounded text-center border transition-colors cursor-pointer ${
+    className={`mt-1 px-2 py-0.5 text-center border ${
       excused
         ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
         : `border-border/30 text-muted-foreground ${hoverClassName}`
@@ -18,7 +22,7 @@ const CalendarExcuseButton = ({ excused, onClick, hoverClassName }: CalendarExcu
     style={{ fontSize: 9 }}
   >
     {excused ? arabicSource("common.sorry") : arabicSource("common.excuse")}
-  </button>
+  </Button>
 );
 
 export default memo(CalendarExcuseButton);

@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type PopoverExcuseButtonProps = {
@@ -8,9 +9,12 @@ type PopoverExcuseButtonProps = {
 };
 
 const PopoverExcuseButton = ({ excused, onClick, paddingClassName }: PopoverExcuseButtonProps) => (
-  <button
+  <Button
+    variant="unstyled"
+    size="unstyled"
+    rounded="rounded-md"
     onClick={onClick}
-    className={`${paddingClassName} rounded-md border cursor-pointer transition-colors ${
+    className={`${paddingClassName} border ${
       excused
         ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
         : "bg-muted/10 border-border text-muted-foreground hover:border-primary/30"
@@ -18,7 +22,7 @@ const PopoverExcuseButton = ({ excused, onClick, paddingClassName }: PopoverExcu
     style={{ fontSize: 11 }}
   >
     {excused ? arabicSource("common.sorry") : arabicSource("common.excuse")}
-  </button>
+  </Button>
 );
 
 export default memo(PopoverExcuseButton);

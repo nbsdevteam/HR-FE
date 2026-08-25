@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { Button } from "@/shared/components";
 import type { LeaveDurationUnit } from "../hooks/useLeaveHourlyAttachment";
 
 type LeaveDurationOptionButtonProps = {
@@ -12,15 +13,17 @@ const LeaveDurationOptionButton = ({ unit, label, isSelected, onSelect }: LeaveD
   const handleClick = useCallback(() => onSelect(unit), [onSelect, unit]);
 
   return (
-    <button
+    <Button
+      variant="chip"
+      active={isSelected}
+      size="unstyled"
+      rounded="rounded-lg"
       onClick={handleClick}
-      className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
-        isSelected ? "border-primary/40 text-primary bg-primary/10" : "border-border text-muted-foreground hover:border-primary/20"
-      }`}
+      className="px-3 py-1.5"
       style={{ fontSize: 13 }}
     >
       {label}
-    </button>
+    </Button>
   );
 };
 

@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbLeaveType } from "@/shared/hooks";
@@ -14,18 +15,18 @@ const LeaveTypeChipButton = ({ leaveType, isSelected, onSelect }: LeaveTypeChipB
   const handleClick = useCallback(() => onSelect(leaveType), [onSelect, leaveType]);
 
   return (
-    <button
+    <Button
+      variant="chip"
+      active={isSelected}
+      size="unstyled"
+      rounded="rounded-lg"
       onClick={handleClick}
-      className={`px-3 py-2 rounded-lg border transition-all cursor-pointer ${
-        isSelected
-          ? "border-primary/40 text-primary"
-          : "border-border text-muted-foreground hover:border-primary/20"
-      }`}
+      className="px-3 py-2"
       style={{ fontSize: 13, backgroundColor: isSelected ? leaveType.color + "15" : undefined }}
     >
       <span data-i18n-ignore>{primary}</span>
       {!leaveType.is_paid && <span className="text-destructive ms-1" style={{ fontSize: 10 }}>{arabicSource("leave.without_salary")}</span>}
-    </button>
+    </Button>
   );
 };
 
