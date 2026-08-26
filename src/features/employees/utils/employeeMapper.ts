@@ -42,6 +42,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     currency: employee.currency || "IQD",
     photo: employee.profile_picture || "",
     address: employee.address || "—",
+    addressRaw: employee.address_raw ?? null,
     nationalId: employee.national_id || "—",
     emergencyContact: employee.emergency_contact || "—",
     emergencyPhone: employee.emergency_phone || "—",

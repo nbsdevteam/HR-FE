@@ -22,6 +22,17 @@ export const useCachedList = <T,>(
 };
 
 // ——— Raw DB types ———
+
+/** The backend returns `address` as a structured object, not a flat string. */
+export interface DbEmployeeAddress {
+  street?: string;
+  street2?: string;
+  city?: string;
+  zip?: string;
+  state_id?: string | number | false;
+  country_id?: string | number | false;
+}
+
 export interface DbEmployee {
   id: string;
   person_id: number;
@@ -43,6 +54,10 @@ export interface DbEmployee {
   end_date: string | null;
   status: string | null;
   address: string | null;
+  /** Raw address record from the backend — kept so an update can preserve
+   *  street2/city/zip/state/country instead of clobbering them with just the
+   *  flattened display string. */
+  address_raw: DbEmployeeAddress | string | null;
   national_id: string | null;
   emergency_contact: string | null;
   emergency_phone: string | null;

@@ -1,4 +1,4 @@
-import type { DbPosition } from "@/shared/hooks";
+import type { DbEmployeeAddress, DbPosition } from "@/shared/hooks";
 
 export type EmployeeViewMode = "list" | "kanban";
 
@@ -78,6 +78,7 @@ export type Employee = {
   currency: string;
   photo: string;
   address: string;
+  addressRaw: DbEmployeeAddress | string | null;
   nationalId: string;
   emergencyContact: string;
   emergencyPhone: string;

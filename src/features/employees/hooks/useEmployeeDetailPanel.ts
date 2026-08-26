@@ -129,6 +129,15 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaving(true);
     setSaveError(null);
     try {
+      // The backend returns `address` as a structured object ({street, city, ...}),
+      // not a flat string — sending back a bare string here silently failed to
+      // update it. Preserve the other sub-fields and only overwrite `street`,
+      // which is the single line this form actually edits.
+      const address =
+        editData.addressRaw && typeof editData.addressRaw === "object"
+          ? { ...editData.addressRaw, street: editData.address || "" }
+          : editData.address || null;
+
       await odooData.updateEmployee(editData.dbId, {
         name: editData.name,
         email: editData.email,
@@ -141,8 +150,11 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         status: editData.status,
         department_id: resolvedDepartmentId,
         designation_id: resolvedPositionId,
-        address: editData.address || null,
+        address,
+        // The read API returns this field as `identification_id`; send both
+        // names since it's unclear which one the update handler consumes.
         national_id: editData.nationalId,
+        identification_id: editData.nationalId,
         emergency_contact: editData.emergencyContact,
         emergency_phone: editData.emergencyPhone,
         blood_type: editData.bloodType || null,

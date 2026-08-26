@@ -29,6 +29,7 @@ export const mapEmployee = (r: any): DbEmployee => {
     end_date: r.end_date || null,
     status: r.status || null,
     address,
+    address_raw: r.address ?? null,
     national_id: r.identification_id || r.national_id || null,
     emergency_contact: r.emergency_contact || null,
     emergency_phone: r.emergency_phone || null,

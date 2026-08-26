@@ -26,6 +26,7 @@ const baseEmployee: Employee = {
   currency: "IQD",
   photo: "",
   address: "",
+  addressRaw: null,
   nationalId: "",
   emergencyContact: "",
   emergencyPhone: "",
