@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import TypeAheadOption from "./TypeAheadOption";
 
-type PopupRect = { top: number; left: number; width: number };
+type PopupRect = { left: number; width: number; top?: number; bottom?: number };
 
 type TypeAheadPopupProps<T> = {
   rect: PopupRect;
@@ -52,7 +52,7 @@ const TypeAheadPopup = <T,>({
 }: TypeAheadPopupProps<T>) => (
   <div
     className="fixed z-[800] rounded-lg border border-border bg-card shadow-xl overflow-hidden"
-    style={{ top: rect.top, left: rect.left, width: rect.width }}
+    style={{ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width }}
     onPointerDown={onPointerDown}
   >
     <div className="p-2 border-b border-border/40 flex items-center gap-2">

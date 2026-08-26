@@ -50,20 +50,26 @@ export const useClickOutside = (
   }, [active]);
 };
 
-export type PopupRect = { top: number; left: number; width: number };
+export type PopupRect = { left: number; width: number; top?: number; bottom?: number };
 
 /**
- * Tracks the floating-panel position for a portaled dropdown anchored below
+ * Tracks the floating-panel position for a portaled dropdown anchored to
  * `anchorRef`, and closes it (via `onClose`) on outside-pointerdown, Escape,
  * scroll, or resize. Extracted from the near-identical position-tracking
  * effects in `Select.tsx` and `TypeAhead.tsx` — both computed the same
- * `{top, left, width}` rect off `getBoundingClientRect()` with the same gap
- * and the same four listeners.
+ * `{left, width}` rect off `getBoundingClientRect()` with the same gap and
+ * the same four listeners.
+ *
+ * `placement` picks which side of the anchor the popup grows from: "bottom"
+ * (default) sets `rect.top` below the anchor; "top" sets `rect.bottom`
+ * (measured from the viewport bottom) above the anchor, so the popup grows
+ * upward instead of being clipped by the end of the page.
  */
 export const usePopupPosition = (
   open: boolean,
   onClose: () => void,
   gapPx = 4,
+  placement: "top" | "bottom" = "bottom",
 ): { anchorRef: RefObject<HTMLDivElement>; rect: PopupRect | null } => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const [rect, setRect] = useState<PopupRect | null>(null);
@@ -78,7 +84,11 @@ export const usePopupPosition = (
     const updatePosition = (): void => {
       const r = anchorRef.current?.getBoundingClientRect();
       if (!r) return;
-      setRect({ top: r.bottom + gapPx, left: r.left, width: r.width });
+      setRect(
+        placement === "top"
+          ? { bottom: window.innerHeight - r.top + gapPx, left: r.left, width: r.width }
+          : { top: r.bottom + gapPx, left: r.left, width: r.width },
+      );
     };
     updatePosition();
 
@@ -99,7 +109,7 @@ export const usePopupPosition = (
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [open, gapPx]);
+  }, [open, gapPx, placement]);
 
   return { anchorRef, rect };
 };

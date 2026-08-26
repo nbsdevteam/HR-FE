@@ -22,6 +22,7 @@ type TypeAheadProps<T> = {
   disabled?: boolean;
   showDescription?: boolean;
   className?: string;
+  openUpward?: boolean;
 };
 
 function findItem<T>(items: T[], valueKey: string, getId: (item: T) => string): T | null {
@@ -46,6 +47,7 @@ const TypeAhead = <T,>({
   disabled = false,
   showDescription = true,
   className = "",
+  openUpward = false,
 }: TypeAheadProps<T>) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -53,7 +55,12 @@ const TypeAhead = <T,>({
     setOpen(false);
     setQuery("");
   }, []);
-  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(open, handleClose);
+  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(
+    open,
+    handleClose,
+    4,
+    openUpward ? "top" : "bottom",
+  );
   const searchRef = useRef<HTMLInputElement>(null);
 
   const exclude = useMemo(

@@ -28,6 +28,7 @@ type SelectProps = {
   title?: string;
   "aria-label"?: string;
   onBlur?: () => void;
+  openUpward?: boolean;
 };
 
 const DEFAULT_LABEL_CLASS = "text-foreground block mb-1.5";
@@ -52,10 +53,16 @@ const Select = ({
   title,
   "aria-label": ariaLabel,
   onBlur,
+  openUpward = false,
 }: SelectProps) => {
   const [open, setOpen] = useState(false);
   const handleClose = useCallback((): void => setOpen(false), []);
-  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(open, handleClose);
+  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(
+    open,
+    handleClose,
+    4,
+    openUpward ? "top" : "bottom",
+  );
 
   const normalized = options.map(normalizeOption);
   const selected = normalized.find(
@@ -127,7 +134,12 @@ const Select = ({
         ? createPortal(
             <div
               className="fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
-              style={{ top: popupRect.top, left: popupRect.left, width: popupRect.width }}
+              style={{
+                top: popupRect.top,
+                bottom: popupRect.bottom,
+                left: popupRect.left,
+                width: popupRect.width,
+              }}
               role="listbox"
               onPointerDown={handleDropdownPointerDown}
             >
