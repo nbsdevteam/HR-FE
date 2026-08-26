@@ -43,6 +43,7 @@ export const useEmployeesPage = () => {
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,
+    designations,
     employeeOptions: selectedEmployeeOptions,
     handleDetailClose,
     handleDetailSave,

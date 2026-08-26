@@ -31,6 +31,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
   const {
     addingNewDept,
     allDepts,
+    allPositions,
     creatingDept,
     editData,
     handleAddAttachment,
@@ -46,6 +47,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handleDepartmentSelect,
     handleEditField,
     handleManagerChange,
+    handlePositionSelect,
     handleSave,
     handleTermination,
     isEditing,
@@ -54,6 +56,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     newCustody,
     newDeptName,
     resolvedDepartmentId,
+    resolvedPositionId,
     saveError,
     saving,
     setAddingNewDept,
@@ -151,12 +154,15 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 isEditing={isEditing}
                 allDepts={allDepts}
                 departmentId={resolvedDepartmentId}
+                allPositions={allPositions}
+                positionId={resolvedPositionId}
                 allEmployees={allEmployees}
                 addingNewDept={addingNewDept}
                 creatingDept={creatingDept}
                 newDeptName={newDeptName}
                 onFieldChange={handleEditField}
                 onDepartmentSelect={handleDepartmentSelect}
+                onPositionSelect={handlePositionSelect}
                 onManagerChange={handleManagerChange}
                 onStartAddingDept={handleStartAddingDept}
                 onNewDeptNameChange={setNewDeptName}

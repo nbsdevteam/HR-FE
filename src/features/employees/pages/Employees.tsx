@@ -35,6 +35,7 @@ const Employees = () => {
     deleteConfirm,
     deleting,
     designationOptions,
+    designations,
     deviceSyncedSet,
     deviceSyncStatus,
     employeeOptions,
@@ -134,6 +135,7 @@ const Employees = () => {
               onSave={handleDetailSave}
               allEmployees={employeeOptions}
               dbDepartments={dbDepartmentOptions}
+              designations={designations}
             />
           </Suspense>
         )}

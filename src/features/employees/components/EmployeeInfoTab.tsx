@@ -1,14 +1,15 @@
 import { motion } from "motion/react";
 import {
   Mail, Phone, MapPin, Wallet, CalendarCheck, CalendarX,
-  Hash, Briefcase, PhoneCall, Smartphone, FileText, ClipboardList, Users,
+  Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
 import { Select, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { DepartmentOption, Employee, EmployeeOption } from "../types";
+import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
+import EmployeePositionField from "./EmployeePositionField";
 
 const inputClass = "w-full bg-transparent border-b-2 border-primary/40 focus:border-primary px-1 py-1.5 text-foreground outline-none transition-colors";
 const getManagerOptionId = (emp: EmployeeOption): string => emp.dbId;
@@ -19,12 +20,15 @@ type EmployeeInfoTabProps = {
   isEditing: boolean;
   allDepts: DepartmentOption[];
   departmentId: string | null;
+  allPositions: PositionOption[];
+  positionId: string | null;
   allEmployees: EmployeeOption[];
   addingNewDept: boolean;
   creatingDept: boolean;
   newDeptName: string;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
   onDepartmentSelect: (deptId: string) => void;
+  onPositionSelect: (positionId: string) => void;
   onManagerChange: (managerId: string | null) => void;
   onStartAddingDept: () => void;
   onNewDeptNameChange: (value: string) => void;
@@ -37,12 +41,15 @@ const EmployeeInfoTab = ({
   isEditing,
   allDepts,
   departmentId,
+  allPositions,
+  positionId,
   allEmployees,
   addingNewDept,
   creatingDept,
   newDeptName,
   onFieldChange,
   onDepartmentSelect,
+  onPositionSelect,
   onManagerChange,
   onStartAddingDept,
   onNewDeptNameChange,
@@ -51,10 +58,6 @@ const EmployeeInfoTab = ({
 }: EmployeeInfoTabProps) => {
   const handleEmployeeNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("employeeNumber", e.target.value);
-  };
-
-  const handlePositionChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("position", e.target.value);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -137,13 +140,13 @@ const EmployeeInfoTab = ({
         onConfirmNewDept={onConfirmNewDept}
         onCancelNewDept={onCancelNewDept}
       />
-      <EmployeeFieldRow
-        icon={Briefcase} label={arabicSource("shared.job_title")} value={editData.position}
+      <EmployeePositionField
+        position={editData.position}
+        positionId={positionId}
+        allPositions={allPositions}
         isEditing={isEditing}
-        editElement={
-          <input value={editData.position} onChange={handlePositionChange}
-            className={inputClass} style={{ fontSize: 14 }} />
-        }
+        inputClass={inputClass}
+        onSelectPosition={onPositionSelect}
       />
       <EmployeeFieldRow
         icon={Mail} label={arabicSource("common.email")} value={editData.email} dir="ltr"

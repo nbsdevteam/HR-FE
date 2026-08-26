@@ -3,18 +3,21 @@ import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type {
-  Attachment,
-  Custody,
   DepartmentOption,
   Employee,
   EmployeeDetailModalTab,
   EmployeeDetailPanelProps,
+  PositionOption,
 } from "../types";
 import { errorMessage } from "../utils/errorMessage";
+import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
+import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
+import { useEmployeeTermination } from "./useEmployeeTermination";
 
-const todayStr = () => new Date().toISOString().split("T")[0];
+const positionLabel = (p: { id: string; title_ar: string; title_en: string | null }): string =>
+  p.title_ar || p.title_en || p.id;
 
-export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [] }: EmployeeDetailPanelProps) => {
+export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [], designations = [] }: EmployeeDetailPanelProps) => {
   const [modalTab, setModalTab] = useState<EmployeeDetailModalTab>("info");
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Employee>({ ...employee });
@@ -24,23 +27,9 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [newDeptName, setNewDeptName] = useState("");
   const [creatingDept, setCreatingDept] = useState(false);
 
-  // Add custody form
-  const [showAddCustody, setShowAddCustody] = useState(false);
-  const [newCustody, setNewCustody] = useState<{ item: string; description: string; dateReceived: string; serialNumber: string }>({
-    item: "", description: "", dateReceived: todayStr(), serialNumber: "",
-  });
-
-  // Add attachment form
-  const [showAddAttachment, setShowAddAttachment] = useState(false);
-  const [newAttachment, setNewAttachment] = useState<{ name: string; type: string }>({
-    name: "", type: "PDF",
-  });
-
-  // Termination flow
-  const [showTerminationDialog, setShowTerminationDialog] = useState(false);
-  const [terminationOptions, setTerminationOptions] = useState({ removeFace: true, removeFingerprint: true, removePerson: true });
-  const [terminationLoading, setTerminationLoading] = useState(false);
-  const [terminationResult, setTerminationResult] = useState<string | null>(null);
+  const custodyForm = useEmployeeCustodyForm(setEditData);
+  const attachmentForm = useEmployeeAttachmentForm(setEditData);
+  const termination = useEmployeeTermination(employee, onSave);
 
   // Some endpoints (list/search) may only carry the department name, not its
   // numeric id, on a given row. Resolve the id from the backend department list
@@ -63,6 +52,22 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     return depts;
   }, [dbDepartments, resolvedDepartmentId, editData.department]);
 
+  // Same id-resolution safety net as department, applied to job title: the backend
+  // field is `designation_id`, not free text, so a missing id must never become a
+  // blind `null` on save.
+  const resolvedPositionId = useMemo(() => {
+    if (editData.positionId) return editData.positionId;
+    return designations.find(p => positionLabel(p) === editData.position)?.id || null;
+  }, [editData.positionId, editData.position, designations]);
+
+  const allPositions = useMemo<PositionOption[]>(() => {
+    const positions = designations.map(p => ({ id: p.id, name: positionLabel(p) }));
+    if (resolvedPositionId && !positions.some(p => p.id === resolvedPositionId)) {
+      positions.push({ id: resolvedPositionId, name: editData.position });
+    }
+    return positions;
+  }, [designations, resolvedPositionId, editData.position]);
+
   const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
@@ -72,6 +77,12 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     if (!dept) return;
     setEditData(prev => ({ ...prev, departmentId: dept.id, department: dept.name }));
   }, [allDepts]);
+
+  const handlePositionSelect = useCallback((positionId: string) => {
+    const position = allPositions.find(p => p.id === positionId);
+    if (!position) return;
+    setEditData(prev => ({ ...prev, positionId: position.id, position: position.name }));
+  }, [allPositions]);
 
   const handleManagerChange = useCallback((managerId: string | null) => {
     setEditData(prev => ({
@@ -119,6 +130,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         end_date: editData.endDate || null,
         status: editData.status,
         department_id: resolvedDepartmentId,
+        designation_id: resolvedPositionId,
         address: editData.address || null,
         national_id: editData.nationalId,
         emergency_contact: editData.emergencyContact,
@@ -132,7 +144,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
 
       // Trigger the termination flow when the employee status changes to ended.
       if (editData.status === arabicSource("common.finished") && employee.status !== arabicSource("common.finished")) {
-        setShowTerminationDialog(true);
+        termination.setShowTerminationDialog(true);
       } else if (editData.status !== arabicSource("common.finished")) {
         // Auto-sync name/info changes to biometric device
         try {
@@ -151,147 +163,43 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     } finally {
       setSaving(false);
     }
-  }, [editData, employee, onSave, resolvedDepartmentId]);
+  }, [editData, employee, onSave, resolvedDepartmentId, resolvedPositionId, termination.setShowTerminationDialog]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
     setEditData({ ...employee });
-    setShowAddCustody(false);
-    setShowAddAttachment(false);
-  }, [employee]);
-
-  const handleTermination = useCallback(async () => {
-    setTerminationLoading(true);
-    setTerminationResult(null);
-    try {
-      const res = await fetch(`${SYNC_API}/device/remove-credentials/${employee.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(terminationOptions),
-      });
-      const data = await res.json();
-      if (data.success) {
-        const parts: string[] = [];
-        if (data.results?.face === "removed") parts.push(arabicSource("common.face_image"));
-        if (data.results?.fingerprint === "removed") parts.push(arabicSource("common.footprint"));
-        if (data.results?.person === "removed") parts.push(arabicSource("shared.calculation_from_the_device"));
-        setTerminationResult(parts.length > 0 ? `${arabicSource("shared.removed")} ${parts.join("، ")}` : arabicSource("shared.the_operation_was_completed"));
-      } else {
-        setTerminationResult(arabicSource("shared.removal_from_the_device_failed"));
-      }
-    } catch {
-      setTerminationResult(arabicSource("shared.unable_to_connect_to_device_you_can_remove_later_from_the_finger"));
-    }
-    setTerminationLoading(false);
-    // Close dialog after showing result
-    setTimeout(() => {
-      setShowTerminationDialog(false);
-      setTerminationResult(null);
-      onSave?.();
-    }, 2500);
-  }, [employee, terminationOptions, onSave]);
-
-  const handleCloseTerminationDialog = useCallback(() => {
-    setShowTerminationDialog(false);
-    setTerminationResult(null);
-  }, []);
-
-  // ---- Custody handlers ----
-  const handleAddCustody = useCallback(() => {
-    if (!newCustody.item.trim()) return;
-    setEditData(prev => {
-      const nextId = prev.custodies.length > 0 ? Math.max(...prev.custodies.map(c => c.id)) + 1 : 1;
-      const custody: Custody = {
-        id: nextId,
-        item: newCustody.item.trim(),
-        description: newCustody.description.trim(),
-        dateReceived: newCustody.dateReceived,
-        ...(newCustody.serialNumber.trim() ? { serialNumber: newCustody.serialNumber.trim() } : {}),
-      };
-      return { ...prev, custodies: [...prev.custodies, custody] };
-    });
-    setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" });
-    setShowAddCustody(false);
-  }, [newCustody]);
-
-  const handleCancelAddCustody = useCallback(() => {
-    setShowAddCustody(false);
-    setNewCustody({ item: "", description: "", dateReceived: todayStr(), serialNumber: "" });
-  }, []);
-
-  const handleDeleteCustody = useCallback((id: number) => {
-    setEditData(prev => ({ ...prev, custodies: prev.custodies.filter(c => c.id !== id) }));
-  }, []);
-
-  // ---- Attachment handlers ----
-  const handleAddAttachment = useCallback(() => {
-    if (!newAttachment.name.trim()) return;
-    setEditData(prev => {
-      const nextId = prev.attachments.length > 0 ? Math.max(...prev.attachments.map(a => a.id)) + 1 : 1;
-      const att: Attachment = {
-        id: nextId,
-        name: newAttachment.name.trim(),
-        type: newAttachment.type,
-        date: todayStr(),
-      };
-      return { ...prev, attachments: [...prev.attachments, att] };
-    });
-    setNewAttachment({ name: "", type: "PDF" });
-    setShowAddAttachment(false);
-  }, [newAttachment]);
-
-  const handleCancelAddAttachment = useCallback(() => {
-    setShowAddAttachment(false);
-    setNewAttachment({ name: "", type: "PDF" });
-  }, []);
-
-  const handleDeleteAttachment = useCallback((id: number) => {
-    setEditData(prev => ({ ...prev, attachments: prev.attachments.filter(a => a.id !== id) }));
-  }, []);
+    custodyForm.setShowAddCustody(false);
+    attachmentForm.setShowAddAttachment(false);
+  }, [employee, custodyForm.setShowAddCustody, attachmentForm.setShowAddAttachment]);
 
   return {
     addingNewDept,
     allDepts,
+    allPositions,
     creatingDept,
     editData,
-    handleAddAttachment,
-    handleAddCustody,
-    handleCancelAddAttachment,
-    handleCancelAddCustody,
     handleCancelEdit,
     handleCancelNewDept,
-    handleCloseTerminationDialog,
     handleConfirmNewDept,
-    handleDeleteAttachment,
-    handleDeleteCustody,
     handleDepartmentSelect,
     handleEditField,
     handleManagerChange,
+    handlePositionSelect,
     handleSave,
-    handleTermination,
     isEditing,
     modalTab,
-    newAttachment,
-    newCustody,
     newDeptName,
     resolvedDepartmentId,
+    resolvedPositionId,
     saveError,
     saving,
     setAddingNewDept,
     setEditData,
     setIsEditing,
     setModalTab,
-    setNewAttachment,
-    setNewCustody,
     setNewDeptName,
-    setShowAddAttachment,
-    setShowAddCustody,
-    setTerminationOptions,
-    showAddAttachment,
-    showAddCustody,
-    showTerminationDialog,
-    terminationLoading,
-    terminationOptions,
-    terminationResult,
+    ...custodyForm,
+    ...attachmentForm,
+    ...termination,
   };
 };

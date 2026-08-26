@@ -1,3 +1,5 @@
+import type { DbPosition } from "@/shared/hooks";
+
 export type EmployeeViewMode = "list" | "kanban";
 
 export type EmployeeSortKey =
@@ -61,6 +63,7 @@ export type Employee = {
   employeeNumber: string;
   name: string;
   position: string;
+  positionId: string | null;
   department: string;
   departmentId: string | null;
   email: string;
@@ -97,6 +100,11 @@ export type DepartmentOption = {
   name: string;
 };
 
+export type PositionOption = {
+  id: string;
+  name: string;
+};
+
 export type EmployeeDetailModalTab = "info" | "custodies" | "leaves" | "attachments";
 
 export type EmployeeDetailPanelProps = {
@@ -105,4 +113,5 @@ export type EmployeeDetailPanelProps = {
   onSave?: () => void;
   allEmployees?: EmployeeOption[];
   dbDepartments?: DepartmentOption[];
+  designations?: DbPosition[];
 };
