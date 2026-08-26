@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Eye, FileText } from "lucide-react";
 import StatusBadge from "@/shared/components/StatusBadge";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { categoryIcons, categoryLabels } from "../constants/reports";
 
@@ -18,6 +19,8 @@ const ReportTemplateCard = ({
   onSelect,
 }: ReportTemplateCardProps) => {
   const Icon = categoryIcons[template.category] || FileText;
+  const { primary: templateName, secondary: templateNameSecondary } =
+    useLocalizedName(template.name_ar, template.name_en);
 
   const handleSelectClick = useCallback((): void => {
     onSelect(template);
@@ -36,8 +39,12 @@ const ReportTemplateCard = ({
           <Icon className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-foreground line-clamp-1" title={template.name_ar}>
-            {template.name_ar}
+          <h3
+            className="text-foreground line-clamp-1"
+            title={templateNameSecondary || undefined}
+            data-i18n-ignore
+          >
+            {templateName}
           </h3>
           <p
             className="text-muted-foreground mt-1 line-clamp-2 min-h-[36px]"
@@ -75,3 +82,15 @@ const ReportTemplateCard = ({
 };
 
 export default memo(ReportTemplateCard);
+
+// const address = {
+//   country: "",
+//   state: "",
+//   city: "",
+//   residance: "",
+// };
+
+// const workLocation = "local" || "remote";
+// const pasport = "";
+
+// const toRemember = "neighbor Hood, ally, house number";

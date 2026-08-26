@@ -33,12 +33,17 @@ export type DeleteEmployeeTarget = {
   name: string;
 };
 
+export type CustodyStatus = "active" | "returned" | "damaged" | "lost";
+
 export type Custody = {
-  id: number;
+  id: string;
   item: string;
   description: string;
   dateReceived: string;
   serialNumber?: string;
+  status: CustodyStatus;
+  notes: string;
+  returnDate: string | null;
 };
 
 export type LeaveRecord = {
@@ -85,7 +90,6 @@ export type Employee = {
   bloodType: string;
   managerId: string | null;
   managerName: string;
-  custodies: Custody[];
   leaves: LeaveRecord[];
   attachments: Attachment[];
 };

@@ -7,6 +7,7 @@ import {
   mapExitChecklistItem,
   mapExitProcess,
   mapExitChecklistLine,
+  mapCustody,
   mapIssue,
   mapApprovalWorkflow,
   mapApprovalRequest,
@@ -19,6 +20,7 @@ import type {
   DbExitChecklistItem,
   DbExitProcess,
   DbExitChecklist,
+  DbCustody,
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
@@ -105,10 +107,10 @@ export const updateExitChecklistLine = exitChecklist?.update;
 
 export const fetchCustodies = (
   employeeId?: string | number,
-): Promise<any[]> => {
+): Promise<DbCustody[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
-  return items<any>("/api/hr/custodies/list", params);
+  return fetchList("/api/hr/custodies/list", mapCustody, params);
 };
 
 export const createCustody = (payload: Record<string, unknown>) =>

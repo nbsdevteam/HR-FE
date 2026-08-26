@@ -6,6 +6,7 @@ import type {
   DbExitChecklistItem,
   DbExitProcess,
   DbExitChecklist,
+  DbCustody,
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
@@ -128,6 +129,24 @@ export const mapExitChecklistLine = (r: any): DbExitChecklist => {
     completed_at: r.completed_at || null,
     notes: r.notes || null,
     created_at: r.created_at || empty,
+  };
+}
+
+export const mapCustody = (r: any): DbCustody => {
+  return {
+    id: sid(r.id),
+    legacy_id: r.legacy_id || empty,
+    employee_id: sid(r.employee_id),
+    employee_name: r.employee_name || empty,
+    item: r.item || empty,
+    description: r.description || empty,
+    serial_number: r.serial_number || empty,
+    date_received: r.date_received || null,
+    return_date: r.return_date || null,
+    status: r.status || "active",
+    notes: r.notes || empty,
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
   };
 }
 

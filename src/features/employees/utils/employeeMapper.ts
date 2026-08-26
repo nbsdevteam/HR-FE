@@ -53,7 +53,6 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     bloodType: employee.blood_type || "",
     managerId: employee.manager_id || null,
     managerName: manager ? empDisplayName(manager) : arabicSource("common.no_manager"),
-    custodies: [],
     leaves: [],
     attachments: [],
   };

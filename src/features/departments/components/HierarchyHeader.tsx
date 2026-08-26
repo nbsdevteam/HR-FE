@@ -7,6 +7,7 @@ import {
   Building2,
   Download,
   Printer,
+  Settings,
   UserPlus,
 } from "lucide-react";
 import { Button, SearchInput } from "@/shared/components";
@@ -24,6 +25,8 @@ type HierarchyHeaderProps = {
   searchQuery: string;
   showSearchResults: boolean;
   searchResults: OrgNode[];
+  canManage?: boolean;
+  onOpenManagement?: () => void;
   onShowUnlinked: () => void;
   onAddEmployee: () => void;
   onAddDepartment: () => void;
@@ -43,6 +46,8 @@ const HierarchyHeader = ({
   searchQuery,
   showSearchResults,
   searchResults,
+  canManage = false,
+  onOpenManagement,
   onShowUnlinked,
   onAddEmployee,
   onAddDepartment,
@@ -67,6 +72,12 @@ const HierarchyHeader = ({
       </p>
     </div>
     <div className="flex items-center gap-2 flex-wrap">
+      {canManage && onOpenManagement && (
+        <HeaderActionButton icon={Settings} onClick={onOpenManagement}>
+          {arabicSource("org_structure.manage_structure")}
+        </HeaderActionButton>
+      )}
+
       {unlinkedCount > 0 && (
         <HeaderActionButton
           icon={AlertTriangle}

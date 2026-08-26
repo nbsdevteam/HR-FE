@@ -27,7 +27,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [newDeptName, setNewDeptName] = useState("");
   const [creatingDept, setCreatingDept] = useState(false);
 
-  const custodyForm = useEmployeeCustodyForm(setEditData);
+  const custodyForm = useEmployeeCustodyForm(employee.dbId);
   const attachmentForm = useEmployeeAttachmentForm(setEditData);
   const termination = useEmployeeTermination(employee, onSave);
 

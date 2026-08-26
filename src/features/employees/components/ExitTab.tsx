@@ -5,7 +5,7 @@ import * as odooData from "@/shared/api/odooData";
 import { Button, DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import {
   useExitChecklist,
-  type DbEmployee, type DbExitProcess, type DbExitChecklistItem,
+  type DbEmployee, type DbExitProcess, type DbExitChecklistItem, type DbCustody,
 } from "@/shared/hooks";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
@@ -13,9 +13,6 @@ import { localizedAlert } from "@/i18n/native";
 import { errorMessage } from "../utils/errorMessage";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
-
-/** Minimal shape of a custody row — `odooData.fetchCustodies` is typed `any[]`. */
-type OpenCustody = { id: string; return_date?: string | null; status?: string | null };
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";
 import ExitProcessTableRow from "./ExitProcessTableRow";
 import ExitProcessDetailView from "./ExitProcessDetailView";
@@ -104,19 +101,16 @@ const ExitTab = ({
         const proc = processes.find(p => p.id === processId);
         if (proc) {
           await odooData.setEmployeeStatus(proc.employee_id, "exited");
-          // Return open custodies so exit clears outstanding assets.
+          // Return open custodies so exit clears outstanding assets. The
+          // backend stamps return_date to the Baghdad business day itself
+          // when status flips to "returned" and no date is sent — see
+          // FE hand-off §4.
           try {
-            const open: OpenCustody[] = await odooData.fetchCustodies(proc.employee_id);
-            const today = new Date().toISOString().slice(0, 10);
+            const open: DbCustody[] = await odooData.fetchCustodies(proc.employee_id);
             await Promise.all(
               (open || [])
                 .filter(c => !c.return_date && c.status !== "returned")
-                .map(c =>
-                  odooData.updateCustody(c.id, {
-                    status: "returned",
-                    return_date: today,
-                  }),
-                ),
+                .map(c => odooData.updateCustody(c.id, { status: "returned" })),
             );
           } catch (custodyErr) {
             console.error(custodyErr);

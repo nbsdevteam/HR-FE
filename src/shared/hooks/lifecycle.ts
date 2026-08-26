@@ -109,6 +109,22 @@ export interface DbExitChecklist {
   created_at: string;
 }
 
+export interface DbCustody {
+  id: string;
+  legacy_id: string;
+  employee_id: string;
+  employee_name: string;
+  item: string;
+  description: string;
+  serial_number: string;
+  date_received: string | null;
+  return_date: string | null;
+  status: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DbApprovalWorkflow {
   id: string;
   name_ar: string;

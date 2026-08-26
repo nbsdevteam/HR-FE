@@ -33,6 +33,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     allDepts,
     allPositions,
     creatingDept,
+    custodies,
+    custodiesLoading,
+    custodyError,
     editData,
     handleAddAttachment,
     handleAddCustody,
@@ -50,6 +53,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handlePositionSelect,
     handleSave,
     handleTermination,
+    handleUpdateCustody,
     isEditing,
     modalTab,
     newAttachment,
@@ -141,7 +145,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         )}
         <EmployeeDetailTabs
           modalTab={modalTab}
-          custodiesCount={editData.custodies.length}
+          custodiesCount={custodies.length}
           leavesCount={editData.leaves.length}
           attachmentsCount={editData.attachments.length}
           onSelect={setModalTab}
@@ -173,7 +177,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
 
             {modalTab === "custodies" && (
               <EmployeeCustodiesTab
-                custodies={editData.custodies}
+                custodies={custodies}
+                loading={custodiesLoading}
+                error={custodyError}
                 isEditing={isEditing}
                 showAddCustody={showAddCustody}
                 newCustody={newCustody}
@@ -182,6 +188,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 onConfirmAddCustody={handleAddCustody}
                 onCancelAddCustody={handleCancelAddCustody}
                 onDeleteCustody={handleDeleteCustody}
+                onUpdateCustody={handleUpdateCustody}
               />
             )}
 

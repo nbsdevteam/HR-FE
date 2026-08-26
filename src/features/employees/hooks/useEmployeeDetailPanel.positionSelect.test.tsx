@@ -33,16 +33,15 @@ const baseEmployee: Employee = {
   bloodType: "",
   managerId: null,
   managerName: "",
-  custodies: [],
   leaves: [],
   attachments: [],
 };
 
 const designations: DbPosition[] = [
-  { id: "1", title_ar: "محاسب", title_en: "Accountant", department_id: null, reports_to_position_id: null, level: 1, max_headcount: 1, is_active: true, description: null, created_at: "", updated_at: "" },
-  { id: "2", title_ar: "مدير تقنية المعلومات", title_en: "IT Manager", department_id: null, reports_to_position_id: null, level: 1, max_headcount: 1, is_active: true, description: null, created_at: "", updated_at: "" },
-  { id: "3", title_ar: "", title_en: "Call Center Agent", department_id: null, reports_to_position_id: null, level: 1, max_headcount: 1, is_active: true, description: null, created_at: "", updated_at: "" },
-  { id: "4", title_ar: "محاسب", title_en: "Accountant (duplicate name)", department_id: null, reports_to_position_id: null, level: 1, max_headcount: 1, is_active: true, description: null, created_at: "", updated_at: "" },
+  { id: "1", legacy_id: "", title_ar: "محاسب", title_en: "Accountant", department_id: null, department_name: null, reports_to_position_id: null, reports_to_job_name: null, level: 1, max_headcount: 1, employee_count: 0, is_active: true, description: null, created_at: "", updated_at: "" },
+  { id: "2", legacy_id: "", title_ar: "مدير تقنية المعلومات", title_en: "IT Manager", department_id: null, department_name: null, reports_to_position_id: null, reports_to_job_name: null, level: 1, max_headcount: 1, employee_count: 0, is_active: true, description: null, created_at: "", updated_at: "" },
+  { id: "3", legacy_id: "", title_ar: "", title_en: "Call Center Agent", department_id: null, department_name: null, reports_to_position_id: null, reports_to_job_name: null, level: 1, max_headcount: 1, employee_count: 0, is_active: true, description: null, created_at: "", updated_at: "" },
+  { id: "4", legacy_id: "", title_ar: "محاسب", title_en: "Accountant (duplicate name)", department_id: null, department_name: null, reports_to_position_id: null, reports_to_job_name: null, level: 1, max_headcount: 1, employee_count: 0, is_active: true, description: null, created_at: "", updated_at: "" },
 ];
 
 const Harness = () => {

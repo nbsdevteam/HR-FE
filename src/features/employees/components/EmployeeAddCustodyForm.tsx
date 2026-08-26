@@ -1,8 +1,11 @@
 import { arabicSource } from "@/i18n/source";
+import type { CustodyStatus } from "../types";
+import { CUSTODY_STATUS_KEYS, custodyStatusLabels } from "../utils/custodyStatus";
 import DashedAddRecordCard from "./shared/DashedAddRecordCard";
 import DashedRecordField from "./shared/DashedRecordField";
+import DashedRecordSelectField from "./shared/DashedRecordSelectField";
 
-type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string };
+type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string; status: CustodyStatus; notes: string };
 
 type EmployeeAddCustodyFormProps = {
   newCustody: NewCustody;
@@ -10,6 +13,8 @@ type EmployeeAddCustodyFormProps = {
   onConfirm: () => void;
   onCancel: () => void;
 };
+
+const CUSTODY_STATUS_OPTIONS = CUSTODY_STATUS_KEYS.map((key) => ({ value: key, label: custodyStatusLabels[key] }));
 
 const EmployeeAddCustodyForm = ({ newCustody, onChange, onConfirm, onCancel }: EmployeeAddCustodyFormProps) => {
   const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -26,6 +31,14 @@ const EmployeeAddCustodyForm = ({ newCustody, onChange, onConfirm, onCancel }: E
 
   const handleSerialNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onChange({ serialNumber: e.target.value });
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    onChange({ status: e.target.value as CustodyStatus });
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onChange({ notes: e.target.value });
   };
 
   return (
@@ -60,6 +73,18 @@ const EmployeeAddCustodyForm = ({ newCustody, onChange, onConfirm, onCancel }: E
         onChange={handleSerialNumberChange}
         placeholder={arabicSource("shared.optional")}
         dir="ltr"
+      />
+      <DashedRecordSelectField
+        label={arabicSource("common.status")}
+        options={CUSTODY_STATUS_OPTIONS}
+        value={newCustody.status}
+        onChange={handleStatusChange}
+      />
+      <DashedRecordField
+        label={arabicSource("common.notes")}
+        value={newCustody.notes}
+        onChange={handleNotesChange}
+        placeholder={arabicSource("shared.optional")}
       />
     </DashedAddRecordCard>
   );

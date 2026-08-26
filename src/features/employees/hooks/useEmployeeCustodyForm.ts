@@ -1,49 +1,110 @@
-import { useState, useCallback, type Dispatch, type SetStateAction } from "react";
-import type { Custody, Employee } from "../types";
+import { useState, useCallback, useEffect } from "react";
+import * as odooData from "@/shared/api/odooData";
+import type { Custody, CustodyStatus } from "../types";
+import { toCustodies } from "../utils/custodyMapper";
+import { errorMessage } from "../utils/errorMessage";
 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
-type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string };
+type NewCustody = {
+  item: string;
+  description: string;
+  dateReceived: string;
+  serialNumber: string;
+  status: CustodyStatus;
+  notes: string;
+};
 
 const emptyNewCustody = (): NewCustody => ({
-  item: "", description: "", dateReceived: todayStr(), serialNumber: "",
+  item: "", description: "", dateReceived: todayStr(), serialNumber: "", status: "active", notes: "",
 });
 
-export const useEmployeeCustodyForm = (setEditData: Dispatch<SetStateAction<Employee>>) => {
+export const useEmployeeCustodyForm = (employeeId: string) => {
+  const [custodies, setCustodies] = useState<Custody[]>([]);
+  const [custodiesLoading, setCustodiesLoading] = useState(false);
+  const [custodyError, setCustodyError] = useState<string | null>(null);
   const [showAddCustody, setShowAddCustody] = useState(false);
   const [newCustody, setNewCustody] = useState<NewCustody>(emptyNewCustody());
 
-  const handleAddCustody = useCallback(() => {
-    if (!newCustody.item.trim()) return;
-    setEditData(prev => {
-      const nextId = prev.custodies.length > 0 ? Math.max(...prev.custodies.map(c => c.id)) + 1 : 1;
-      const custody: Custody = {
-        id: nextId,
+  const reloadCustodies = useCallback(async () => {
+    if (!employeeId) return;
+    setCustodiesLoading(true);
+    setCustodyError(null);
+    try {
+      const rows = await odooData.fetchCustodies(employeeId);
+      setCustodies(toCustodies(rows));
+    } catch (e: unknown) {
+      setCustodyError(errorMessage(e));
+    } finally {
+      setCustodiesLoading(false);
+    }
+  }, [employeeId]);
+
+  const handleAddCustody = useCallback(async () => {
+    if (!newCustody.item.trim() || !employeeId) return;
+    setCustodyError(null);
+    try {
+      await odooData.createCustody({
+        employee_id: employeeId,
         item: newCustody.item.trim(),
         description: newCustody.description.trim(),
-        dateReceived: newCustody.dateReceived,
-        ...(newCustody.serialNumber.trim() ? { serialNumber: newCustody.serialNumber.trim() } : {}),
-      };
-      return { ...prev, custodies: [...prev.custodies, custody] };
-    });
-    setNewCustody(emptyNewCustody());
-    setShowAddCustody(false);
-  }, [newCustody, setEditData]);
+        date_received: newCustody.dateReceived || null,
+        serial_number: newCustody.serialNumber.trim(),
+        status: newCustody.status,
+        notes: newCustody.notes.trim(),
+      });
+      await reloadCustodies();
+      setNewCustody(emptyNewCustody());
+      setShowAddCustody(false);
+    } catch (e: unknown) {
+      setCustodyError(errorMessage(e));
+    }
+  }, [newCustody, employeeId, reloadCustodies]);
 
   const handleCancelAddCustody = useCallback(() => {
     setShowAddCustody(false);
     setNewCustody(emptyNewCustody());
   }, []);
 
-  const handleDeleteCustody = useCallback((id: number) => {
-    setEditData(prev => ({ ...prev, custodies: prev.custodies.filter(c => c.id !== id) }));
-  }, [setEditData]);
+  const handleDeleteCustody = useCallback(async (id: string) => {
+    setCustodyError(null);
+    try {
+      await odooData.deleteCustody(id);
+      await reloadCustodies();
+    } catch (e: unknown) {
+      setCustodyError(errorMessage(e));
+    }
+  }, [reloadCustodies]);
+
+  // return_date is server-stamped/cleared from `status` alone (see hand-off §4)
+  // — only forward it when the caller is deliberately backdating a return.
+  const handleUpdateCustody = useCallback(async (id: string, patch: Partial<Pick<Custody, "status" | "returnDate">>) => {
+    setCustodyError(null);
+    try {
+      const payload: Record<string, unknown> = {};
+      if (patch.status !== undefined) payload.status = patch.status;
+      if (patch.returnDate !== undefined) payload.return_date = patch.returnDate;
+      await odooData.updateCustody(id, payload);
+      await reloadCustodies();
+    } catch (e: unknown) {
+      setCustodyError(errorMessage(e));
+    }
+  }, [reloadCustodies]);
+
+  useEffect(() => {
+    reloadCustodies();
+  }, [reloadCustodies]);
 
   return {
+    custodies,
+    custodiesLoading,
+    custodyError,
     handleAddCustody,
     handleCancelAddCustody,
     handleDeleteCustody,
+    handleUpdateCustody,
     newCustody,
+    reloadCustodies,
     setNewCustody,
     setShowAddCustody,
     showAddCustody,

@@ -1,16 +1,19 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Laptop } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import type { Custody } from "../types";
+import { LoadingState } from "@/shared/components";
+import type { Custody, CustodyStatus } from "../types";
 import EmployeeAddCustodyForm from "./EmployeeAddCustodyForm";
 import EmployeeCustodyCard from "./EmployeeCustodyCard";
 import TabAddToggleHeader from "./shared/TabAddToggleHeader";
 import TabShellEmptyState from "./shared/TabShellEmptyState";
 
-type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string };
+type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string; status: CustodyStatus; notes: string };
 
 type EmployeeCustodiesTabProps = {
   custodies: Custody[];
+  loading: boolean;
+  error: string | null;
   isEditing: boolean;
   showAddCustody: boolean;
   newCustody: NewCustody;
@@ -18,11 +21,14 @@ type EmployeeCustodiesTabProps = {
   onNewCustodyChange: (patch: Partial<NewCustody>) => void;
   onConfirmAddCustody: () => void;
   onCancelAddCustody: () => void;
-  onDeleteCustody: (id: number) => void;
+  onDeleteCustody: (id: string) => void;
+  onUpdateCustody: (id: string, patch: Partial<Pick<Custody, "status" | "returnDate">>) => void;
 };
 
 const EmployeeCustodiesTab = ({
   custodies,
+  loading,
+  error,
   isEditing,
   showAddCustody,
   newCustody,
@@ -31,6 +37,7 @@ const EmployeeCustodiesTab = ({
   onConfirmAddCustody,
   onCancelAddCustody,
   onDeleteCustody,
+  onUpdateCustody,
 }: EmployeeCustodiesTabProps) => (
   <motion.div
     key="custodies"
@@ -47,6 +54,15 @@ const EmployeeCustodiesTab = ({
       onToggle={onToggleAddCustody}
     />
 
+    {error && (
+      <div
+        className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive"
+        style={{ fontSize: 13 }}
+      >
+        {arabicSource("shared.error_saving")} {error}
+      </div>
+    )}
+
     <AnimatePresence>
       {showAddCustody && isEditing && (
         <EmployeeAddCustodyForm
@@ -58,10 +74,22 @@ const EmployeeCustodiesTab = ({
       )}
     </AnimatePresence>
 
-    {custodies.length > 0 ? custodies.map((custody) => (
-      <EmployeeCustodyCard key={custody.id} custody={custody} isEditing={isEditing} onDelete={onDeleteCustody} />
-    )) : !showAddCustody && (
-      <TabShellEmptyState icon={Laptop} message={arabicSource("shared.there_are_no_receivables_recorded")} />
+    {loading ? (
+      <LoadingState variant="compact" message={arabicSource("common.loading")} />
+    ) : custodies.length > 0 ? (
+      custodies.map((custody) => (
+        <EmployeeCustodyCard
+          key={custody.id}
+          custody={custody}
+          isEditing={isEditing}
+          onDelete={onDeleteCustody}
+          onUpdate={onUpdateCustody}
+        />
+      ))
+    ) : (
+      !showAddCustody && (
+        <TabShellEmptyState icon={Laptop} message={arabicSource("shared.there_are_no_receivables_recorded")} />
+      )
     )}
   </motion.div>
 );

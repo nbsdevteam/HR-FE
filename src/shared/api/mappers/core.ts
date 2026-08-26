@@ -1,5 +1,5 @@
-import type { DbEmployee, DbDepartment } from "../../hooks";
-import { sid, sornull, num, bool, empty } from "./mapHelpers";
+import type { DbEmployee, DbDepartment, DepartmentTreeNode, DepartmentMetadata } from "../../hooks";
+import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
 export const mapEmployee = (r: any): DbEmployee => {
   const address =
@@ -47,12 +47,39 @@ export const mapEmployee = (r: any): DbEmployee => {
 export const mapDepartment = (r: any): DbDepartment => {
   return {
     id: sid(r.id),
+    legacy_id: r.legacy_id || "",
     name: r.name_ar || r.name || "",
+    name_en: r.name || "",
+    name_ar: r.name_ar || null,
+    complete_name: r.complete_name || r.name || "",
     color: r.color || "#888888",
     description: r.description || null,
     manager_id: sornull(r.manager_id),
     default_shift_id: sornull(r.default_shift_id),
+    parent_id: sornull(r.parent_id),
+    parent_name: r.parent_name || null,
+    sort_order: num(r.sort_order),
+    employee_count: num(r.employee_count),
+    is_active: isActive(r),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+  };
+}
+
+export const mapDepartmentTree = (r: any): DepartmentTreeNode => {
+  return {
+    ...mapDepartment(r),
+    total_employee_count: num(r.total_employee_count),
+    children: Array.isArray(r.children) ? r.children.map(mapDepartmentTree) : [],
+  };
+}
+
+export const mapDepartmentMetadata = (r: any): DepartmentMetadata => {
+  return {
+    shifts: r.shifts || [],
+    canManage: bool(r.can_manage),
+    canCreate: bool(r.can_create),
+    canEdit: bool(r.can_edit),
+    canDelete: bool(r.can_delete),
   };
 }

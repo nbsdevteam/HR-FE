@@ -73,13 +73,44 @@ export interface DbEmployee {
 
 export interface DbDepartment {
   id: string;
+  legacy_id: string;
   name: string;
+  /** Raw English name — kept separate from `name` (which prefers Arabic) for the org-structure management form. */
+  name_en: string;
+  name_ar: string | null;
+  complete_name: string;
   color: string;
   description: string | null;
   manager_id: string | null;
   default_shift_id: string | null;
+  parent_id: string | null;
+  parent_name: string | null;
+  sort_order: number;
+  employee_count: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/** One node of the `/api/hr/departments/tree` org chart (backend §3). */
+export interface DepartmentTreeNode extends DbDepartment {
+  children: DepartmentTreeNode[];
+  total_employee_count: number;
+}
+
+export interface DepartmentTreeResult {
+  items: DepartmentTreeNode[];
+  total: number;
+  unassignedEmployeeCount: number;
+}
+
+/** Form choices + `can_manage`/`can_create`/`can_edit`/`can_delete` for the org-structure admin screen (backend §7). */
+export interface DepartmentMetadata {
+  shifts: { value: string; label: string }[];
+  canManage: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 // ——— Hooks ———
@@ -104,6 +135,16 @@ export const useDepartments = () => {
     { cacheKey: "departments" }
   );
   return { departments, loading, error, refetch };
+}
+
+/** Form choices + `can_manage` for the org-structure admin screen (backend §7). */
+export const useDepartmentMetadata = () => {
+  const { data, loading, refetch } = useCachedList(
+    "departmentMetadata",
+    async () => [await odooData.fetchDepartmentMetadata()],
+    "Failed to load department metadata",
+  );
+  return { metadata: data[0] ?? null, loading, refetch };
 }
 
 /**
