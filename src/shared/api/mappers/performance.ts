@@ -2,13 +2,38 @@ import type {
   DbEvaluation,
   DbEvaluationCriteria,
   DbWarning,
+  DbWarningAttachment,
+  DbWarningAttachmentSettings,
   DbPolicy,
   DbTrainingProgram,
   DbTrainingParticipant,
 } from "../../hooks";
 import { sid, sornull, num, empty } from "./mapHelpers";
 
+const DEFAULT_ATTACHMENT_FORMATS = [".pdf", ".doc", ".docx", ".txt", ".rtf", ".png", ".jpg", ".jpeg"];
+
+export const mapWarningAttachment = (r: any): DbWarningAttachment => {
+  return {
+    id: sid(r.id),
+    file_name: r.file_name || "",
+    mimetype: r.mimetype || "",
+    file_size: num(r.file_size),
+    created_at: r.created_at || empty,
+  };
+}
+
+export const mapWarningAttachmentSettings = (r: any): DbWarningAttachmentSettings => {
+  return {
+    attachment_max_mb: num(r.attachment_max_mb, 10),
+    attachment_max_bytes: num(r.attachment_max_bytes, 10485760),
+    attachment_accepted_formats: Array.isArray(r.attachment_accepted_formats)
+      ? r.attachment_accepted_formats
+      : DEFAULT_ATTACHMENT_FORMATS,
+  };
+}
+
 export const mapWarning = (r: any): DbWarning => {
+  const attachments = Array.isArray(r.attachments) ? r.attachments.map(mapWarningAttachment) : [];
   return {
     id: sid(r.id),
     employee_id: sid(r.employee_id),
@@ -19,6 +44,9 @@ export const mapWarning = (r: any): DbWarning => {
     issued_by: r.issued_by_name || sornull(r.issued_by_id) || null,
     status: r.status || "active",
     expiry_date: r.expiry_date || null,
+    duration_months: r.duration_months == null ? null : num(r.duration_months),
+    attachments,
+    attachment_count: num(r.attachment_count, attachments.length),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
   };

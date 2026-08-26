@@ -64,9 +64,16 @@ export const fetchWarnings = (employeeId?: string | number): Promise<DbWarning[]
   return fetchList("/api/hr/warnings/list", mapWarning, params);
 }
 
-export const createWarning = (payload: Record<string, unknown>) =>
-  warnings.create(withEid(payload, ["employee_id"]));
-export const updateWarning = warnings.update;
+/**
+ * Both writers map the response so callers can read the stored `expiry_date`
+ * back instead of reproducing the backend's month-end arithmetic (backend §3).
+ */
+export const createWarning = async (payload: Record<string, unknown>): Promise<DbWarning> =>
+  mapWarning(await warnings.create(withEid(payload, ["employee_id"])));
+export const updateWarning = async (
+  id: string | number,
+  payload: Record<string, unknown>,
+): Promise<DbWarning> => mapWarning(await warnings.update(id, payload));
 export const deleteWarning = warnings.remove;
 
 export const fetchPolicies = (): Promise<DbPolicy[]> =>

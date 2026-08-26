@@ -1,7 +1,11 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
+import type { DbWarning, DbWarningAttachmentSettings } from "@/shared/hooks";
+import { WARNING_EXPIRY_CUSTOM } from "../constants/warnings";
 import { typeLabelToKey } from "../utils/warningKeyMapping";
+import { warningErrorMessage } from "../utils/warningErrorMessage";
+import { useWarningAttachmentPicker } from "./useWarningAttachmentPicker";
 import type { FormData, WarningWithEmployee } from "../types";
 
 const EMPTY_FORM: FormData = {
@@ -9,25 +13,50 @@ const EMPTY_FORM: FormData = {
   type: "",
   reason: "",
   details: "",
+  durationMonths: "",
   expiryDate: "",
 };
 
 type UseWarningFormArgs = {
   warningTypes: string[];
+  attachmentSettings: DbWarningAttachmentSettings | null;
   refetch: () => void;
   setToast: (message: string | null) => void;
 };
 
-export const useWarningForm = ({ warningTypes, refetch, setToast }: UseWarningFormArgs) => {
+/**
+ * Expiry travels as `duration_months` *or* `expiry_date`, never both: sending
+ * an explicit date on update clears the stored month count (backend §3/§4).
+ */
+const expiryFields = (form: FormData): Record<string, unknown> => {
+  if (form.durationMonths === WARNING_EXPIRY_CUSTOM) {
+    return { expiry_date: form.expiryDate || null };
+  }
+  if (form.durationMonths) return { duration_months: Number(form.durationMonths) };
+  return { expiry_date: null };
+};
+
+/** Confirm the term with the date the backend actually stored, never a local calculation. */
+const savedMessage = (saved: DbWarning, baseKey: "warnings.alarm_issued_successfully" | "warnings.alarm_updated_successfully"): string => {
+  const base = arabicSource(baseKey);
+  if (!saved.expiry_date) return base;
+  return `${base} — ${arabicSource("warnings.completion_date")} ${saved.expiry_date}`;
+};
+
+export const useWarningForm = ({ warningTypes, attachmentSettings, refetch, setToast }: UseWarningFormArgs) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<FormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const attachments = useWarningAttachmentPicker({ settings: attachmentSettings });
+  const { buildAttachmentFields, reset: resetAttachments } = attachments;
+
   const resetForm = useCallback(() => {
     setFormData({ ...EMPTY_FORM });
     setEditingId(null);
-  }, []);
+    resetAttachments();
+  }, [resetAttachments]);
 
   const updateFormField = useCallback((patch: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...patch }));
@@ -43,6 +72,7 @@ export const useWarningForm = ({ warningTypes, refetch, setToast }: UseWarningFo
     resetForm();
   }, [resetForm]);
 
+  /** `duration_months` comes back on read so the edit form can pre-select the original term (backend §4). */
   const handleEditWarning = useCallback((warning: WarningWithEmployee) => {
     setEditingId(warning.id);
     setFormData({
@@ -50,6 +80,11 @@ export const useWarningForm = ({ warningTypes, refetch, setToast }: UseWarningFo
       type: warning.type,
       reason: warning.reason,
       details: warning.details || "",
+      durationMonths: warning.duration_months
+        ? String(warning.duration_months)
+        : warning.expiry_date
+          ? WARNING_EXPIRY_CUSTOM
+          : "",
       expiryDate: warning.expiry_date || "",
     });
     setShowForm(true);
@@ -64,41 +99,44 @@ export const useWarningForm = ({ warningTypes, refetch, setToast }: UseWarningFo
 
     setSaving(true);
     try {
+      const base = {
+        employee_id: formData.employeeId,
+        type: typeLabelToKey(formData.type, warningTypes),
+        reason: formData.reason,
+        details: formData.details || null,
+        ...expiryFields(formData),
+      };
+
       if (editingId) {
-        await odooData.updateWarning(editingId, {
-          employee_id: formData.employeeId,
-          type: typeLabelToKey(formData.type, warningTypes),
-          reason: formData.reason,
-          details: formData.details || null,
-          expiry_date: formData.expiryDate || null,
-        });
-        setToast(arabicSource("warnings.alarm_updated_successfully"));
+        const saved = await odooData.updateWarning(editingId, base);
+        setToast(savedMessage(saved, "warnings.alarm_updated_successfully"));
       } else {
-        await odooData.createWarning({
-          employee_id: formData.employeeId,
-          type: typeLabelToKey(formData.type, warningTypes),
-          reason: formData.reason,
-          details: formData.details || null,
+        // Files ride along with the create call, so a rejected attachment
+        // fails the whole request and leaves nothing to clean up (backend §5).
+        const saved = await odooData.createWarning({
+          ...base,
           date: new Date().toISOString().split("T")[0],
-          expiry_date: formData.expiryDate || null,
+          ...(await buildAttachmentFields()),
         });
-        setToast(arabicSource("warnings.alarm_issued_successfully"));
+        setToast(savedMessage(saved, "warnings.alarm_issued_successfully"));
       }
 
       resetForm();
       setShowForm(false);
       refetch();
     } catch (err) {
-      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : arabicSource("warnings.the_operation_failed")}`);
+      // The form stays open with the user's input intact on failure (backend §5).
+      setToast(`${arabicSource("common.error_2")} ${warningErrorMessage(err, arabicSource("warnings.the_operation_failed"))}`);
     } finally {
       setSaving(false);
     }
-  }, [editingId, formData, refetch, resetForm, setToast, warningTypes]);
+  }, [buildAttachmentFields, editingId, formData, refetch, resetForm, setToast, warningTypes]);
 
   return {
     showForm, openNewForm, closeForm,
     formData, updateFormField,
     saving, editingId,
+    attachments,
     handleCreateWarning, handleEditWarning,
   };
 };

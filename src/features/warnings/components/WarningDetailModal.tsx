@@ -3,29 +3,37 @@ import { motion } from "motion/react";
 import { CheckCircle, Trash2, XCircle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Modal, StatusBadge } from "@/shared/components";
+import type { DbWarningAttachmentSettings } from "@/shared/hooks";
 import type { WarningWithEmployee } from "../types";
+import WarningAttachmentsSection from "./WarningAttachmentsSection";
 import WarningDetailRow from "./WarningDetailRow";
 
 type TWarningDetailModalProps = {
   warning: WarningWithEmployee;
   typeColors: Record<string, string>;
   statusColors: Record<string, string>;
+  attachmentSettings: DbWarningAttachmentSettings | null;
+  canEdit: boolean;
   onClose: () => void;
   onEdit: () => void;
   onActivate: () => void;
   onEnd: () => void;
   onDelete: () => void;
+  onAttachmentsChanged: () => void;
 };
 
 const WarningDetailModal = ({
   warning,
   typeColors,
   statusColors,
+  attachmentSettings,
+  canEdit,
   onClose,
   onEdit,
   onActivate,
   onEnd,
   onDelete,
+  onAttachmentsChanged,
 }: TWarningDetailModalProps) => (
   <Modal
     onClose={onClose}
@@ -105,12 +113,28 @@ const WarningDetailModal = ({
           </span>
         </WarningDetailRow>
       )}
+      {/* The term cannot be recomputed from the two dates, so it is shown from
+          the stored `duration_months` alongside the expiry (backend §4). */}
+      {warning.duration_months !== null && (
+        <WarningDetailRow label={arabicSource("warnings.duration")}>
+          <span className="text-foreground">
+            {warning.duration_months} {arabicSource("warnings.months")}
+          </span>
+        </WarningDetailRow>
+      )}
       <WarningDetailRow label={arabicSource("warnings.issued_by_2")}>
         <span className="text-foreground">{warning.issued_by || "—"}</span>
       </WarningDetailRow>
       <WarningDetailRow label={arabicSource("warnings.condition")}>
         <StatusBadge colorClassName={statusColors[warning.status]}>{warning.status}</StatusBadge>
       </WarningDetailRow>
+      <WarningAttachmentsSection
+        warningId={warning.id}
+        attachments={warning.attachments}
+        settings={attachmentSettings}
+        canEdit={canEdit}
+        onChanged={onAttachmentsChanged}
+      />
   </Modal>
 );
 

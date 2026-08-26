@@ -5,6 +5,7 @@ import { arabicSource } from "@/i18n/source";
 import { Button, StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
+import WarningAttachmentIndicator from "./WarningAttachmentIndicator";
 
 type TWarningTableRowProps = {
   warning: WarningWithEmployee;
@@ -59,7 +60,10 @@ const WarningTableRow = ({
       <StatusBadge colorClassName={typeColors[warning.type]}>{warning.type}</StatusBadge>
     </td>
     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
-      {warning.reason}
+      <div className="flex items-center gap-2">
+        <span>{warning.reason}</span>
+        <WarningAttachmentIndicator attachmentCount={warning.attachment_count} />
+      </div>
     </td>
     <td
       className="px-4 py-3 text-muted-foreground"

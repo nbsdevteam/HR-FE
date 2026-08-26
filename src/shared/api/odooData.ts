@@ -15,5 +15,6 @@ export * from "./leaveAttachments";
 export * from "./lifecycle";
 export * from "./recruitment";
 export * from "./performance";
+export * from "./warningAttachments";
 export * from "./reporting";
 export * from "./devices";

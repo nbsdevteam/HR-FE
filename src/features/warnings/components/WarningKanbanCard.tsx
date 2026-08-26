@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import { StatusBadge } from "@/shared/components";
 import type { WarningWithEmployee } from "../types";
 import { severityColor } from "../utils/warningsDisplay";
+import WarningAttachmentIndicator from "./WarningAttachmentIndicator";
 
 type TWarningKanbanCardProps = {
   warning: WarningWithEmployee;
@@ -57,8 +58,9 @@ const WarningKanbanCard = ({
           {warning.reason}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground" style={{ fontSize: 10 }}>
+          <span className="text-muted-foreground flex items-center gap-2" style={{ fontSize: 10 }}>
             {warning.issued_by || "—"}
+            <WarningAttachmentIndicator attachmentCount={warning.attachment_count} fontSize={10} />
           </span>
           <span
             className="text-muted-foreground"

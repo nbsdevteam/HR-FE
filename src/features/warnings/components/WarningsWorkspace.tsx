@@ -2,9 +2,10 @@ import { memo, useCallback, useMemo, useState, lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useEmployees, useWarnings } from "@/shared/hooks";
+import { useEmployees, useWarningAttachmentSettings, useWarnings } from "@/shared/hooks";
 import { useWarningConfig } from "../hooks/useWarningConfig";
 import { useWarningForm } from "../hooks/useWarningForm";
+import { useWarningPermissions } from "../hooks/useWarningPermissions";
 import { useWarningRecordActions } from "../hooks/useWarningRecordActions";
 import { useWarningToast } from "../hooks/useWarningToast";
 import type { WarningViewMode, WarningWithEmployee } from "../types";
@@ -31,15 +32,19 @@ const WarningsWorkspace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [selectedWarning, setSelectedWarning] =
-    useState<WarningWithEmployee | null>(null);
+  // Held by id, not by value, so an attachment upload/delete refetch re-renders
+  // the open detail modal with the warning's new file list.
+  const [selectedWarningId, setSelectedWarningId] = useState<string | null>(null);
 
   const { warnings, loading, refetch } = useWarnings();
   const { employees } = useEmployees();
   const config = useWarningConfig();
+  const { settings: attachmentSettings } = useWarningAttachmentSettings();
+  const { canEdit } = useWarningPermissions();
   const { toast, setToast } = useWarningToast();
   const form = useWarningForm({
     warningTypes: config.warningTypes,
+    attachmentSettings,
     refetch,
     setToast,
   });
@@ -76,12 +81,23 @@ const WarningsWorkspace = () => {
     () => computeWarningStats(filteredWarnings, config.warningTypes),
     [filteredWarnings, config.warningTypes],
   );
+  const selectedWarning = useMemo(
+    () => enrichedWarnings.find((w) => w.id === selectedWarningId) || null,
+    [enrichedWarnings, selectedWarningId],
+  );
+  const editingWarning = useMemo(
+    () => enrichedWarnings.find((w) => w.id === form.editingId) || null,
+    [enrichedWarnings, form.editingId],
+  );
 
-  const closeDetailModal = useCallback(() => setSelectedWarning(null), []);
+  const handleSelectWarning = useCallback((warning: WarningWithEmployee) => {
+    setSelectedWarningId(warning.id);
+  }, []);
+  const closeDetailModal = useCallback(() => setSelectedWarningId(null), []);
   const handleEditFromDetail = useCallback(() => {
     if (!selectedWarning) return;
     form.handleEditWarning(selectedWarning);
-    setSelectedWarning(null);
+    setSelectedWarningId(null);
   }, [form, selectedWarning]);
   const handleActivateFromDetail = useCallback(() => {
     if (!selectedWarning) return;
@@ -89,7 +105,7 @@ const WarningsWorkspace = () => {
       selectedWarning.id,
       arabicSource("common.is_active"),
     );
-    setSelectedWarning(null);
+    setSelectedWarningId(null);
   }, [recordActions, selectedWarning]);
   const handleEndFromDetail = useCallback(() => {
     if (!selectedWarning) return;
@@ -97,12 +113,12 @@ const WarningsWorkspace = () => {
       selectedWarning.id,
       arabicSource("common.finished"),
     );
-    setSelectedWarning(null);
+    setSelectedWarningId(null);
   }, [recordActions, selectedWarning]);
   const handleDeleteFromDetail = useCallback(() => {
     if (!selectedWarning) return;
     recordActions.handleDelete(selectedWarning.id);
-    setSelectedWarning(null);
+    setSelectedWarningId(null);
   }, [recordActions, selectedWarning]);
 
   return (
@@ -145,7 +161,7 @@ const WarningsWorkspace = () => {
               statusColors={config.statusColors}
               typeSeverity={config.typeSeverity}
               warningsByEmployee={warningsByEmployee}
-              onSelectWarning={setSelectedWarning}
+              onSelectWarning={handleSelectWarning}
             />
           ) : (
             <Suspense fallback={null}>
@@ -154,7 +170,7 @@ const WarningsWorkspace = () => {
                 warnings={filteredWarnings}
                 typeColors={config.typeColors}
                 typeSeverity={config.typeSeverity}
-                onSelectWarning={setSelectedWarning}
+                onSelectWarning={handleSelectWarning}
               />
             </Suspense>
           )}
@@ -168,6 +184,9 @@ const WarningsWorkspace = () => {
               warning={selectedWarning}
               typeColors={config.typeColors}
               statusColors={config.statusColors}
+              attachmentSettings={attachmentSettings}
+              canEdit={canEdit}
+              onAttachmentsChanged={refetch}
               onClose={closeDetailModal}
               onEdit={handleEditFromDetail}
               onActivate={handleActivateFromDetail}
@@ -187,6 +206,13 @@ const WarningsWorkspace = () => {
               warningTypes={config.warningTypes}
               saving={form.saving}
               isEditing={!!form.editingId}
+              storedExpiryDate={editingWarning?.expiry_date ?? null}
+              attachmentFiles={form.attachments.files}
+              attachmentError={form.attachments.error}
+              acceptedFormats={form.attachments.acceptedFormats}
+              maxBytes={form.attachments.maxBytes}
+              onFilesSelected={form.attachments.handleFilesSelected}
+              onRemoveFile={form.attachments.handleRemoveFile}
               onFieldChange={form.updateFormField}
               onSubmit={form.handleCreateWarning}
               onClose={form.closeForm}

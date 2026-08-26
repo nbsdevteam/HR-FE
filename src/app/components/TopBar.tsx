@@ -65,7 +65,7 @@ const TopBar = () => {
     (e: React.ChangeEvent<HTMLInputElement>): void => {
       setSearchQuery(e.target.value);
     },
-    []
+    [],
   );
   const handleBellToggle = useCallback(() => setBellOpen((o) => !o), []);
   const handleBellClose = useCallback(() => setBellOpen(false), []);

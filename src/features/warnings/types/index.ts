@@ -5,6 +5,11 @@ export interface FormData {
   type: string;
   reason: string;
   details: string;
+  /**
+   * `""` = no expiry, `WARNING_EXPIRY_CUSTOM` = use `expiryDate`, otherwise a
+   * month count sent as `duration_months` (backend §3).
+   */
+  durationMonths: string;
   expiryDate: string;
 }
 

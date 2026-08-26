@@ -15,7 +15,13 @@ type LanguageOptionProps = {
  * `languageOptions.map(...)` in `LanguageSwitcher` so the menu passes one
  * stable callback instead of a new closure per option on every render.
  */
-const LanguageOption = ({ code, label, dir, selected, onSelect }: LanguageOptionProps) => {
+const LanguageOption = ({
+  code,
+  label,
+  dir,
+  selected,
+  onSelect,
+}: LanguageOptionProps) => {
   const handleClick = useCallback((): void => {
     onSelect(code);
   }, [onSelect, code]);
@@ -27,8 +33,10 @@ const LanguageOption = ({ code, label, dir, selected, onSelect }: LanguageOption
       aria-checked={selected}
       dir={dir}
       onClick={handleClick}
-      className={`flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-start text-sm transition-colors ${
-        selected ? "bg-primary/15 text-primary" : "text-foreground hover:bg-muted/30"
+      className={`flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-start text-sm transition-colors ${
+        selected
+          ? "bg-primary/15 text-primary"
+          : "text-foreground hover:bg-muted/50"
       }`}
     >
       <span>{label}</span>

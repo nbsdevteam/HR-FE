@@ -8,6 +8,8 @@ import { arabicSource } from "@/i18n/source";
 import { Button, InputField, Modal, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import type { FormData } from "../types";
+import WarningAttachmentField from "./WarningAttachmentField";
+import WarningDurationField from "./WarningDurationField";
 
 const inputCls =
   "w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none";
@@ -18,6 +20,14 @@ type TWarningFormModalProps = {
   warningTypes: string[];
   saving: boolean;
   isEditing: boolean;
+  /** Stored `expiry_date` of the record being edited — shown, never recomputed. */
+  storedExpiryDate: string | null;
+  attachmentFiles: File[];
+  attachmentError: string;
+  acceptedFormats: string[];
+  maxBytes: number;
+  onFilesSelected: (files: File[]) => void;
+  onRemoveFile: (name: string) => void;
   onFieldChange: (patch: Partial<FormData>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
@@ -29,6 +39,13 @@ const WarningFormModal = ({
   warningTypes,
   saving,
   isEditing,
+  storedExpiryDate,
+  attachmentFiles,
+  attachmentError,
+  acceptedFormats,
+  maxBytes,
+  onFilesSelected,
+  onRemoveFile,
   onFieldChange,
   onSubmit,
   onClose,
@@ -56,6 +73,10 @@ const WarningFormModal = ({
 
   const handleExpiryDateChange = (expiryDate: string): void => {
     onFieldChange({ expiryDate });
+  };
+
+  const handleDurationChange = (durationMonths: string): void => {
+    onFieldChange({ durationMonths });
   };
 
   return (
@@ -137,20 +158,26 @@ const WarningFormModal = ({
         />
       </div>
 
-      <div>
-        <label
-          className="text-foreground block mb-1.5"
-          style={{ fontSize: 13 }}
-        >
-          {arabicSource("warnings.end_date_optional")}
-        </label>
-        <InputField
-          type="date"
-          value={form.expiryDate}
-          onChange={handleExpiryDateChange}
-          className="w-full h-11 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
+      <WarningDurationField
+        durationMonths={form.durationMonths}
+        expiryDate={form.expiryDate}
+        storedExpiryDate={storedExpiryDate}
+        onDurationChange={handleDurationChange}
+        onExpiryDateChange={handleExpiryDateChange}
+      />
+
+      {/* Files travel with `/warnings/create`; on an existing warning they are
+          managed from the detail modal's upload/delete routes instead. */}
+      {!isEditing && (
+        <WarningAttachmentField
+          files={attachmentFiles}
+          error={attachmentError}
+          acceptedFormats={acceptedFormats}
+          maxBytes={maxBytes}
+          onFilesSelected={onFilesSelected}
+          onRemoveFile={onRemoveFile}
         />
-      </div>
+      )}
 
       <div className="flex gap-3 pt-4">
         <Button

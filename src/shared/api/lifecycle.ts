@@ -40,11 +40,13 @@ export const deleteDocumentType = documentTypes.remove;
 export const fetchDocumentTypes = (): Promise<DbDocumentType[]> =>
   fetchList("/api/hr/document_types/list", mapDocumentType);
 
-export const fetchDocuments = (employeeId?: string): Promise<DbEmployeeDocument[]> => {
+export const fetchDocuments = (
+  employeeId?: string,
+): Promise<DbEmployeeDocument[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (employeeId) params.employee_id = Number(employeeId) || employeeId;
   return fetchList("/api/hr/documents/list", mapDocument, params);
-}
+};
 
 export const createDocument = (payload: Record<string, unknown>) =>
   documents.create(withEid(payload, ["employee_id", "document_type_id"]));
@@ -54,17 +56,21 @@ export const deleteDocument = documents.remove;
 // ─── Slice A: Lifecycle (contracts / exit / custodies) ───────────────
 
 export const fetchContractTypes = (): Promise<DbContractType[]> =>
-  fetchList("/api/hr/contract_types/list", mapContractType, { active_only: true });
+  fetchList("/api/hr/contract_types/list", mapContractType, {
+    active_only: true,
+  });
 
 export const createContractType = contractTypes.create;
 export const updateContractType = contractTypes.update;
 export const deleteContractType = contractTypes.remove;
 
-export const fetchContracts = (employeeId?: string | number): Promise<DbEmployeeContract[]> => {
+export const fetchContracts = (
+  employeeId?: string | number,
+): Promise<DbEmployeeContract[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   return fetchList("/api/hr/contracts/list", mapEmployeeContract, params);
-}
+};
 
 export const createContract = (payload: Record<string, unknown>) =>
   contracts.create(withEid(payload, ["employee_id"]));
@@ -72,7 +78,9 @@ export const updateContract = contracts.update;
 export const deleteContract = contracts.remove;
 
 export const fetchExitChecklistItems = (): Promise<DbExitChecklistItem[]> =>
-  fetchList("/api/hr/exit/checklist_items/list", mapExitChecklistItem, { active_only: true });
+  fetchList("/api/hr/exit/checklist_items/list", mapExitChecklistItem, {
+    active_only: true,
+  });
 
 export const fetchExitProcesses = async (
   employeeId?: string | number,
@@ -88,23 +96,25 @@ export const fetchExitProcesses = async (
     }
   }
   return { processes, checklist };
-}
+};
 
 export const createExitProcess = (payload: Record<string, unknown>) =>
-  exitProcesses.create(withEid(payload, ["employee_id"]));
-export const updateExitProcess = exitProcesses.update;
-export const updateExitChecklistLine = exitChecklist.update;
+  exitProcesses?.create(withEid(payload, ["employee_id"]));
+export const updateExitProcess = exitProcesses?.update;
+export const updateExitChecklistLine = exitChecklist?.update;
 
-export const fetchCustodies = (employeeId?: string | number): Promise<any[]> => {
+export const fetchCustodies = (
+  employeeId?: string | number,
+): Promise<any[]> => {
   const params: Record<string, unknown> = { limit: 500 };
   if (employeeId) params.employee_id = eid(employeeId);
   return items<any>("/api/hr/custodies/list", params);
-}
+};
 
 export const createCustody = (payload: Record<string, unknown>) =>
   custodies.create(withEid(payload, ["employee_id"]));
-export const updateCustody = custodies.update;
-export const deleteCustody = custodies.remove;
+export const updateCustody = custodies?.update;
+export const deleteCustody = custodies?.remove;
 
 export const fetchIssues = (filters?: {
   employeeId?: string | number;
@@ -116,7 +126,7 @@ export const fetchIssues = (filters?: {
   if (filters?.state) params.state = filters.state;
   if (filters?.category) params.category = filters.category;
   return fetchList("/api/hr/issues/list", mapIssue, params);
-}
+};
 
 export const createIssue = (payload: Record<string, unknown>) =>
   issues.create(withEid(payload, ["employee_id"]));
@@ -127,17 +137,25 @@ export const resolveIssue = async (
   resolution_note?: string,
   state = "resolved",
 ) => {
-  return hrCall(`/api/hr/issues/${eid(issueId)}/resolve`, { resolution_note, state });
-}
-
-export const fetchApprovalWorkflows = async (entityType = "leave_request"): Promise<any[]> => {
-  const data = await hrCall<{ items?: any[] }>("/api/hr/approvals/workflows/list", {
-    entity_type: entityType,
-    active_only: true,
+  return hrCall(`/api/hr/issues/${eid(issueId)}/resolve`, {
+    resolution_note,
+    state,
   });
+};
+
+export const fetchApprovalWorkflows = async (
+  entityType = "leave_request",
+): Promise<any[]> => {
+  const data = await hrCall<{ items?: any[] }>(
+    "/api/hr/approvals/workflows/list",
+    {
+      entity_type: entityType,
+      active_only: true,
+    },
+  );
   const rows = data?.items || [];
   return rows.map(mapApprovalWorkflow);
-}
+};
 
 export const createApprovalWorkflow = approvalWorkflows.create;
 export const updateApprovalWorkflow = approvalWorkflows.update;
@@ -153,13 +171,27 @@ export const fetchApprovalRequests = (filters?: {
   };
   if (filters?.entityType) params.entity_type = filters.entityType;
   if (filters?.mineOnly) params.mine_only = true;
-  return fetchList("/api/hr/approvals/requests/list", mapApprovalRequest, params);
-}
+  return fetchList(
+    "/api/hr/approvals/requests/list",
+    mapApprovalRequest,
+    params,
+  );
+};
 
-export const approveApprovalRequest = async (requestId: string | number, comment?: string) => {
-  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/approve`, { comment });
-}
+export const approveApprovalRequest = async (
+  requestId: string | number,
+  comment?: string,
+) => {
+  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/approve`, {
+    comment,
+  });
+};
 
-export const rejectApprovalRequest = async (requestId: string | number, comment?: string) => {
-  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/reject`, { comment });
-}
+export const rejectApprovalRequest = async (
+  requestId: string | number,
+  comment?: string,
+) => {
+  return hrCall(`/api/hr/approvals/requests/${eid(requestId)}/reject`, {
+    comment,
+  });
+};

@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
 
@@ -24,6 +25,14 @@ export interface DbEvaluationCriteria {
   created_at: string;
 }
 
+export interface DbWarningAttachment {
+  id: string;
+  file_name: string;
+  mimetype: string;
+  file_size: number;
+  created_at: string;
+}
+
 export interface DbWarning {
   id: string;
   employee_id: string;
@@ -34,8 +43,19 @@ export interface DbWarning {
   issued_by: string | null;
   status: string;
   expiry_date: string | null;
+  /** Month count that produced `expiry_date`, or null when it was set as an explicit date (backend §4). */
+  duration_months: number | null;
+  attachments: DbWarningAttachment[];
+  attachment_count: number;
   created_at: string;
   updated_at: string;
+}
+
+/** Server-driven attachment limits — never hard-code a copy of these (backend §2). */
+export interface DbWarningAttachmentSettings {
+  attachment_max_mb: number;
+  attachment_max_bytes: number;
+  attachment_accepted_formats: string[];
 }
 
 export interface DbTrainingProgram {
@@ -96,6 +116,33 @@ export const useWarnings = (filters?: { employeeId?: string; status?: string }) 
     [filters?.employeeId, filters?.status],
   );
   return { warnings, loading, refetch };
+}
+
+/**
+ * Live warning attachment limits — a single object rather than a list, so it
+ * doesn't fit `useCachedList`'s `T[]` contract (mirrors `useLeaveSettings`).
+ */
+export const useWarningAttachmentSettings = () => {
+  const [settings, setSettings] = useState<DbWarningAttachmentSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      setSettings(await odooData.fetchWarningAttachmentSettings());
+    } catch (e: any) {
+      setError(e?.message || "Failed to load warning attachment settings");
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { settings, loading, error, refetch };
 }
 
 export const useTrainingPrograms = () => {
