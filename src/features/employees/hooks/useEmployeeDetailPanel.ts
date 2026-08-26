@@ -42,16 +42,26 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [terminationLoading, setTerminationLoading] = useState(false);
   const [terminationResult, setTerminationResult] = useState<string | null>(null);
 
+  // Some endpoints (list/search) may only carry the department name, not its
+  // numeric id, on a given row. Resolve the id from the backend department list
+  // by name in that case, so the dropdown still shows the right selection and
+  // `handleSave` never sends a stray `department_id: null` that would wipe out
+  // an employee's real department just because this one field is unresolved.
+  const resolvedDepartmentId = useMemo(() => {
+    if (editData.departmentId) return editData.departmentId;
+    return dbDepartments.find(d => d.name === editData.department)?.id || null;
+  }, [editData.departmentId, editData.department, dbDepartments]);
+
   // Build the full department list from the backend, plus the employee's current
   // department if it's missing there (e.g. deactivated department). Memoized so the
   // array identity stays stable for the memoized tabs it is passed to.
   const allDepts = useMemo<DepartmentOption[]>(() => {
     const depts = [...dbDepartments];
-    if (editData.departmentId && !depts.some(d => d.id === editData.departmentId)) {
-      depts.push({ id: editData.departmentId, name: editData.department });
+    if (resolvedDepartmentId && !depts.some(d => d.id === resolvedDepartmentId)) {
+      depts.push({ id: resolvedDepartmentId, name: editData.department });
     }
     return depts;
-  }, [dbDepartments, editData.departmentId, editData.department]);
+  }, [dbDepartments, resolvedDepartmentId, editData.department]);
 
   const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
     setEditData(prev => ({ ...prev, [field]: value }));
@@ -102,15 +112,18 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         name: editData.name,
         email: editData.email,
         personal_phone: editData.personalPhone,
+        company_phone: editData.companyPhone,
         phone: editData.personalPhone || editData.companyPhone,
         monthly_salary: editData.salary,
         join_date: editData.startDate || null,
+        end_date: editData.endDate || null,
         status: editData.status,
-        department_id: editData.departmentId || null,
+        department_id: resolvedDepartmentId,
         address: editData.address || null,
         national_id: editData.nationalId,
         emergency_contact: editData.emergencyContact,
         emergency_phone: editData.emergencyPhone,
+        blood_type: editData.bloodType || null,
         manager_id: editData.managerId || null,
       });
 
@@ -138,7 +151,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     } finally {
       setSaving(false);
     }
-  }, [editData, employee, onSave]);
+  }, [editData, employee, onSave, resolvedDepartmentId]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
@@ -261,6 +274,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     newAttachment,
     newCustody,
     newDeptName,
+    resolvedDepartmentId,
     saveError,
     saving,
     setAddingNewDept,

@@ -31,7 +31,9 @@ export const useEmployeesPage = () => {
   }, [refetch]);
 
   useEffect(() => {
-    odooData.fetchDepartments().then(setDbDepartmentOptions).catch(() => {});
+    odooData.fetchDepartments().then(setDbDepartmentOptions).catch((e: unknown) => {
+      console.error("Failed to load departments", e);
+    });
   }, []);
 
   return {

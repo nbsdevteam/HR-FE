@@ -18,6 +18,7 @@ type EmployeeInfoTabProps = {
   editData: Employee;
   isEditing: boolean;
   allDepts: DepartmentOption[];
+  departmentId: string | null;
   allEmployees: EmployeeOption[];
   addingNewDept: boolean;
   creatingDept: boolean;
@@ -35,6 +36,7 @@ const EmployeeInfoTab = ({
   editData,
   isEditing,
   allDepts,
+  departmentId,
   allEmployees,
   addingNewDept,
   creatingDept,
@@ -122,7 +124,7 @@ const EmployeeInfoTab = ({
       />
       <EmployeeDepartmentField
         department={editData.department}
-        departmentId={editData.departmentId}
+        departmentId={departmentId}
         allDepts={allDepts}
         isEditing={isEditing}
         addingNewDept={addingNewDept}

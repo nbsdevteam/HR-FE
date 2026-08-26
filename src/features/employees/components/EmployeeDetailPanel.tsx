@@ -53,6 +53,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     newAttachment,
     newCustody,
     newDeptName,
+    resolvedDepartmentId,
     saveError,
     saving,
     setAddingNewDept,
@@ -149,6 +150,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 editData={editData}
                 isEditing={isEditing}
                 allDepts={allDepts}
+                departmentId={resolvedDepartmentId}
                 allEmployees={allEmployees}
                 addingNewDept={addingNewDept}
                 creatingDept={creatingDept}
