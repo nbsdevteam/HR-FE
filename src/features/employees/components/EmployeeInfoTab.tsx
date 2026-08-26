@@ -157,7 +157,7 @@ const EmployeeInfoTab = ({
         }
       />
       <EmployeeFieldRow
-        icon={Smartphone} iconColor="text-primary" label={arabicSource("shared.employee_phone")} value={editData.personalPhone} dir="ltr"
+        icon={Smartphone} iconColor="text-primary" label={arabicSource("shared.employee_phone")} value={editData.personalPhone || "—"} dir="ltr"
         isEditing={isEditing}
         editElement={
           <input value={editData.personalPhone} onChange={handlePersonalPhoneChange}
@@ -165,7 +165,7 @@ const EmployeeInfoTab = ({
         }
       />
       <EmployeeFieldRow
-        icon={PhoneCall} iconColor="text-primary" label={arabicSource("common.company_phone")} value={editData.companyPhone} dir="ltr"
+        icon={PhoneCall} iconColor="text-primary" label={arabicSource("common.company_phone")} value={editData.companyPhone || "—"} dir="ltr"
         isEditing={isEditing}
         editElement={
           <input value={editData.companyPhone} onChange={handleCompanyPhoneChange}
@@ -173,7 +173,7 @@ const EmployeeInfoTab = ({
         }
       />
       <EmployeeFieldRow
-        icon={MapPin} iconColor="text-primary" label={arabicSource("common.address")} value={editData.address}
+        icon={MapPin} iconColor="text-primary" label={arabicSource("common.address")} value={editData.address || "—"}
         isEditing={isEditing}
         editElement={
           <input value={editData.address} onChange={handleAddressChange}
@@ -206,7 +206,7 @@ const EmployeeInfoTab = ({
         }
       />
       <EmployeeFieldRow
-        icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId} dir="ltr"
+        icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId || "—"} dir="ltr"
         isEditing={isEditing}
         editElement={
           <input value={editData.nationalId} onChange={handleNationalIdChange}
@@ -227,13 +227,13 @@ const EmployeeInfoTab = ({
             </div>
           ) : (
             <span className="text-foreground" style={{ fontSize: 14 }}>
-              {editData.emergencyContact} <span className="text-muted-foreground mx-1">—</span> <span dir="ltr">{editData.emergencyPhone}</span>
+              {editData.emergencyContact || "—"} <span className="text-muted-foreground mx-1">—</span> <span dir="ltr">{editData.emergencyPhone || "—"}</span>
             </span>
           )}
         </div>
       </div>
       <EmployeeFieldRow
-        icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType} dir="ltr"
+        icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType || "—"} dir="ltr"
         isEditing={isEditing}
         editElement={
           <Select

@@ -130,13 +130,15 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaveError(null);
     try {
       // The backend returns `address` as a structured object ({street, city, ...}),
-      // not a flat string — sending back a bare string here silently failed to
-      // update it. Preserve the other sub-fields and only overwrite `street`,
-      // which is the single line this form actually edits.
-      const address =
-        editData.addressRaw && typeof editData.addressRaw === "object"
-          ? { ...editData.addressRaw, street: editData.address || "" }
-          : editData.address || null;
+      // not a flat string — sending back a bare string silently failed to update
+      // it. The employee list this form is built from doesn't carry the other
+      // sub-fields, so spread whatever raw record we do have (in case a richer
+      // fetch adds them later) and always overwrite `street`, the one line this
+      // form edits.
+      const address = {
+        ...(editData.addressRaw && typeof editData.addressRaw === "object" ? editData.addressRaw : {}),
+        street: editData.address || "",
+      };
 
       await odooData.updateEmployee(editData.dbId, {
         name: editData.name,
@@ -151,6 +153,10 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         department_id: resolvedDepartmentId,
         designation_id: resolvedPositionId,
         address,
+        // Odoo's underlying employee/partner record stores this as a flat
+        // field, not nested under `address` — send both shapes since it's
+        // unclear which one the update handler actually reads from.
+        street: editData.address || "",
         // The read API returns this field as `identification_id`; send both
         // names since it's unclear which one the update handler consumes.
         national_id: editData.nationalId,

@@ -31,8 +31,12 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     department: employee.department || arabicSource("common.not_specified"),
     departmentId: employee.department_id || null,
     email: employee.email || `${employee.name?.replace(/\s+/g, ".").toLowerCase() || "emp"}@company.iq`,
-    personalPhone: employee.personal_phone || "—",
-    companyPhone: employee.company_phone || "—",
+    // Editable text fields stay "" when unset — not the "—" placeholder — so
+    // opening the edit form starts from a truly empty input instead of text
+    // the user has to notice and delete first (typing into it otherwise
+    // produces "—<what they typed>", which is what got sent to the backend).
+    personalPhone: employee.personal_phone || "",
+    companyPhone: employee.company_phone || "",
     phone: employee.personal_phone || "—",
     joinDate,
     startDate: joinDate,
@@ -41,12 +45,12 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     salary: employee.monthly_salary || 0,
     currency: employee.currency || "IQD",
     photo: employee.profile_picture || "",
-    address: employee.address || "—",
+    address: employee.address || "",
     addressRaw: employee.address_raw ?? null,
-    nationalId: employee.national_id || "—",
-    emergencyContact: employee.emergency_contact || "—",
-    emergencyPhone: employee.emergency_phone || "—",
-    bloodType: employee.blood_type || "—",
+    nationalId: employee.national_id || "",
+    emergencyContact: employee.emergency_contact || "",
+    emergencyPhone: employee.emergency_phone || "",
+    bloodType: employee.blood_type || "",
     managerId: employee.manager_id || null,
     managerName: manager ? empDisplayName(manager) : arabicSource("common.no_manager"),
     custodies: [],
