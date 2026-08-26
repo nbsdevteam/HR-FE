@@ -1,11 +1,16 @@
 /**
  * Country / state / city / nationality reference data, sourced from public
  * APIs so the picklists stay accurate without maintaining a static dataset:
- * - REST Countries (https://restcountries.com) for countries + nationalities (demonyms).
+ * - mledoze/countries static dataset (via raw.githubusercontent.com) for
+ *   countries + nationalities (demonyms). The former source, REST Countries'
+ *   v3.1 API, was sunset and now returns a deprecation error without CORS
+ *   headers, which broke this fetch in-browser; this dataset has the same
+ *   `name.common` / `cca2` / `demonyms.eng.m` shape and serves CORS for any
+ *   origin.
  * - Countries Now (https://countriesnow.space) for states and cities per country.
  */
 
-const REST_COUNTRIES_URL = "https://restcountries.com/v3.1/all?fields=name,cca2,demonyms";
+const REST_COUNTRIES_URL = "https://raw.githubusercontent.com/mledoze/countries/master/dist/countries.json";
 const COUNTRIES_NOW_BASE = "https://countriesnow.space/api/v0.1/countries";
 
 export type CountryOption = {
