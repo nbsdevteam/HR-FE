@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
 import type { Employee, EmployeeOption } from "@/features/employees";
-import type { DbEmployee } from "@/shared/hooks";
+import type { DbDepartment, DbEmployee } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { toEmployees } from "../utils/employeeMapper";
 import type { EmployeeSortKey, EmployeeViewMode } from "../types";
 
-export const useEmployeeListFilters = (dbEmployees: DbEmployee[]) => {
+export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments: DbDepartment[]) => {
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState(arabicSource("common.all"));
   const [viewMode, setViewMode] = useState<EmployeeViewMode>("list");
@@ -22,10 +22,20 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[]) => {
       position: e.position || e.department || "—",
     })), [dbEmployees]);
 
+  /**
+   * Union of the canonical backend department list and whatever department
+   * names appear on employees, so a department with no active employees
+   * still gets a column instead of silently disappearing. Sorted so column
+   * position is deterministic rather than depending on employee fetch order.
+   */
   const realDepts = useMemo(() => {
-    const depts = new Set(allEmployees.map(e => e.department));
-    return [arabicSource("common.all"), ...Array.from(depts)];
-  }, [allEmployees]);
+    const depts = new Set([
+      ...dbDepartments.map(d => d.name),
+      ...allEmployees.map(e => e.department),
+    ]);
+    const sorted = Array.from(depts).sort((a, b) => a.localeCompare(b, "ar"));
+    return [arabicSource("common.all"), ...sorted];
+  }, [allEmployees, dbDepartments]);
 
   const deviceSyncedSet = useMemo(() => {
     const set = new Set<number>();

@@ -14,7 +14,7 @@ export const useEmployeesPage = () => {
   const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
   const { positions: designations } = usePositions();
 
-  const listFilters = useEmployeeListFilters(dbEmployees);
+  const listFilters = useEmployeeListFilters(dbEmployees, dbDepartmentOptions);
   const addFormState = useEmployeeAddForm(dbEmployees, designations, refetch);
   const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetch);
 
