@@ -8,9 +8,8 @@ import {
   Download,
   Printer,
   Settings,
-  UserPlus,
 } from "lucide-react";
-import { Button, SearchInput } from "@/shared/components";
+import { SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import HeaderActionButton from "./HeaderActionButton";
@@ -28,7 +27,6 @@ type HierarchyHeaderProps = {
   canManage?: boolean;
   onOpenManagement?: () => void;
   onShowUnlinked: () => void;
-  onAddEmployee: () => void;
   onAddDepartment: () => void;
   onAddPosition: () => void;
   onSearchChange: (value: string) => void;
@@ -49,7 +47,6 @@ const HierarchyHeader = ({
   canManage = false,
   onOpenManagement,
   onShowUnlinked,
-  onAddEmployee,
   onAddDepartment,
   onAddPosition,
   onSearchChange,
@@ -87,15 +84,6 @@ const HierarchyHeader = ({
           {unlinkedCount} {arabicSource("hierarchy.without_binding")}
         </HeaderActionButton>
       )}
-
-      <Button
-        icon={UserPlus}
-        onClick={onAddEmployee}
-        className="shadow-md"
-        style={{ fontSize: 13 }}
-      >
-        {arabicSource("common.add_an_employee")}
-      </Button>
 
       <HeaderActionButton icon={Building2} onClick={onAddDepartment}>
         {arabicSource("hierarchy.add_a_new_section")}

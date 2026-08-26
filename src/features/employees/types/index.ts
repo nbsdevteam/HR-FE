@@ -12,6 +12,8 @@ export type EmployeeSortKey =
   | "joinDate"
   | "salary";
 
+export type WorkLocation = "local" | "remote";
+
 export type EmployeeAddForm = {
   name: string;
   email: string;
@@ -24,6 +26,12 @@ export type EmployeeAddForm = {
   joinDate: string;
   nationalId: string;
   gender: "male" | "female";
+  nationality: string;
+  country: string;
+  state: string;
+  city: string;
+  residence: string;
+  workLocation: WorkLocation;
 };
 
 export type DeviceSyncStatus = "idle" | "syncing" | "success" | "error";

@@ -26,33 +26,6 @@ export const useHierarchyCrud = (
     dbEmployees, dbDepartments, refetch, setSaving, setToast, setShowSetupModal, setShowCleanupModal,
   );
 
-  const handleAddEmployee = useCallback(async (parentDbId: string, name: string, position: string, department: string) => {
-    setSaving(true);
-    const managerId = parentDbId === "__root__" ? null : parentDbId;
-    const dept = dbDepartments.find(d => d.name === department);
-    const pos = dbPositions.find(p => p.title_ar === position);
-    const nextPid = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0) + 1;
-    try {
-      await odooData.createEmployee({
-        name,
-        arabic_name: name,
-        person_id: nextPid,
-        department_id: dept?.id || null,
-        position_id: pos?.id || null,
-        manager_id: managerId,
-        status: arabicSource("common.is_active"),
-        monthly_salary: 0,
-        currency: "IQD",
-      });
-      setToast(`${arabicSource("common.added")}${name}${arabicSource("hierarchy.successfully_completed_the_organizational_structure")}`);
-      await refetch();
-    } catch (err: unknown) {
-      console.error("Add employee error:", err);
-      setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
-    }
-    setSaving(false);
-  }, [refetch, dbDepartments, dbPositions, dbEmployees]);
-
   const handleDeleteEmployee = useCallback(async (node: OrgNode, reparent: boolean) => {
     if (node.dbId === "__root__") return;
     setSaving(true);
@@ -138,7 +111,6 @@ export const useHierarchyCrud = (
   }, [dbDepartments, refetch]);
 
   return {
-    handleAddEmployee,
     handleDeleteEmployee,
     handleEditEmployee,
     handleLinkEmployee,

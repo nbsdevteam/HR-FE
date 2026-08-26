@@ -35,8 +35,6 @@ const HierarchyChart = () => {
     containerRef,
     chartContentRef,
     searchInputRef,
-    showAddModal,
-    addModalManagerId,
     deleteTarget,
     editTarget,
     showUnlinked,
@@ -60,14 +58,12 @@ const HierarchyChart = () => {
     toggleExpand,
     expandAll,
     collapseAll,
-    handleAddEmployee,
     handleDeleteEmployee,
     handleEditEmployee,
     handleLinkEmployee,
     handleAddDepartment,
     handleSetupHierarchy,
     handleCleanupDuplicates,
-    openAddModal,
     openAddDepartmentModal,
     openAddPositionModal,
     closeAddPositionModal,
@@ -89,14 +85,12 @@ const HierarchyChart = () => {
     handleResetZoom,
     handleSelectNode,
     handleCloseSelectedNode,
-    handleCloseAddModal,
     handleCloseDeleteModal,
     handleCloseEditModal,
     handleCloseUnlinkedPanel,
     handleCloseSetupModal,
     handleCloseCleanupModal,
     handleCloseAddDepartmentModal,
-    handleDetailAddChild,
     handleDetailDelete,
     handleDetailEdit,
     refetchHierarchyAndPositions,
@@ -128,7 +122,6 @@ const HierarchyChart = () => {
         canManage={metadata?.canManage}
         onOpenManagement={handleOpenManagement}
         onShowUnlinked={handleShowUnlinked}
-        onAddEmployee={openAddModal}
         onAddDepartment={openAddDepartmentModal}
         onAddPosition={openAddPositionModal}
         onSearchChange={handleSearchChange}
@@ -199,8 +192,6 @@ const HierarchyChart = () => {
         unlinkedEmps={unlinkedEmps}
         saving={saving}
         selectedNode={selectedNode}
-        showAddModal={showAddModal}
-        addModalManagerId={addModalManagerId}
         deleteTarget={deleteTarget}
         editTarget={editTarget}
         showUnlinked={showUnlinked}
@@ -211,7 +202,6 @@ const HierarchyChart = () => {
         posForm={posForm}
         setPosForm={setPosForm}
         positionSaving={positionSaving}
-        onAddEmployee={handleAddEmployee}
         onDeleteEmployee={handleDeleteEmployee}
         onEditEmployee={handleEditEmployee}
         onLinkEmployee={handleLinkEmployee}
@@ -219,7 +209,6 @@ const HierarchyChart = () => {
         onSetupHierarchy={handleSetupHierarchy}
         onCleanupDuplicates={handleCleanupDuplicates}
         onCloseSelectedNode={handleCloseSelectedNode}
-        onCloseAddModal={handleCloseAddModal}
         onCloseDeleteModal={handleCloseDeleteModal}
         onCloseEditModal={handleCloseEditModal}
         onCloseUnlinkedPanel={handleCloseUnlinkedPanel}
@@ -228,7 +217,6 @@ const HierarchyChart = () => {
         onCloseAddDepartmentModal={handleCloseAddDepartmentModal}
         onAddPosition={handleAddPositionSubmit}
         onCloseAddPositionModal={closeAddPositionModal}
-        onDetailAddChild={handleDetailAddChild}
         onDetailDelete={handleDetailDelete}
         onDetailEdit={handleDetailEdit}
       />

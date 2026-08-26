@@ -2265,5 +2265,18 @@
   "shared.custody_status_active": "چالاک",
   "shared.custody_status_returned": "گەڕاوەتەوە",
   "shared.custody_status_damaged": "تێکچووە",
-  "shared.custody_status_lost": "ون بووە"
+  "shared.custody_status_lost": "ون بووە",
+  "employees.nationality": "نەتەوە",
+  "employees.select_the_nationality": "نەتەوە هەڵبژێرە",
+  "employees.country": "وڵات",
+  "employees.select_the_country": "وڵات هەڵبژێرە",
+  "employees.state": "پارێزگا",
+  "employees.select_the_state": "پارێزگا هەڵبژێرە",
+  "employees.select_the_city": "شار هەڵبژێرە",
+  "employees.residence": "شوێنی نیشتەجێبوون",
+  "employees.enter_the_residence": "شوێنی نیشتەجێبوون بنووسە",
+  "employees.work_location": "شوێنی کار",
+  "employees.select_the_work_location": "شوێنی کار هەڵبژێرە",
+  "employees.work_location_local": "ناوخۆیی",
+  "employees.work_location_remote": "لە دوورەوە"
 }

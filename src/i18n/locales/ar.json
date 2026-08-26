@@ -2267,5 +2267,18 @@
   "shared.custody_status_active": "قيد الاستخدام",
   "shared.custody_status_returned": "تم الإرجاع",
   "shared.custody_status_damaged": "تالف",
-  "shared.custody_status_lost": "مفقود"
+  "shared.custody_status_lost": "مفقود",
+  "employees.nationality": "الجنسية",
+  "employees.select_the_nationality": "اختر الجنسية",
+  "employees.country": "البلد",
+  "employees.select_the_country": "اختر البلد",
+  "employees.state": "المحافظة",
+  "employees.select_the_state": "اختر المحافظة",
+  "employees.select_the_city": "اختر المدينة",
+  "employees.residence": "مكان الإقامة",
+  "employees.enter_the_residence": "أدخل مكان الإقامة",
+  "employees.work_location": "موقع العمل",
+  "employees.select_the_work_location": "اختر موقع العمل",
+  "employees.work_location_local": "محلي",
+  "employees.work_location_remote": "عن بعد"
 }

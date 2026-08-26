@@ -27,8 +27,10 @@ const Employees = () => {
     addForm,
     addSaving,
     allEmployees,
+    cities,
     closeAddModal,
     closeDeleteModal,
+    countries,
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,
@@ -43,13 +45,18 @@ const Employees = () => {
     filtered,
     handleAddEmployee,
     handleClearFacePhoto,
+    handleCountryChange,
     handleDeleteEmployee,
     handleDetailClose,
     handleDetailSave,
     handleFacePhoto,
     handleSelectEmployee,
+    handleStateChange,
     kanbanDepts,
+    loadingCities,
+    loadingCountries,
     loadingNextId,
+    loadingStates,
     nextEmployeeId,
     openAddModal,
     pendingEmployees,
@@ -66,6 +73,7 @@ const Employees = () => {
     showAddModal,
     sortBy,
     sortDir,
+    states,
     updateAddForm,
     viewMode,
   } = useEmployeesPage();
@@ -156,7 +164,15 @@ const Employees = () => {
               facePhotoPreview={facePhotoPreview}
               departmentOptions={dbDepartmentOptions}
               designationOptions={designationOptions}
+              countries={countries}
+              states={states}
+              cities={cities}
+              loadingCountries={loadingCountries}
+              loadingStates={loadingStates}
+              loadingCities={loadingCities}
               onFormChange={updateAddForm}
+              onCountryChange={handleCountryChange}
+              onStateChange={handleStateChange}
               onFacePhotoChange={handleFacePhoto}
               onClearFacePhoto={handleClearFacePhoto}
               onAddEmployee={handleAddEmployee}

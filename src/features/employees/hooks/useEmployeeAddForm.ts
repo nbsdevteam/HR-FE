@@ -5,6 +5,7 @@ import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import { errorMessage } from "../utils/errorMessage";
+import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 
 const defaultAddForm: EmployeeAddForm = {
   name: "",
@@ -18,6 +19,12 @@ const defaultAddForm: EmployeeAddForm = {
   joinDate: "",
   nationalId: "",
   gender: "male",
+  nationality: "",
+  country: "",
+  state: "",
+  city: "",
+  residence: "",
+  workLocation: "local",
 };
 
 export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPosition[], refetch: () => void) => {
@@ -30,6 +37,19 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const [loadingNextId, setLoadingNextId] = useState(false);
   const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
   const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
+
+  const {
+    countries,
+    states,
+    cities,
+    loadingCountries,
+    loadingStates,
+    loadingCities,
+    loadCountries,
+    loadStates,
+    loadCities,
+    resetLocationOptions,
+  } = useEmployeeLocationOptions();
 
   const closeAddTimeoutRef = useRef<number | null>(null);
 
@@ -47,7 +67,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setNextEmployeeId(null);
     setFacePhotoBase64(null);
     setFacePhotoPreview(null);
-  }, []);
+    resetLocationOptions();
+  }, [resetLocationOptions]);
 
   const fetchNextId = useCallback(async () => {
     setLoadingNextId(true);
@@ -68,7 +89,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const openAddModal = useCallback(() => {
     setShowAddModal(true);
     void fetchNextId();
-  }, [fetchNextId]);
+    void loadCountries();
+  }, [fetchNextId, loadCountries]);
 
   const closeAddModal = useCallback(() => {
     if (addSaving) return;
@@ -79,6 +101,16 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const updateAddForm = useCallback((updates: Partial<EmployeeAddForm>) => {
     setAddForm(current => ({ ...current, ...updates }));
   }, []);
+
+  const handleCountryChange = useCallback((countryName: string) => {
+    setAddForm(current => ({ ...current, country: countryName, state: "", city: "" }));
+    void loadStates(countryName);
+  }, [loadStates]);
+
+  const handleStateChange = useCallback((stateName: string) => {
+    setAddForm(current => ({ ...current, state: stateName, city: "" }));
+    void loadCities(addForm.country, stateName);
+  }, [loadCities, addForm.country]);
 
   const handleClearFacePhoto = useCallback(() => {
     setFacePhotoPreview(null);
@@ -119,6 +151,12 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
         gender: addForm.gender || null,
         department_id: addForm.departmentId || null,
         designation_id: addForm.designationId || null,
+        nationality: addForm.nationality || null,
+        country: addForm.country || null,
+        state: addForm.state || null,
+        city: addForm.city || null,
+        residence: addForm.residence || null,
+        work_location: addForm.workLocation,
       });
 
       setDeviceSyncStatus("syncing");
@@ -160,17 +198,25 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     addError,
     addForm,
     addSaving,
+    cities,
     closeAddModal,
+    countries,
     designationOptions,
     deviceSyncStatus,
     facePhotoPreview,
     handleAddEmployee,
     handleClearFacePhoto,
+    handleCountryChange,
     handleFacePhoto,
+    handleStateChange,
+    loadingCities,
+    loadingCountries,
     loadingNextId,
+    loadingStates,
     nextEmployeeId,
     openAddModal,
     showAddModal,
+    states,
     updateAddForm,
   };
 };

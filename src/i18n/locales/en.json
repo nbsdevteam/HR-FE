@@ -2267,5 +2267,18 @@
   "shared.custody_status_active": "Active",
   "shared.custody_status_returned": "Returned",
   "shared.custody_status_damaged": "Damaged",
-  "shared.custody_status_lost": "Lost"
+  "shared.custody_status_lost": "Lost",
+  "employees.nationality": "Nationality",
+  "employees.select_the_nationality": "Select the nationality",
+  "employees.country": "Country",
+  "employees.select_the_country": "Select the country",
+  "employees.state": "State",
+  "employees.select_the_state": "Select the state",
+  "employees.select_the_city": "Select the city",
+  "employees.residence": "Residence",
+  "employees.enter_the_residence": "Enter the residence",
+  "employees.work_location": "Work location",
+  "employees.select_the_work_location": "Select the work location",
+  "employees.work_location_local": "Local",
+  "employees.work_location_remote": "Remote"
 }

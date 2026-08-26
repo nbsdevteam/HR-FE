@@ -2066,5 +2066,18 @@
   "خدمة الفرز غير مهيأة. راجع إعدادات الذكاء الاصطناعي.": "recruitment.screening_unavailable",
   "موظف محدد": "reports.employees_selected",
   "عمود مُدرج": "reports.columns_included",
-  "توليد": "reports.generate"
+  "توليد": "reports.generate",
+  "الجنسية": "employees.nationality",
+  "اختر الجنسية": "employees.select_the_nationality",
+  "البلد": "employees.country",
+  "اختر البلد": "employees.select_the_country",
+  "المحافظة": "employees.state",
+  "اختر المحافظة": "employees.select_the_state",
+  "اختر المدينة": "employees.select_the_city",
+  "مكان الإقامة": "employees.residence",
+  "أدخل مكان الإقامة": "employees.enter_the_residence",
+  "موقع العمل": "employees.work_location",
+  "اختر موقع العمل": "employees.select_the_work_location",
+  "محلي": "employees.work_location_local",
+  "عن بعد": "employees.work_location_remote"
 }

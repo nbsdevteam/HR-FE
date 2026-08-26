@@ -8,21 +8,12 @@ import type { OrgNode } from "../types";
  */
 export const useHierarchyModals = () => {
   const [selectedNode, setSelectedNode] = useState<OrgNode | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addModalManagerId, setAddModalManagerId] = useState<number | null>(
-    null,
-  );
   const [deleteTarget, setDeleteTarget] = useState<OrgNode | null>(null);
   const [editTarget, setEditTarget] = useState<OrgNode | null>(null);
   const [showUnlinked, setShowUnlinked] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [showCleanupModal, setShowCleanupModal] = useState(false);
   const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
-
-  const openAddModal = useCallback((managerId?: number) => {
-    setAddModalManagerId(managerId ?? null);
-    setShowAddModal(true);
-  }, []);
 
   const openAddDepartmentModal = useCallback(() => {
     setShowAddDepartmentModal(true);
@@ -36,11 +27,6 @@ export const useHierarchyModals = () => {
   );
 
   const handleCloseSelectedNode = useCallback(() => setSelectedNode(null), []);
-
-  const handleCloseAddModal = useCallback(() => {
-    setShowAddModal(false);
-    setAddModalManagerId(null);
-  }, []);
 
   const handleCloseDeleteModal = useCallback(() => setDeleteTarget(null), []);
 
@@ -63,14 +49,6 @@ export const useHierarchyModals = () => {
     [],
   );
 
-  const handleDetailAddChild = useCallback(
-    (id: number) => {
-      setSelectedNode(null);
-      openAddModal(id);
-    },
-    [openAddModal],
-  );
-
   const handleDetailDelete = useCallback((node: OrgNode) => {
     setSelectedNode(null);
     setDeleteTarget(node);
@@ -84,8 +62,6 @@ export const useHierarchyModals = () => {
   return {
     selectedNode,
     setSelectedNode,
-    showAddModal,
-    addModalManagerId,
     deleteTarget,
     setDeleteTarget,
     editTarget,
@@ -96,19 +72,16 @@ export const useHierarchyModals = () => {
     showCleanupModal,
     setShowCleanupModal,
     showAddDepartmentModal,
-    openAddModal,
     openAddDepartmentModal,
     handleShowUnlinked,
     handleSelectNode,
     handleCloseSelectedNode,
-    handleCloseAddModal,
     handleCloseDeleteModal,
     handleCloseEditModal,
     handleCloseUnlinkedPanel,
     handleCloseSetupModal,
     handleCloseCleanupModal,
     handleCloseAddDepartmentModal,
-    handleDetailAddChild,
     handleDetailDelete,
     handleDetailEdit,
   };

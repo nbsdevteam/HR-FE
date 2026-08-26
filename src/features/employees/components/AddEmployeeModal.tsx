@@ -1,10 +1,12 @@
 import { Fingerprint, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
+import type { CountryOption } from "@/shared/api/locationData";
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
+import EmployeeLocationFields from "./EmployeeLocationFields";
 import LabeledInput from "./LabeledInput";
 
 const getDepartmentId = (d: DbDepartment): string => d.id;
@@ -24,7 +26,15 @@ type AddEmployeeModalProps = {
   facePhotoPreview: string | null;
   departmentOptions: DbDepartment[];
   designationOptions: DbPosition[];
+  countries: CountryOption[];
+  states: string[];
+  cities: string[];
+  loadingCountries: boolean;
+  loadingStates: boolean;
+  loadingCities: boolean;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
+  onCountryChange: (value: string) => void;
+  onStateChange: (value: string) => void;
   onFacePhotoChange: (file: File) => void;
   onClearFacePhoto: () => void;
   onAddEmployee: () => void;
@@ -41,7 +51,15 @@ const AddEmployeeModal = ({
   facePhotoPreview,
   departmentOptions,
   designationOptions,
+  countries,
+  states,
+  cities,
+  loadingCountries,
+  loadingStates,
+  loadingCities,
   onFormChange,
+  onCountryChange,
+  onStateChange,
   onFacePhotoChange,
   onClearFacePhoto,
   onAddEmployee,
@@ -216,6 +234,20 @@ const AddEmployeeModal = ({
               value={addForm.address}
               onChange={handleAddressChange}
               placeholder={arabicSource("employees.baghdad_region")}
+            />
+          </div>
+          <div className="mt-3">
+            <EmployeeLocationFields
+              addForm={addForm}
+              countries={countries}
+              states={states}
+              cities={cities}
+              loadingCountries={loadingCountries}
+              loadingStates={loadingStates}
+              loadingCities={loadingCities}
+              onFormChange={onFormChange}
+              onCountryChange={onCountryChange}
+              onStateChange={onStateChange}
             />
           </div>
         </div>

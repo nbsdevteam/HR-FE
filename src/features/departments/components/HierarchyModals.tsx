@@ -11,7 +11,6 @@ const SetupHierarchyModal = lazy(() => import("./SetupHierarchyModal"));
 const CleanupDuplicatesModal = lazy(() => import("./CleanupDuplicatesModal"));
 const UnlinkedPanel = lazy(() => import("./UnlinkedPanel"));
 const EditEmployeeModal = lazy(() => import("./EditEmployeeModal"));
-const AddEmployeeModal = lazy(() => import("./AddEmployeeModal"));
 const AddDepartmentModal = lazy(() => import("./AddDepartmentModal"));
 const PositionFormModal = lazy(() => import("./PositionFormModal"));
 
@@ -25,8 +24,6 @@ type HierarchyModalsProps = {
   unlinkedEmps: DbEmployee[];
   saving: boolean;
   selectedNode: OrgNode | null;
-  showAddModal: boolean;
-  addModalManagerId: number | null;
   deleteTarget: OrgNode | null;
   editTarget: OrgNode | null;
   showUnlinked: boolean;
@@ -37,7 +34,6 @@ type HierarchyModalsProps = {
   posForm: PositionFormState;
   setPosForm: Dispatch<SetStateAction<PositionFormState>>;
   positionSaving: boolean;
-  onAddEmployee: (parentDbId: string, name: string, position: string, department: string) => Promise<void>;
   onDeleteEmployee: (node: OrgNode, reparent: boolean) => Promise<void>;
   onEditEmployee: (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => Promise<void>;
   onLinkEmployee: (empDbId: string, managerDbId: string) => Promise<void>;
@@ -45,7 +41,6 @@ type HierarchyModalsProps = {
   onSetupHierarchy: () => Promise<void>;
   onCleanupDuplicates: () => Promise<void>;
   onCloseSelectedNode: () => void;
-  onCloseAddModal: () => void;
   onCloseDeleteModal: () => void;
   onCloseEditModal: () => void;
   onCloseUnlinkedPanel: () => void;
@@ -54,7 +49,6 @@ type HierarchyModalsProps = {
   onCloseAddDepartmentModal: () => void;
   onAddPosition: () => Promise<void>;
   onCloseAddPositionModal: () => void;
-  onDetailAddChild: (id: number) => void;
   onDetailDelete: (node: OrgNode) => void;
   onDetailEdit: (node: OrgNode) => void;
 };
@@ -69,8 +63,6 @@ const HierarchyModals = ({
   unlinkedEmps,
   saving,
   selectedNode,
-  showAddModal,
-  addModalManagerId,
   deleteTarget,
   editTarget,
   showUnlinked,
@@ -81,7 +73,6 @@ const HierarchyModals = ({
   posForm,
   setPosForm,
   positionSaving,
-  onAddEmployee,
   onDeleteEmployee,
   onEditEmployee,
   onLinkEmployee,
@@ -89,7 +80,6 @@ const HierarchyModals = ({
   onSetupHierarchy,
   onCleanupDuplicates,
   onCloseSelectedNode,
-  onCloseAddModal,
   onCloseDeleteModal,
   onCloseEditModal,
   onCloseUnlinkedPanel,
@@ -98,7 +88,6 @@ const HierarchyModals = ({
   onCloseAddDepartmentModal,
   onAddPosition,
   onCloseAddPositionModal,
-  onDetailAddChild,
   onDetailDelete,
   onDetailEdit,
 }: HierarchyModalsProps) => (
@@ -109,23 +98,9 @@ const HierarchyModals = ({
           node={selectedNode}
           orgTree={orgTree}
           onClose={onCloseSelectedNode}
-          onAddChild={onDetailAddChild}
           onDelete={onDetailDelete}
           onEdit={onDetailEdit}
         />
-      )}
-    </AnimatePresence>
-    <AnimatePresence>
-      {showAddModal && (
-        <Suspense fallback={null}>
-          <AddEmployeeModal
-            allNodes={allNodes}
-            departments={departments}
-            preselectedManagerId={addModalManagerId}
-            onAdd={onAddEmployee}
-            onClose={onCloseAddModal}
-          />
-        </Suspense>
       )}
     </AnimatePresence>
     <AnimatePresence>

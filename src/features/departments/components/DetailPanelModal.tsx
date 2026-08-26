@@ -19,7 +19,6 @@ type DetailPanelModalProps = {
   node: OrgNode;
   orgTree: OrgNode;
   onClose: () => void;
-  onAddChild: (id: number) => void;
   onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
 };
@@ -28,7 +27,6 @@ const DetailPanelModal = ({
   node,
   orgTree,
   onClose,
-  onAddChild,
   onDelete,
   onEdit,
 }: DetailPanelModalProps) => (
@@ -43,7 +41,6 @@ const DetailPanelModal = ({
         node={node}
         orgTree={orgTree}
         onClose={onClose}
-        onAddChild={onAddChild}
         onDelete={onDelete}
         onEdit={onEdit}
       />

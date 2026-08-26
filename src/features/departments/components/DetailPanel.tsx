@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { motion } from "motion/react";
-import { UserPlus, Trash2, Edit2, X } from "lucide-react";
+import { Trash2, Edit2, X } from "lucide-react";
 import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
@@ -9,9 +9,9 @@ import { countDescendants, findParentOf } from "../utils/hierarchyTree";
 import DirectReportRow from "./DirectReportRow";
 import InfoRow from "./InfoRow";
 
-const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
+const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
   node: OrgNode; orgTree: OrgNode; onClose: () => void;
-  onAddChild: (parentId: number) => void; onDelete: (node: OrgNode) => void;
+  onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
 }) => {
   const parentNode = useMemo(
@@ -23,10 +23,6 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
   const topColor = defaultDeptColorMap[node.department] || node.color;
   const isRoot = node.id === orgTree.id;
   const isVirtualRoot = node.dbId === "__root__";
-
-  const handleAddChildClick = useCallback((): void => {
-    onAddChild(node.id);
-  }, [node.id, onAddChild]);
 
   const handleEditClick = useCallback((): void => {
     onEdit(node);
@@ -43,11 +39,6 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-1.5">
-            {!isVirtualRoot && (
-              <button onClick={handleAddChildClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary transition-colors" title={arabicSource("hierarchy.add_a_subordinate")}>
-                <UserPlus className="w-3.5 h-3.5" />
-              </button>
-            )}
             {!isRoot && !isVirtualRoot && (
               <button onClick={handleEditClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors" title={arabicSource("hierarchy.modify_data")}>
                 <Edit2 className="w-3.5 h-3.5" />
@@ -118,13 +109,6 @@ const DetailPanel = ({ node, orgTree, onClose, onAddChild, onDelete, onEdit }: {
               ))}
             </div>
           </div>
-        )}
-
-        {!isVirtualRoot && (
-          <button onClick={handleAddChildClick}
-            className="w-full mt-4 py-2.5 rounded-xl border border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 text-primary flex items-center justify-center gap-2 transition-all" style={{ fontSize: 12 }}>
-            <UserPlus className="w-4 h-4" /> {arabicSource("hierarchy.add_a_new_subordinate")}
-          </button>
         )}
       </div>
     </motion.div>
