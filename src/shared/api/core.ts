@@ -32,6 +32,11 @@ export const fetchDepartments = async (): Promise<DbDepartment[]> => {
   return dedupeBy(rows.map(mapDepartment), d => d.id);
 }
 
+/** Next available employee code/id, computed by Odoo (requires hr.employees.create, falls back to hr.employees.list). */
+export const fetchNextEmployeeCode = async (): Promise<{ next_code: string; next_id: number }> => {
+  return hrCall("/api/hr/employees/next_code", {});
+}
+
 export const createEmployee = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/employees/create", payload);
 }

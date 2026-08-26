@@ -52,9 +52,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const fetchNextId = useCallback(async () => {
     setLoadingNextId(true);
     try {
-      const res = await fetch(`${SYNC_API}/device/next-employee-id`);
-      const data = await res.json();
-      if (data.success) setNextEmployeeId(data.nextId);
+      const data = await odooData.fetchNextEmployeeCode();
+      if (data?.next_id) setNextEmployeeId(data.next_id);
       else {
         const maxPerson = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0);
         setNextEmployeeId(maxPerson + 1);
