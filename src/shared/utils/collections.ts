@@ -37,6 +37,28 @@ export const groupBy = <T, K extends string | number>(
 };
 
 /**
+ * Drop later duplicates by key, keeping first-seen order. Some backend list
+ * endpoints (e.g. departments/designations joins) return the same row more
+ * than once — a repeated id in an options list corrupts which entry a click
+ * resolves to (React reconciles by key), so dropdowns built from these lists
+ * must dedupe before rendering.
+ */
+export const dedupeBy = <T, K extends string | number>(
+  items: readonly T[],
+  getKey: (item: T) => K | null | undefined,
+): T[] => {
+  const seen = new Set<K>();
+  const result: T[] = [];
+  for (const item of items) {
+    const key = getKey(item);
+    if (key == null || seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+};
+
+/**
  * Bucket items by a derived key in one pass.
  * Replaces "filter the full array once per column" in kanban boards.
  */

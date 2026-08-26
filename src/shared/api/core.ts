@@ -2,6 +2,7 @@ import { hrCall } from "./client";
 import { mapEmployee, mapDepartment } from "./mappers";
 import type { DbEmployee, DbDepartment } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import { dedupeBy } from "../utils/collections";
 
 export const fetchEmployees = async (): Promise<DbEmployee[]> => {
   // Backend allows up to 5000; load the full active roster for dropdowns.
@@ -28,7 +29,7 @@ export const fetchCurrentEmployee = async (): Promise<DbEmployee> => {
 
 export const fetchDepartments = async (): Promise<DbDepartment[]> => {
   const rows = await items<any>("/api/hr/departments/list", { limit: 200 });
-  return rows.map(mapDepartment);
+  return dedupeBy(rows.map(mapDepartment), d => d.id);
 }
 
 export const createEmployee = async (payload: Record<string, unknown>) => {
