@@ -1,8 +1,10 @@
-import { memo, type ReactNode } from "react";
-import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { memo, useCallback, useState, type ReactNode } from "react";
+import { AlertTriangle, CheckCircle, Clock, ShieldCheck, XCircle } from "lucide-react";
+import { Button } from "@/shared/components";
 import { formatTime, formatWorkHours, type DbAttendanceRecord } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { CalendarCell } from "../utils/calendarHelpers";
+import ExcuseInfoPopover from "./ExcuseInfoPopover";
 
 type CalendarDayCellProps = {
   cell: CalendarCell;
@@ -14,8 +16,23 @@ type CalendarDayCellProps = {
 };
 
 const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }: CalendarDayCellProps) => {
+  const [showExcuseInfo, setShowExcuseInfo] = useState(false);
+
+  const handleExcuseInfoClose = useCallback((): void => {
+    setShowExcuseInfo(false);
+  }, []);
+
   const weekBg = weekIndex % 2 === 1 ? "bg-muted/[0.03]" : "";
   const hasData = Boolean(record?.check_in_time);
+  // Independent of `status` — a late/absent/short day excused via
+  // /api/hr/attendance/excuse stays that same status colour, it just also
+  // carries one of these three flags.
+  const isExcused = Boolean(record?.excused_late || record?.excused_absence || record?.excused_shortfall);
+
+  const handleExcuseBadgeClick = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    setShowExcuseInfo(true);
+  };
 
   let cellBg = weekBg;
   let statusIcon: ReactNode = null;
@@ -49,6 +66,7 @@ const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }:
   const cellHeight = hasData ? "min-h-[100px]" : record?.status === "absent" ? "min-h-[80px]" : "min-h-[68px]";
 
   return (
+    <>
     <div
   className={`
     ${cellHeight} ${cellBg} 
@@ -70,7 +88,21 @@ const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }:
         >
           {cell.day}
         </span>
-        {statusIcon}
+        <div className="flex items-center gap-1">
+          {isExcused && (
+            <Button
+              onClick={handleExcuseBadgeClick}
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded-full"
+              className="p-0.5 hover:bg-emerald-500/10"
+              icon={ShieldCheck}
+              iconClassName="w-3.5 h-3.5 text-emerald-400"
+              title={arabicSource("common.excused")}
+            />
+          )}
+          {statusIcon}
+        </div>
       </div>
 
       {/* Attendance data — times + hours hero */}
@@ -114,6 +146,8 @@ const CalendarDayCell = ({ cell, weekIndex, record, isToday, isRest, isFuture }:
         </div>
       )}
     </div>
+    <ExcuseInfoPopover record={showExcuseInfo ? record ?? null : null} onClose={handleExcuseInfoClose} />
+    </>
   );
 };
 

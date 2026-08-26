@@ -2278,5 +2278,6 @@
   "employees.work_location": "شوێنی کار",
   "employees.select_the_work_location": "شوێنی کار هەڵبژێرە",
   "employees.work_location_local": "ناوخۆیی",
-  "employees.work_location_remote": "لە دوورەوە"
+  "employees.work_location_remote": "لە دوورەوە",
+  "attendance.excused_by": "بە بیانوو لەلایەن"
 }

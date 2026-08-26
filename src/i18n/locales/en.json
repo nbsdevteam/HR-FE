@@ -2280,5 +2280,6 @@
   "employees.work_location": "Work location",
   "employees.select_the_work_location": "Select the work location",
   "employees.work_location_local": "Local",
-  "employees.work_location_remote": "Remote"
+  "employees.work_location_remote": "Remote",
+  "attendance.excused_by": "Excused by"
 }

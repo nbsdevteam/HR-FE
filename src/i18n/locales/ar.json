@@ -2280,5 +2280,6 @@
   "employees.work_location": "موقع العمل",
   "employees.select_the_work_location": "اختر موقع العمل",
   "employees.work_location_local": "محلي",
-  "employees.work_location_remote": "عن بعد"
+  "employees.work_location_remote": "عن بعد",
+  "attendance.excused_by": "معذور بواسطة"
 }
