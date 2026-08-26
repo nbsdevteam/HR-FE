@@ -14,7 +14,7 @@ type EmployeeDepartmentFieldProps = {
   creatingDept: boolean;
   newDeptName: string;
   inputClass: string;
-  onSelectDepartment: (deptId: string) => void;
+  onSelectDepartment: (deptId: string, deptName: string) => void;
   onStartAddingDept: () => void;
   onNewDeptNameChange: (value: string) => void;
   onConfirmNewDept: () => void;
@@ -60,9 +60,14 @@ const EmployeeDepartmentField = ({
   const handleDepartmentChange = (value: string): void => {
     if (value === "__NEW__") {
       onStartAddingDept();
-    } else {
-      onSelectDepartment(value);
+      return;
     }
+    // Resolve the name from the exact option the user clicked, rather than
+    // re-searching a separate copy of the list — with duplicate department
+    // names/ids in the backend data, a second lookup can land on the wrong
+    // (or no) match and silently drop the selection.
+    const dept = allDepts.find((d) => d.id === value);
+    onSelectDepartment(value, dept?.name ?? value);
   };
 
   return (

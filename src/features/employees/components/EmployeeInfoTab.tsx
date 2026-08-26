@@ -27,8 +27,8 @@ type EmployeeInfoTabProps = {
   creatingDept: boolean;
   newDeptName: string;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
-  onDepartmentSelect: (deptId: string) => void;
-  onPositionSelect: (positionId: string) => void;
+  onDepartmentSelect: (deptId: string, deptName: string) => void;
+  onPositionSelect: (positionId: string, positionName: string) => void;
   onManagerChange: (managerId: string | null) => void;
   onStartAddingDept: () => void;
   onNewDeptNameChange: (value: string) => void;

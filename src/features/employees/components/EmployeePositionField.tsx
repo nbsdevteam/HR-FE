@@ -11,7 +11,7 @@ type EmployeePositionFieldProps = {
   allPositions: PositionOption[];
   isEditing: boolean;
   inputClass: string;
-  onSelectPosition: (positionId: string) => void;
+  onSelectPosition: (positionId: string, positionName: string) => void;
 };
 
 const EmployeePositionField = ({
@@ -27,6 +27,14 @@ const EmployeePositionField = ({
     [allPositions],
   );
 
+  // Resolve the name from the exact option clicked, rather than a separate
+  // lookup by id elsewhere — avoids dropping the selection if two positions
+  // ever share a name or an id fails to resolve in another list copy.
+  const handlePositionChange = (value: string): void => {
+    const selected = allPositions.find((p) => p.id === value);
+    onSelectPosition(value, selected?.name ?? value);
+  };
+
   return (
     <EmployeeFieldRow
       icon={Briefcase} label={arabicSource("shared.job_title")} value={position}
@@ -34,7 +42,7 @@ const EmployeePositionField = ({
       editElement={
         <Select
           value={positionId || ""}
-          onChange={onSelectPosition}
+          onChange={handlePositionChange}
           options={positionOptions}
           className={inputClass}
           style={{ fontSize: 14 }}

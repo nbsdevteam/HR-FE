@@ -42,11 +42,19 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   }, [editData.departmentId, editData.department, dbDepartments]);
 
   // Build the full department list from the backend, plus the employee's current
-  // department if it's missing there (e.g. deactivated department). Memoized so the
-  // array identity stays stable for the memoized tabs it is passed to.
+  // department if it's missing there (e.g. deactivated department). Deduped by id —
+  // the backend has returned duplicate rows for the same department before, and a
+  // repeated id in the option list corrupts which entry a click actually resolves to.
+  // Memoized so the array identity stays stable for the memoized tabs it is passed to.
   const allDepts = useMemo<DepartmentOption[]>(() => {
-    const depts = [...dbDepartments];
-    if (resolvedDepartmentId && !depts.some(d => d.id === resolvedDepartmentId)) {
+    const seen = new Set<string>();
+    const depts: DepartmentOption[] = [];
+    for (const d of dbDepartments) {
+      if (seen.has(d.id)) continue;
+      seen.add(d.id);
+      depts.push(d);
+    }
+    if (resolvedDepartmentId && !seen.has(resolvedDepartmentId)) {
       depts.push({ id: resolvedDepartmentId, name: editData.department });
     }
     return depts;
@@ -61,8 +69,14 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   }, [editData.positionId, editData.position, designations]);
 
   const allPositions = useMemo<PositionOption[]>(() => {
-    const positions = designations.map(p => ({ id: p.id, name: positionLabel(p) }));
-    if (resolvedPositionId && !positions.some(p => p.id === resolvedPositionId)) {
+    const seen = new Set<string>();
+    const positions: PositionOption[] = [];
+    for (const p of designations) {
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      positions.push({ id: p.id, name: positionLabel(p) });
+    }
+    if (resolvedPositionId && !seen.has(resolvedPositionId)) {
       positions.push({ id: resolvedPositionId, name: editData.position });
     }
     return positions;
@@ -72,17 +86,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleDepartmentSelect = useCallback((deptId: string) => {
-    const dept = allDepts.find(d => d.id === deptId);
-    if (!dept) return;
-    setEditData(prev => ({ ...prev, departmentId: dept.id, department: dept.name }));
-  }, [allDepts]);
+  const handleDepartmentSelect = useCallback((deptId: string, deptName: string) => {
+    setEditData(prev => ({ ...prev, departmentId: deptId, department: deptName }));
+  }, []);
 
-  const handlePositionSelect = useCallback((positionId: string) => {
-    const position = allPositions.find(p => p.id === positionId);
-    if (!position) return;
-    setEditData(prev => ({ ...prev, positionId: position.id, position: position.name }));
-  }, [allPositions]);
+  const handlePositionSelect = useCallback((positionId: string, positionName: string) => {
+    setEditData(prev => ({ ...prev, positionId, position: positionName }));
+  }, []);
 
   const handleManagerChange = useCallback((managerId: string | null) => {
     setEditData(prev => ({
