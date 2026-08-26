@@ -12,7 +12,7 @@ export type EmployeeSortKey =
   | "joinDate"
   | "salary";
 
-export type WorkLocation = "local" | "remote";
+export type WorkLocation = "local" | "remote" | "";
 
 export type EmployeeAddForm = {
   name: string;
@@ -20,7 +20,6 @@ export type EmployeeAddForm = {
   personalPhone: string;
   companyPhone: string;
   designationId: string;
-  address: string;
   departmentId: string;
   salary: string;
   joinDate: string;
@@ -93,6 +92,13 @@ export type Employee = {
   photo: string;
   address: string;
   addressRaw: DbEmployeeAddress | string | null;
+  country: string;
+  countryId: string;
+  state: string;
+  stateId: string;
+  city: string;
+  residence: string;
+  workLocation: WorkLocation;
   nationalId: string;
   emergencyContact: string;
   emergencyPhone: string;

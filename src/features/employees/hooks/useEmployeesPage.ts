@@ -9,15 +9,15 @@ import { useEmployeeListFilters } from "./useEmployeeListFilters";
 
 /** Detail-only fields the lean `/employees/list` endpoint never echoes back, so a
  * post-save refetch would otherwise redisplay them as blank even though the save
- * itself succeeded. Kept in memory and reapplied when an employee is reselected. */
+ * itself succeeded. Kept in memory and reapplied when an employee is reselected.
+ * `address`/`work_location` are no longer in this gap — the backend now returns
+ * them on `/employees/list` too. */
 type LeanListGapFields = Pick<
   Employee,
-  "address" | "addressRaw" | "nationalId" | "emergencyContact" | "emergencyPhone" | "bloodType" | "endDate"
+  "nationalId" | "emergencyContact" | "emergencyPhone" | "bloodType" | "endDate"
 >;
 
 const pickLeanListGapFields = (employee: Employee): LeanListGapFields => ({
-  address: employee.address,
-  addressRaw: employee.addressRaw,
   nationalId: employee.nationalId,
   emergencyContact: employee.emergencyContact,
   emergencyPhone: employee.emergencyPhone,

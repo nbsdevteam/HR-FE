@@ -20,6 +20,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     [arabicSource("common.pending")]: arabicSource("common.pending"),
   } as const;
   const manager = employee.manager_id ? managerIndex.get(employee.manager_id) : null;
+  const addr = employee.address_raw && typeof employee.address_raw === "object" ? employee.address_raw : null;
 
   return {
     id: employee.person_id,
@@ -47,6 +48,13 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     photo: employee.profile_picture || "",
     address: employee.address || "",
     addressRaw: employee.address_raw ?? null,
+    country: addr?.country || "",
+    countryId: addr?.country_id ? String(addr.country_id) : "",
+    state: addr?.state || "",
+    stateId: addr?.state_id ? String(addr.state_id) : "",
+    city: addr?.city || "",
+    residence: addr?.residence || addr?.street || "",
+    workLocation: (employee.work_location as Employee["workLocation"]) || "",
     nationalId: employee.national_id || "",
     emergencyContact: employee.emergency_contact || "",
     emergencyPhone: employee.emergency_phone || "",

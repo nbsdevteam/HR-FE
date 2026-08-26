@@ -82,15 +82,3 @@ const ReportTemplateCard = ({
 };
 
 export default memo(ReportTemplateCard);
-
-// const address = {
-//   country: "",
-//   state: "",
-//   city: "",
-//   residance: "",
-// };
-
-// const workLocation = "local" || "remote";
-// const pasport = "";
-
-// const toRemember = "neighbor Hood, ally, house number";

@@ -13,7 +13,6 @@ const defaultAddForm: EmployeeAddForm = {
   personalPhone: "",
   companyPhone: "",
   designationId: "",
-  address: "",
   departmentId: "",
   salary: "",
   joinDate: "",
@@ -137,12 +136,20 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     try {
       const newPersonId = nextEmployeeId;
 
+      // The backend takes address as a single nested object (§3 of the address
+      // spec) — only include the keys the user actually filled in.
+      const address: Record<string, string> = {};
+      if (addForm.country) address.country = addForm.country;
+      if (addForm.state) address.state = addForm.state;
+      if (addForm.city) address.city = addForm.city;
+      if (addForm.residence) address.residence = addForm.residence;
+
       await odooData.createEmployee({
         name: addForm.name,
         email: addForm.email || null,
         personal_phone: addForm.personalPhone || null,
         phone: addForm.personalPhone || addForm.companyPhone || null,
-        address: addForm.address || null,
+        address,
         monthly_salary: parseFloat(addForm.salary) || 0,
         join_date: addForm.joinDate || null,
         national_id: addForm.nationalId || null,
@@ -154,11 +161,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
         department_id: addForm.departmentId || null,
         designation_id: addForm.designationId || null,
         nationality: addForm.nationality || null,
-        country: addForm.country || null,
-        state: addForm.state || null,
-        city: addForm.city || null,
-        residence: addForm.residence || null,
-        work_location: addForm.workLocation,
+        work_location: addForm.workLocation || "",
       });
 
       setDeviceSyncStatus("syncing");

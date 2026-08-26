@@ -65,12 +65,6 @@ const AddEmployeeModal = ({
     onFormChange({ name: e.target.value });
   };
 
-  const handleAddressChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onFormChange({ address: e.target.value });
-  };
-
   const handleModalClose = (): void => {
     if (!addSaving) onClose();
   };
@@ -116,15 +110,6 @@ const AddEmployeeModal = ({
             managerOptions={managerOptions}
             onFormChange={onFormChange}
           />
-          <div className="mt-3">
-            <LabeledInput
-              label={arabicSource("common.address")}
-              type="text"
-              value={addForm.address}
-              onChange={handleAddressChange}
-              placeholder={arabicSource("employees.baghdad_region")}
-            />
-          </div>
           <div className="mt-3">
             <EmployeeLocationFields
               addForm={addForm}

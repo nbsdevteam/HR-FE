@@ -23,14 +23,20 @@ export const useCachedList = <T,>(
 
 // ——— Raw DB types ———
 
-/** The backend returns `address` as a structured object, not a flat string. */
+/** The backend returns `address` as a structured object, not a flat string.
+ *  `residence` is the canonical street line; `street` carries the same value
+ *  for legacy readers. `country`/`state` are display names — writes must send
+ *  `country_id`/`state_id` (or a name, which the backend resolves) instead. */
 export interface DbEmployeeAddress {
+  country?: string;
+  country_id?: string | number | false;
+  state?: string;
+  state_id?: string | number | false;
+  city?: string;
+  residence?: string;
   street?: string;
   street2?: string;
-  city?: string;
   zip?: string;
-  state_id?: string | number | false;
-  country_id?: string | number | false;
 }
 
 export interface DbEmployee {
@@ -58,6 +64,8 @@ export interface DbEmployee {
    *  street2/city/zip/state/country instead of clobbering them with just the
    *  flattened display string. */
   address_raw: DbEmployeeAddress | string | null;
+  /** "local" | "remote" | "" (unset) */
+  work_location: string;
   national_id: string | null;
   emergency_contact: string | null;
   emergency_phone: string | null;

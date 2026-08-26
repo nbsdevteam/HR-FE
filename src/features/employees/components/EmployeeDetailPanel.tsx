@@ -49,12 +49,20 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handleDeleteCustody,
     handleDepartmentSelect,
     handleEditField,
+    handleLocationCountryChange,
+    handleLocationStateChange,
     handleManagerChange,
     handlePositionSelect,
     handleSave,
     handleTermination,
     handleUpdateCustody,
     isEditing,
+    loadingLocationCities,
+    loadingLocationCountries,
+    loadingLocationStates,
+    locationCities,
+    locationCountries,
+    locationStates,
     modalTab,
     newAttachment,
     newCustody,
@@ -164,6 +172,12 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 addingNewDept={addingNewDept}
                 creatingDept={creatingDept}
                 newDeptName={newDeptName}
+                locationCountries={locationCountries}
+                locationStates={locationStates}
+                locationCities={locationCities}
+                loadingLocationCountries={loadingLocationCountries}
+                loadingLocationStates={loadingLocationStates}
+                loadingLocationCities={loadingLocationCities}
                 onFieldChange={handleEditField}
                 onDepartmentSelect={handleDepartmentSelect}
                 onPositionSelect={handlePositionSelect}
@@ -172,6 +186,8 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 onNewDeptNameChange={setNewDeptName}
                 onConfirmNewDept={handleConfirmNewDept}
                 onCancelNewDept={handleCancelNewDept}
+                onLocationCountryChange={handleLocationCountryChange}
+                onLocationStateChange={handleLocationStateChange}
               />
             )}
 

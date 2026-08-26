@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
@@ -12,6 +12,7 @@ import type {
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
 import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
+import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 import { useEmployeeTermination } from "./useEmployeeTermination";
 
 const positionLabel = (p: { id: string; title_ar: string; title_en: string | null }): string =>
@@ -30,6 +31,28 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const custodyForm = useEmployeeCustodyForm(employee.dbId);
   const attachmentForm = useEmployeeAttachmentForm(setEditData);
   const termination = useEmployeeTermination(employee, onSave);
+  const {
+    countries: locationCountries,
+    states: locationStates,
+    cities: locationCities,
+    loadingCountries: loadingLocationCountries,
+    loadingStates: loadingLocationStates,
+    loadingCities: loadingLocationCities,
+    loadCountries: loadLocationCountries,
+    loadStates: loadLocationStates,
+    loadCities: loadLocationCities,
+  } = useEmployeeLocationOptions();
+
+  // Lazily hydrate the country/state/city picklists once editing actually
+  // starts, seeded from whatever the employee already has so the dropdowns
+  // aren't empty on first render.
+  useEffect(() => {
+    if (!isEditing) return;
+    void loadLocationCountries();
+    if (editData.country) void loadLocationStates(editData.country);
+    if (editData.country && editData.state) void loadLocationCities(editData.country, editData.state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
 
   // Some endpoints (list/search) may only carry the department name, not its
   // numeric id, on a given row. Resolve the id from the backend department list
@@ -102,6 +125,16 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     }));
   }, [allEmployees]);
 
+  const handleLocationCountryChange = useCallback((countryName: string) => {
+    setEditData(prev => ({ ...prev, country: countryName, countryId: "", state: "", city: "" }));
+    void loadLocationStates(countryName);
+  }, [loadLocationStates]);
+
+  const handleLocationStateChange = useCallback((stateName: string) => {
+    setEditData(prev => ({ ...prev, state: stateName, stateId: "", city: "" }));
+    void loadLocationCities(editData.country, stateName);
+  }, [loadLocationCities, editData.country]);
+
   const handleConfirmNewDept = useCallback(async () => {
     const name = newDeptName.trim();
     if (!name) return;
@@ -129,16 +162,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaving(true);
     setSaveError(null);
     try {
-      // The backend returns `address` as a structured object ({street, city, ...}),
-      // not a flat string — sending back a bare string silently failed to update
-      // it. The employee list this form is built from doesn't carry the other
-      // sub-fields, so spread whatever raw record we do have (in case a richer
-      // fetch adds them later) and always overwrite `street`, the one line this
-      // form edits.
-      const address = {
-        ...(editData.addressRaw && typeof editData.addressRaw === "object" ? editData.addressRaw : {}),
-        street: editData.address || "",
-      };
+      // The backend now patches `address` partially — untouched keys are left
+      // alone, so it's safe to just send the current structured values.
+      const address: Record<string, string> = {};
+      if (editData.country) address.country = editData.country;
+      if (editData.state) address.state = editData.state;
+      if (editData.city) address.city = editData.city;
+      if (editData.residence) address.residence = editData.residence;
 
       await odooData.updateEmployee(editData.dbId, {
         name: editData.name,
@@ -153,10 +183,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         department_id: resolvedDepartmentId,
         designation_id: resolvedPositionId,
         address,
-        // Odoo's underlying employee/partner record stores this as a flat
-        // field, not nested under `address` — send both shapes since it's
-        // unclear which one the update handler actually reads from.
-        street: editData.address || "",
+        work_location: editData.workLocation || "",
         // The read API returns this field as `identification_id`; send both
         // names since it's unclear which one the update handler consumes.
         national_id: editData.nationalId,
@@ -211,10 +238,18 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     handleConfirmNewDept,
     handleDepartmentSelect,
     handleEditField,
+    handleLocationCountryChange,
+    handleLocationStateChange,
     handleManagerChange,
     handlePositionSelect,
     handleSave,
     isEditing,
+    loadingLocationCities,
+    loadingLocationCountries,
+    loadingLocationStates,
+    locationCities,
+    locationCountries,
+    locationStates,
     modalTab,
     newDeptName,
     resolvedDepartmentId,

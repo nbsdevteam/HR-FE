@@ -2,11 +2,12 @@ import type { DbEmployee, DbDepartment, DepartmentTreeNode, DepartmentMetadata }
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
 export const mapEmployee = (r: any): DbEmployee => {
+  const addressObj = r.address && typeof r.address === "object" ? r.address : null;
   const address =
     typeof r.address === "string"
       ? r.address
-      : r.address
-        ? [r.address.street, r.address.street2, r.address.city].filter(Boolean).join(", ")
+      : addressObj
+        ? [addressObj.residence || addressObj.street, addressObj.city].filter(Boolean).join(", ")
         : null;
   return {
     id: sid(r.id),
@@ -30,6 +31,7 @@ export const mapEmployee = (r: any): DbEmployee => {
     status: r.status || null,
     address,
     address_raw: r.address ?? null,
+    work_location: r.work_location || "",
     national_id: r.identification_id || r.national_id || null,
     emergency_contact: r.emergency_contact || null,
     emergency_phone: r.emergency_phone || null,

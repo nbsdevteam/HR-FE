@@ -1,12 +1,14 @@
 import { motion } from "motion/react";
 import {
-  Mail, Phone, MapPin, Wallet, CalendarCheck, CalendarX,
+  Mail, Phone, Wallet, CalendarCheck, CalendarX,
   Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
 import { Select, TypeAhead } from "@/shared/components";
+import type { CountryOption } from "@/shared/api/locationData";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
+import EmployeeAddressFields from "./EmployeeAddressFields";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 import EmployeePositionField from "./EmployeePositionField";
@@ -26,6 +28,12 @@ type EmployeeInfoTabProps = {
   addingNewDept: boolean;
   creatingDept: boolean;
   newDeptName: string;
+  locationCountries: CountryOption[];
+  locationStates: string[];
+  locationCities: string[];
+  loadingLocationCountries: boolean;
+  loadingLocationStates: boolean;
+  loadingLocationCities: boolean;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
   onDepartmentSelect: (deptId: string, deptName: string) => void;
   onPositionSelect: (positionId: string, positionName: string) => void;
@@ -34,6 +42,8 @@ type EmployeeInfoTabProps = {
   onNewDeptNameChange: (value: string) => void;
   onConfirmNewDept: () => void;
   onCancelNewDept: () => void;
+  onLocationCountryChange: (value: string) => void;
+  onLocationStateChange: (value: string) => void;
 };
 
 const EmployeeInfoTab = ({
@@ -47,6 +57,12 @@ const EmployeeInfoTab = ({
   addingNewDept,
   creatingDept,
   newDeptName,
+  locationCountries,
+  locationStates,
+  locationCities,
+  loadingLocationCountries,
+  loadingLocationStates,
+  loadingLocationCities,
   onFieldChange,
   onDepartmentSelect,
   onPositionSelect,
@@ -55,6 +71,8 @@ const EmployeeInfoTab = ({
   onNewDeptNameChange,
   onConfirmNewDept,
   onCancelNewDept,
+  onLocationCountryChange,
+  onLocationStateChange,
 }: EmployeeInfoTabProps) => {
   const handleEmployeeNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("employeeNumber", e.target.value);
@@ -70,10 +88,6 @@ const EmployeeInfoTab = ({
 
   const handleCompanyPhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("companyPhone", e.target.value);
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("address", e.target.value);
   };
 
   const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -172,13 +186,18 @@ const EmployeeInfoTab = ({
             className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
         }
       />
-      <EmployeeFieldRow
-        icon={MapPin} iconColor="text-primary" label={arabicSource("common.address")} value={editData.address || "—"}
+      <EmployeeAddressFields
+        editData={editData}
         isEditing={isEditing}
-        editElement={
-          <input value={editData.address} onChange={handleAddressChange}
-            className={inputClass} style={{ fontSize: 14 }} />
-        }
+        countries={locationCountries}
+        states={locationStates}
+        cities={locationCities}
+        loadingCountries={loadingLocationCountries}
+        loadingStates={loadingLocationStates}
+        loadingCities={loadingLocationCities}
+        onFieldChange={onFieldChange}
+        onCountryChange={onLocationCountryChange}
+        onStateChange={onLocationStateChange}
       />
       <EmployeeFieldRow
         icon={Wallet} iconColor="text-primary" label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight
