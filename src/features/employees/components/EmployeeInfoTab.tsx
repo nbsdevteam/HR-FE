@@ -242,6 +242,7 @@ const EmployeeInfoTab = ({
             options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
             className={inputClass}
             style={{ fontSize: 14 }}
+            openUpward
           />
         }
       />
@@ -256,6 +257,7 @@ const EmployeeInfoTab = ({
             value={editData.managerId || ""}
             onChange={handleManagerChange}
             blankLabel={arabicSource("shared.without_a_direct_manager")}
+            openUpward
           />
         }
       />

@@ -73,7 +73,6 @@ const EmployeeLocationFields = ({
           placeholder={arabicSource(
             loadingCountries ? "common.loading" : "employees.select_the_nationality",
           )}
-          openUpward
         />
       </div>
       <div>
@@ -89,7 +88,6 @@ const EmployeeLocationFields = ({
           placeholder={arabicSource(
             loadingCountries ? "common.loading" : "employees.select_the_country",
           )}
-          openUpward
         />
       </div>
       <div>
@@ -106,7 +104,6 @@ const EmployeeLocationFields = ({
             loadingStates ? "common.loading" : "employees.select_the_state",
           )}
           disabled={!addForm.country}
-          openUpward
         />
       </div>
       <div>
@@ -123,7 +120,6 @@ const EmployeeLocationFields = ({
             loadingCities ? "common.loading" : "employees.select_the_city",
           )}
           disabled={!addForm.state}
-          openUpward
         />
       </div>
       <LabeledInput
@@ -145,7 +141,6 @@ const EmployeeLocationFields = ({
             { value: "local", label: arabicSource("employees.work_location_local") },
             { value: "remote", label: arabicSource("employees.work_location_remote") },
           ]}
-          openUpward
         />
       </div>
     </div>
