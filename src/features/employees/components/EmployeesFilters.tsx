@@ -1,5 +1,5 @@
 import { Filter } from "lucide-react";
-import { FilterChip, SearchInput } from "@/shared/components";
+import { SearchInput, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 const SEARCH_INPUT_CLASS =
@@ -20,8 +20,8 @@ const EmployeesFilters = ({
   onSearchChange,
   onDepartmentChange,
 }: EmployeesFiltersProps) => {
-  const handleDepartmentClick = (dept: string) => (): void => {
-    onDepartmentChange(dept);
+  const handleDepartmentChange = (value: string): void => {
+    onDepartmentChange(value);
   };
 
   return (
@@ -36,15 +36,14 @@ const EmployeesFilters = ({
       />
       <div className="flex items-center gap-2">
         <Filter className="w-4 h-4 text-muted-foreground" />
-        {departments.map(dept => (
-          <FilterChip
-            key={dept}
-            label={dept}
-            active={selectedDept === dept}
-            onClick={handleDepartmentClick(dept)}
-            fontSize={13}
-          />
-        ))}
+        <Select
+          value={selectedDept}
+          onChange={handleDepartmentChange}
+          options={departments}
+          aria-label={arabicSource("common.section")}
+          className="w-48"
+          style={{ height: 38 }}
+        />
       </div>
     </div>
   );
