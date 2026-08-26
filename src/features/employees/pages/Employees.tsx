@@ -47,6 +47,7 @@ const Employees = () => {
     handleDetailClose,
     handleDetailSave,
     handleFacePhoto,
+    handleSelectEmployee,
     kanbanDepts,
     loadingNextId,
     nextEmployeeId,
@@ -59,7 +60,6 @@ const Employees = () => {
     setDeleteConfirm,
     setSearch,
     setSelectedDept,
-    setSelectedEmployee,
     setSortBy,
     setSortDir,
     setViewMode,
@@ -106,7 +106,7 @@ const Employees = () => {
             sortDir={sortDir}
             onSortByChange={setSortBy}
             onSortDirChange={setSortDir}
-            onSelectEmployee={setSelectedEmployee}
+            onSelectEmployee={handleSelectEmployee}
             onDeleteTargetChange={setDeleteConfirm}
           />
         ) : (
@@ -118,7 +118,7 @@ const Employees = () => {
               employees={filtered}
               dbEmployees={dbEmployees}
               selectedDept={selectedDept}
-              onSelectEmployee={setSelectedEmployee}
+              onSelectEmployee={handleSelectEmployee}
             />
           </Suspense>
         )}

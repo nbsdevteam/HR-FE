@@ -168,7 +168,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       });
 
       setIsEditing(false);
-      onSave?.();
+      onSave?.(editData);
 
       // Trigger the termination flow when the employee status changes to ended.
       if (editData.status === arabicSource("common.finished") && employee.status !== arabicSource("common.finished")) {

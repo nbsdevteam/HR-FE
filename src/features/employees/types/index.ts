@@ -111,7 +111,7 @@ export type EmployeeDetailModalTab = "info" | "custodies" | "leaves" | "attachme
 export type EmployeeDetailPanelProps = {
   employee: Employee;
   onClose: () => void;
-  onSave?: () => void;
+  onSave?: (saved?: Employee) => void;
   allEmployees?: EmployeeOption[];
   dbDepartments?: DepartmentOption[];
   designations?: DbPosition[];

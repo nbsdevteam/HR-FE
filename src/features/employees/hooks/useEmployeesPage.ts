@@ -7,9 +7,28 @@ import { useEmployeeAddForm } from "./useEmployeeAddForm";
 import { useEmployeeDeleteFlow } from "./useEmployeeDeleteFlow";
 import { useEmployeeListFilters } from "./useEmployeeListFilters";
 
+/** Detail-only fields the lean `/employees/list` endpoint never echoes back, so a
+ * post-save refetch would otherwise redisplay them as blank even though the save
+ * itself succeeded. Kept in memory and reapplied when an employee is reselected. */
+type LeanListGapFields = Pick<
+  Employee,
+  "address" | "addressRaw" | "nationalId" | "emergencyContact" | "emergencyPhone" | "bloodType" | "endDate"
+>;
+
+const pickLeanListGapFields = (employee: Employee): LeanListGapFields => ({
+  address: employee.address,
+  addressRaw: employee.addressRaw,
+  nationalId: employee.nationalId,
+  emergencyContact: employee.emergencyContact,
+  emergencyPhone: employee.emergencyPhone,
+  bloodType: employee.bloodType,
+  endDate: employee.endDate,
+});
+
 export const useEmployeesPage = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
+  const [recentEdits, setRecentEdits] = useState<Record<string, LeanListGapFields>>({});
 
   const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
   const { positions: designations } = usePositions();
@@ -25,7 +44,15 @@ export const useEmployeesPage = () => {
 
   const handleDetailClose = useCallback(() => setSelectedEmployee(null), []);
 
-  const handleDetailSave = useCallback(() => {
+  const handleSelectEmployee = useCallback((employee: Employee) => {
+    const override = recentEdits[employee.dbId];
+    setSelectedEmployee(override ? { ...employee, ...override } : employee);
+  }, [recentEdits]);
+
+  const handleDetailSave = useCallback((saved?: Employee) => {
+    if (saved) {
+      setRecentEdits(prev => ({ ...prev, [saved.dbId]: pickLeanListGapFields(saved) }));
+    }
     refetch();
     setSelectedEmployee(null);
   }, [refetch]);
@@ -47,6 +74,7 @@ export const useEmployeesPage = () => {
     employeeOptions: selectedEmployeeOptions,
     handleDetailClose,
     handleDetailSave,
+    handleSelectEmployee,
     selectedEmployee,
     setSelectedEmployee,
   };
