@@ -2,19 +2,13 @@ import { Fingerprint, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import type { CountryOption } from "@/shared/api/locationData";
 import { arabicSource } from "@/i18n/source";
-import { Button, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
-import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
+import { Button, ModalHeader, ModalOverlay } from "@/shared/components";
+import type { DeviceSyncStatus, EmployeeAddForm, EmployeeOption } from "../types";
+import EmployeeCoreFields from "./EmployeeCoreFields";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
 import EmployeeLocationFields from "./EmployeeLocationFields";
 import LabeledInput from "./LabeledInput";
-
-const getDepartmentId = (d: DbDepartment): string => d.id;
-const getDepartmentLabel = (d: DbDepartment): string => d.name;
-const getDesignationId = (p: DbPosition): string => p.id;
-const getDesignationLabel = (p: DbPosition): string =>
-  p.title_ar || p.title_en || p.id;
-const fieldLabelClass = "text-foreground block mb-1.5";
 
 type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
@@ -26,6 +20,7 @@ type AddEmployeeModalProps = {
   facePhotoPreview: string | null;
   departmentOptions: DbDepartment[];
   designationOptions: DbPosition[];
+  managerOptions: EmployeeOption[];
   countries: CountryOption[];
   states: string[];
   cities: string[];
@@ -51,6 +46,7 @@ const AddEmployeeModal = ({
   facePhotoPreview,
   departmentOptions,
   designationOptions,
+  managerOptions,
   countries,
   states,
   cities,
@@ -67,49 +63,6 @@ const AddEmployeeModal = ({
 }: AddEmployeeModalProps) => {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFormChange({ name: e.target.value });
-  };
-
-  const handleNationalIdChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onFormChange({ nationalId: e.target.value });
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFormChange({ email: e.target.value });
-  };
-
-  const handlePersonalPhoneChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onFormChange({ personalPhone: e.target.value });
-  };
-
-  const handleCompanyPhoneChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onFormChange({ companyPhone: e.target.value });
-  };
-
-  const handleDepartmentChange = (value: string): void => {
-    onFormChange({
-      departmentId: value,
-      designationId: "",
-    });
-  };
-
-  const handleDesignationChange = (value: string): void => {
-    onFormChange({ designationId: value });
-  };
-
-  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFormChange({ salary: e.target.value });
-  };
-
-  const handleJoinDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onFormChange({ joinDate: e.target.value });
   };
 
   const handleAddressChange = (
@@ -156,77 +109,13 @@ const AddEmployeeModal = ({
               placeholder={arabicSource("employees.enter_the_employee_s_name")}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <LabeledInput
-              label={arabicSource("common.id_number")}
-              type="text"
-              value={addForm.nationalId}
-              onChange={handleNationalIdChange}
-              placeholder={arabicSource("employees.national_id_number")}
-            />
-            <LabeledInput
-              label={arabicSource("common.email")}
-              type="email"
-              value={addForm.email}
-              onChange={handleEmailChange}
-              placeholder="example@company.iq"
-            />
-            <LabeledInput
-              label={arabicSource("employees.personal_phone")}
-              type="text"
-              value={addForm.personalPhone}
-              onChange={handlePersonalPhoneChange}
-              placeholder="07XXXXXXXXX"
-            />
-            <LabeledInput
-              label={arabicSource("common.company_phone")}
-              type="text"
-              value={addForm.companyPhone}
-              onChange={handleCompanyPhoneChange}
-              placeholder="07XXXXXXXXX"
-            />
-            <div>
-              <label className={fieldLabelClass} style={{ fontSize: 12 }}>
-                {arabicSource("common.section")}
-              </label>
-              <TypeAhead
-                items={departmentOptions}
-                getId={getDepartmentId}
-                getLabel={getDepartmentLabel}
-                value={addForm.departmentId}
-                onChange={handleDepartmentChange}
-                placeholder={arabicSource("employees.select_the_section")}
-              />
-            </div>
-            <div>
-              <label className={fieldLabelClass} style={{ fontSize: 12 }}>
-                {arabicSource("employees.job_position")}
-              </label>
-              <TypeAhead
-                items={designationOptions}
-                getId={getDesignationId}
-                getLabel={getDesignationLabel}
-                value={addForm.designationId}
-                onChange={handleDesignationChange}
-                placeholder={arabicSource("common.select")}
-              />
-            </div>
-            <LabeledInput
-              label={arabicSource("employees.salary_iqd")}
-              type="number"
-              value={addForm.salary}
-              onChange={handleSalaryChange}
-              placeholder="0"
-              dir="ltr"
-            />
-            <LabeledInput
-              label={arabicSource("common.direct_date")}
-              type="date"
-              value={addForm.joinDate}
-              onChange={handleJoinDateChange}
-              dir="ltr"
-            />
-          </div>
+          <EmployeeCoreFields
+            addForm={addForm}
+            departmentOptions={departmentOptions}
+            designationOptions={designationOptions}
+            managerOptions={managerOptions}
+            onFormChange={onFormChange}
+          />
           <div className="mt-3">
             <LabeledInput
               label={arabicSource("common.address")}

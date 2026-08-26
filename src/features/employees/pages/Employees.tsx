@@ -164,6 +164,7 @@ const Employees = () => {
               facePhotoPreview={facePhotoPreview}
               departmentOptions={dbDepartmentOptions}
               designationOptions={designationOptions}
+              managerOptions={employeeOptions}
               countries={countries}
               states={states}
               cities={cities}

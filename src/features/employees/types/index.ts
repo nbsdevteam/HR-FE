@@ -26,6 +26,7 @@ export type EmployeeAddForm = {
   joinDate: string;
   nationalId: string;
   gender: "male" | "female";
+  managerId: string;
   nationality: string;
   country: string;
   state: string;
