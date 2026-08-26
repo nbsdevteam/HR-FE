@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
@@ -51,6 +52,10 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
     unpaidLeaveCount,
   } = usePayrollDetailPanel(props);
 
+  const { i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
+  const offscreenX = isRtl ? "-100%" : "100%";
+
   const handleShowShortfall = useCallback(
     () => setShowShortfall(true),
     [setShowShortfall],
@@ -94,9 +99,9 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
           />
           <motion.div
             key="panel-content"
-            initial={{ x: "-100%" }}
+            initial={{ x: offscreenX }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+            exit={{ x: offscreenX }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed top-0 end-0 z-50 h-full w-full max-w-2xl bg-background border-s border-border shadow-2xl overflow-y-auto"
             role="dialog"
