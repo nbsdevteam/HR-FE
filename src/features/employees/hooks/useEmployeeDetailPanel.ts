@@ -17,9 +17,9 @@ import { useEmployeeTermination } from "./useEmployeeTermination";
 const positionLabel = (p: { id: string; title_ar: string; title_en: string | null }): string =>
   p.title_ar || p.title_en || p.id;
 
-export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [], designations = [] }: EmployeeDetailPanelProps) => {
+export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [], designations = [], startInEditMode = false }: EmployeeDetailPanelProps) => {
   const [modalTab, setModalTab] = useState<EmployeeDetailModalTab>("info");
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(startInEditMode);
   const [editData, setEditData] = useState<Employee>({ ...employee });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);

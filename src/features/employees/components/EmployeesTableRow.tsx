@@ -18,15 +18,17 @@ type EmployeesTableRowProps = {
   isPending: boolean;
   isDeviceSynced: boolean;
   onSelectEmployee: (employee: Employee) => void;
+  onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
 };
 
 const EmployeesTableRow = ({
-  emp, dbEmp, index, isPending, isDeviceSynced, onSelectEmployee, onDeleteTargetChange,
+  emp, dbEmp, index, isPending, isDeviceSynced, onSelectEmployee, onEditEmployee, onDeleteTargetChange,
 }: EmployeesTableRowProps) => {
   const deviceNo = dbEmp?.device_employee_no;
 
   const handleSelect = useCallback(() => onSelectEmployee(emp), [onSelectEmployee, emp]);
+  const handleEdit = useCallback(() => onEditEmployee(emp), [onEditEmployee, emp]);
   const handleDeleteTargetChange = useCallback(() => {
     if (dbEmp) onDeleteTargetChange({ id: dbEmp.id, name: emp.name });
   }, [onDeleteTargetChange, dbEmp, emp.name]);
@@ -106,7 +108,7 @@ const EmployeesTableRow = ({
             variant="unstyled"
             size="unstyled"
             rounded="rounded"
-            onClick={handleSelect}
+            onClick={handleEdit}
             className="p-1.5 hover:bg-secondary"
             icon={Edit}
             iconClassName="w-4 h-4 text-muted-foreground"

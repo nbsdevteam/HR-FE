@@ -38,6 +38,7 @@ const Employees = () => {
     deleting,
     designationOptions,
     designations,
+    detailStartsInEditMode,
     deviceSyncedSet,
     deviceSyncStatus,
     employeeOptions,
@@ -49,6 +50,7 @@ const Employees = () => {
     handleDeleteEmployee,
     handleDetailClose,
     handleDetailSave,
+    handleEditEmployee,
     handleFacePhoto,
     handleSelectEmployee,
     handleStateChange,
@@ -115,6 +117,7 @@ const Employees = () => {
             onSortByChange={setSortBy}
             onSortDirChange={setSortDir}
             onSelectEmployee={handleSelectEmployee}
+            onEditEmployee={handleEditEmployee}
             onDeleteTargetChange={setDeleteConfirm}
           />
         ) : (
@@ -144,6 +147,7 @@ const Employees = () => {
               allEmployees={employeeOptions}
               dbDepartments={dbDepartmentOptions}
               designations={designations}
+              startInEditMode={detailStartsInEditMode}
             />
           </Suspense>
         )}

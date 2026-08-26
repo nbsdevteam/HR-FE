@@ -38,6 +38,7 @@ type EmployeesListViewProps = {
   onSortByChange: (sortBy: EmployeeSortKey) => void;
   onSortDirChange: (sortDir: "asc" | "desc") => void;
   onSelectEmployee: (employee: Employee) => void;
+  onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
 };
 
@@ -51,6 +52,7 @@ const EmployeesListView = ({
   onSortByChange,
   onSortDirChange,
   onSelectEmployee,
+  onEditEmployee,
   onDeleteTargetChange,
 }: EmployeesListViewProps) => {
   const dbEmpByPersonId = useMemo(
@@ -75,10 +77,11 @@ const EmployeesListView = ({
         isPending={pendingEmployees.has(emp.id)}
         isDeviceSynced={deviceSyncedSet.has(emp.id)}
         onSelectEmployee={onSelectEmployee}
+        onEditEmployee={onEditEmployee}
         onDeleteTargetChange={onDeleteTargetChange}
       />
     ),
-    [dbEmpByPersonId, pendingEmployees, deviceSyncedSet, onSelectEmployee, onDeleteTargetChange],
+    [dbEmpByPersonId, pendingEmployees, deviceSyncedSet, onSelectEmployee, onEditEmployee, onDeleteTargetChange],
   );
 
   return (

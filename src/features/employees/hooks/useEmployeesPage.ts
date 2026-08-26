@@ -27,6 +27,7 @@ const pickLeanListGapFields = (employee: Employee): LeanListGapFields => ({
 
 export const useEmployeesPage = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [detailStartsInEditMode, setDetailStartsInEditMode] = useState(false);
   const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
   const [recentEdits, setRecentEdits] = useState<Record<string, LeanListGapFields>>({});
 
@@ -42,10 +43,20 @@ export const useEmployeesPage = () => {
     [listFilters.employeeOptions, selectedEmployee],
   );
 
-  const handleDetailClose = useCallback(() => setSelectedEmployee(null), []);
+  const handleDetailClose = useCallback(() => {
+    setSelectedEmployee(null);
+    setDetailStartsInEditMode(false);
+  }, []);
 
   const handleSelectEmployee = useCallback((employee: Employee) => {
     const override = recentEdits[employee.dbId];
+    setDetailStartsInEditMode(false);
+    setSelectedEmployee(override ? { ...employee, ...override } : employee);
+  }, [recentEdits]);
+
+  const handleEditEmployee = useCallback((employee: Employee) => {
+    const override = recentEdits[employee.dbId];
+    setDetailStartsInEditMode(true);
     setSelectedEmployee(override ? { ...employee, ...override } : employee);
   }, [recentEdits]);
 
@@ -55,6 +66,7 @@ export const useEmployeesPage = () => {
     }
     refetch();
     setSelectedEmployee(null);
+    setDetailStartsInEditMode(false);
   }, [refetch]);
 
   useEffect(() => {
@@ -71,9 +83,11 @@ export const useEmployeesPage = () => {
     dbEmployees,
     dbLoading,
     designations,
+    detailStartsInEditMode,
     employeeOptions: selectedEmployeeOptions,
     handleDetailClose,
     handleDetailSave,
+    handleEditEmployee,
     handleSelectEmployee,
     selectedEmployee,
     setSelectedEmployee,

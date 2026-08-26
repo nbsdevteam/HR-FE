@@ -128,4 +128,5 @@ export type EmployeeDetailPanelProps = {
   allEmployees?: EmployeeOption[];
   dbDepartments?: DepartmentOption[];
   designations?: DbPosition[];
+  startInEditMode?: boolean;
 };
