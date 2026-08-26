@@ -1,21 +1,20 @@
 import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { DEPARTMENTS, SYNC_API } from "@/shared/constants";
+import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type {
   Attachment,
   Custody,
+  DepartmentOption,
   Employee,
   EmployeeDetailModalTab,
   EmployeeDetailPanelProps,
 } from "../types";
 import { errorMessage } from "../utils/errorMessage";
 
-const departments: string[] = [...DEPARTMENTS];
-
 const todayStr = () => new Date().toISOString().split("T")[0];
 
-export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: EmployeeDetailPanelProps) => {
+export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [] }: EmployeeDetailPanelProps) => {
   const [modalTab, setModalTab] = useState<EmployeeDetailModalTab>("info");
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Employee>({ ...employee });
@@ -23,6 +22,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   const [saveError, setSaveError] = useState<string | null>(null);
   const [addingNewDept, setAddingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState("");
+  const [creatingDept, setCreatingDept] = useState(false);
 
   // Add custody form
   const [showAddCustody, setShowAddCustody] = useState(false);
@@ -42,22 +42,26 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   const [terminationLoading, setTerminationLoading] = useState(false);
   const [terminationResult, setTerminationResult] = useState<string | null>(null);
 
-  // Build the full department list: hardcoded + current employee's dept if not already included.
-  // Memoized so the array identity stays stable for the memoized tabs it is passed to.
-  const allDepts = useMemo(() => {
-    const depts = [...departments];
-    if (employee.department && !depts.includes(employee.department)) {
-      depts.push(employee.department);
-    }
-    if (editData.department && !depts.includes(editData.department)) {
-      depts.push(editData.department);
+  // Build the full department list from the backend, plus the employee's current
+  // department if it's missing there (e.g. deactivated department). Memoized so the
+  // array identity stays stable for the memoized tabs it is passed to.
+  const allDepts = useMemo<DepartmentOption[]>(() => {
+    const depts = [...dbDepartments];
+    if (editData.departmentId && !depts.some(d => d.id === editData.departmentId)) {
+      depts.push({ id: editData.departmentId, name: editData.department });
     }
     return depts;
-  }, [employee.department, editData.department]);
+  }, [dbDepartments, editData.departmentId, editData.department]);
 
   const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
+
+  const handleDepartmentSelect = useCallback((deptId: string) => {
+    const dept = allDepts.find(d => d.id === deptId);
+    if (!dept) return;
+    setEditData(prev => ({ ...prev, departmentId: dept.id, department: dept.name }));
+  }, [allDepts]);
 
   const handleManagerChange = useCallback((managerId: string | null) => {
     setEditData(prev => ({
@@ -67,12 +71,23 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     }));
   }, [allEmployees]);
 
-  const handleConfirmNewDept = useCallback(() => {
-    if (!newDeptName.trim()) return;
-    handleEditField("department", newDeptName.trim());
-    setAddingNewDept(false);
-    setNewDeptName("");
-  }, [newDeptName, handleEditField]);
+  const handleConfirmNewDept = useCallback(async () => {
+    const name = newDeptName.trim();
+    if (!name) return;
+    setCreatingDept(true);
+    setSaveError(null);
+    try {
+      const created: any = await odooData.createDepartment({ name });
+      const id = String(created?.data?.id ?? "");
+      setEditData(prev => ({ ...prev, departmentId: id || null, department: name }));
+      setAddingNewDept(false);
+      setNewDeptName("");
+    } catch (e: unknown) {
+      setSaveError(errorMessage(e));
+    } finally {
+      setCreatingDept(false);
+    }
+  }, [newDeptName]);
 
   const handleCancelNewDept = useCallback(() => {
     setAddingNewDept(false);
@@ -91,6 +106,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
         monthly_salary: editData.salary,
         join_date: editData.startDate || null,
         status: editData.status,
+        department_id: editData.departmentId || null,
         address: editData.address || null,
         national_id: editData.nationalId,
         emergency_contact: editData.emergencyContact,
@@ -223,6 +239,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
   return {
     addingNewDept,
     allDepts,
+    creatingDept,
     editData,
     handleAddAttachment,
     handleAddCustody,
@@ -234,6 +251,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [] }: 
     handleConfirmNewDept,
     handleDeleteAttachment,
     handleDeleteCustody,
+    handleDepartmentSelect,
     handleEditField,
     handleManagerChange,
     handleSave,

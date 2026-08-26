@@ -133,6 +133,7 @@ const Employees = () => {
               onClose={handleDetailClose}
               onSave={handleDetailSave}
               allEmployees={employeeOptions}
+              dbDepartments={dbDepartmentOptions}
             />
           </Suspense>
         )}

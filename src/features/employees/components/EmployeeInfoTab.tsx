@@ -6,7 +6,7 @@ import {
 import { formatCurrency } from "@/shared/utils/currency";
 import { Select, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { Employee, EmployeeOption } from "../types";
+import type { DepartmentOption, Employee, EmployeeOption } from "../types";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 
@@ -17,11 +17,13 @@ const getManagerOptionLabel = (emp: EmployeeOption): string => `${emp.name} (${e
 type EmployeeInfoTabProps = {
   editData: Employee;
   isEditing: boolean;
-  allDepts: string[];
+  allDepts: DepartmentOption[];
   allEmployees: EmployeeOption[];
   addingNewDept: boolean;
+  creatingDept: boolean;
   newDeptName: string;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
+  onDepartmentSelect: (deptId: string) => void;
   onManagerChange: (managerId: string | null) => void;
   onStartAddingDept: () => void;
   onNewDeptNameChange: (value: string) => void;
@@ -35,8 +37,10 @@ const EmployeeInfoTab = ({
   allDepts,
   allEmployees,
   addingNewDept,
+  creatingDept,
   newDeptName,
   onFieldChange,
+  onDepartmentSelect,
   onManagerChange,
   onStartAddingDept,
   onNewDeptNameChange,
@@ -118,12 +122,14 @@ const EmployeeInfoTab = ({
       />
       <EmployeeDepartmentField
         department={editData.department}
+        departmentId={editData.departmentId}
         allDepts={allDepts}
         isEditing={isEditing}
         addingNewDept={addingNewDept}
+        creatingDept={creatingDept}
         newDeptName={newDeptName}
         inputClass={inputClass}
-        onFieldChange={onFieldChange}
+        onSelectDepartment={onDepartmentSelect}
         onStartAddingDept={onStartAddingDept}
         onNewDeptNameChange={onNewDeptNameChange}
         onConfirmNewDept={onConfirmNewDept}

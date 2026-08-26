@@ -28,6 +28,7 @@ export interface DbEmployee {
   name: string;
   arabic_name: string;
   department: string;
+  department_id: string | null;
   monthly_salary: number;
   currency: string;
   overtime_rate: number;

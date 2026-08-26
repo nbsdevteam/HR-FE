@@ -62,6 +62,7 @@ export type Employee = {
   name: string;
   position: string;
   department: string;
+  departmentId: string | null;
   email: string;
   personalPhone: string;
   companyPhone: string;
@@ -91,6 +92,11 @@ export type EmployeeOption = {
   position: string;
 };
 
+export type DepartmentOption = {
+  id: string;
+  name: string;
+};
+
 export type EmployeeDetailModalTab = "info" | "custodies" | "leaves" | "attachments";
 
 export type EmployeeDetailPanelProps = {
@@ -98,4 +104,5 @@ export type EmployeeDetailPanelProps = {
   onClose: () => void;
   onSave?: () => void;
   allEmployees?: EmployeeOption[];
+  dbDepartments?: DepartmentOption[];
 };

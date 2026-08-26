@@ -28,6 +28,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     name,
     position: employee.position || employee.department || "—",
     department: employee.department || arabicSource("common.not_specified"),
+    departmentId: employee.department_id || null,
     email: employee.email || `${employee.name?.replace(/\s+/g, ".").toLowerCase() || "emp"}@company.iq`,
     personalPhone: employee.personal_phone || "—",
     companyPhone: employee.company_phone || "—",

@@ -14,6 +14,7 @@ export const mapEmployee = (r: any): DbEmployee => {
     name: r.name || "",
     arabic_name: r.arabic_name || "",
     department: r.department_name || r.department || "",
+    department_id: sornull(r.department_id),
     monthly_salary: num(r.monthly_salary),
     currency: r.currency || "IQD",
     overtime_rate: num(r.overtime_rate),
