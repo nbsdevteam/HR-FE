@@ -41,3 +41,28 @@ export const fetchDeviceEvents = async (filters?: {
   if (filters?.processed !== undefined) params.processed = filters.processed;
   return items<any>("/api/hr/devices/events/list", params);
 }
+
+// ——— Device-sync pause (device changeover) ———
+
+export interface DeviceSyncLastChange {
+  action: string;
+  actor_name: string;
+  reason: string | null;
+  changed_at: string;
+}
+
+export interface DeviceSyncState {
+  paused: boolean;
+  last_change?: DeviceSyncLastChange;
+}
+
+/** Pass `detail: true` only from the settings screen — never from a polling loop. */
+export const fetchDeviceSyncState = async (detail = false): Promise<DeviceSyncState> => {
+  return hrCall<DeviceSyncState>("/api/hr/devices/sync-state", detail ? { detail: true } : {});
+}
+
+export const setDeviceSyncPaused = async (paused: boolean, reason?: string): Promise<DeviceSyncState> => {
+  const params: Record<string, unknown> = { paused };
+  if (reason) params.reason = reason;
+  return hrCall<DeviceSyncState>("/api/hr/devices/sync-state/set", params);
+}

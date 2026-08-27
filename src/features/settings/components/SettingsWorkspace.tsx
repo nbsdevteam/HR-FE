@@ -3,6 +3,7 @@ import { useToast } from "../hooks/useToast";
 import ConfigurationsCard from "./ConfigurationsCard";
 import ContractTypesCard from "./ContractTypesCard";
 import DepartmentColorsCard from "./DepartmentColorsCard";
+import DeviceSyncPauseCard from "./DeviceSyncPauseCard";
 import DocumentTypesCard from "./DocumentTypesCard";
 import LeaveTypesCard from "./LeaveTypesCard";
 import NotificationsCard from "./NotificationsCard";
@@ -48,6 +49,7 @@ const SettingsWorkspace = () => {
           showToast={showToast}
         />
         <SystemModulesCard showToast={showToast} />
+        <DeviceSyncPauseCard showToast={showToast} />
         <ConfigurationsCard showToast={showToast} />
         <PublicHolidaysCard showToast={showToast} />
         <LeaveTypesCard showToast={showToast} />

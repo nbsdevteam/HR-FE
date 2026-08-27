@@ -119,6 +119,23 @@ log("⚙️", `Backend: ${config.backendType}${config.backendType === "odoo" ? `
 
 let lastSyncTime = null; // ISO string of last successful event sync
 const processedEventIds = new Set(); // dedup within session
+let skippedEnrolments = 0; // device-user writes skipped while sync is paused (see backend.deviceSyncPaused)
+
+/**
+ * Guard for every device-user write (enrolment, update, delete, credentials).
+ * Reads the pause flag fresh on each call — see backend.deviceSyncPaused() —
+ * so a resume takes effect on the very next request. Responds and returns
+ * true when the caller should stop; the route handler must `return` right after.
+ */
+async function guardDeviceSyncPaused(res, actionLabel) {
+  if (await backend.deviceSyncPaused()) {
+    skippedEnrolments++;
+    log("⏸️", `Device sync paused — skipping ${actionLabel}`);
+    res.json({ success: true, skipped: true, reason: "sync_paused" });
+    return true;
+  }
+  return false;
+}
 
 // ── Persist lastSyncTime so PM2 restarts don't lose state (always via Supabase — see note above) ──
 
@@ -371,13 +388,16 @@ function startPushListener() {
   });
 
   // Health check
-  app.get("/health", (req, res) => {
+  app.get("/health", async (req, res) => {
+    const deviceSyncPaused = await backend.deviceSyncPaused().catch(() => false);
     res.json({
       status: "running",
       backend: config.backendType,
       lastSync: lastSyncTime,
       processedCount: processedEventIds.size,
       uptime: process.uptime(),
+      deviceSyncPaused,
+      skippedEnrolments,
     });
   });
 
@@ -405,7 +425,8 @@ function startPushListener() {
   });
 
   // Device status for frontend
-  app.get("/api/status", (req, res) => {
+  app.get("/api/status", async (req, res) => {
+    const deviceSyncPaused = await backend.deviceSyncPaused().catch(() => false);
     res.json({
       status: "running",
       backend: config.backendType,
@@ -413,6 +434,8 @@ function startPushListener() {
       processedCount: processedEventIds.size,
       uptime: Math.round(process.uptime()),
       deviceIp: config.device.ip,
+      deviceSyncPaused,
+      skippedEnrolments,
     });
   });
 
@@ -463,6 +486,7 @@ function startPushListener() {
   // POST /api/device/persons — create a new person
   app.post("/api/device/persons", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `create person`)) return;
       const { employeeNo, name, gender, userType, validFrom, validTo } = req.body;
       if (!employeeNo || !name) return res.status(400).json({ success: false, error: "employeeNo and name are required" });
       const result = await hik.createPerson({ employeeNo, name, gender, userType, validFrom, validTo });
@@ -475,6 +499,7 @@ function startPushListener() {
   // PUT /api/device/persons/:id — update a person
   app.put("/api/device/persons/:id", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `update person #${req.params.id}`)) return;
       const { name, gender, userType, validFrom, validTo } = req.body;
       const result = await hik.updatePerson({ employeeNo: req.params.id, name, gender, userType, validFrom, validTo });
       res.json({ success: true, result });
@@ -486,6 +511,7 @@ function startPushListener() {
   // DELETE /api/device/persons/:id — delete a person
   app.delete("/api/device/persons/:id", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `delete person #${req.params.id}`)) return;
       const result = await hik.deletePerson(req.params.id);
       res.json({ success: true, result });
     } catch (err) {
@@ -506,6 +532,7 @@ function startPushListener() {
   // POST /api/device/persons/:id/face — upload face photo (base64 in body)
   app.post("/api/device/persons/:id/face", express.raw({ type: "*/*", limit: "5mb" }), async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `upload face for #${req.params.id}`)) return;
       let imageBuffer;
       if (req.is("application/json")) {
         const data = JSON.parse(req.body.toString());
@@ -523,6 +550,7 @@ function startPushListener() {
   // DELETE /api/device/persons/:id/face — delete face photo
   app.delete("/api/device/persons/:id/face", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `delete face for #${req.params.id}`)) return;
       const result = await hik.deleteFacePhoto(req.params.id);
       res.json({ success: true, result });
     } catch (err) {
@@ -609,6 +637,7 @@ function startPushListener() {
   // POST /api/device/remove-credentials/:id — remove person + credentials from device (termination)
   app.post("/api/device/remove-credentials/:id", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `remove credentials for #${req.params.id}`)) return;
       const empNo = req.params.id;
       const { removeFace, removeFingerprint, removePerson } = req.body;
       const results = {};
@@ -664,6 +693,7 @@ function startPushListener() {
   // POST /api/device/sync-employee — push an HR employee to the biometric device
   app.post("/api/device/sync-employee", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, "sync-employee")) return;
       const { employeeNo, name, gender, facePhoto } = req.body;
       if (!employeeNo || !name) {
         return res.status(400).json({ success: false, error: "employeeNo and name are required" });
@@ -707,6 +737,7 @@ function startPushListener() {
   // DELETE /api/device/sync-employee/:id — remove employee from device when terminated
   app.delete("/api/device/sync-employee/:id", async (req, res) => {
     try {
+      if (await guardDeviceSyncPaused(res, `sync-employee delete #${req.params.id}`)) return;
       await hik.deletePerson(req.params.id);
       log("🗑️", `HR→Device: Removed person #${req.params.id} from device`);
       res.json({ success: true });

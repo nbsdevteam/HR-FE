@@ -453,6 +453,21 @@ export function createBackend(config, ctx) {
   }
 
   // ══════════════════════════════════════════
+  // Device-sync pause flag (device changeover — see "device-sync — pausing
+  // employee sync for a device changeover" plan). Read once per operation
+  // rather than cached, so a resume takes effect on the next cycle instead
+  // of on the next restart.
+  // ══════════════════════════════════════════
+  async function deviceSyncPaused() {
+    try {
+      const data = await odoo.call("/api/hr/devices/sync-state", {});
+      return !!data?.paused;
+    } catch {
+      return false; // Odoo unreachable — fail open, behave as before this guard existed
+    }
+  }
+
+  // ══════════════════════════════════════════
   // Absence detection
   // ══════════════════════════════════════════
   async function detectAbsences() {
@@ -511,5 +526,6 @@ export function createBackend(config, ctx) {
     detectLateArrivals,
     autoCheckout,
     detectAbsences,
+    deviceSyncPaused,
   };
 }
