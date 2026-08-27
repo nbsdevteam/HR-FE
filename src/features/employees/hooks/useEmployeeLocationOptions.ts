@@ -5,6 +5,7 @@ import {
   fetchCitiesByStateId,
 } from "@/shared/api/geo";
 import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
+import { errorMessage } from "../utils/errorMessage";
 
 const CITY_SEARCH_DEBOUNCE_MS = 300;
 
@@ -22,7 +23,8 @@ export const useEmployeeLocationOptions = () => {
     setLoadingCountries(true);
     try {
       setCountries(await fetchCountries());
-    } catch {
+    } catch (error: unknown) {
+      console.error("Failed to load countries from /api/crm/master/countries:", errorMessage(error));
       setCountries([]);
     }
     setLoadingCountries(false);
@@ -35,7 +37,8 @@ export const useEmployeeLocationOptions = () => {
     setLoadingStates(true);
     try {
       setStates(await fetchStatesByCountryId(countryId));
-    } catch {
+    } catch (error: unknown) {
+      console.error("Failed to load states from /api/crm/master/states:", errorMessage(error));
       setStates([]);
     }
     setLoadingStates(false);
@@ -51,7 +54,8 @@ export const useEmployeeLocationOptions = () => {
     setLoadingCities(true);
     try {
       setCities(await fetchCitiesByStateId(stateId));
-    } catch {
+    } catch (error: unknown) {
+      console.error("Failed to load cities from /api/crm/master/cities:", errorMessage(error));
       setCities([]);
     }
     setLoadingCities(false);
@@ -69,7 +73,8 @@ export const useEmployeeLocationOptions = () => {
       setLoadingCities(true);
       try {
         setCities(await fetchCitiesByStateId(stateId, query));
-      } catch {
+      } catch (error: unknown) {
+        console.error("Failed to search cities from /api/crm/master/cities:", errorMessage(error));
         setCities([]);
       }
       setLoadingCities(false);
