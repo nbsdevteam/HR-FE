@@ -115,7 +115,7 @@ const ApplicantFormModal = ({
         applicantId = editingApplicant!.id;
       } else {
         const res: any = await odooData.createApplicant(odooPayload);
-        applicantId = res?.data?.id;
+        applicantId = res?.id;
       }
       if (pendingResumeFile && applicantId) {
         const base64 = await fileToBase64(pendingResumeFile);
