@@ -21,8 +21,11 @@ const defaultAddForm: EmployeeAddForm = {
   managerId: "",
   nationality: "",
   country: "",
+  countryId: "",
   state: "",
+  stateId: "",
   city: "",
+  cityId: "",
   residence: "",
   workLocation: "local",
 };
@@ -48,6 +51,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     loadCountries,
     loadStates,
     loadCities,
+    searchCities,
     resetLocationOptions,
   } = useEmployeeLocationOptions();
 
@@ -102,15 +106,34 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setAddForm(current => ({ ...current, ...updates }));
   }, []);
 
-  const handleCountryChange = useCallback((countryName: string) => {
-    setAddForm(current => ({ ...current, country: countryName, state: "", city: "" }));
-    void loadStates(countryName);
-  }, [loadStates]);
+  const handleCountryChange = useCallback((countryId: string) => {
+    const countryName = countries.find(c => String(c.id) === countryId)?.name || "";
+    setAddForm(current => ({
+      ...current,
+      country: countryName,
+      countryId,
+      state: "",
+      stateId: "",
+      city: "",
+      cityId: "",
+    }));
+    void loadStates(countryId);
+  }, [countries, loadStates]);
 
-  const handleStateChange = useCallback((stateName: string) => {
-    setAddForm(current => ({ ...current, state: stateName, city: "" }));
-    void loadCities(addForm.country, stateName);
-  }, [loadCities, addForm.country]);
+  const handleStateChange = useCallback((stateId: string) => {
+    const stateName = states.find(s => String(s.id) === stateId)?.name || "";
+    setAddForm(current => ({ ...current, state: stateName, stateId, city: "", cityId: "" }));
+    void loadCities(stateId);
+  }, [states, loadCities]);
+
+  const handleCityChange = useCallback((cityId: string) => {
+    const cityName = cities.find(c => String(c.id) === cityId)?.name || "";
+    setAddForm(current => ({ ...current, city: cityName, cityId }));
+  }, [cities]);
+
+  const handleCitySearch = useCallback((query: string) => {
+    searchCities(addForm.stateId, query);
+  }, [searchCities, addForm.stateId]);
 
   const handleClearFacePhoto = useCallback(() => {
     setFacePhotoPreview(null);
@@ -137,11 +160,16 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
       const newPersonId = nextEmployeeId;
 
       // The backend takes address as a single nested object (§3 of the address
-      // spec) — only include the keys the user actually filled in.
-      const address: Record<string, string> = {};
-      if (addForm.country) address.country = addForm.country;
-      if (addForm.state) address.state = addForm.state;
-      if (addForm.city) address.city = addForm.city;
+      // spec) — only include the keys the user actually filled in. Ids come
+      // from picking an item off the country/state/city dropdowns, so they're
+      // always present alongside a name; send the id — "the id wins" server-side.
+      const address: Record<string, string | number> = {};
+      if (addForm.countryId) address.country_id = Number(addForm.countryId);
+      else if (addForm.country) address.country = addForm.country;
+      if (addForm.stateId) address.state_id = Number(addForm.stateId);
+      else if (addForm.state) address.state = addForm.state;
+      if (addForm.cityId) address.city_id = Number(addForm.cityId);
+      else if (addForm.city) address.city = addForm.city;
       if (addForm.residence) address.residence = addForm.residence;
 
       await odooData.createEmployee({
@@ -210,8 +238,10 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     deviceSyncStatus,
     facePhotoPreview,
     handleAddEmployee,
+    handleCitySearch,
     handleClearFacePhoto,
     handleCountryChange,
+    handleCityChange,
     handleFacePhoto,
     handleStateChange,
     loadingCities,

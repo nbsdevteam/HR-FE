@@ -32,6 +32,7 @@ const baseEmployee: Employee = {
   state: "",
   stateId: "",
   city: "",
+  cityId: "",
   residence: "",
   workLocation: "",
   nationalId: "",

@@ -1,6 +1,6 @@
 import { Fingerprint, Plus } from "lucide-react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
-import type { CountryOption } from "@/shared/api/locationData";
+import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalHeader, ModalOverlay } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm, EmployeeOption } from "../types";
@@ -21,15 +21,17 @@ type AddEmployeeModalProps = {
   departmentOptions: DbDepartment[];
   designationOptions: DbPosition[];
   managerOptions: EmployeeOption[];
-  countries: CountryOption[];
-  states: string[];
-  cities: string[];
+  countries: GeoCountry[];
+  states: GeoState[];
+  cities: GeoCity[];
   loadingCountries: boolean;
   loadingStates: boolean;
   loadingCities: boolean;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
   onCountryChange: (value: string) => void;
   onStateChange: (value: string) => void;
+  onCityChange: (value: string) => void;
+  onCitySearch: (query: string) => void;
   onFacePhotoChange: (file: File) => void;
   onClearFacePhoto: () => void;
   onAddEmployee: () => void;
@@ -56,6 +58,8 @@ const AddEmployeeModal = ({
   onFormChange,
   onCountryChange,
   onStateChange,
+  onCityChange,
+  onCitySearch,
   onFacePhotoChange,
   onClearFacePhoto,
   onAddEmployee,
@@ -122,6 +126,8 @@ const AddEmployeeModal = ({
               onFormChange={onFormChange}
               onCountryChange={onCountryChange}
               onStateChange={onStateChange}
+              onCityChange={onCityChange}
+              onCitySearch={onCitySearch}
             />
           </div>
         </div>

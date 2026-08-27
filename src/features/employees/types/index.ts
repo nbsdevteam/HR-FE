@@ -28,8 +28,11 @@ export type EmployeeAddForm = {
   managerId: string;
   nationality: string;
   country: string;
+  countryId: string;
   state: string;
+  stateId: string;
   city: string;
+  cityId: string;
   residence: string;
   workLocation: WorkLocation;
 };
@@ -97,6 +100,7 @@ export type Employee = {
   state: string;
   stateId: string;
   city: string;
+  cityId: string;
   residence: string;
   workLocation: WorkLocation;
   nationalId: string;

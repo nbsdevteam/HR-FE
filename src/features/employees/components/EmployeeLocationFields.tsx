@@ -1,28 +1,35 @@
 import { useCallback } from "react";
 import { TypeAhead, Select } from "@/shared/components";
-import type { CountryOption } from "@/shared/api/locationData";
+import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { EmployeeAddForm, WorkLocation } from "../types";
 import LabeledInput from "./LabeledInput";
 
-const stringIdentity = (value: string): string => value;
-const getCountryId = (country: CountryOption): string => country.name;
-const getCountryLabel = (country: CountryOption): string => country.name;
-const getNationalityId = (country: CountryOption): string => country.nationality;
-const getNationalityLabel = (country: CountryOption): string => country.nationality;
+const getCountryId = (country: GeoCountry): string => String(country.id);
+const getCountryLabel = (country: GeoCountry): string => country.name;
+// The Odoo geo API has no demonym data, so nationality is picked from the
+// same country list and identified/stored by the plain country name.
+const getNationalityId = (country: GeoCountry): string => country.name;
+const getNationalityLabel = (country: GeoCountry): string => country.name;
+const getStateId = (state: GeoState): string => String(state.id);
+const getStateLabel = (state: GeoState): string => state.name;
+const getCityId = (city: GeoCity): string => String(city.id);
+const getCityLabel = (city: GeoCity): string => city.name;
 const fieldLabelClass = "text-foreground block mb-1.5";
 
 type EmployeeLocationFieldsProps = {
   addForm: EmployeeAddForm;
-  countries: CountryOption[];
-  states: string[];
-  cities: string[];
+  countries: GeoCountry[];
+  states: GeoState[];
+  cities: GeoCity[];
   loadingCountries: boolean;
   loadingStates: boolean;
   loadingCities: boolean;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
   onCountryChange: (value: string) => void;
   onStateChange: (value: string) => void;
+  onCityChange: (value: string) => void;
+  onCitySearch: (query: string) => void;
 };
 
 const EmployeeLocationFields = ({
@@ -36,14 +43,11 @@ const EmployeeLocationFields = ({
   onFormChange,
   onCountryChange,
   onStateChange,
+  onCityChange,
+  onCitySearch,
 }: EmployeeLocationFieldsProps) => {
   const handleNationalityChange = useCallback(
     (value: string): void => onFormChange({ nationality: value }),
-    [onFormChange],
-  );
-
-  const handleCityChange = useCallback(
-    (value: string): void => onFormChange({ city: value }),
     [onFormChange],
   );
 
@@ -83,7 +87,7 @@ const EmployeeLocationFields = ({
           items={countries}
           getId={getCountryId}
           getLabel={getCountryLabel}
-          value={addForm.country}
+          value={addForm.countryId}
           onChange={onCountryChange}
           placeholder={arabicSource(
             loadingCountries ? "common.loading" : "employees.select_the_country",
@@ -96,14 +100,14 @@ const EmployeeLocationFields = ({
         </label>
         <TypeAhead
           items={states}
-          getId={stringIdentity}
-          getLabel={stringIdentity}
-          value={addForm.state}
+          getId={getStateId}
+          getLabel={getStateLabel}
+          value={addForm.stateId}
           onChange={onStateChange}
           placeholder={arabicSource(
             loadingStates ? "common.loading" : "employees.select_the_state",
           )}
-          disabled={!addForm.country}
+          disabled={!addForm.countryId}
         />
       </div>
       <div>
@@ -112,14 +116,16 @@ const EmployeeLocationFields = ({
         </label>
         <TypeAhead
           items={cities}
-          getId={stringIdentity}
-          getLabel={stringIdentity}
-          value={addForm.city}
-          onChange={handleCityChange}
+          getId={getCityId}
+          getLabel={getCityLabel}
+          value={addForm.cityId}
+          onChange={onCityChange}
+          onQueryChange={onCitySearch}
+          remoteFilter
           placeholder={arabicSource(
             loadingCities ? "common.loading" : "employees.select_the_city",
           )}
-          disabled={!addForm.state}
+          disabled={!addForm.stateId}
         />
       </div>
       <LabeledInput
@@ -137,6 +143,7 @@ const EmployeeLocationFields = ({
           value={addForm.workLocation}
           onChange={handleWorkLocationChange}
           placeholder={arabicSource("employees.select_the_work_location")}
+          blankLabel={arabicSource("common.not_specified")}
           options={[
             { value: "local", label: arabicSource("employees.work_location_local") },
             { value: "remote", label: arabicSource("employees.work_location_remote") },

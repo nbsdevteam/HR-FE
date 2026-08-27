@@ -18,3 +18,4 @@ export * from "./performance";
 export * from "./warningAttachments";
 export * from "./reporting";
 export * from "./devices";
+export * from "./geo";

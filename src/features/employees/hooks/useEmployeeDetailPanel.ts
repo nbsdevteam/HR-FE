@@ -41,6 +41,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     loadCountries: loadLocationCountries,
     loadStates: loadLocationStates,
     loadCities: loadLocationCities,
+    searchCities: searchLocationCities,
   } = useEmployeeLocationOptions();
 
   // Lazily hydrate the country/state/city picklists once editing actually
@@ -49,8 +50,8 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   useEffect(() => {
     if (!isEditing) return;
     void loadLocationCountries();
-    if (editData.country) void loadLocationStates(editData.country);
-    if (editData.country && editData.state) void loadLocationCities(editData.country, editData.state);
+    if (editData.countryId) void loadLocationStates(editData.countryId);
+    if (editData.stateId) void loadLocationCities(editData.stateId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing]);
 
@@ -125,15 +126,29 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     }));
   }, [allEmployees]);
 
-  const handleLocationCountryChange = useCallback((countryName: string) => {
-    setEditData(prev => ({ ...prev, country: countryName, countryId: "", state: "", city: "" }));
-    void loadLocationStates(countryName);
-  }, [loadLocationStates]);
+  const handleLocationCountryChange = useCallback((countryId: string) => {
+    const countryName = locationCountries.find(c => String(c.id) === countryId)?.name || "";
+    setEditData(prev => ({
+      ...prev,
+      country: countryName,
+      countryId,
+      state: "",
+      stateId: "",
+      city: "",
+      cityId: "",
+    }));
+    void loadLocationStates(countryId);
+  }, [locationCountries, loadLocationStates]);
 
-  const handleLocationStateChange = useCallback((stateName: string) => {
-    setEditData(prev => ({ ...prev, state: stateName, stateId: "", city: "" }));
-    void loadLocationCities(editData.country, stateName);
-  }, [loadLocationCities, editData.country]);
+  const handleLocationStateChange = useCallback((stateId: string) => {
+    const stateName = locationStates.find(s => String(s.id) === stateId)?.name || "";
+    setEditData(prev => ({ ...prev, state: stateName, stateId, city: "", cityId: "" }));
+    void loadLocationCities(stateId);
+  }, [locationStates, loadLocationCities]);
+
+  const handleLocationCitySearch = useCallback((query: string) => {
+    searchLocationCities(editData.stateId, query);
+  }, [searchLocationCities, editData.stateId]);
 
   const handleConfirmNewDept = useCallback(async () => {
     const name = newDeptName.trim();
@@ -163,11 +178,17 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaveError(null);
     try {
       // The backend now patches `address` partially — untouched keys are left
-      // alone, so it's safe to just send the current structured values.
-      const address: Record<string, string> = {};
-      if (editData.country) address.country = editData.country;
-      if (editData.state) address.state = editData.state;
-      if (editData.city) address.city = editData.city;
+      // alone, so it's safe to just send the current structured values. Ids
+      // come from picking an item off the country/state/city dropdowns, so
+      // they're always present alongside a name; send the id — "the id wins"
+      // server-side.
+      const address: Record<string, string | number> = {};
+      if (editData.countryId) address.country_id = Number(editData.countryId);
+      else if (editData.country) address.country = editData.country;
+      if (editData.stateId) address.state_id = Number(editData.stateId);
+      else if (editData.state) address.state = editData.state;
+      if (editData.cityId) address.city_id = Number(editData.cityId);
+      else if (editData.city) address.city = editData.city;
       if (editData.residence) address.residence = editData.residence;
 
       await odooData.updateEmployee(editData.dbId, {
@@ -238,6 +259,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     handleConfirmNewDept,
     handleDepartmentSelect,
     handleEditField,
+    handleLocationCitySearch,
     handleLocationCountryChange,
     handleLocationStateChange,
     handleManagerChange,

@@ -23,6 +23,13 @@ type TypeAheadProps<T> = {
   showDescription?: boolean;
   className?: string;
   openUpward?: boolean;
+  /** Called with the typed query on every keystroke — for a server-driven
+   *  search (e.g. a type-ahead city lookup) instead of filtering `items`
+   *  locally. Pair with `remoteFilter` once the caller owns the fetch. */
+  onQueryChange?: (query: string) => void;
+  /** `items` already reflects the current query (fetched server-side) —
+   *  skip the local text match and just render them. */
+  remoteFilter?: boolean;
 };
 
 function findItem<T>(items: T[], valueKey: string, getId: (item: T) => string): T | null {
@@ -48,6 +55,8 @@ const TypeAhead = <T,>({
   showDescription = true,
   className = "",
   openUpward = false,
+  onQueryChange,
+  remoteFilter = false,
 }: TypeAheadProps<T>) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -84,7 +93,7 @@ const TypeAhead = <T,>({
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
     const matches = (item: T): boolean => {
-      if (!q) return true;
+      if (remoteFilter || !q) return true;
       const text = (
         getSearchText
           ? getSearchText(item)
@@ -98,7 +107,7 @@ const TypeAhead = <T,>({
       .filter(matches)
       .slice()
       .sort((a, b) => getLabel(a).localeCompare(getLabel(b), "ar"));
-  }, [items, exclude, filter, query, getSearchText, getLabel, getDescription, getId]);
+  }, [items, exclude, filter, query, remoteFilter, getSearchText, getLabel, getDescription, getId]);
 
   const triggerPlaceholder = placeholder || arabicSource("common.select");
   const searchBoxPlaceholder = searchPlaceholder || arabicSource("common.search");
@@ -140,6 +149,7 @@ const TypeAhead = <T,>({
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setQuery(e.target.value);
+    onQueryChange?.(e.target.value);
   };
 
   const handleSearchInputClick = (e: React.MouseEvent<HTMLInputElement>): void => {

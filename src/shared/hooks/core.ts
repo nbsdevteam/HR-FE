@@ -25,14 +25,17 @@ export const useCachedList = <T,>(
 
 /** The backend returns `address` as a structured object, not a flat string.
  *  `residence` is the canonical street line; `street` carries the same value
- *  for legacy readers. `country`/`state` are display names — writes must send
- *  `country_id`/`state_id` (or a name, which the backend resolves) instead. */
+ *  for legacy readers. `country`/`state`/`city` are display names — writes
+ *  must send `country_id`/`state_id`/`city_id` (or a name, which the backend
+ *  resolves) instead. `city_id` is `false` for a free-text city saved before
+ *  the city master-data link existed. */
 export interface DbEmployeeAddress {
   country?: string;
   country_id?: string | number | false;
   state?: string;
   state_id?: string | number | false;
   city?: string;
+  city_id?: string | number | false;
   residence?: string;
   street?: string;
   street2?: string;

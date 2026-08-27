@@ -45,7 +45,9 @@ const Employees = () => {
     facePhotoPreview,
     filtered,
     handleAddEmployee,
+    handleCitySearch,
     handleClearFacePhoto,
+    handleCityChange,
     handleCountryChange,
     handleDeleteEmployee,
     handleDetailClose,
@@ -178,6 +180,8 @@ const Employees = () => {
               onFormChange={updateAddForm}
               onCountryChange={handleCountryChange}
               onStateChange={handleStateChange}
+              onCityChange={handleCityChange}
+              onCitySearch={handleCitySearch}
               onFacePhotoChange={handleFacePhoto}
               onClearFacePhoto={handleClearFacePhoto}
               onAddEmployee={handleAddEmployee}

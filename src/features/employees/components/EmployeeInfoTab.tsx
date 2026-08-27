@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
 import { Select, TypeAhead } from "@/shared/components";
-import type { CountryOption } from "@/shared/api/locationData";
+import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
 import EmployeeAddressFields from "./EmployeeAddressFields";
@@ -28,9 +28,9 @@ type EmployeeInfoTabProps = {
   addingNewDept: boolean;
   creatingDept: boolean;
   newDeptName: string;
-  locationCountries: CountryOption[];
-  locationStates: string[];
-  locationCities: string[];
+  locationCountries: GeoCountry[];
+  locationStates: GeoState[];
+  locationCities: GeoCity[];
   loadingLocationCountries: boolean;
   loadingLocationStates: boolean;
   loadingLocationCities: boolean;
@@ -44,6 +44,7 @@ type EmployeeInfoTabProps = {
   onCancelNewDept: () => void;
   onLocationCountryChange: (value: string) => void;
   onLocationStateChange: (value: string) => void;
+  onLocationCitySearch: (query: string) => void;
 };
 
 const EmployeeInfoTab = ({
@@ -73,6 +74,7 @@ const EmployeeInfoTab = ({
   onCancelNewDept,
   onLocationCountryChange,
   onLocationStateChange,
+  onLocationCitySearch,
 }: EmployeeInfoTabProps) => {
   const handleEmployeeNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("employeeNumber", e.target.value);
@@ -198,6 +200,7 @@ const EmployeeInfoTab = ({
         onFieldChange={onFieldChange}
         onCountryChange={onLocationCountryChange}
         onStateChange={onLocationStateChange}
+        onCitySearch={onLocationCitySearch}
       />
       <EmployeeFieldRow
         icon={Wallet} iconColor="text-primary" label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight

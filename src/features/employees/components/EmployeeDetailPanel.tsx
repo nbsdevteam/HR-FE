@@ -49,6 +49,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handleDeleteCustody,
     handleDepartmentSelect,
     handleEditField,
+    handleLocationCitySearch,
     handleLocationCountryChange,
     handleLocationStateChange,
     handleManagerChange,
@@ -188,6 +189,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 onCancelNewDept={handleCancelNewDept}
                 onLocationCountryChange={handleLocationCountryChange}
                 onLocationStateChange={handleLocationStateChange}
+                onLocationCitySearch={handleLocationCitySearch}
               />
             )}
 

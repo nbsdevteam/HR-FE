@@ -53,6 +53,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     state: addr?.state || "",
     stateId: addr?.state_id ? String(addr.state_id) : "",
     city: addr?.city || "",
+    cityId: addr?.city_id ? String(addr.city_id) : "",
     residence: addr?.residence || addr?.street || "",
     workLocation: (employee.work_location as Employee["workLocation"]) || "",
     nationalId: employee.national_id || "",
