@@ -1,15 +1,18 @@
 import { motion } from "motion/react";
 import { CalendarCheck } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { LoadingState } from "@/shared/components";
 import type { LeaveRecord } from "../types";
 import EmployeeLeaveCard from "./EmployeeLeaveCard";
 import TabShellEmptyState from "./shared/TabShellEmptyState";
 
 type EmployeeLeavesTabProps = {
   leaves: LeaveRecord[];
+  loading: boolean;
+  error: string | null;
 };
 
-const EmployeeLeavesTab = ({ leaves }: EmployeeLeavesTabProps) => (
+const EmployeeLeavesTab = ({ leaves, loading, error }: EmployeeLeavesTabProps) => (
   <motion.div
     key="leaves"
     initial={{ opacity: 0, y: 8 }}
@@ -20,7 +23,18 @@ const EmployeeLeavesTab = ({ leaves }: EmployeeLeavesTabProps) => (
   >
     <p className="text-muted-foreground" style={{ fontSize: 13 }}>{arabicSource("shared.vacation_record")}</p>
 
-    {leaves.length > 0 ? (
+    {error && (
+      <div
+        className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive"
+        style={{ fontSize: 13 }}
+      >
+        {arabicSource("shared.error_saving")} {error}
+      </div>
+    )}
+
+    {loading ? (
+      <LoadingState variant="compact" message={arabicSource("common.loading")} />
+    ) : leaves.length > 0 ? (
       <>
         {leaves.map((leave) => (
           <EmployeeLeaveCard key={leave.id} leave={leave} />
@@ -38,7 +52,7 @@ const EmployeeLeavesTab = ({ leaves }: EmployeeLeavesTabProps) => (
             </div>
             <div>
               <span className="text-primary" style={{ fontSize: 22 }}>
-                {Math.max(0, 30 - leaves.filter(l => l.status === arabicSource("common.agreed")).reduce((s, l) => s + l.days, 0))}
+                {Math.max(0, 30 - leaves.filter(l => l.status === arabicSource("common.accepted")).reduce((s, l) => s + l.days, 0))}
               </span>
               <span className="text-muted-foreground ms-1.5" style={{ fontSize: 13 }}>{arabicSource("common.days_left")}</span>
             </div>

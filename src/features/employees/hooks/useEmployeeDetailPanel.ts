@@ -12,6 +12,7 @@ import type {
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
 import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
+import { useEmployeeLeaves } from "./useEmployeeLeaves";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 import { useEmployeeTermination } from "./useEmployeeTermination";
 
@@ -30,6 +31,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
 
   const custodyForm = useEmployeeCustodyForm(employee.dbId);
   const attachmentForm = useEmployeeAttachmentForm(setEditData);
+  const leavesData = useEmployeeLeaves(employee.dbId);
   const termination = useEmployeeTermination(employee, onSave);
   const {
     countries: locationCountries,
@@ -285,6 +287,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setNewDeptName,
     ...custodyForm,
     ...attachmentForm,
+    ...leavesData,
     ...termination,
   };
 };

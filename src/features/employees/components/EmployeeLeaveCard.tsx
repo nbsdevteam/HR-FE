@@ -7,6 +7,12 @@ import RecordIconBadge from "./shared/RecordIconBadge";
 
 /** Arabic leave-status labels mapped onto the shared badge tones. */
 const leaveStatusColors: Record<string, string> = {
+  // Canonical statuses emitted by mapLeaveStatus.
+  [arabicSource("common.accepted")]: STATUS_TONES.success,
+  [arabicSource("common.pending")]: STATUS_TONES.accent,
+  [arabicSource("common.rejected_3")]: STATUS_TONES.danger,
+  [arabicSource("common.canceled")]: STATUS_TONES.muted,
+  // Legacy feminine labels, kept so older rows keep their colour.
   [arabicSource("common.agreed")]: STATUS_TONES.success,
   [arabicSource("common.pending_2")]: STATUS_TONES.accent,
   [arabicSource("common.rejected")]: STATUS_TONES.danger,

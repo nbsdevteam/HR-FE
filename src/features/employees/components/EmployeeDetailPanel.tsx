@@ -58,6 +58,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handleTermination,
     handleUpdateCustody,
     isEditing,
+    leaveError,
+    leaves,
+    leavesLoading,
     loadingLocationCities,
     loadingLocationCountries,
     loadingLocationStates,
@@ -155,7 +158,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         <EmployeeDetailTabs
           modalTab={modalTab}
           custodiesCount={custodies.length}
-          leavesCount={editData.leaves.length}
+          leavesCount={leaves.length}
           attachmentsCount={editData.attachments.length}
           onSelect={setModalTab}
         />
@@ -211,7 +214,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
             )}
 
             {modalTab === "leaves" && (
-              <EmployeeLeavesTab leaves={editData.leaves} />
+              <EmployeeLeavesTab leaves={leaves} loading={leavesLoading} error={leaveError} />
             )}
 
             {modalTab === "attachments" && (
