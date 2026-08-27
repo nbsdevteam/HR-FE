@@ -1,61 +1,71 @@
-import { useState, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import type React from "react";
 import { motion } from "motion/react";
-import { Briefcase, Edit2, Plus, Trash2, ChevronDown } from "lucide-react";
-import type { DbDepartment } from "@/shared/hooks";
+import { Briefcase, Edit2, Plus, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import type { PositionNode } from "../types";
+import type { PositionFillState, PositionNode, PositionRow } from "../types";
 import PositionCardEmployeeRow from "./PositionCardEmployeeRow";
 
-const FALLBACK_DEPT_COLOR = "#8B5CF6";
-/** Depth at which sub-positions start out collapsed. */
-const INITIAL_EXPANDED_DEPTH = 3;
+/** Per-card entrance stagger, capped so a big department doesn't crawl in. */
+const MAX_STAGGER_DELAY = 0.3;
+const STAGGER_STEP = 0.03;
+
+const STATE_CLASSES: Record<PositionFillState, string> = {
+  vacant: "border-dashed border-primary/30 bg-card/50 hover:border-primary/50",
+  partial: "border-border/60 bg-card/50 hover:border-primary/40",
+  full: "border-border/40 bg-card/30 hover:border-border",
+  over: "border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60",
+};
 
 type PositionCardProps = {
-  node: PositionNode;
-  depth: number;
-  /** Prebuilt id → department lookup, so cards don't scan the list each render. */
-  departmentsById: Map<string, DbDepartment>;
-  deptColors: Record<string, string>;
+  row: PositionRow;
+  color: string;
+  departmentName: string;
+  /** Position within its department grid — drives the entrance stagger only. */
+  index: number;
+  /** True from the moment an employee card is picked up until the drag ends. */
+  isDragActive: boolean;
   onDrop: (employeeId: string, positionId: string) => void;
   onAddPosition: (parentId: string | null) => void;
   onDeletePosition: (posId: string) => void;
   onEditPosition: (pos: PositionNode) => void;
-  expandedPositions: Record<string, boolean>;
-  togglePositionExpand: (id: string) => void;
 };
 
+/**
+ * One position, one card, and the drop target for an assignment. While a drag
+ * is in flight the card states its answer up front: it lights up if it has
+ * room, or dims and refuses the drop outright if it doesn't.
+ */
 const PositionCard = ({
-  node,
-  depth,
-  departmentsById,
-  deptColors,
+  row,
+  color,
+  departmentName,
+  index,
+  isDragActive,
   onDrop,
   onAddPosition,
   onDeletePosition,
   onEditPosition,
-  expandedPositions,
-  togglePositionExpand,
 }: PositionCardProps) => {
   const [dragOver, setDragOver] = useState(false);
 
-  const dept = node.department_id
-    ? departmentsById.get(node.department_id)
-    : undefined;
-  const deptColor = dept
-    ? deptColors[dept.name] || dept.color || FALLBACK_DEPT_COLOR
-    : FALLBACK_DEPT_COLOR;
-  const vacancies = node.max_headcount - node.assignedEmployees.length;
-  const isExpanded = expandedPositions[node.id] ?? depth < INITIAL_EXPANDED_DEPTH;
-  const hasChildren = node.children.length > 0;
+  const { node, fillState, canAccept } = row;
+  const assigned = node.assignedEmployees.length;
+  const vacancies = node.max_headcount - assigned;
 
   const handleDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>): void => {
+      if (!canAccept) {
+        // No preventDefault: the card is not a valid drop target, so the browser
+        // shows the no-drop cursor and never fires `drop` here.
+        e.dataTransfer.dropEffect = "none";
+        return;
+      }
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
       setDragOver(true);
     },
-    [],
+    [canAccept],
   );
 
   const handleDragLeave = useCallback((): void => setDragOver(false), []);
@@ -64,10 +74,11 @@ const PositionCard = ({
     (e: React.DragEvent<HTMLDivElement>): void => {
       e.preventDefault();
       setDragOver(false);
-      const empId = e.dataTransfer.getData("employee-id");
-      if (empId) onDrop(empId, node.id);
+      if (!canAccept) return;
+      const employeeId = e.dataTransfer.getData("employee-id");
+      if (employeeId) onDrop(employeeId, node.id);
     },
-    [node.id, onDrop],
+    [canAccept, node.id, onDrop],
   );
 
   const handleEditPositionClick = useCallback((): void => {
@@ -82,100 +93,124 @@ const PositionCard = ({
     onDeletePosition(node.id);
   }, [node.id, onDeletePosition]);
 
-  const handleToggleExpandClick = useCallback((): void => {
-    togglePositionExpand(node.id);
-  }, [node.id, togglePositionExpand]);
+  // Tied to the live drag so a highlight can't survive a drag that ended elsewhere.
+  const isDropTarget = dragOver && isDragActive;
+
+  const dragClasses = !isDragActive
+    ? STATE_CLASSES[fillState]
+    : canAccept
+      ? "border-primary/50 bg-primary/5 shadow-md shadow-primary/10"
+      : "opacity-40 cursor-not-allowed";
 
   return (
-    <div className="flex flex-col items-center">
-      <motion.div
-        initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: depth * 0.05 }}
-        className={`rounded-xl border-2 shadow-md transition-all ${
-          dragOver
-            ? "border-primary bg-primary/10 shadow-primary/30 shadow-lg scale-[1.02]"
-            : vacancies > 0
-              ? "border-dashed border-primary/30 bg-card/50 hover:border-primary/50"
-              : "border-border/60 bg-card/30 hover:border-border"
-        }`}
-        style={{ minWidth: 220 }}
-        onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-      >
-        <div className="h-1.5 rounded-t-lg" style={{ background: deptColor }} />
-        <div className="p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${deptColor}20` }}>
-                <Briefcase className="w-4 h-4" style={{ color: deptColor }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground truncate" style={{ fontSize: 13 }}>{node.title_ar}</p>
-                <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{dept?.name || arabicSource("common.no_section")}</p>
-              </div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * STAGGER_STEP, MAX_STAGGER_DELAY) }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      title={
+        isDragActive && !canAccept
+          ? arabicSource("hierarchy.position_is_full_cannot_drop")
+          : undefined
+      }
+      className={`rounded-xl border-2 shadow-sm transition-all overflow-hidden flex flex-col ${
+        isDropTarget
+          ? "border-primary bg-primary/10 shadow-primary/30 shadow-lg scale-[1.02]"
+          : dragClasses
+      }`}
+    >
+      <div className="h-1.5 shrink-0" style={{ background: color }} />
+      <div className="p-3 flex flex-col flex-1 gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: `${color}20` }}
+            >
+              <Briefcase className="w-4 h-4" style={{ color }} />
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button onClick={handleEditPositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors" title={arabicSource("common.edit")}>
-                <Edit2 className="w-3 h-3 text-blue-400" />
-              </button>
-              <button onClick={handleAddPositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors" title={arabicSource("hierarchy.add_a_sub_position")}>
-                <Plus className="w-3 h-3 text-primary" />
-              </button>
-              {node.assignedEmployees.length === 0 && node.children.length === 0 && (
-                <button onClick={handleDeletePositionClick} className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors" title={arabicSource("common.delete")}>
-                  <Trash2 className="w-3 h-3 text-red-400" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Assigned employees */}
-          {node.assignedEmployees.length > 0 && (
-            <div className="space-y-1.5 mb-2">
-              {node.assignedEmployees.map(emp => (
-                <PositionCardEmployeeRow key={emp.id} employee={emp} color={deptColor} />
-              ))}
-            </div>
-          )}
-
-          {/* Vacancy indicator */}
-          {vacancies > 0 && (
-            <div className={`p-2 rounded-lg border-2 border-dashed text-center transition-colors ${
-              dragOver ? "border-primary/60 bg-primary/5" : "border-border/30"
-            }`}>
-              <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-                {dragOver ? arabicSource("common.drop_here_to_set") : `${vacancies} ${arabicSource("common.vacant")}`}
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground truncate" style={{ fontSize: 13 }}>
+                {isDropTarget ? arabicSource("common.drop_here_to_set") : node.title_ar}
+              </p>
+              <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>
+                {departmentName}
               </p>
             </div>
-          )}
-
-          {/* Headcount badge */}
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-muted-foreground" style={{ fontSize: 10 }}>
-              {node.assignedEmployees.length}/{node.max_headcount}
-            </span>
-            {hasChildren && (
-              <button onClick={handleToggleExpandClick}
-                className="w-5 h-5 rounded-full flex items-center justify-center bg-muted/50 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
-                <ChevronDown className="w-3 h-3 transition-transform" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleEditPositionClick}
+              className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-500/20 transition-colors"
+              title={arabicSource("common.edit")}
+            >
+              <Edit2 className="w-3 h-3 text-blue-400" />
+            </button>
+            <button
+              onClick={handleAddPositionClick}
+              className="w-6 h-6 rounded flex items-center justify-center hover:bg-primary/20 transition-colors"
+              title={arabicSource("hierarchy.add_a_sub_position")}
+            >
+              <Plus className="w-3 h-3 text-primary" />
+            </button>
+            {assigned === 0 && node.children.length === 0 && (
+              <button
+                onClick={handleDeletePositionClick}
+                className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors"
+                title={arabicSource("common.delete")}
+              >
+                <Trash2 className="w-3 h-3 text-red-400" />
               </button>
             )}
           </div>
         </div>
-      </motion.div>
 
-      {/* Children */}
-      {hasChildren && isExpanded && (
-        <div className="flex gap-4 pt-8">
-          {node.children.map(child => (
-            <PositionCard key={child.id} node={child} depth={depth + 1} departmentsById={departmentsById}
-              deptColors={deptColors} onDrop={onDrop}
-              onAddPosition={onAddPosition} onDeletePosition={onDeletePosition} onEditPosition={onEditPosition}
-              expandedPositions={expandedPositions} togglePositionExpand={togglePositionExpand} />
-          ))}
+        {/* Who already holds it — kept on the card, never behind a toggle. */}
+        {assigned > 0 && (
+          <div className="space-y-1.5">
+            {node.assignedEmployees.map((employee) => (
+              <PositionCardEmployeeRow key={employee.id} employee={employee} color={color} />
+            ))}
+          </div>
+        )}
+
+        {vacancies > 0 && (
+          <div
+            className={`p-2 rounded-lg border-2 border-dashed text-center transition-colors ${
+              isDropTarget ? "border-primary/60 bg-primary/5" : "border-border/30"
+            }`}
+          >
+            <p className="text-muted-foreground" style={{ fontSize: 11 }}>
+              {isDropTarget
+                ? arabicSource("common.drop_here_to_set")
+                : `${vacancies} ${arabicSource("common.vacant")}`}
+            </p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-auto pt-1">
+          <span
+            className="text-muted-foreground px-1.5 py-0.5 rounded-md bg-muted/40"
+            style={{ fontSize: 10 }}
+          >
+            {assigned}/{node.max_headcount}
+          </span>
+          {(fillState === "full" || fillState === "over") && (
+            <span
+              className={fillState === "over" ? "text-amber-500" : "text-muted-foreground"}
+              style={{ fontSize: 10 }}
+            >
+              {fillState === "over"
+                ? arabicSource("hierarchy.filter_over_capacity")
+                : arabicSource("hierarchy.status_full")}
+            </span>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
-export default PositionCard;
+export default memo(PositionCard);

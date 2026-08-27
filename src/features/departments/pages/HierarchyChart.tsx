@@ -111,8 +111,12 @@ const HierarchyChart = () => {
     );
   }
 
+  // The positions tab is locked to the screen — its two panes scroll on their
+  // own, so the page must not. Every other view keeps the normal page flow.
+  const isPositionsView = viewMode === "positions";
+
   return (
-    <div className="space-y-6">
+    <div className={isPositionsView ? "h-full flex flex-col gap-6 min-h-0" : "space-y-6"}>
       <HierarchyHeader
         unlinkedCount={unlinkedEmps.length}
         searchInputRef={searchInputRef}
@@ -136,15 +140,17 @@ const HierarchyChart = () => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
-      {viewMode === "positions" ? (
-        <Suspense fallback={null}>
-          <PositionsView
-            dbEmployees={dbEmployees}
-            dbDepartments={dbDepartments}
-            deptColors={deptColors}
-            refetch={refetchHierarchyAndPositions}
-          />
-        </Suspense>
+      {isPositionsView ? (
+        <div className="flex-1 min-h-0">
+          <Suspense fallback={null}>
+            <PositionsView
+              dbEmployees={dbEmployees}
+              dbDepartments={dbDepartments}
+              deptColors={deptColors}
+              refetch={refetchHierarchyAndPositions}
+            />
+          </Suspense>
+        </div>
       ) : (
         <HierarchyTreeSection
           dbEmployees={dbEmployees}

@@ -1,31 +1,43 @@
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import type React from "react";
 import { GripVertical } from "lucide-react";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { NodeAvatar } from "@/shared/components";
 
-const DraggableEmployeeCard = ({ emp, deptColors }: { emp: DbEmployee; deptColors: Record<string, string> }) => {
+type DraggableEmployeeCardProps = {
+  emp: DbEmployee;
+  deptColors: Record<string, string>;
+  /** Lets the view light up the positions that can take this employee. */
+  onDragStateChange?: (employeeId: string | null) => void;
+};
+
+const DraggableEmployeeCard = ({ emp, deptColors, onDragStateChange }: DraggableEmployeeCardProps) => {
   const [dragging, setDragging] = useState(false);
   const name = empDisplayName(emp);
   const color = deptColors[emp.department] || "#8B5CF6";
 
-  const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>): void => {
-    e.dataTransfer.setData("employee-id", emp.id);
-    e.dataTransfer.effectAllowed = "move";
-    setDragging(true);
-  };
+  const handleCardDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>): void => {
+      e.dataTransfer.setData("employee-id", emp.id);
+      e.dataTransfer.effectAllowed = "move";
+      setDragging(true);
+      onDragStateChange?.(emp.id);
+    },
+    [emp.id, onDragStateChange],
+  );
 
-  const handleCardDragEnd = (): void => {
+  const handleCardDragEnd = useCallback((): void => {
     setDragging(false);
-  };
+    onDragStateChange?.(null);
+  }, [onDragStateChange]);
 
   return (
     <div
       draggable
       onDragStart={handleCardDragStart}
       onDragEnd={handleCardDragEnd}
-      className={`flex items-center gap-2 p-2 rounded-lg border cursor-grab active:cursor-grabbing transition-all ${
+      className={`h-full flex items-center gap-2 p-2 rounded-lg border cursor-grab active:cursor-grabbing transition-all ${
         dragging ? "opacity-40 scale-95 border-primary/40" : "border-border/40 bg-card/50 hover:border-primary/30 hover:bg-card/80"
       }`}
     >

@@ -22,6 +22,48 @@ export type PositionNode = DbPosition & {
   assignedEmployees: DbEmployee[];
 };
 
+// ——— Positions & appointments tab ———
+
+/** How full a position is, relative to its `max_headcount`. */
+export type PositionFillState = "vacant" | "partial" | "full" | "over";
+
+/** Chip filters above the position list. `all` matches every fill state. */
+export type PositionFilter = "all" | "vacant" | "partial" | "over";
+
+/** One position rendered as a single card in its department's grid. */
+export type PositionRow = {
+  node: PositionNode;
+  fillState: PositionFillState;
+  /** False once headcount is exhausted: the card refuses drops instead of failing after one. */
+  canAccept: boolean;
+};
+
+export type PositionDepartmentGroup = {
+  /** Department id, or a sentinel for positions with no department. */
+  id: string;
+  name: string;
+  color: string;
+  rows: PositionRow[];
+  /** Remaining headcount across the group's rows. */
+  vacancies: number;
+};
+
+/** The employee fields a drop overwrites, captured so undo can put them back. */
+export type PositionAssignmentSnapshot = {
+  position_id: string | null;
+  department_id: string | null;
+  department: string;
+  manager_id: string | null;
+};
+
+/** An assignment that is still inside its undo window. */
+export type PendingAssignmentUndo = {
+  employeeId: string;
+  employeeName: string;
+  positionTitle: string;
+  previous: PositionAssignmentSnapshot;
+};
+
 // ——— Org-structure admin screen (backend §4) ———
 
 export type OrgStructureTab = "tree" | "departments" | "designations";

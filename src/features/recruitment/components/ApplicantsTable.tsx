@@ -1,4 +1,4 @@
-import { useState, memo, useCallback } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { Users } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
@@ -8,8 +8,26 @@ import SortableHeaderRow, {
 } from "@/shared/components/SortableHeader";
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { effectiveScore } from "../utils/recruitmentRanking";
 import { applicantsTableColumns } from "../data";
 import ApplicantTableRow from "./ApplicantTableRow";
+
+const compareApplicants = (a: DbApplicant, b: DbApplicant, sortBy: string): number => {
+  switch (sortBy) {
+    case "name":
+      return a.name.localeCompare(b.name, "ar");
+    case "job":
+      return (a.job_title || "").localeCompare(b.job_title || "", "ar");
+    case "date":
+      return new Date(a.applied_date).getTime() - new Date(b.applied_date).getTime();
+    case "stage":
+      return a.stage.localeCompare(b.stage, "ar");
+    case "rating":
+      return a.rating - b.rating;
+    default:
+      return effectiveScore(a) - effectiveScore(b);
+  }
+};
 
 interface IApplicantsTableProps {
   applicants: DbApplicant[];
@@ -28,6 +46,11 @@ const ApplicantsTable = ({
 }: IApplicantsTableProps) => {
   const [sortBy, setSortBy] = useState("rank");
   const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
+
+  const sortedApplicants = useMemo(() => {
+    const list = [...applicants].sort((a, b) => compareApplicants(a, b, sortBy));
+    return recSortDir === "asc" ? list : list.reverse();
+  }, [applicants, sortBy, recSortDir]);
 
   const handleSort = useCallback(
     (key: string): void => {
@@ -55,7 +78,7 @@ const ApplicantsTable = ({
     >
       <DataTable
         wrapperClassName={null}
-        items={applicants}
+        items={sortedApplicants}
         header={
           <SortableHeaderRow
             columns={applicantsTableColumns}

@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { empDisplayName, usePositions } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
+import { indexBy } from "@/shared/utils/collections";
 import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
 import type { PositionFormState } from "../components/PositionFormModal";
+import { usePositionAssignment } from "./usePositionAssignment";
+import { usePositionFilters } from "./usePositionFilters";
 
 export const EMPTY_POSITION_FORM: PositionFormState = {
   title_ar: "",
@@ -19,42 +22,59 @@ export const EMPTY_POSITION_FORM: PositionFormState = {
 export const usePositionsView = ({
   dbEmployees,
   dbDepartments,
+  deptColors,
   refetch,
 }: {
   dbEmployees: DbEmployee[];
   dbDepartments: DbDepartment[];
+  deptColors: Record<string, string>;
   refetch: () => void;
 }) => {
   const [empSearch, setEmpSearch] = useState("");
   const [showAddPositionModal, setShowAddPositionModal] = useState(false);
   const [addParentId, setAddParentId] = useState<string | null>(null);
-  const [editingPosition, setEditingPosition] = useState<PositionNode | null>(
-    null,
-  );
-  const [expandedPositions, setExpandedPositions] = useState<
-    Record<string, boolean>
-  >({});
+  const [editingPosition, setEditingPosition] = useState<PositionNode | null>(null);
+  const [draggingEmployeeId, setDraggingEmployeeId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [posForm, setPosForm] = useState<PositionFormState>(
-    EMPTY_POSITION_FORM,
-  );
+  const [posForm, setPosForm] = useState<PositionFormState>(EMPTY_POSITION_FORM);
+
+  const { positions, loading: posLoading, refetch: refetchPositions } = usePositions();
+
+  const showToast = useCallback((message: string): void => setToast(message), []);
 
   const {
+    effectiveEmployees,
+    assigning,
+    undoEntry,
+    assignEmployee,
+    undoAssignment,
+  } = usePositionAssignment({
+    dbEmployees,
+    dbDepartments,
     positions,
-    loading: posLoading,
-    refetch: refetchPositions,
-  } = usePositions();
+    refetch,
+    refetchPositions,
+    onToast: showToast,
+  });
+
+  // Built once here instead of `.find()`-ing the department list inside every row.
+  const departmentsById = useMemo(
+    () => indexBy(dbDepartments, (department) => department.id),
+    [dbDepartments],
+  );
 
   const positionTree = useMemo(
-    () => buildPositionTree(positions, dbEmployees),
-    [positions, dbEmployees],
+    () => buildPositionTree(positions, effectiveEmployees),
+    [positions, effectiveEmployees],
   );
+
+  const filters = usePositionFilters({ positionTree, departmentsById, deptColors });
 
   // Unassigned employees (no position_id)
   const unassignedEmployees = useMemo(
-    () => dbEmployees.filter((employee) => !employee.position_id),
-    [dbEmployees],
+    () => effectiveEmployees.filter((employee) => !employee.position_id),
+    [effectiveEmployees],
   );
 
   const filteredUnassigned = useMemo(() => {
@@ -67,67 +87,18 @@ export const usePositionsView = ({
     );
   }, [unassignedEmployees, empSearch]);
 
-  const togglePositionExpand = useCallback((id: string) => {
-    setExpandedPositions((current) => ({
-      ...current,
-      [id]: !(current[id] ?? true),
-    }));
+  const clearEmpSearch = useCallback((): void => setEmpSearch(""), []);
+
+  const handleEmployeeDragStateChange = useCallback((employeeId: string | null): void => {
+    setDraggingEmployeeId(employeeId);
   }, []);
 
-  // Drop handler — assign employee to position
   const handleDrop = useCallback(
-    async (employeeId: string, positionId: string) => {
-      setSaving(true);
-      const pos = positions.find(
-        (position: DbPosition) => position.id === positionId,
-      );
-      if (!pos) {
-        setSaving(false);
-        return;
-      }
-
-      // Check headcount
-      const currentCount = dbEmployees.filter(
-        (e) => e.position_id === positionId,
-      ).length;
-      if (currentCount >= pos.max_headcount) {
-        setToast(
-          arabicSource("hierarchy.error_position_is_full_cannot_assign_more"),
-        );
-        setSaving(false);
-        return;
-      }
-
-      // Auto-resolve department and manager
-      const dept = dbDepartments.find((d) => d.id === pos.department_id);
-
-      // Find manager: look for someone holding the parent position
-      let managerId: string | null = null;
-      if (pos.reports_to_position_id) {
-        const parentHolder = dbEmployees.find(
-          (e) => e.position_id === pos.reports_to_position_id,
-        );
-        if (parentHolder) managerId = parentHolder.id;
-      }
-
-      const updates: Record<string, string> = { position_id: positionId };
-      if (dept) updates.department_id = dept.id;
-      if (managerId) updates.manager_id = managerId;
-
-      try {
-        await odooData.updateEmployee(employeeId, updates);
-        const emp = dbEmployees.find((e) => e.id === employeeId);
-        setToast(
-          `${arabicSource("common.is_set")}${emp ? empDisplayName(emp) : ""}${arabicSource("hierarchy.in_position")}${pos.title_ar}${arabicSource("common.successfully")}`,
-        );
-        await Promise.all([refetch(), refetchPositions()]);
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "";
-        setToast(`${arabicSource("common.error_2")} ${message}`);
-      }
-      setSaving(false);
+    (employeeId: string, positionId: string): void => {
+      setDraggingEmployeeId(null);
+      void assignEmployee(employeeId, positionId);
     },
-    [positions, dbEmployees, dbDepartments, refetch, refetchPositions],
+    [assignEmployee],
   );
 
   // Add position
@@ -138,9 +109,7 @@ export const usePositionsView = ({
     // Calculate level from parent
     let level = 0;
     if (addParentId) {
-      const parent = positions.find(
-        (position: DbPosition) => position.id === addParentId,
-      );
+      const parent = positions.find((position: DbPosition) => position.id === addParentId);
       if (parent) level = parent.level + 1;
     }
 
@@ -191,12 +160,7 @@ export const usePositionsView = ({
   // Delete position
   const handleDeletePosition = useCallback(
     async (posId: string) => {
-      if (
-        !localizedConfirm(
-          arabicSource("hierarchy.do_you_want_to_delete_this_post"),
-        )
-      )
-        return;
+      if (!localizedConfirm(arabicSource("hierarchy.do_you_want_to_delete_this_post"))) return;
       setSaving(true);
       try {
         await odooData.deleteDesignation(posId);
@@ -243,24 +207,28 @@ export const usePositionsView = ({
   return {
     empSearch,
     setEmpSearch,
+    clearEmpSearch,
     showAddPositionModal,
     editingPosition,
-    expandedPositions,
     toast,
     saving,
+    assigning,
     posForm,
     setPosForm,
     posLoading,
-    positionTree,
     unassignedEmployees,
     filteredUnassigned,
-    togglePositionExpand,
+    isDragActive: draggingEmployeeId !== null,
+    undoEntry,
+    handleEmployeeDragStateChange,
     handleDrop,
+    undoAssignment,
     handleAddPosition,
     handleEditPosition,
     handleDeletePosition,
     closeAddEditModal,
     openAddModal,
     openEditModal,
+    ...filters,
   };
 };
