@@ -4,6 +4,7 @@ import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import {
   defaultCriteria as DEFAULT_CRITERIA,
   evaluationStatusToOdoo as EVAL_STATUS_TO_ODOO,
@@ -38,7 +39,9 @@ const NewEvalPanel = ({
   const [step, setStep] = useState(1); // 1=select employee, 2=score criteria
 
   const activeEmployees = useMemo(
-    () => employees.filter(e => !e.status || e.status === arabicSource("common.is_active")),
+    () => employees.filter(
+      e => !e.status || translateBackendCode(e.status, employeeStatusKeys) === arabicSource("common.is_active"),
+    ),
     [employees],
   );
 
