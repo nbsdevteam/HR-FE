@@ -47,7 +47,9 @@ export const useEmployeeLocationOptions = () => {
   // Immediate, unfiltered first page — used right after a state is picked so
   // the city dropdown isn't empty before the user types anything. Never the
   // full per-state list (the backend caps a page at 200; a large state still
-  // relies on `searchCities` to narrow further).
+  // relies on `searchCities` to narrow further). Currently always resolves
+  // to an empty list — `res.city` has no data behind it yet on the backend,
+  // see `shared/api/geo.ts`.
   const loadCities = useCallback(async (stateId: string) => {
     setCities([]);
     if (!stateId) return;
@@ -61,8 +63,8 @@ export const useEmployeeLocationOptions = () => {
     setLoadingCities(false);
   }, []);
 
-  // Debounced, per-keystroke search — the city list is 152,970 rows, so this
-  // is the only way most cities are ever reachable.
+  // Debounced, per-keystroke search — narrows a per-state city list that can
+  // be arbitrarily large once real city data is populated on the backend.
   const searchCities = useCallback((stateId: string, query: string) => {
     if (citySearchTimeoutRef.current) window.clearTimeout(citySearchTimeoutRef.current);
     if (!stateId) {

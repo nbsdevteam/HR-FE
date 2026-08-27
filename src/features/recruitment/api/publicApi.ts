@@ -6,8 +6,13 @@
  * touch the auth session.
  */
 
-const BASE_URL = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+const API_BASE_CONFIGURED = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const ODOO_DB = import.meta.env.VITE_ODOO_DB || "";
+
+// In dev, requests go out relative (same-origin) so they hit the Vite proxy
+// (see vite.config.ts) instead of the absolute host directly — avoids CORS
+// failures in local development. Production still uses the absolute host.
+const BASE_URL = import.meta.env.DEV ? "" : API_BASE_CONFIGURED;
 
 export interface PublicJob {
   id: number;
@@ -47,7 +52,7 @@ export class PublicApiError extends Error {
 }
 
 async function publicCall<T>(path: string, params: Record<string, unknown>): Promise<T> {
-  if (!BASE_URL) throw new PublicApiError("not_configured", "VITE_API_BASE is not configured");
+  if (!API_BASE_CONFIGURED) throw new PublicApiError("not_configured", "VITE_API_BASE is not configured");
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (ODOO_DB) headers["X-Odoo-Database"] = ODOO_DB;
 

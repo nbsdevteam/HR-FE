@@ -1,11 +1,15 @@
 /**
- * Country / state / city reference data from the Odoo `lugal_geo` module
- * (`/api/crm/master/countries|states|cities`) — same JWT + envelope
+ * Country / state / city reference data from Odoo's `geo_master_controller`
+ * (`addons/lugal_crm/controllers/geo_master_controller.py`, exposed at
+ * `/api/crm/master/countries|states|cities`) — same JWT + envelope
  * convention as every other `crm/master/*` endpoint, so it goes through the
  * shared `hrCall`/`items` helpers like the rest of `shared/api`.
  *
- * Cities are never loaded in full (152,970 rows) — always query by
- * `state_id` with a search term; see `fetchCitiesByState`.
+ * Cities always come back empty: `res.city` isn't installed in this Odoo
+ * deployment, and there's no city dataset for this install's country even
+ * where that model exists. `cities_list` still accepts `state_id`/`q` and
+ * always queries by state, so the shape here (and the UI built on it) is
+ * ready the moment a real city dataset lands.
  */
 import { items } from "./httpHelpers";
 

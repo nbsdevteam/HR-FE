@@ -3,15 +3,21 @@
  * Enable by setting VITE_API_BASE (and optionally VITE_ODOO_DB).
  */
 
-const BASE_URL = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+const API_BASE_CONFIGURED = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const ODOO_DB = import.meta.env.VITE_ODOO_DB || "";
+
+// In dev, requests go out relative (same-origin) so they hit the Vite proxy
+// (see vite.config.ts) instead of the absolute host directly — that avoids
+// an entire class of cross-origin/CORS failures in local development. The
+// production build still targets the configured absolute host.
+const BASE_URL = import.meta.env.DEV ? "" : API_BASE_CONFIGURED;
 
 const TOKEN_KEY = "lugal_hr_access_token";
 const REFRESH_KEY = "lugal_hr_refresh_token";
 const USER_KEY = "lugal_hr_user";
 
 export const isOdooBackend = (): boolean => {
-  return Boolean(BASE_URL);
+  return Boolean(API_BASE_CONFIGURED);
 }
 
 export const getAccessToken = (): string | null => {
@@ -128,7 +134,7 @@ export const hrCall = async <T = unknown>(
   path: string,
   params: Record<string, unknown> = {},
 ): Promise<T> => {
-  if (!BASE_URL) {
+  if (!API_BASE_CONFIGURED) {
     throw new Error("VITE_API_BASE is not configured");
   }
   const token = getAccessToken();
