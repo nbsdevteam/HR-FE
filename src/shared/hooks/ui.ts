@@ -60,11 +60,16 @@ export type PopupRect = { left: number; width: number; top?: number; bottom?: nu
  * `{left, width}` rect off `getBoundingClientRect()` with the same gap and
  * the same four listeners.
  *
- * `placement` picks which side of the anchor the popup grows from: "bottom"
- * (default) sets `rect.top` below the anchor; "top" sets `rect.bottom`
- * (measured from the viewport bottom) above the anchor, so the popup grows
- * upward instead of being clipped by the end of the page.
+ * `placement` picks the *preferred* side of the anchor the popup grows from:
+ * "bottom" (default) sets `rect.top` below the anchor; "top" sets
+ * `rect.bottom` (measured from the viewport bottom) above the anchor. If the
+ * preferred side doesn't have room for a max-height popup, the position is
+ * flipped to whichever side has more space — anchors near the bottom of a
+ * long, page-scrolling list would otherwise render their popup past the
+ * bottom of the viewport, where it's clipped and unreachable.
  */
+const POPUP_MAX_HEIGHT = 288; // matches the `max-h-72` popup panels in Select/MultiSelect/TypeAhead
+
 export const usePopupPosition = (
   open: boolean,
   onClose: () => void,
@@ -84,8 +89,16 @@ export const usePopupPosition = (
     const updatePosition = (): void => {
       const r = anchorRef.current?.getBoundingClientRect();
       if (!r) return;
+      const spaceBelow = window.innerHeight - r.bottom - gapPx;
+      const spaceAbove = r.top - gapPx;
+      const preferTop = placement === "top";
+      const fitsPreferred = preferTop
+        ? spaceAbove >= POPUP_MAX_HEIGHT
+        : spaceBelow >= POPUP_MAX_HEIGHT;
+      const openTop = fitsPreferred ? preferTop : spaceAbove > spaceBelow;
+
       setRect(
-        placement === "top"
+        openTop
           ? { bottom: window.innerHeight - r.top + gapPx, left: r.left, width: r.width }
           : { top: r.bottom + gapPx, left: r.left, width: r.width },
       );
