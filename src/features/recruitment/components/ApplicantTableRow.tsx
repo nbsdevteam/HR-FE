@@ -19,11 +19,27 @@ type ApplicantTableRowProps = {
   onUpdateStage: (id: string, s: string) => void;
 };
 
-const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRating, onUpdateStage }: ApplicantTableRowProps) => {
-  const handleToggleBookmark = useCallback(() => onToggleBookmark(app), [onToggleBookmark, app]);
+const ApplicantTableRow = ({
+  app,
+  index,
+  onSelect,
+  onToggleBookmark,
+  onUpdateRating,
+  onUpdateStage,
+}: ApplicantTableRowProps) => {
+  const handleToggleBookmark = useCallback(
+    () => onToggleBookmark(app),
+    [onToggleBookmark, app],
+  );
   const handleSelect = useCallback(() => onSelect(app), [onSelect, app]);
-  const handleStageChange = useCallback((stage: string) => onUpdateStage(app.id, stage), [onUpdateStage, app.id]);
-  const handleRatingChange = useCallback((r: number) => onUpdateRating(app.id, r), [onUpdateRating, app.id]);
+  const handleStageChange = useCallback(
+    (stage: string) => onUpdateStage(app.id, stage),
+    [onUpdateStage, app.id],
+  );
+  const handleRatingChange = useCallback(
+    (r: number) => onUpdateRating(app.id, r),
+    [onUpdateRating, app.id],
+  );
   const handleDownloadResumeClick = useCallback(() => {
     void handleDownloadResume(app.id);
   }, [app.id]);
@@ -43,13 +59,18 @@ const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRat
           rounded="rounded"
           className="p-1 hover:bg-primary/10"
         >
-          {app.is_bookmarked
-            ? <BookmarkCheck className="w-4 h-4 text-primary" />
-            : <Bookmark className="w-4 h-4 text-muted-foreground/40" />}
+          {app.is_bookmarked ? (
+            <BookmarkCheck className="w-4 h-4 text-primary" />
+          ) : (
+            <Bookmark className="w-4 h-4 text-muted-foreground/40" />
+          )}
         </Button>
       </td>
       <td className="px-4 py-3">
-        <button onClick={handleSelect} className="flex items-center gap-3 cursor-pointer hover:text-primary transition-colors">
+        <button
+          onClick={handleSelect}
+          className="flex items-center gap-3 cursor-pointer hover:text-primary transition-colors"
+        >
           <NodeAvatar
             name={app.name}
             initials={app.name.charAt(0)}
@@ -60,23 +81,54 @@ const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRat
           />
           <div className="text-start">
             <span className="text-foreground block">{app.name}</span>
-            {app.email && <span className="text-muted-foreground block" style={{ fontSize: 11 }} dir="ltr">{app.email}</span>}
+            {app.email && (
+              <span
+                className="text-muted-foreground block"
+                style={{ fontSize: 11 }}
+                dir="ltr"
+              >
+                {app.email}
+              </span>
+            )}
           </div>
         </button>
       </td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>{app.job_title || "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{app.applied_date}</td>
+      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }}>
+        {app.job_title || "—"}
+      </td>
+      <td
+        className="px-4 py-3 text-muted-foreground"
+        style={{ fontSize: 13 }}
+        dir="ltr"
+      >
+        {app.applied_date}
+      </td>
       <td className="px-4 py-3">
         <StageSelect stage={app.stage} onChange={handleStageChange} />
       </td>
       <td className="px-4 py-3">
-        <StarRating value={app.rating} onChange={handleRatingChange} size={12} />
+        <StarRating
+          value={app.rating}
+          onChange={handleRatingChange}
+          size={12}
+        />
       </td>
       <td className="px-4 py-3">
         <IrBadge applicant={app} />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
+          <Button
+            onClick={handleSelect}
+            variant="unstyled"
+            size="unstyled"
+            rounded="rounded"
+            className="p-1 hover:bg-primary/10 text-muted-foreground"
+            icon={Eye}
+            iconClassName="w-3.5 h-3.5"
+            title={arabicSource("common.show_details")}
+          />
+
           {app.resume_url && (
             <Button
               type="button"
@@ -90,16 +142,6 @@ const ApplicantTableRow = ({ app, index, onSelect, onToggleBookmark, onUpdateRat
               title={arabicSource("recruitment.download_cv_2")}
             />
           )}
-          <Button
-            onClick={handleSelect}
-            variant="unstyled"
-            size="unstyled"
-            rounded="rounded"
-            className="p-1 hover:bg-primary/10 text-muted-foreground"
-            icon={Eye}
-            iconClassName="w-3.5 h-3.5"
-            title={arabicSource("common.show_details")}
-          />
         </div>
       </td>
     </motion.tr>

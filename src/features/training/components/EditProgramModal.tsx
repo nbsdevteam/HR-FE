@@ -1,7 +1,7 @@
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { InputField, ModalFooterActions, ModalHeader, ModalOverlay, Select } from "@/shared/components";
-import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
+import { Button, InputField, ModalHeader, ModalOverlay, Select } from "@/shared/components";
+import { fieldCls } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 
 type TEditProgramModalProps = {
@@ -36,72 +36,73 @@ const EditProgramModal = ({
   };
 
   return (
-  <ModalOverlay
-    onClose={onClose}
-    closeOnBackdropClick={false}
-    overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    contentClassName="bg-card border border-border/40 rounded-xl p-6 max-w-2xl w-full"
-    contentMotionProps={{
-      initial: { scale: 0.95, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0.95, opacity: 0 },
-    }}
-  >
-    <ModalHeader
-      title={arabicSource("training.modify_the_program")}
+    <ModalOverlay
       onClose={onClose}
-    />
-
-    <div className="space-y-4">
-      <InputField
-        label={arabicSource("common.coach")}
-        value={program.instructor || ""}
-        onChange={handleInstructorChange}
-        className={fieldCls}
+      contentClassName="bg-card border border-border rounded-xl p-6 w-full max-w-2xl shadow-lg max-h-[90vh] overflow-y-auto"
+    >
+      <ModalHeader
+        title={arabicSource("training.modify_the_program")}
+        onClose={onClose}
+        className="flex items-center justify-between mb-5"
       />
 
-      <InputField
-        label={arabicSource("common.duration_hours")}
-        value={program.duration || ""}
-        onChange={handleDurationChange}
-        className={fieldCls}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <Select
-          label={arabicSource("common.status")}
-          value={program.status}
-          onChange={handleStatusChange}
-          options={trainingStatuses}
+      <div className="space-y-4">
+        <InputField
+          label={arabicSource("common.coach")}
+          value={program.instructor || ""}
+          onChange={handleInstructorChange}
           className={fieldCls}
         />
 
-        <div>
-          <label className="block text-sm text-foreground mb-2">
-            {arabicSource("training.completion_rate")}
-          </label>
-          <input
-            type="number"
-            value={program.completion_rate}
-            onChange={handleCompletionRateChange}
-            min="0"
-            max="100"
+        <InputField
+          label={arabicSource("common.duration_hours")}
+          value={program.duration || ""}
+          onChange={handleDurationChange}
+          className={fieldCls}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <Select
+            label={arabicSource("common.status")}
+            value={program.status}
+            onChange={handleStatusChange}
+            options={trainingStatuses}
             className={fieldCls}
           />
+
+          <div>
+            <label className="block text-sm text-foreground mb-2">
+              {arabicSource("training.completion_rate")}
+            </label>
+            <input
+              type="number"
+              value={program.completion_rate}
+              onChange={handleCompletionRateChange}
+              min="0"
+              max="100"
+              className={fieldCls}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-3">
+          <Button
+            onClick={onSave}
+            icon={Save}
+            className="flex-1 h-11 shadow-lg shadow-primary/20"
+          >
+            {arabicSource("common.save_changes")}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-11"
+          >
+            {arabicSource("common.cancel")}
+          </Button>
         </div>
       </div>
-
-      <ModalFooterActions
-        onCancel={onClose}
-        onConfirm={onSave}
-        confirmLabel={arabicSource("common.save_changes")}
-        confirmIcon={Save}
-        reverseOrder
-        wrapperClassName={TRAINING_FOOTER_WRAPPER_CLASS}
-        cancelClassName={TRAINING_FOOTER_CANCEL_CLASS}
-      />
-    </div>
-  </ModalOverlay>
+    </ModalOverlay>
   );
 };
 
