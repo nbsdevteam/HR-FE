@@ -8,6 +8,7 @@ import { translateArabicSource } from "@/i18n/legacy";
 import { usePolicies } from "@/shared/hooks";
 import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { countBy } from "@/shared/utils/collections";
+import { stripHtmlTags } from "@/shared/utils/html";
 import {
   ODOO_STATUS_TO_POLICY,
   POLICY_STATUS_TO_ODOO,
@@ -52,6 +53,7 @@ export const usePoliciesPage = () => {
 
   const displayPolicies = useMemo<DisplayPolicy[]>(() => policies.map((policy) => ({
     ...policy,
+    content: stripHtmlTags(policy.content),
     status: ODOO_STATUS_TO_POLICY[policy.status] || policy.status,
   })), [policies]);
 

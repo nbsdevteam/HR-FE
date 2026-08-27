@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Button } from "@/shared/components";
-import { POLICY_CATEGORY_ICONS, policyStatusColors } from "../constants/policies";
+import {
+  POLICY_CATEGORY_ICONS,
+  policyStatusColors,
+} from "../constants/policies";
 import type { DisplayPolicy } from "../types";
 
 type PolicyListItemProps = {
@@ -95,10 +98,7 @@ const PolicyListItem = ({
             >
               {policy.status}
             </span>
-            <span
-              className="text-muted-foreground"
-              style={{ fontSize: 10 }}
-            >
+            <span className="text-muted-foreground" style={{ fontSize: 10 }}>
               v{policy.version}
             </span>
           </div>
