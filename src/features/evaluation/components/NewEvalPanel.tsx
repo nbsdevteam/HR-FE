@@ -4,7 +4,7 @@ import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
+import { employeeStatusKeys } from "@/i18n/status";
 import {
   defaultCriteria as DEFAULT_CRITERIA,
   evaluationStatusToOdoo as EVAL_STATUS_TO_ODOO,
@@ -13,6 +13,19 @@ import {
 import { getPeriodOptions } from "../utils/evaluationHelpers";
 import NewEvalStepOne from "./NewEvalStepOne";
 import NewEvalStepTwo from "./NewEvalStepTwo";
+
+/**
+ * `employeeStatusKeys` maps both raw backend codes (e.g. "active") and the
+ * legacy Arabic value to the same canonical key. Comparing against the key
+ * — not a translated string — keeps this independent of the current UI
+ * language (i18n.t() would return whatever language is active, which is not
+ * always Arabic, unlike `arabicSource`).
+ */
+const isActiveEmployeeStatus = (status: string | null): boolean => {
+  if (!status) return true;
+  const key = employeeStatusKeys[status] ?? employeeStatusKeys[status.toLowerCase()];
+  return key === "common.is_active";
+};
 
 const NewEvalPanel = ({
   employees,
@@ -39,9 +52,7 @@ const NewEvalPanel = ({
   const [step, setStep] = useState(1); // 1=select employee, 2=score criteria
 
   const activeEmployees = useMemo(
-    () => employees.filter(
-      e => !e.status || translateBackendCode(e.status, employeeStatusKeys) === arabicSource("common.is_active"),
-    ),
+    () => employees.filter(e => isActiveEmployeeStatus(e.status)),
     [employees],
   );
 
