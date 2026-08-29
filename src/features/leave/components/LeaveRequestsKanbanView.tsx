@@ -3,14 +3,14 @@ import { CalendarDays } from "lucide-react";
 import { KanbanColumn } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLeaveStatus } from "@/i18n/status";
-import { empDisplayName } from "@/shared/hooks";
-import type { DbLeaveRequest } from "@/shared/hooks";
+import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { leaveKanbanColumns } from "../styles";
 import LeaveRequestKanbanCard from "./LeaveRequestKanbanCard";
 
 type LeaveRequestsKanbanViewProps = {
   requests: DbLeaveRequest[];
   empMap: Record<string, any>;
+  leaveTypes: DbLeaveType[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
@@ -19,6 +19,7 @@ type LeaveRequestsKanbanViewProps = {
 const LeaveRequestsKanbanView = ({
   requests,
   empMap,
+  leaveTypes,
   onApprove,
   onReject,
   onViewAttachments,
@@ -48,13 +49,16 @@ const LeaveRequestsKanbanView = ({
           emptyMessage={arabicSource("leave.no_requests")}
           renderItem={(leave, i) => {
             const employee = empMap[leave.employee_id];
-            const employeeName = employee ? empDisplayName(employee) : "—";
+            const leaveType = leaveTypes.find(
+              (type) => type.code === leave.leave_type || type.name_ar === leave.leave_type,
+            );
             return (
               <LeaveRequestKanbanCard
                 key={leave.id}
                 leave={leave}
                 index={i}
-                employeeName={employeeName}
+                employee={employee}
+                leaveType={leaveType}
                 onApprove={onApprove}
                 onReject={onReject}
                 onViewAttachments={onViewAttachments}

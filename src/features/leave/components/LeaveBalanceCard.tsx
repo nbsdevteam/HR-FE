@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbLeaveBalance, DbLeaveType } from "@/shared/hooks";
 
 type LeaveBalanceCardProps = {
@@ -11,6 +12,8 @@ type LeaveBalanceCardProps = {
 };
 
 const LeaveBalanceCard = ({ leaveType: lt, index: i, bal, entitlement }: LeaveBalanceCardProps) => {
+  const { primary: leaveTypeName } = useLocalizedName(lt.name_ar, lt.name_en);
+
   const totalDays = bal?.total_days ?? entitlement;
   const usedDays = bal?.used_days ?? 0;
   const carryover = bal?.carryover_days ?? 0;
@@ -23,7 +26,7 @@ const LeaveBalanceCard = ({ leaveType: lt, index: i, bal, entitlement }: LeaveBa
       className="bg-card backdrop-blur-sm border border-border rounded-xl p-5 shadow-lg"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-foreground" style={{ fontSize: 14 }}>{lt.name_ar}</span>
+        <span className="text-foreground" style={{ fontSize: 14 }} data-i18n-ignore>{leaveTypeName}</span>
         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lt.color }} />
       </div>
       <div className="flex items-baseline gap-2">

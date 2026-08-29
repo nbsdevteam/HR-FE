@@ -47,6 +47,7 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             <LeaveRequestsKanbanView
               requests={page.filteredRequests}
               empMap={page.empMap}
+              leaveTypes={page.activeLeaveTypes}
               onApprove={page.handleApprove}
               onReject={page.handleReject}
               onViewAttachments={page.handleViewAttachments}

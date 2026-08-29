@@ -4,20 +4,30 @@ import { Check, X } from "lucide-react";
 import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { isLeavePending } from "@/i18n/status";
-import type { DbLeaveRequest } from "@/shared/hooks";
+import { useLocalizedEmployeeName, useLocalizedName } from "@/i18n/useLocalizedName";
+import type { TEmployeeNameFields } from "@/i18n/useLocalizedName";
+import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { formatLeaveDuration } from "../utils/formatLeaveDuration";
 import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
 
 type LeaveRequestKanbanCardProps = {
   leave: DbLeaveRequest;
   index: number;
-  employeeName: string;
+  employee: TEmployeeNameFields | undefined;
+  /** Resolved from `leave.leave_type`, so the card can show a real English name. */
+  leaveType: DbLeaveType | undefined;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
 };
 
-const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onReject, onViewAttachments }: LeaveRequestKanbanCardProps) => {
+const LeaveRequestKanbanCard = ({ leave, index, employee, leaveType, onApprove, onReject, onViewAttachments }: LeaveRequestKanbanCardProps) => {
+  const { primary: employeeName } = useLocalizedEmployeeName(employee);
+  const { primary: leaveTypeName } = useLocalizedName(
+    leaveType?.name_ar ?? leave.leave_type,
+    leaveType?.name_en,
+  );
+
   const handleApprove = useCallback(() => onApprove(leave.id), [onApprove, leave.id]);
   const handleReject = useCallback(() => onReject(leave.id), [onReject, leave.id]);
 
@@ -37,14 +47,14 @@ const LeaveRequestKanbanCard = ({ leave, index, employeeName, onApprove, onRejec
           textClassName="text-primary"
           fontSize={11}
         />
-        <span className="text-foreground" style={{ fontSize: 13 }}>{employeeName}</span>
+        <span className="text-foreground" style={{ fontSize: 13 }} data-i18n-ignore>{employeeName}</span>
       </div>
       <div className="space-y-1.5">
         <StatusBadge colorClassName="bg-primary/10 border-primary/20 text-primary" fontSize={11} extraClassName="inline-block">
-          {leave.leave_type}
+          <span data-i18n-ignore>{leaveTypeName}</span>
           {leave.is_hourly && <span className="ms-1" style={{ fontSize: 10 }}>({arabicSource("leave.hourly")})</span>}
         </StatusBadge>
-        {leave.reason && <p className="text-muted-foreground" style={{ fontSize: 11 }}>{leave.reason}</p>}
+        {leave.reason && <p className="text-muted-foreground" style={{ fontSize: 11 }} data-i18n-ignore>{leave.reason}</p>}
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground" style={{ fontSize: 11 }} dir={leave.is_hourly ? "ltr" : undefined}>
             {formatLeaveDuration(leave)}

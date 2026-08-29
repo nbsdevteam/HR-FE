@@ -1,8 +1,8 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import { NodeAvatar } from "@/shared/components";
-import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedEmployeeName } from "@/i18n/useLocalizedName";
 
 type EmployeeBalanceListItemProps = {
   emp: any;
@@ -12,7 +12,7 @@ type EmployeeBalanceListItemProps = {
 };
 
 const EmployeeBalanceListItem = ({ emp, index, totalUsed, onSelect }: EmployeeBalanceListItemProps) => {
-  const employeeName = empDisplayName(emp);
+  const { primary: employeeName } = useLocalizedEmployeeName(emp);
   const handleSelect = useCallback(() => onSelect(emp.id), [onSelect, emp.id]);
 
   return (
@@ -30,7 +30,7 @@ const EmployeeBalanceListItem = ({ emp, index, totalUsed, onSelect }: EmployeeBa
         textClassName="text-primary"
         fontSize={14}
       />
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0" data-i18n-ignore>
         <p className="text-foreground truncate">{employeeName}</p>
         <p className="text-muted-foreground" style={{ fontSize: 12 }}>{emp.department}</p>
       </div>

@@ -5,11 +5,7 @@ import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import {
-  empDisplayName,
-  type DbLeaveRequest,
-  type DbLeaveType,
-} from "@/shared/hooks";
+import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { leaveCardClass } from "../styles";
 import type { LeaveSortKey } from "../types";
 import LeaveRequestTableRow from "./LeaveRequestTableRow";
@@ -60,9 +56,6 @@ const LeaveRequestsListView = ({
     }
     renderRow={(leave, index) => {
       const employee = empMap[leave.employee_id];
-      const employeeName = employee
-        ? empDisplayName(employee)
-        : leave.employee_id;
       const leaveType = leaveTypes.find(
         (type) =>
           type.code === leave.leave_type ||
@@ -74,7 +67,8 @@ const LeaveRequestsListView = ({
           key={leave.id}
           leave={leave}
           index={index}
-          employeeName={employeeName}
+          employee={employee}
+          fallbackEmployeeLabel={leave.employee_id}
           leaveType={leaveType}
           onApprove={onApprove}
           onReject={onReject}

@@ -7,8 +7,8 @@ import {
 } from "@/shared/utils/employeeTypeAhead";
 import { InputField, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
-import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { localizedEmployeeName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import { leaveInputClass as inputCls } from "../styles";
 import LeaveFormError from "./LeaveFormError";
 import LeaveModalActions from "./LeaveModalActions";
@@ -28,6 +28,8 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const isArabic = useIsArabicLanguage();
+
   const hours = useMemo(() => {
     if (!startTime || !endTime) return 0;
     const [sh, sm] = startTime.split(":").map(Number);
@@ -36,8 +38,15 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
   }, [startTime, endTime]);
 
   const employeeFallbackLabels = useMemo(
-    () => Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)])),
-    [employees],
+    () => Object.fromEntries(
+      employees.map((e) => [String(e.id), localizedEmployeeName(e, isArabic)]),
+    ),
+    [employees, isArabic],
+  );
+
+  const getEmployeeLabel = useCallback(
+    (employee: any): string => localizedEmployeeName(employee, isArabic),
+    [isArabic],
   );
 
   const handleEmployeeChange = useCallback((id: string): void => {
@@ -89,12 +98,13 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
             <TypeAhead
               items={employees}
               getId={getEmployeeId}
-              getLabel={empDisplayName}
+              getLabel={getEmployeeLabel}
               getDescription={getEmployeeDescription}
               getSearchText={getEmployeeSearchText}
               fallbackLabels={employeeFallbackLabels}
               value={employeeId}
               onChange={handleEmployeeChange}
+              optionsAreData
             />
           </div>
 

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import {
   getEmployeeDescription,
@@ -5,7 +6,7 @@ import {
   getEmployeeSearchText,
 } from "@/shared/utils/employeeTypeAhead";
 import { TypeAhead } from "@/shared/components";
-import { empDisplayName } from "@/shared/hooks";
+import { localizedEmployeeName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import { leaveInputClass as inputCls } from "../styles";
 
 type LeaveRequestEmployeeFieldProps = {
@@ -27,17 +28,25 @@ const LeaveRequestEmployeeField = ({
   linkError,
   selfEmployee,
 }: LeaveRequestEmployeeFieldProps) => {
+  const isArabic = useIsArabicLanguage();
+
+  const getEmployeeLabel = useCallback(
+    (employee: any): string => localizedEmployeeName(employee, isArabic),
+    [isArabic],
+  );
+
   if (!selfOnly) {
     return (
       <TypeAhead
         items={employees}
         getId={getEmployeeId}
-        getLabel={empDisplayName}
+        getLabel={getEmployeeLabel}
         getDescription={getEmployeeDescription}
         getSearchText={getEmployeeSearchText}
-        fallbackLabels={Object.fromEntries(employees.map((e) => [String(e.id), empDisplayName(e)]))}
+        fallbackLabels={Object.fromEntries(employees.map((e) => [String(e.id), getEmployeeLabel(e)]))}
         value={employeeId}
         onChange={onEmployeeChange}
+        optionsAreData
       />
     );
   }
@@ -64,7 +73,7 @@ const LeaveRequestEmployeeField = ({
       type="text"
       readOnly
       disabled
-      value={empDisplayName(selfEmployee)}
+      value={localizedEmployeeName(selfEmployee, isArabic)}
       className={`${inputCls} opacity-80 cursor-not-allowed`}
       style={{ fontSize: 13 }}
       dir="auto"

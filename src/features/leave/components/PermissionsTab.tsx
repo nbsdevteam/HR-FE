@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Timer } from "lucide-react";
 import { DataTable, EmptyState, LoadingState, TableHeaderRow } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
-import { empDisplayName, type DbLeavePermission } from "@/shared/hooks";
+import type { DbLeavePermission } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveCardClass as cardCls } from "../styles";
 import PermissionTableRow from "./PermissionTableRow";
@@ -44,7 +44,7 @@ const PermissionsTab = ({
           key={p.id}
           permission={p}
           index={i}
-          empName={empMap[p.employee_id] ? empDisplayName(empMap[p.employee_id]) : "—"}
+          employee={empMap[p.employee_id]}
           onApprove={handleApprove}
           onReject={handleReject}
         />

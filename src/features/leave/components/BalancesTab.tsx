@@ -1,13 +1,17 @@
 import { useState, useMemo } from "react";
 import { ChevronRight, Search } from "lucide-react";
 import {
-  empDisplayName,
   resolveLeaveEntitlement,
   type DbLeaveType,
   type DbLeaveBalance,
 } from "@/shared/hooks";
 import LoadingState from "@/shared/components/LoadingState";
 import { arabicSource } from "@/i18n/source";
+import {
+  employeeNamePair,
+  localizedEmployeeName,
+  useIsArabicLanguage,
+} from "@/i18n/useLocalizedName";
 import { leaveInputClass as inputCls } from "../styles";
 import LeaveBalanceCard from "./LeaveBalanceCard";
 import EmployeeAccrualPanel from "./EmployeeAccrualPanel";
@@ -34,6 +38,8 @@ const BalancesTab = ({
   const [selectedEmp, setSelectedEmp] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  const isArabic = useIsArabicLanguage();
+
   const balancesByEmployeeId = useMemo(() => {
     const map = new Map<string, DbLeaveBalance[]>();
     for (const bal of balances) {
@@ -44,14 +50,20 @@ const BalancesTab = ({
     return map;
   }, [balances]);
 
+  // Matches both name columns, not just the displayed one: the list now shows
+  // English names in English mode, so an Arabic-only match would make a name
+  // the user can see unsearchable.
   const filteredEmployees = useMemo(
     () =>
-      employees.filter(
-        (e) =>
-          !search ||
-          empDisplayName(e).includes(search) ||
-          e.department?.includes(search),
-      ),
+      employees.filter((e) => {
+        if (!search) return true;
+        const { nameAr, nameEn } = employeeNamePair(e);
+        return (
+          nameAr.includes(search) ||
+          Boolean(nameEn?.includes(search)) ||
+          Boolean(e.department?.includes(search))
+        );
+      }),
     [employees, search],
   );
 
@@ -89,12 +101,12 @@ const BalancesTab = ({
 
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-            <span className="text-primary" style={{ fontSize: 18 }}>
-              {empDisplayName(emp).charAt(0)}
+            <span className="text-primary" style={{ fontSize: 18 }} data-i18n-ignore>
+              {localizedEmployeeName(emp, isArabic).charAt(0)}
             </span>
           </div>
-          <div>
-            <h3 className="text-foreground">{empDisplayName(emp)}</h3>
+          <div data-i18n-ignore>
+            <h3 className="text-foreground">{localizedEmployeeName(emp, isArabic)}</h3>
             <p className="text-muted-foreground" style={{ fontSize: 13 }}>
               {emp.department} — {year}
             </p>
