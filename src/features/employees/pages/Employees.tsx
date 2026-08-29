@@ -28,9 +28,13 @@ const Employees = () => {
     addSaving,
     allEmployees,
     cities,
+    citySuggestions,
     closeAddModal,
     closeDeleteModal,
+    confirmAddCity,
     countries,
+    creatingCity,
+    cityCreateError,
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,
@@ -41,9 +45,11 @@ const Employees = () => {
     detailStartsInEditMode,
     deviceSyncedSet,
     deviceSyncStatus,
+    dismissCitySuggestions,
     employeeOptions,
     facePhotoPreview,
     filtered,
+    handleAddCity,
     handleAddEmployee,
     handleCitySearch,
     handleClearFacePhoto,
@@ -177,11 +183,17 @@ const Employees = () => {
               loadingCountries={loadingCountries}
               loadingStates={loadingStates}
               loadingCities={loadingCities}
+              citySuggestions={citySuggestions}
+              creatingCity={creatingCity}
+              cityCreateError={cityCreateError}
               onFormChange={updateAddForm}
               onCountryChange={handleCountryChange}
               onStateChange={handleStateChange}
               onCityChange={handleCityChange}
               onCitySearch={handleCitySearch}
+              onAddCity={handleAddCity}
+              onConfirmAddCity={confirmAddCity}
+              onDismissCitySuggestions={dismissCitySuggestions}
               onFacePhotoChange={handleFacePhoto}
               onClearFacePhoto={handleClearFacePhoto}
               onAddEmployee={handleAddEmployee}

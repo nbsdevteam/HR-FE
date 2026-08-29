@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
@@ -10,10 +10,10 @@ import type {
   PositionOption,
 } from "../types";
 import { errorMessage } from "../utils/errorMessage";
+import { useEmployeeAddressForm } from "./useEmployeeAddressForm";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
 import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
 import { useEmployeeLeaves } from "./useEmployeeLeaves";
-import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 import { useEmployeeTermination } from "./useEmployeeTermination";
 
 const positionLabel = (p: { id: string; title_ar: string; title_en: string | null }): string =>
@@ -33,29 +33,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const attachmentForm = useEmployeeAttachmentForm(setEditData);
   const leavesData = useEmployeeLeaves(employee.dbId);
   const termination = useEmployeeTermination(employee, onSave);
-  const {
-    countries: locationCountries,
-    states: locationStates,
-    cities: locationCities,
-    loadingCountries: loadingLocationCountries,
-    loadingStates: loadingLocationStates,
-    loadingCities: loadingLocationCities,
-    loadCountries: loadLocationCountries,
-    loadStates: loadLocationStates,
-    loadCities: loadLocationCities,
-    searchCities: searchLocationCities,
-  } = useEmployeeLocationOptions();
-
-  // Lazily hydrate the country/state/city picklists once editing actually
-  // starts, seeded from whatever the employee already has so the dropdowns
-  // aren't empty on first render.
-  useEffect(() => {
-    if (!isEditing) return;
-    void loadLocationCountries();
-    if (editData.countryId) void loadLocationStates(editData.countryId);
-    if (editData.stateId) void loadLocationCities(editData.stateId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing]);
+  const addressForm = useEmployeeAddressForm(isEditing, editData, setEditData);
 
   // Some endpoints (list/search) may only carry the department name, not its
   // numeric id, on a given row. Resolve the id from the backend department list
@@ -127,30 +105,6 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       managerName: managerId ? (allEmployees.find(emp => emp.dbId === managerId)?.name || "—") : arabicSource("common.no_manager"),
     }));
   }, [allEmployees]);
-
-  const handleLocationCountryChange = useCallback((countryId: string) => {
-    const countryName = locationCountries.find(c => String(c.id) === countryId)?.name || "";
-    setEditData(prev => ({
-      ...prev,
-      country: countryName,
-      countryId,
-      state: "",
-      stateId: "",
-      city: "",
-      cityId: "",
-    }));
-    void loadLocationStates(countryId);
-  }, [locationCountries, loadLocationStates]);
-
-  const handleLocationStateChange = useCallback((stateId: string) => {
-    const stateName = locationStates.find(s => String(s.id) === stateId)?.name || "";
-    setEditData(prev => ({ ...prev, state: stateName, stateId, city: "", cityId: "" }));
-    void loadLocationCities(stateId);
-  }, [locationStates, loadLocationCities]);
-
-  const handleLocationCitySearch = useCallback((query: string) => {
-    searchLocationCities(editData.stateId, query);
-  }, [searchLocationCities, editData.stateId]);
 
   const handleConfirmNewDept = useCallback(async () => {
     const name = newDeptName.trim();
@@ -261,19 +215,10 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     handleConfirmNewDept,
     handleDepartmentSelect,
     handleEditField,
-    handleLocationCitySearch,
-    handleLocationCountryChange,
-    handleLocationStateChange,
     handleManagerChange,
     handlePositionSelect,
     handleSave,
     isEditing,
-    loadingLocationCities,
-    loadingLocationCountries,
-    loadingLocationStates,
-    locationCities,
-    locationCountries,
-    locationStates,
     modalTab,
     newDeptName,
     resolvedDepartmentId,
@@ -288,6 +233,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     ...custodyForm,
     ...attachmentForm,
     ...leavesData,
+    ...addressForm,
     ...termination,
   };
 };

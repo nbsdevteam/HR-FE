@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import {
-  Mail, Phone, Wallet, CalendarCheck, CalendarX,
+  Mail, Wallet, CalendarCheck, CalendarX,
   Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
@@ -10,6 +10,7 @@ import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
 import EmployeeAddressFields from "./EmployeeAddressFields";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
+import EmployeeEmergencyContactField from "./EmployeeEmergencyContactField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 import EmployeePositionField from "./EmployeePositionField";
 
@@ -34,6 +35,9 @@ type EmployeeInfoTabProps = {
   loadingLocationCountries: boolean;
   loadingLocationStates: boolean;
   loadingLocationCities: boolean;
+  locationCitySuggestions: GeoCity[];
+  creatingLocationCity: boolean;
+  locationCityCreateError: string | null;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
   onDepartmentSelect: (deptId: string, deptName: string) => void;
   onPositionSelect: (positionId: string, positionName: string) => void;
@@ -45,6 +49,9 @@ type EmployeeInfoTabProps = {
   onLocationCountryChange: (value: string) => void;
   onLocationStateChange: (value: string) => void;
   onLocationCitySearch: (query: string) => void;
+  onAddLocationCity: (name: string) => Promise<GeoCity | null>;
+  onConfirmAddLocationCity: () => Promise<GeoCity | null>;
+  onDismissLocationCitySuggestions: () => void;
 };
 
 const EmployeeInfoTab = ({
@@ -64,6 +71,9 @@ const EmployeeInfoTab = ({
   loadingLocationCountries,
   loadingLocationStates,
   loadingLocationCities,
+  locationCitySuggestions,
+  creatingLocationCity,
+  locationCityCreateError,
   onFieldChange,
   onDepartmentSelect,
   onPositionSelect,
@@ -75,6 +85,9 @@ const EmployeeInfoTab = ({
   onLocationCountryChange,
   onLocationStateChange,
   onLocationCitySearch,
+  onAddLocationCity,
+  onConfirmAddLocationCity,
+  onDismissLocationCitySuggestions,
 }: EmployeeInfoTabProps) => {
   const handleEmployeeNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("employeeNumber", e.target.value);
@@ -106,14 +119,6 @@ const EmployeeInfoTab = ({
 
   const handleNationalIdChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("nationalId", e.target.value);
-  };
-
-  const handleEmergencyContactChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("emergencyContact", e.target.value);
-  };
-
-  const handleEmergencyPhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("emergencyPhone", e.target.value);
   };
 
   const handleBloodTypeChange = (value: string): void => {
@@ -197,10 +202,16 @@ const EmployeeInfoTab = ({
         loadingCountries={loadingLocationCountries}
         loadingStates={loadingLocationStates}
         loadingCities={loadingLocationCities}
+        citySuggestions={locationCitySuggestions}
+        creatingCity={creatingLocationCity}
+        cityCreateError={locationCityCreateError}
         onFieldChange={onFieldChange}
         onCountryChange={onLocationCountryChange}
         onStateChange={onLocationStateChange}
         onCitySearch={onLocationCitySearch}
+        onAddCity={onAddLocationCity}
+        onConfirmAddCity={onConfirmAddLocationCity}
+        onDismissCitySuggestions={onDismissLocationCitySuggestions}
       />
       <EmployeeFieldRow
         icon={Wallet} iconColor="text-primary" label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight
@@ -235,25 +246,11 @@ const EmployeeInfoTab = ({
             className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
         }
       />
-      {/* Emergency Contact — special two-part row */}
-      <div className="flex items-center gap-3 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
-        <Phone className="w-5 h-5 text-destructive shrink-0" />
-        <span className="text-muted-foreground shrink-0 min-w-[110px]" style={{ fontSize: 13 }}>{arabicSource("shared.emergency_contact")}</span>
-        <div className="flex-1 min-w-0">
-          {isEditing ? (
-            <div className="flex gap-3">
-              <input value={editData.emergencyContact} onChange={handleEmergencyContactChange}
-                placeholder={arabicSource("common.name")} className={inputClass} style={{ fontSize: 14 }} />
-              <input value={editData.emergencyPhone} onChange={handleEmergencyPhoneChange}
-                placeholder={arabicSource("shared.no")} className={`${inputClass} max-w-[160px]`} style={{ fontSize: 14 }} dir="ltr" />
-            </div>
-          ) : (
-            <span className="text-foreground" style={{ fontSize: 14 }}>
-              {editData.emergencyContact || "—"} <span className="text-muted-foreground mx-1">—</span> <span dir="ltr">{editData.emergencyPhone || "—"}</span>
-            </span>
-          )}
-        </div>
-      </div>
+      <EmployeeEmergencyContactField
+        editData={editData}
+        isEditing={isEditing}
+        onFieldChange={onFieldChange}
+      />
       <EmployeeFieldRow
         icon={ClipboardList} iconColor="text-destructive" label={arabicSource("shared.blood_type")} value={editData.bloodType || "—"} dir="ltr"
         isEditing={isEditing}

@@ -3,6 +3,7 @@ import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
+import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
@@ -48,12 +49,19 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     loadingCountries,
     loadingStates,
     loadingCities,
+    citySuggestions,
+    creatingCity,
+    cityCreateError,
     loadCountries,
     loadStates,
     loadCities,
     searchCities,
+    requestAddCity,
+    confirmAddCity,
+    dismissCitySuggestions,
     resetLocationOptions,
   } = useEmployeeLocationOptions();
+  const isArabic = useIsArabicLanguage();
 
   const closeAddTimeoutRef = useRef<number | null>(null);
 
@@ -107,7 +115,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   }, []);
 
   const handleCountryChange = useCallback((countryId: string) => {
-    const countryName = countries.find(c => String(c.id) === countryId)?.name || "";
+    const country = countries.find(c => String(c.id) === countryId);
+    const countryName = country ? (isArabic ? country.name_ar || country.name : country.name) : "";
     setAddForm(current => ({
       ...current,
       country: countryName,
@@ -118,22 +127,29 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
       cityId: "",
     }));
     void loadStates(countryId);
-  }, [countries, loadStates]);
+  }, [countries, loadStates, isArabic]);
 
   const handleStateChange = useCallback((stateId: string) => {
-    const stateName = states.find(s => String(s.id) === stateId)?.name || "";
+    const state = states.find(s => String(s.id) === stateId);
+    const stateName = state ? (isArabic ? state.name_ar || state.name : state.name) : "";
     setAddForm(current => ({ ...current, state: stateName, stateId, city: "", cityId: "" }));
     void loadCities(stateId);
-  }, [states, loadCities]);
+  }, [states, loadCities, isArabic]);
 
   const handleCityChange = useCallback((cityId: string) => {
-    const cityName = cities.find(c => String(c.id) === cityId)?.name || "";
+    const city = cities.find(c => String(c.id) === cityId);
+    const cityName = city ? (isArabic ? city.name_ar || city.name : city.name) : "";
     setAddForm(current => ({ ...current, city: cityName, cityId }));
-  }, [cities]);
+  }, [cities, isArabic]);
 
   const handleCitySearch = useCallback((query: string) => {
     searchCities(addForm.stateId, query);
   }, [searchCities, addForm.stateId]);
+
+  const handleAddCity = useCallback(
+    (name: string) => requestAddCity(addForm.stateId, name),
+    [requestAddCity, addForm.stateId],
+  );
 
   const handleClearFacePhoto = useCallback(() => {
     setFacePhotoPreview(null);
@@ -232,11 +248,17 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     addForm,
     addSaving,
     cities,
+    citySuggestions,
     closeAddModal,
+    confirmAddCity,
     countries,
+    creatingCity,
+    cityCreateError,
     designationOptions,
     deviceSyncStatus,
+    dismissCitySuggestions,
     facePhotoPreview,
+    handleAddCity,
     handleAddEmployee,
     handleCitySearch,
     handleClearFacePhoto,

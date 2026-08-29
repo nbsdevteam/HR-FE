@@ -27,11 +27,17 @@ type AddEmployeeModalProps = {
   loadingCountries: boolean;
   loadingStates: boolean;
   loadingCities: boolean;
+  citySuggestions: GeoCity[];
+  creatingCity: boolean;
+  cityCreateError: string | null;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
   onCountryChange: (value: string) => void;
   onStateChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onCitySearch: (query: string) => void;
+  onAddCity: (name: string) => Promise<GeoCity | null>;
+  onConfirmAddCity: () => Promise<GeoCity | null>;
+  onDismissCitySuggestions: () => void;
   onFacePhotoChange: (file: File) => void;
   onClearFacePhoto: () => void;
   onAddEmployee: () => void;
@@ -55,11 +61,17 @@ const AddEmployeeModal = ({
   loadingCountries,
   loadingStates,
   loadingCities,
+  citySuggestions,
+  creatingCity,
+  cityCreateError,
   onFormChange,
   onCountryChange,
   onStateChange,
   onCityChange,
   onCitySearch,
+  onAddCity,
+  onConfirmAddCity,
+  onDismissCitySuggestions,
   onFacePhotoChange,
   onClearFacePhoto,
   onAddEmployee,
@@ -123,11 +135,17 @@ const AddEmployeeModal = ({
               loadingCountries={loadingCountries}
               loadingStates={loadingStates}
               loadingCities={loadingCities}
+              citySuggestions={citySuggestions}
+              creatingCity={creatingCity}
+              cityCreateError={cityCreateError}
               onFormChange={onFormChange}
               onCountryChange={onCountryChange}
               onStateChange={onStateChange}
               onCityChange={onCityChange}
               onCitySearch={onCitySearch}
+              onAddCity={onAddCity}
+              onConfirmAddCity={onConfirmAddCity}
+              onDismissCitySuggestions={onDismissCitySuggestions}
             />
           </div>
         </div>

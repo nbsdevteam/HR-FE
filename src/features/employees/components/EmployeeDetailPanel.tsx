@@ -32,13 +32,17 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     addingNewDept,
     allDepts,
     allPositions,
+    confirmAddLocationCity,
     creatingDept,
+    creatingLocationCity,
     custodies,
     custodiesLoading,
     custodyError,
+    dismissLocationCitySuggestions,
     editData,
     handleAddAttachment,
     handleAddCustody,
+    handleAddLocationCity,
     handleCancelAddAttachment,
     handleCancelAddCustody,
     handleCancelEdit,
@@ -65,6 +69,8 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     loadingLocationCountries,
     loadingLocationStates,
     locationCities,
+    locationCitySuggestions,
+    locationCityCreateError,
     locationCountries,
     locationStates,
     modalTab,
@@ -182,6 +188,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 loadingLocationCountries={loadingLocationCountries}
                 loadingLocationStates={loadingLocationStates}
                 loadingLocationCities={loadingLocationCities}
+                locationCitySuggestions={locationCitySuggestions}
+                creatingLocationCity={creatingLocationCity}
+                locationCityCreateError={locationCityCreateError}
                 onFieldChange={handleEditField}
                 onDepartmentSelect={handleDepartmentSelect}
                 onPositionSelect={handlePositionSelect}
@@ -193,6 +202,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 onLocationCountryChange={handleLocationCountryChange}
                 onLocationStateChange={handleLocationStateChange}
                 onLocationCitySearch={handleLocationCitySearch}
+                onAddLocationCity={handleAddLocationCity}
+                onConfirmAddLocationCity={confirmAddLocationCity}
+                onDismissLocationCitySuggestions={dismissLocationCitySuggestions}
               />
             )}
 

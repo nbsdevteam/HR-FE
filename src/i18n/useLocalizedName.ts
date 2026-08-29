@@ -7,6 +7,12 @@ type TLocalizedName = {
   secondaryDir: "ltr" | undefined;
 };
 
+/** Whether the active app language is Arabic — drives name_ar/name_en style field selection. */
+export const useIsArabicLanguage = (): boolean => {
+  const { i18n } = useTranslation();
+  return normalizeLanguage(i18n.resolvedLanguage ?? i18n.language) === "ar";
+};
+
 /**
  * Backend records carry independent name_ar/name_en fields (not catalogued
  * UI copy), so they must bypass the global Arabic auto-translator and pick
@@ -16,9 +22,7 @@ export const useLocalizedName = (
   nameAr: string,
   nameEn: string | null | undefined,
 ): TLocalizedName => {
-  const { i18n } = useTranslation();
-  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
-  const isArabic = language === "ar";
+  const isArabic = useIsArabicLanguage();
 
   if (isArabic) {
     return {

@@ -1,17 +1,16 @@
 import { useCallback, useMemo } from "react";
 import { MapPin, Building2 } from "lucide-react";
 import { Select, TypeAhead } from "@/shared/components";
+import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { Employee } from "../types";
+import CityTypeAheadField from "./CityTypeAheadField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 
 const getCountryId = (country: GeoCountry): string => String(country.id);
-const getCountryLabel = (country: GeoCountry): string => country.name;
 const getStateId = (state: GeoState): string => String(state.id);
-const getStateLabel = (state: GeoState): string => state.name;
-const getCityId = (city: GeoCity): string => String(city.id);
-const getCityLabel = (city: GeoCity): string => city.name;
+const geoSearchText = (item: { name: string; name_ar: string }): string => `${item.name} ${item.name_ar}`;
 const inputClass = "w-full bg-transparent border-b-2 border-primary/40 focus:border-primary px-1 py-1.5 text-foreground outline-none transition-colors";
 const fieldLabelClass = "text-muted-foreground block mb-1";
 
@@ -30,10 +29,16 @@ type EmployeeAddressFieldsProps = {
   loadingCountries: boolean;
   loadingStates: boolean;
   loadingCities: boolean;
+  citySuggestions: GeoCity[];
+  creatingCity: boolean;
+  cityCreateError: string | null;
   onFieldChange: (field: keyof Employee, value: string) => void;
   onCountryChange: (value: string) => void;
   onStateChange: (value: string) => void;
   onCitySearch: (query: string) => void;
+  onAddCity: (name: string) => Promise<GeoCity | null>;
+  onConfirmAddCity: () => Promise<GeoCity | null>;
+  onDismissCitySuggestions: () => void;
 };
 
 const EmployeeAddressFields = ({
@@ -45,11 +50,19 @@ const EmployeeAddressFields = ({
   loadingCountries,
   loadingStates,
   loadingCities,
+  citySuggestions,
+  creatingCity,
+  cityCreateError,
   onFieldChange,
   onCountryChange,
   onStateChange,
   onCitySearch,
+  onAddCity,
+  onConfirmAddCity,
+  onDismissCitySuggestions,
 }: EmployeeAddressFieldsProps) => {
+  const isArabic = useIsArabicLanguage();
+
   // The fetched pages (countries: full set; states: full set per country;
   // cities: a search-driven page) may not include the employee's already-saved
   // selection yet — fall back to the name already on the record so the picker
@@ -60,13 +73,31 @@ const EmployeeAddressFields = ({
     ...(editData.cityId ? { [editData.cityId]: editData.city } : {}),
   }), [editData.countryId, editData.country, editData.stateId, editData.state, editData.cityId, editData.city]);
 
+  const getCountryLabel = useCallback(
+    (country: GeoCountry): string => (isArabic ? country.name_ar || country.name : country.name),
+    [isArabic],
+  );
+
+  const getStateLabel = useCallback(
+    (state: GeoState): string => (isArabic ? state.name_ar || state.name : state.name),
+    [isArabic],
+  );
+
   const handleCityChange = useCallback(
     (value: string): void => {
       const city = cities.find(c => String(c.id) === value);
       onFieldChange("cityId", value);
-      onFieldChange("city", city?.name || "");
+      onFieldChange("city", city ? (isArabic ? city.name_ar || city.name : city.name) : "");
     },
-    [onFieldChange, cities],
+    [onFieldChange, cities, isArabic],
+  );
+
+  const handleCitySelected = useCallback(
+    (city: GeoCity): void => {
+      onFieldChange("cityId", String(city.id));
+      onFieldChange("city", isArabic ? city.name_ar || city.name : city.name);
+    },
+    [onFieldChange, isArabic],
   );
 
   const handleResidenceChange = useCallback(
@@ -92,6 +123,7 @@ const EmployeeAddressFields = ({
                 items={countries}
                 getId={getCountryId}
                 getLabel={getCountryLabel}
+                getSearchText={geoSearchText}
                 value={editData.countryId}
                 onChange={onCountryChange}
                 fallbackLabels={fallbackLabels}
@@ -105,6 +137,7 @@ const EmployeeAddressFields = ({
                 items={states}
                 getId={getStateId}
                 getLabel={getStateLabel}
+                getSearchText={geoSearchText}
                 value={editData.stateId}
                 onChange={onStateChange}
                 fallbackLabels={fallbackLabels}
@@ -115,18 +148,22 @@ const EmployeeAddressFields = ({
             </div>
             <div>
               <label className={fieldLabelClass} style={{ fontSize: 11 }}>{arabicSource("common.city")}</label>
-              <TypeAhead
-                items={cities}
-                getId={getCityId}
-                getLabel={getCityLabel}
+              <CityTypeAheadField
+                cities={cities}
                 value={editData.cityId}
                 onChange={handleCityChange}
-                onQueryChange={onCitySearch}
-                remoteFilter
+                onSearch={onCitySearch}
                 fallbackLabels={fallbackLabels}
                 placeholder={arabicSource(loadingCities ? "common.loading" : "employees.select_the_city")}
                 disabled={!editData.stateId}
                 openUpward
+                citySuggestions={citySuggestions}
+                creatingCity={creatingCity}
+                cityCreateError={cityCreateError}
+                onAddCity={onAddCity}
+                onConfirmAddCity={onConfirmAddCity}
+                onDismissSuggestions={onDismissCitySuggestions}
+                onCitySelected={handleCitySelected}
               />
             </div>
             <div>
