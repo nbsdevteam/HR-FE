@@ -31,14 +31,17 @@ const NotificationsTab = () => {
     });
   }, [notifications, filterType, filterCategory, searchQuery]);
 
-  const markRead = useCallback(async (id: string) => {
-    try {
-      await odooData.markNotificationRead(id);
-      refetch();
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-    }
-  }, [refetch]);
+  const markRead = useCallback(
+    async (id: string) => {
+      try {
+        await odooData.markNotificationRead(id);
+        refetch();
+      } catch (error) {
+        console.error("Failed to mark notification as read:", error);
+      }
+    },
+    [refetch],
+  );
 
   const markAllRead = useCallback(async () => {
     try {
@@ -49,14 +52,17 @@ const NotificationsTab = () => {
     }
   }, [refetch]);
 
-  const dismiss = useCallback(async (id: string) => {
-    try {
-      await odooData.dismissNotification(id);
-      refetch();
-    } catch (error) {
-      console.error("Failed to dismiss notification:", error);
-    }
-  }, [refetch]);
+  const dismiss = useCallback(
+    async (id: string) => {
+      try {
+        await odooData.dismissNotification(id);
+        refetch();
+      } catch (error) {
+        console.error("Failed to dismiss notification:", error);
+      }
+    },
+    [refetch],
+  );
 
   const handleFilterTypeChange = useCallback((value: string): void => {
     setFilterType(value);
@@ -99,7 +105,7 @@ const NotificationsTab = () => {
               onClick={markAllRead}
               className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-sm"
             >
-              {arabicSource("auditcenter.read_all")} ({unreadCount})
+              {arabicSource("auditcenter.read_all")} {unreadCount}
             </Button>
           )}
         </div>

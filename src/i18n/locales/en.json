@@ -381,7 +381,7 @@
   "common.contracts": "Contracts",
   "auditcenter.creation_operations": "Creation operations",
   "auditcenter.deletions": "Deletions",
-  "auditcenter.read_all": "Read all (",
+  "auditcenter.read_all": "Read all",
   "auditcenter.loan": "Loan",
   "auditcenter.section": "Section",
   "common.no_notifications": "No notifications",

@@ -381,7 +381,7 @@
   "common.contracts": "عقود",
   "auditcenter.creation_operations": "عمليات إنشاء",
   "auditcenter.deletions": "عمليات حذف",
-  "auditcenter.read_all": "قراءة الكل (",
+  "auditcenter.read_all": "قراءة الكل",
   "auditcenter.loan": "قرض",
   "auditcenter.section": "قسم",
   "common.no_notifications": "لا توجد إشعارات",
