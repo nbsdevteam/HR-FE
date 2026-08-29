@@ -98,3 +98,15 @@ export interface TypeFormCheckboxConfig<T> {
 export type NotifKey = "leave" | "lateAttendance" | "warnings" | "evaluations" | "recruitment";
 
 export type NotifToggles = Record<NotifKey, boolean>;
+
+/** Create/edit form for a public leave-request link (backend hand-off §8). */
+export interface LeaveLinkFormState {
+  name: string;
+  active: boolean;
+  expires_on: string;
+  max_submissions: number;
+  require_verification: "none" | "employee_code" | "birthday" | "phone_last4";
+  allow_attachments: boolean;
+  leave_type_ids: string[];
+  department_ids: string[];
+}

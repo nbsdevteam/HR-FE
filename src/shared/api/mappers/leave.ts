@@ -1,4 +1,4 @@
-import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbAccrualExcludedEmployee, DbAccrualExcludedList, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
+import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbAccrualExcludedEmployee, DbAccrualExcludedList, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings, DbLeaveLink } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
 
@@ -246,6 +246,30 @@ export const mapLeavePolicy = (r: any): DbLeavePolicy => {
     max_days_per_request: r.max_days_per_request ?? null,
     allow_half_day: r.allow_half_day ?? null,
     is_active: isActive(r),
+    created_at: r.created_at || empty,
+    updated_at: r.updated_at || empty,
+  };
+}
+
+export const mapLeaveLink = (r: any): DbLeaveLink => {
+  return {
+    id: sid(r.id),
+    name: r.name || "",
+    token: r.token || "",
+    url: r.url || "",
+    base_url_configured: bool(r.base_url_configured),
+    active: r.active !== false,
+    expires_on: r.expires_on || null,
+    max_submissions: num(r.max_submissions),
+    submission_count: num(r.submission_count),
+    require_verification: r.require_verification || "none",
+    allow_attachments: bool(r.allow_attachments),
+    leave_type_ids: (r.leave_type_ids || []).map((v: unknown) => sid(v)),
+    leave_type_names: r.leave_type_names || [],
+    department_ids: (r.department_ids || []).map((v: unknown) => sid(v)),
+    department_names: r.department_names || [],
+    request_count: num(r.request_count),
+    unusable_reason: r.unusable_reason || "",
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
   };

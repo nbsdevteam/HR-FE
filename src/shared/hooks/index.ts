@@ -7,6 +7,7 @@ export * from "./settings";
 export * from "./payroll";
 export * from "./leave";
 export * from "./leaveAccrual";
+export * from "./leaveLinks";
 export * from "./lifecycle";
 export * from "./recruitment";
 export * from "./performance";

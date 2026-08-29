@@ -6,6 +6,7 @@ import {
   mapLeavePermission,
   mapLeaveSettings,
   mapAccrualExcludedList,
+  mapLeaveLink,
 } from "./mappers";
 import type {
   DbEmployee,
@@ -15,6 +16,7 @@ import type {
   DbLeavePermission,
   DbLeaveSettings,
   DbAccrualExcludedList,
+  DbLeaveLink,
 } from "../hooks";
 import { eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
@@ -23,6 +25,7 @@ import { timeToFloat } from "./attendance";
 
 const leaveTypes = crudFactory("/api/hr/leave/types");
 const leavePolicies = crudFactory("/api/hr/leave/policies");
+const leaveLinks = crudFactory<DbLeaveLink>("/api/hr/leave/links");
 
 const UNLINKED_EMPLOYEE_MSG =
   "Your user account is not linked to an employee. Please contact HR.";
@@ -263,3 +266,18 @@ export const createLeavePolicy = (payload: Record<string, unknown>) =>
 
 export const updateLeavePolicy = leavePolicies?.update;
 export const deleteLeavePolicy = leavePolicies?.remove;
+
+/**
+ * Public leave-request links (backend hand-off §8). Realistically a handful
+ * of rows per company, so a generous single-page `limit` replaces a pager —
+ * matching every other Settings admin list in this app.
+ */
+export const fetchLeaveLinks = (): Promise<DbLeaveLink[]> =>
+  fetchList("/api/hr/leave/links/list", mapLeaveLink, { limit: 200, offset: 0, page: 1 });
+
+export const createLeaveLink = leaveLinks.create;
+export const updateLeaveLink = leaveLinks.update;
+export const deleteLeaveLink = leaveLinks.remove;
+
+/** `rotate: true` invalidates every URL already handed out for this link. */
+export const rotateLeaveLink = (id: string | number) => leaveLinks.update(id, { rotate: true });
