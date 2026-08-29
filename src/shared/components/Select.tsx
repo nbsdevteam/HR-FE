@@ -1,0 +1,195 @@
+import { useState, useCallback, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
+import { ChevronsUpDown } from "lucide-react";
+import { twMerge } from "tailwind-merge";
+import { usePopupPosition } from "@/shared/hooks/ui";
+import SelectOptionRow from "./SelectOption";
+
+export type SelectOption =
+  | string
+  | { value: string; label: string; disabled?: boolean }
+  | { divider: true };
+
+type NormalizedOption = { value: string; label: string; disabled?: boolean } | { divider: true };
+
+type SelectProps = {
+  options: readonly SelectOption[];
+  value: string;
+  onChange: (value: string) => void;
+  /**
+   * Option labels are backend records (department names, employee names, …)
+   * rather than catalogued UI copy. The dropdown is portaled to `document.body`,
+   * so a `data-i18n-ignore` ancestor at the call site cannot reach it — this
+   * marks the option rows and the trigger label instead.
+   */
+  optionsAreData?: boolean;
+  blankLabel?: string;
+  placeholder?: string;
+  label?: string;
+  labelClassName?: string;
+  labelStyle?: CSSProperties;
+  disabled?: boolean;
+  className?: string;
+  style?: CSSProperties;
+  dir?: "ltr" | "rtl" | "auto";
+  title?: string;
+  "aria-label"?: string;
+  onBlur?: () => void;
+  openUpward?: boolean;
+};
+
+const DEFAULT_LABEL_CLASS = "text-foreground block mb-1.5";
+
+function normalizeOption(opt: SelectOption): NormalizedOption {
+  return typeof opt === "string" ? { value: opt, label: opt } : opt;
+}
+
+const Select = ({
+  options,
+  value,
+  onChange,
+  optionsAreData = false,
+  blankLabel,
+  placeholder,
+  label,
+  labelClassName = DEFAULT_LABEL_CLASS,
+  labelStyle = { fontSize: 12 },
+  disabled = false,
+  className = "",
+  style,
+  dir,
+  title,
+  "aria-label": ariaLabel,
+  onBlur,
+  openUpward = false,
+}: SelectProps) => {
+  const [open, setOpen] = useState(false);
+  const handleClose = useCallback((): void => setOpen(false), []);
+  const { anchorRef: rootRef, rect: popupRect } = usePopupPosition(
+    open,
+    handleClose,
+    4,
+    openUpward ? "top" : "bottom",
+  );
+
+  const normalized = options.map(normalizeOption);
+  const selected = normalized.find(
+    (opt): opt is Extract<NormalizedOption, { value: string }> =>
+      !("divider" in opt) && opt.value === value,
+  );
+  const selectedLabel = selected
+    ? selected.label
+    : blankLabel !== undefined && value === ""
+      ? blankLabel
+      : "";
+
+  const handleToggle = (): void => {
+    if (disabled) return;
+    setOpen((v) => !v);
+  };
+
+  const handleTriggerBlur = (): void => {
+    onBlur?.();
+  };
+
+  const handleDropdownPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+    e.stopPropagation();
+  };
+
+  const pick = (optValue: string): void => {
+    onChange(optValue);
+    setOpen(false);
+  };
+
+  const handleOptionMouseDown = useCallback(
+    (optValue: string) => (e: React.MouseEvent<HTMLButtonElement>): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      pick(optValue);
+    },
+    [pick],
+  );
+
+  const boxClassName = twMerge(
+    "h-11 px-4 rounded-lg border border-border bg-input-background focus-within:ring-2 focus-within:ring-ring",
+    disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+    className,
+  );
+
+  const field = (
+    <div ref={rootRef} className={`relative ${boxClassName}`} style={style} dir={dir}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={handleToggle}
+        onBlur={handleTriggerBlur}
+        className="w-full h-full flex items-center justify-between gap-2 text-start focus:outline-none"
+        title={title}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+      >
+        <span
+          className={`truncate ${selectedLabel ? "text-foreground" : "text-muted-foreground"}`}
+          style={{ fontSize: 13 }}
+          data-i18n-ignore={(optionsAreData && Boolean(selected)) || undefined}
+        >
+          {selectedLabel || placeholder || ""}
+        </span>
+        <ChevronsUpDown className="w-4 h-4 text-muted-foreground shrink-0" />
+      </button>
+
+      {open && !disabled && popupRect
+        ? createPortal(
+            <div
+              className="fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
+              style={{
+                top: popupRect.top,
+                bottom: popupRect.bottom,
+                left: popupRect.left,
+                width: popupRect.width,
+              }}
+              role="listbox"
+              onPointerDown={handleDropdownPointerDown}
+            >
+              {blankLabel !== undefined && (
+                <SelectOptionRow
+                  label={blankLabel}
+                  active={value === ""}
+                  onMouseDown={handleOptionMouseDown("")}
+                />
+              )}
+              {normalized.map((opt, i) =>
+                "divider" in opt ? (
+                  <div key={`divider-${i}`} className="my-1 border-t border-border/40" />
+                ) : (
+                  <SelectOptionRow
+                    key={opt.value}
+                    label={opt.label}
+                    active={opt.value === value}
+                    disabled={opt.disabled}
+                    labelIsData={optionsAreData}
+                    onMouseDown={handleOptionMouseDown(opt.value)}
+                  />
+                ),
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
+    </div>
+  );
+
+  if (!label) return field;
+
+  return (
+    <div>
+      <label className={labelClassName} style={labelStyle}>
+        {label}
+      </label>
+      {field}
+    </div>
+  );
+};
+
+export default Select;

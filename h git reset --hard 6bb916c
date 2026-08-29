@@ -1,0 +1,46 @@
+[33maac4ae3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmuntadher_hr-reafactor[m[33m)[m muntadher-optimize-attendance-weekly-utils
+[33m6bb916c[m[33m ([m[1;31morigin/muntadher_hr-reafactor[m[33m)[m muntadher_full project refactor and folder orginization
+[33m946703b[m Muntadher - memoized attendance page loops
+[33me639e90[m[33m ([m[1;32mmain[m[33m)[m fix(leave): resolve self-leave via /employees/me without CRM caps
+[33m34f89e6[m feat(hr): complete HR fix roadmap (ledger, payroll, settings, reports)
+[33m9ce7169[m fix(attendance): show check-in/out times in Asia/Baghdad
+[33mf6f9f6e[m fix(leave): self-only leave request without employee list
+[33m423a908[m Revert "feat(rbac): gate Payroll, Settings, Devices, Audit via CRM permissions"
+[33mca81d58[m feat(rbac): gate Payroll, Settings, Devices, Audit via CRM permissions
+[33ma4e0ca3[m fix(ui): derive EmployeeSelect label from employee id map
+[33m87a9835[m fix(ui): keep EmployeeSelect label visible after pick
+[33ma4db534[m fix(ui): show employee display name after EmployeeSelect pick
+[33m1d5b9aa[m feat(ui): searchable employee dropdown on all employee pickers
+[33m8698363[m fix(devices): treat Odoo sync timestamps as UTC for online badge
+[33m9b2b35f[m fix(devices): load Event log date range from Odoo attendance history
+[33m6cfff15[m feat(i18n): add lightweight AR/EN translation dictionary
+[33m8d2d8bb[m fix(employees): send real designation_id/department_id on employee create
+[33m25af651[m feat(device-sync): expose public /device-api for remote testing
+[33m70bd02e[m fix(device-sync): allow Odoo-only startup without Supabase credentials
+[33m92992b7[m Merge branch 'hrdev' into main
+[33m6896123[m feat(device-sync): add pluggable Odoo backend for the Hikvision bridge
+[33mdbdce4a[m fix(ui): make HR shell responsive and restore logout
+[33mb35defa[m fix(leave): align pending filter with Odoo leave status labels
+[33m407da21[m feat(api): wire Slice F HR APIs for issues, approvals, currency
+[33m963623b[m Merge pull request #4 from nbsdevteam/hrdev
+[33m7f6d822[m Fix:the issue of the hr
+[33m95b4e20[m Merge pull request #3 from nbsdevteam/hrdev
+[33mab57316[m feat(recruitment): edit vacancies and change their status
+[33m7bb6403[m Merge pull request #2 from nbsdevteam/hrdev
+[33m3c7e894[m fix(recruitment): download CVs through the authenticated API
+[33m2e05580[m Merge pull request #1 from nbsdevteam/hrdev
+[33m7303f37[m Feat: CV screening using AI IR
+[33m41cef8f[m feat(api): complete Odoo-only cutover, remove Supabase entirely
+[33m93d4b30[m[33m ([m[1;31morigin/old-hr-main[m[33m)[m fix: keep app open in Supabase mode, gate login to Odoo mode only
+[33m62268f5[m Merge branch 'hrdev' into main: integrate Odoo backend wiring
+[33m5878d3b[m feat(api): wire Slice A-D pages to Odoo backend for full HR cutover
+[33m6a52329[m feat(api): wire P0 pages to Odoo reads and writes for cutover
+[33m1c2d736[m feat(api): dual-mode Odoo adapter for Phase 7 cutover
+[33mbf0bfe2[m refactor: open app without authentication
+[33md812109[m fix: localize database-driven display text
+[33m04305a1[m refactor: enforce key-based localization across UI
+[33m64dbaa4[m fix: localize native dialogs and report exports
+[33m7347c9e[m feat: add English Arabic and Sorani localization
+[33m32aeee2[m feat: add HR frontend app source and ignore node_modules
+[33m2ad6f82[m fix: write README as UTF-8
+[33m28f8777[m first commit

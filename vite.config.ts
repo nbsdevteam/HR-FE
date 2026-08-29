@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   test: {
     environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/test-utils/setup.ts'],
   },
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
@@ -26,7 +26,8 @@ export default defineConfig({
 
   server: {
     host: true,
-    port: 5173,
+    port: 5273,
+    strictPort: true,
     proxy: {
       // Odoo backend (dev-crm.nooralnibras.com)
       '/lugal': {

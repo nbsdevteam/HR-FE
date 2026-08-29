@@ -16,16 +16,27 @@ const NavShellContext = createContext<NavShellContextValue>({
   isDesktop: true,
 });
 
-export function useNavShell() {
+export const useNavShell = () => {
   return useContext(NavShellContext);
-}
+};
 
 const DESKTOP_MQ = "(min-width: 768px)";
 
-export function NavShellProvider({ children }: { children: ReactNode }) {
+const NavShellProvider = ({ children }: { children: ReactNode }) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia(DESKTOP_MQ).matches : true,
+  );
+
+  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
+  const toggleMobileNav = useCallback(() => setMobileNavOpen((v) => !v), []);
+
+  // Declared after the useCallbacks above (not before, per the usual
+  // useMemo-then-useCallback ordering) because it closes over them directly.
+  const value = useMemo(
+    () => ({ mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop }),
+    [mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop],
   );
 
   useEffect(() => {
@@ -48,14 +59,7 @@ export function NavShellProvider({ children }: { children: ReactNode }) {
     };
   }, [mobileNavOpen]);
 
-  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
-  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
-  const toggleMobileNav = useCallback(() => setMobileNavOpen((v) => !v), []);
-
-  const value = useMemo(
-    () => ({ mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop }),
-    [mobileNavOpen, openMobileNav, closeMobileNav, toggleMobileNav, isDesktop],
-  );
-
   return <NavShellContext.Provider value={value}>{children}</NavShellContext.Provider>;
-}
+};
+
+export default NavShellProvider;

@@ -1,0 +1,38 @@
+import type { LucideIcon } from "lucide-react";
+import { X } from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "@/shared/components";
+
+type PopoverHeaderProps = {
+  icon: LucideIcon;
+  iconBgClassName: string;
+  iconColorClassName: string;
+  title: ReactNode;
+  subtitle: ReactNode;
+  onClose: () => void;
+};
+
+const PopoverHeader = ({ icon: Icon, iconBgClassName, iconColorClassName, title, subtitle, onClose }: PopoverHeaderProps) => (
+  <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
+    <div className="flex items-center gap-3">
+      <div className={`p-2 rounded-lg ${iconBgClassName}`}>
+        <Icon className={`w-5 h-5 ${iconColorClassName}`} />
+      </div>
+      <div>
+        <h3 className="text-foreground">{title}</h3>
+        <p className="text-muted-foreground" style={{ fontSize: 12 }}>{subtitle}</p>
+      </div>
+    </div>
+    <Button
+      onClick={onClose}
+      variant="unstyled"
+      size="icon"
+      rounded="rounded-lg"
+      className="hover:bg-secondary"
+      icon={X}
+      iconClassName="w-5 h-5 text-muted-foreground"
+    />
+  </div>
+);
+
+export default PopoverHeader;

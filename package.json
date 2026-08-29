@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "i18n:audit": "node scripts/check-i18n-catalogues.mjs",
+    "size-check": "node scripts/check-file-size.mjs",
     "verify": "npm run i18n:audit && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

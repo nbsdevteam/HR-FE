@@ -648,6 +648,13 @@ export function createBackend(config, ctx) {
     }
   }
 
+  // The device-sync pause flag lives in Odoo (lugal.hr.config, key
+  // device_sync_paused) — a no-op here since the legacy Supabase backend has
+  // no Odoo connection to read it from.
+  async function deviceSyncPaused() {
+    return false;
+  }
+
   return {
     init,
     findEmployee,
@@ -661,5 +668,6 @@ export function createBackend(config, ctx) {
     detectLateArrivals,
     autoCheckout,
     detectAbsences,
+    deviceSyncPaused,
   };
 }

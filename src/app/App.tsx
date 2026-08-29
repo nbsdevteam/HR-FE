@@ -1,20 +1,15 @@
 import { RouterProvider } from "react-router";
-import { router } from "./routes";
-import { publicRouter, isPublicPath } from "./publicRoutes";
-import { AuthProvider, useAuth } from "./lib/auth";
-import { Login } from "./pages/Login";
-import { Loader2 } from "lucide-react";
+import { router } from "./router/routes";
+import { publicRouter, isPublicPath } from "./router/publicRoutes";
+import HydrateFallback from "./router/HydrateFallback";
+import AuthProvider, { useAuth } from "@/shared/auth";
+import Login from "@/features/auth/pages/Login";
 
-function AppContent() {
+const AppContent = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-muted-foreground ms-3">جاري التحميل...</span>
-      </div>
-    );
+    return <HydrateFallback />;
   }
 
   if (!user) {
@@ -22,9 +17,9 @@ function AppContent() {
   }
 
   return <RouterProvider router={router} />;
-}
+};
 
-export default function App() {
+const App = () => {
   // The candidate application page must render for logged-out visitors, so it
   // is resolved before the auth gate rather than inside the private router.
   if (typeof window !== "undefined" && isPublicPath(window.location.pathname)) {
@@ -36,4 +31,6 @@ export default function App() {
       <AppContent />
     </AuthProvider>
   );
-}
+};
+
+export default App;

@@ -1,0 +1,46 @@
+import { lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import OverviewTab from "./OverviewTab";
+import type { usePayrollPage } from "../hooks/usePayrollPage";
+
+const UploadTab = lazy(() => import("./UploadTab"));
+
+type PayrollTabContentProps = {
+  page: ReturnType<typeof usePayrollPage>;
+};
+
+const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
+  <AnimatePresence mode="wait">
+    {page.activeTab === "overview" && (
+      <motion.div
+        key="overview"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <OverviewTab
+          payrollData={page.payrollData}
+          totalBasic={page.totalBasic}
+          totalNet={page.totalNet}
+          totalDeductions={page.totalDeductions}
+          totalEmployees={page.totalEmployees}
+          onViewPayslip={page.setSelectedEmpId}
+        />
+      </motion.div>
+    )}
+    {page.activeTab === "upload" && (
+      <motion.div
+        key="upload"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <Suspense fallback={null}>
+          <UploadTab employees={page.employees} />
+        </Suspense>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+export default PayrollTabContent;
