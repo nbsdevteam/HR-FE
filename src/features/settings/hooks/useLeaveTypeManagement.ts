@@ -53,6 +53,17 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     }
   }, [refetchLeaveTypes, showToast]);
 
+  // Annual entitlement now lives on the leave type, not a global Settings key
+  // (backend hand-off §2) — this is the only field editable after creation so far.
+  const updateLeaveTypeDays = useCallback(async (leaveTypeId: string, defaultDaysPerYear: number) => {
+    try {
+      await odooData.updateLeaveType(leaveTypeId, { default_days_per_year: defaultDaysPerYear });
+      await refetchLeaveTypes();
+    } catch (e: any) {
+      showToast(e?.message || "Failed to update leave type");
+    }
+  }, [refetchLeaveTypes, showToast]);
+
   const deleteLeaveTypeEntry = useCallback(async (leaveTypeId: string) => {
     try {
       await odooData.deleteLeaveType(leaveTypeId);
@@ -65,6 +76,6 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
   return {
     showNewLeaveTypeForm, setShowNewLeaveTypeForm,
     newLeaveType, updateNewLeaveType,
-    createLeaveType, toggleLeaveTypeActive, deleteLeaveTypeEntry,
+    createLeaveType, toggleLeaveTypeActive, deleteLeaveTypeEntry, updateLeaveTypeDays,
   };
 };

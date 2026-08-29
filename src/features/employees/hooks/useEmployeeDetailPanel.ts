@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import { arabicSource } from "@/i18n/source";
 import type {
   DepartmentOption,
@@ -130,6 +131,10 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (editData.startDate && editData.startDate > todayInBaghdad()) {
+      setSaveError(arabicSource("employees.join_date_cannot_be_in_the_future"));
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     try {

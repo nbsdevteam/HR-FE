@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
@@ -169,6 +170,10 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const handleAddEmployee = useCallback(async () => {
     if (!addForm.name.trim()) { setAddError(arabicSource("employees.name_required")); return; }
     if (!nextEmployeeId) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
+    if (addForm.joinDate && addForm.joinDate > todayInBaghdad()) {
+      setAddError(arabicSource("employees.join_date_cannot_be_in_the_future"));
+      return;
+    }
     setAddSaving(true);
     setAddError(null);
 

@@ -61,7 +61,9 @@ export const buildMonthAttendanceStats = (
     lateMins += record.late_minutes || 0;
     if (record.status === "absent") absentCount++;
     if (record.status === "checked_in" || record.status === "missing_checkout") {
-      checkedInOnly++;
+      // Sum day_fraction, not a flat +1 — a missing-checkout day under the
+      // `half_day` policy counts as half a working day, not a whole one.
+      checkedInOnly += record.day_fraction || 1;
     }
   }
 
@@ -98,7 +100,7 @@ export const buildOverallAttendanceStats = (
     if (record.is_late) lateCount++;
     lateMins += record.late_minutes || 0;
     if (record.status === "absent") absentCount++;
-    if (PRESENT_STATUSES.includes(record.status)) presentCount++;
+    if (PRESENT_STATUSES.includes(record.status)) presentCount += record.day_fraction || 1;
     months.add(record.date.slice(0, 7));
   }
 
@@ -135,7 +137,7 @@ export const buildMonthlyBreakdown = (
       entry = { month, days: 0, hours: 0, overtime: 0, late: 0, absent: 0 };
       byMonth.set(month, entry);
     }
-    if (PRESENT_STATUSES.includes(record.status)) entry.days++;
+    if (PRESENT_STATUSES.includes(record.status)) entry.days += record.day_fraction || 1;
     entry.hours += record.working_hours || 0;
     entry.overtime += record.overtime_hours || 0;
     if (record.is_late) entry.late++;

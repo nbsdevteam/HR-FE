@@ -27,6 +27,12 @@ export const mapAttendance = (r: any): DbAttendanceRecord => {
     status: r.status || "",
     created_at: r.created_at || empty,
     auto_checkout_applied: bool(r.auto_checkout_applied),
+    day_fraction: num(r.day_fraction, 1),
+    // Older backends don't send this field yet — fall back to the status
+    // string, which is what every FE call site checked before it existed.
+    is_missing_checkout: r.is_missing_checkout !== undefined
+      ? bool(r.is_missing_checkout)
+      : r.status === "missing_checkout",
     source: r.source || null,
     verify_mode: r.verify_mode || null,
     device_employee_no: r.device_employee_no || null,

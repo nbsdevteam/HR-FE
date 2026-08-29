@@ -13,6 +13,9 @@ export interface DbLeaveProbationInfo {
   probation: boolean;
   /** Last day of probation, inclusive. */
   probation_end_date: string | null;
+  /** True when the employee is skipped by accrual entirely (e.g. no joining date) — show `accrual_excluded_reason` instead of a `0` balance. */
+  accrual_excluded: boolean;
+  accrual_excluded_reason: string | null;
 }
 
 /** One leave type inside the `/leave/balances` envelope (backend §1). */
@@ -37,6 +40,22 @@ export interface DbLeaveBalanceItem {
 export interface DbLeaveBalanceSummary extends DbLeaveProbationInfo {
   employee_id: string;
   items: DbLeaveBalanceItem[];
+}
+
+/** One row of `POST /api/hr/leave/accrual-excluded` (HR-only, backend §6). */
+export interface DbAccrualExcludedEmployee {
+  employee_id: string;
+  employee_name: string;
+  employee_code: string;
+  department_id: string | null;
+  department_name: string;
+  hr_status: string;
+  reason: string;
+}
+
+export interface DbAccrualExcludedList {
+  total: number;
+  items: DbAccrualExcludedEmployee[];
 }
 
 /** One monthly accrual grant — the audit trail behind `accrued` (backend §2). */

@@ -18,6 +18,11 @@ export interface DbAttendanceRecord {
   status: string; // "complete", "missing_checkout", etc.
   created_at: string;
   auto_checkout_applied: boolean;
+  // 1.0 normally, 0.5 under the `half_day` missing-checkout policy.
+  day_fraction: number;
+  // Authoritative missing-checkout flag — survives auto-close, which stamps a
+  // non-null check_out and would otherwise hide the fact nobody punched out.
+  is_missing_checkout: boolean;
   // Biometric device fields
   source?: "device" | "manual" | null;
   verify_mode?: string | null;

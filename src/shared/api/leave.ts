@@ -5,6 +5,7 @@ import {
   mapLeaveRequest,
   mapLeavePermission,
   mapLeaveSettings,
+  mapAccrualExcludedList,
 } from "./mappers";
 import type {
   DbEmployee,
@@ -13,6 +14,7 @@ import type {
   DbLeaveRequest,
   DbLeavePermission,
   DbLeaveSettings,
+  DbAccrualExcludedList,
 } from "../hooks";
 import { eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
@@ -140,6 +142,12 @@ export const fetchLeavePermissions = (
     mapLeavePermission,
     params,
   );
+};
+
+/** HR-only (`hr.leave.hr_approve`) — employees `hr.leave.type` accrual skips entirely, with why. */
+export const fetchAccrualExcludedEmployees = async (): Promise<DbAccrualExcludedList> => {
+  const data = await hrCall("/api/hr/leave/accrual-excluded", {});
+  return mapAccrualExcludedList(data);
 };
 
 export const requestLeave = async (payload: {

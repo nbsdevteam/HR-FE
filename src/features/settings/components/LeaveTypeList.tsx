@@ -7,6 +7,7 @@ type TLeaveTypeListProps = {
   loading: boolean;
   onToggleActive: (leaveType: DbLeaveType) => void;
   onDelete: (leaveTypeId: string) => void;
+  onUpdateDays: (leaveTypeId: string, defaultDaysPerYear: number) => void;
 };
 
 const LeaveTypeList = ({
@@ -14,6 +15,7 @@ const LeaveTypeList = ({
   loading,
   onToggleActive,
   onDelete,
+  onUpdateDays,
 }: TLeaveTypeListProps) => {
   if (loading) {
     return (
@@ -37,6 +39,7 @@ const LeaveTypeList = ({
           leaveType={leaveType}
           onToggleActive={onToggleActive}
           onDelete={onDelete}
+          onUpdateDays={onUpdateDays}
         />
       ))}
     </div>

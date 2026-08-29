@@ -3,6 +3,7 @@ import { LoadingState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useLeaveAccruals, useLeaveBalanceSummary, type DbLeaveType } from "@/shared/hooks";
 import LeaveAccrualCard from "./LeaveAccrualCard";
+import LeaveAccrualExcludedBanner from "./LeaveAccrualExcludedBanner";
 import LeaveAccrualHistoryTable from "./LeaveAccrualHistoryTable";
 import LeaveProbationBanner from "./LeaveProbationBanner";
 
@@ -63,12 +64,16 @@ const EmployeeAccrualPanel = ({ employeeId, leaveTypes }: EmployeeAccrualPanelPr
   }
 
   const historyItems = history?.items ?? [];
-  if (!summary.probation && accrualItems.length === 0 && historyItems.length === 0) {
+  if (!summary.probation && !summary.accrual_excluded && accrualItems.length === 0 && historyItems.length === 0) {
     return null;
   }
 
   return (
     <div className="space-y-4">
+      {summary.accrual_excluded && (
+        <LeaveAccrualExcludedBanner reason={summary.accrual_excluded_reason} />
+      )}
+
       {summary.probation && (
         <LeaveProbationBanner
           probationEndDate={summary.probation_end_date}

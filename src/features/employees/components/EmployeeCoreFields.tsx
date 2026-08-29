@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { TypeAhead } from "@/shared/components";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { EmployeeAddForm, EmployeeOption } from "../types";
 import EmployeeManagerField from "./EmployeeManagerField";
 import LabeledInput from "./LabeledInput";
@@ -53,7 +54,8 @@ const EmployeeCoreFields = ({
   );
 
   const handleDepartmentChange = useCallback(
-    (value: string): void => onFormChange({ departmentId: value, designationId: "" }),
+    (value: string): void =>
+      onFormChange({ departmentId: value, designationId: "" }),
     [onFormChange],
   );
 
@@ -153,7 +155,10 @@ const EmployeeCoreFields = ({
         type="date"
         value={addForm.joinDate}
         onChange={handleJoinDateChange}
+        max={todayInBaghdad()}
         dir="ltr"
+        addedContainerClasses="w-full col-span-2"
+        addedInputClasses="w-full block"
       />
     </div>
   );

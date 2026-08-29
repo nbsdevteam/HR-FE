@@ -1,4 +1,4 @@
-import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
+import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbAccrualExcludedEmployee, DbAccrualExcludedList, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
 
@@ -166,7 +166,29 @@ export const mapLeaveBalanceSummary = (r: any): DbLeaveBalanceSummary => {
     joining_date: r?.joining_date || null,
     probation: bool(r?.probation),
     probation_end_date: r?.probation_end_date || null,
+    accrual_excluded: bool(r?.accrual_excluded),
+    accrual_excluded_reason: r?.accrual_excluded_reason || null,
     items: rows.map(mapLeaveBalanceItem),
+  };
+}
+
+export const mapAccrualExcludedEmployee = (r: any): DbAccrualExcludedEmployee => {
+  return {
+    employee_id: sid(r.employee_id),
+    employee_name: r.employee_name || "",
+    employee_code: r.employee_code || "",
+    department_id: sornull(r.department_id),
+    department_name: r.department_name || "",
+    hr_status: r.hr_status || "",
+    reason: r.reason || "",
+  };
+}
+
+export const mapAccrualExcludedList = (r: any): DbAccrualExcludedList => {
+  const rows = Array.isArray(r) ? r : r?.items || [];
+  return {
+    total: num(r?.total ?? rows.length),
+    items: rows.map(mapAccrualExcludedEmployee),
   };
 }
 
@@ -191,6 +213,8 @@ export const mapLeaveAccrualHistory = (r: any): DbLeaveAccrualHistory => {
     joining_date: r?.joining_date || null,
     probation: bool(r?.probation),
     probation_end_date: r?.probation_end_date || null,
+    accrual_excluded: bool(r?.accrual_excluded),
+    accrual_excluded_reason: r?.accrual_excluded_reason || null,
     items,
     total_days: num(r?.total_days ?? items.reduce((sum: number, item: DbLeaveAccrualEntry) => sum + item.days, 0)),
   };

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
 import { leaveErrorMessage } from "@/features/leave/utils/leaveErrorMessage";
+import { configErrorMessage } from "../utils/configErrorMessage";
 import type { ConfigValue } from "../types";
 
 /** The leave max-hours row has its own validating/audit-logging endpoint (backend §3.2). */
@@ -29,10 +30,11 @@ export const useConfigEdits = (refetchConfigs: () => void, showToast: (message: 
         return newEdits;
       });
     } catch (e) {
+      const fallback = arabicSource("settings.error_saving_setting");
       showToast(
         configKey === LEAVE_MAX_HOURS_KEY
-          ? leaveErrorMessage(e, arabicSource("settings.error_saving_setting"))
-          : arabicSource("settings.error_saving_setting"),
+          ? leaveErrorMessage(e, fallback)
+          : configErrorMessage(e, fallback),
       );
     }
   }, [refetchConfigs, showToast]);

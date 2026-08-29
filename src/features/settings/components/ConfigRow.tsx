@@ -20,6 +20,17 @@ const ABSENCE_BASIS_OPTIONS = [
   { value: "fixed_days_per_month", label: arabicSource("settings.custom_fixed_days") },
 ];
 
+const MISSING_CHECKOUT_POLICY_OPTIONS = [
+  { value: "none", label: arabicSource("settings.missing_checkout_policy_none") },
+  { value: "half_day", label: arabicSource("settings.missing_checkout_policy_half_day") },
+  { value: "fixed_amount", label: arabicSource("settings.missing_checkout_policy_fixed_amount") },
+];
+
+const SELECT_CONFIG_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  "attendance.absence_basis": ABSENCE_BASIS_OPTIONS,
+  "attendance.missing_checkout_policy": MISSING_CHECKOUT_POLICY_OPTIONS,
+};
+
 const FIELD_CLASS =
   "bg-background border border-border/60 rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary";
 
@@ -78,14 +89,13 @@ const ConfigRow = ({
             on={currentValue === true || currentValue === "true"}
             onClick={handleToggleClick}
           />
-        ) : config.value_type === "select" &&
-          config.config_key === "attendance.absence_basis" ? (
+        ) : config.value_type === "select" && SELECT_CONFIG_OPTIONS[config.config_key] ? (
           <div className="flex items-center gap-2">
             <Select
-              value={String(toInputValue(currentValue) || "30_days")}
+              value={String(toInputValue(currentValue) || SELECT_CONFIG_OPTIONS[config.config_key][0].value)}
               onChange={handleSelectChange}
               onBlur={handleSaveCurrentValue}
-              options={ABSENCE_BASIS_OPTIONS}
+              options={SELECT_CONFIG_OPTIONS[config.config_key]}
               className={FIELD_CLASS}
             />
             {hasChanged && <ConfigSaveButton onSave={handleSaveCurrentValue} />}

@@ -4,6 +4,10 @@
  */
 export const HR_BUSINESS_TZ = "Asia/Baghdad";
 
+/** Today's date (YYYY-MM-DD) in Asia/Baghdad — for `max` on date inputs and future-date checks. */
+export const todayInBaghdad = (): string =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: HR_BUSINESS_TZ }).format(new Date());
+
 /**
  * Convert an Odoo UTC-naive datetime string to HH:MM:SS in Asia/Baghdad.
  *

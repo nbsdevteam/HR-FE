@@ -4,6 +4,7 @@ import {
   Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import { Select, TypeAhead } from "@/shared/components";
 import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
@@ -225,7 +226,7 @@ const EmployeeInfoTab = ({
         icon={CalendarCheck} iconColor="text-emerald-400" label={arabicSource("common.direct_date")} value={editData.startDate} dir="ltr"
         isEditing={isEditing}
         editElement={
-          <input type="date" value={editData.startDate} onChange={handleStartDateChange}
+          <input type="date" value={editData.startDate} onChange={handleStartDateChange} max={todayInBaghdad()}
             className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
         }
       />

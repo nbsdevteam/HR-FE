@@ -26,6 +26,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     createLeaveType,
     toggleLeaveTypeActive,
     deleteLeaveTypeEntry,
+    updateLeaveTypeDays,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
   const handleToggleNewLeaveTypeForm = useCallback((): void => {
@@ -80,6 +81,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
         loading={leaveTypesLoading}
         onToggleActive={toggleLeaveTypeActive}
         onDelete={deleteLeaveTypeEntry}
+        onUpdateDays={updateLeaveTypeDays}
       />
     </motion.div>
   );
