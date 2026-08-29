@@ -62,7 +62,7 @@ export const useHierarchyCrud = (
     }
     if (updates.position !== undefined) {
       const pos = dbPositions.find(p => p.title_ar === updates.position);
-      odooUpdates.position_id = pos?.id || null;
+      odooUpdates.designation_id = pos?.id || null;
     }
     if (updates.department !== undefined) {
       const dept = dbDepartments.find(d => d.name === updates.department);

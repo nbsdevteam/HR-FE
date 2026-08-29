@@ -60,9 +60,10 @@ const AiScreeningView = ({
         jobOpeningId: jobId,
         force: false,
       });
-      localizedAlert(
-        `${arabicSource("recruitment.queued_for_screening")} (${result.queued})`,
-      );
+      const message = result.skipped
+        ? `${arabicSource("recruitment.queued_for_screening")} (${result.queued}) — ${arabicSource("recruitment.skipped_for_screening")} (${result.skipped})`
+        : `${arabicSource("recruitment.queued_for_screening")} (${result.queued})`;
+      localizedAlert(message);
       await refetch();
     } catch (e: any) {
       localizedAlert(

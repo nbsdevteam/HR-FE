@@ -58,7 +58,7 @@ export const usePositionAssignment = ({
       setInFlight((count) => count + 1);
       try {
         await odooData.updateEmployee(employeeId, {
-          position_id: next.position_id,
+          designation_id: next.position_id,
           department_id: next.department_id,
           manager_id: next.manager_id,
         });

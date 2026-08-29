@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
 import DataTable from "@/shared/components/DataTable";
+import { REPORT_SCROLL_HINT_COLUMN_THRESHOLD } from "../constants/reportTable";
 import type { ReportColumn, ReportRow } from "../types";
 import { buildReportRowKeys } from "../utils/reportRowKeys";
 import ReportResultRow from "./ReportResultRow";
@@ -48,6 +49,11 @@ const ReportResultsTable = ({
           {dateTo && ` ${arabicSource("reports.to")} ${dateTo}`}
         </p>
       </div>
+      {columns.length > REPORT_SCROLL_HINT_COLUMN_THRESHOLD && (
+        <p className="text-muted-foreground text-xs mb-2" dir="auto">
+          {arabicSource("reports.scroll_to_see_all_columns")}
+        </p>
+      )}
       <DataTable
         wrapperClassName="overflow-x-auto border border-border/30 rounded-xl"
         scrollClassName=""
@@ -55,9 +61,13 @@ const ReportResultsTable = ({
         items={visibleRows}
         header={
           <tr className="bg-muted/30 border-b border-border/40">
-            <ReportResultsHeaderCell label="#" />
-            {columns.map((col) => (
-              <ReportResultsHeaderCell key={col.key} label={col.label} />
+            <ReportResultsHeaderCell label="#" sticky="index" />
+            {columns.map((col, colIndex) => (
+              <ReportResultsHeaderCell
+                key={col.key}
+                label={col.label}
+                sticky={colIndex === 0 ? "primary" : undefined}
+              />
             ))}
           </tr>
         }
