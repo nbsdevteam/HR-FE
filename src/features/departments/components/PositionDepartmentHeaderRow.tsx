@@ -62,7 +62,7 @@ const PositionDepartmentHeaderRow = ({
         style={{ transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
       />
       <span className="w-2 h-2 rounded-full shrink-0" style={{ background: group.color }} />
-      <span className="text-foreground truncate flex-1 min-w-0" style={{ fontSize: 13 }}>
+      <span className="text-foreground truncate flex-1 min-w-0" style={{ fontSize: 13 }} data-i18n-ignore>
         {group.name}
       </span>
       <span

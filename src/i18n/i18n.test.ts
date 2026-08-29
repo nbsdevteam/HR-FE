@@ -74,6 +74,39 @@ describe("application localization", () => {
     );
   });
 
+  it("translates every catalogued key, not just the ones in the reverse index", () => {
+    // `source-map.json` is the only index the DOM localizer can resolve a
+    // rendered Arabic string through. Keys that never landed in it silently
+    // stayed Arabic in English — the whole org-structure screen did this.
+    expect(translateArabicSource(arabicSource("org_structure.manage_structure"), "en"))
+      .toBe("Manage structure");
+    expect(translateArabicSource(arabicSource("hierarchy.filter_all_positions"), "en"))
+      .toBe("All positions");
+    expect(translateArabicSource(arabicSource("hierarchy.filter_over_capacity"), "en"))
+      .toBe("Over capacity");
+  });
+
+  it("translates catalogued copy composed with interpolated counts", () => {
+    // Filter chips render `${label} (${count})` as a single text node, so the
+    // value is never an exact catalogue entry and must resolve by fragment.
+    expect(translateArabicSource(`${arabicSource("hierarchy.filter_partly_filled")} (2)`, "en"))
+      .toBe("Partly filled (2)");
+    expect(translateArabicSource(`${arabicSource("common.vacant")} (3)`, "en"))
+      .toBe("Vacant (3)");
+  });
+
+  it("never replaces a catalogued fragment inside a longer Arabic word", () => {
+    // Arabic inflects by gluing affixes onto the stem, so a substring match
+    // fires mid-word and strands the remaining letters ("الموظفين" used to
+    // render as "Employeeين"). Whole-word matching is what prevents that.
+    const inflected = "بيانات الموظفين الأساسية";
+    expect(translateArabicSource(inflected, "en")).toContain("الموظفين");
+    expect(translateArabicSource(inflected, "en")).not.toMatch(/[A-Za-z][ء-ي]/);
+    expect(translateArabicSource("سجل الحضور اليومي", "en")).not.toMatch(
+      /[A-Za-z][ء-ي]/,
+    );
+  });
+
   it("uses English fallback and preserves interpolation", async () => {
     i18n.addResource("en", "translation", "test.greeting", "Hello, {{name}}");
     expect(i18n.getFixedT("ku")("test.greeting", { name: "Ava" })).toBe("Hello, Ava");

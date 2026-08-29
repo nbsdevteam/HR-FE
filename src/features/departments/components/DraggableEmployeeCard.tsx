@@ -43,7 +43,7 @@ const DraggableEmployeeCard = ({ emp, deptColors, onDragStateChange }: Draggable
     >
       <GripVertical className="w-3 h-3 text-muted-foreground shrink-0" />
       <NodeAvatar photo={emp.profile_picture} name={name} color={color} initials={name.charAt(0)} sizeClassName="w-7 h-7" extraClassName="shrink-0" fontSize={10} />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1" data-i18n-ignore>
         <p className="text-foreground truncate" style={{ fontSize: 12 }}>{name}</p>
         <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{emp.department || "—"}</p>
       </div>

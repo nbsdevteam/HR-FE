@@ -2,10 +2,12 @@ type TypeAheadOptionProps = {
   label: string;
   description?: string | null;
   active: boolean;
+  /** Label is backend data, not catalogued UI copy — keep the DOM localizer off it. */
+  labelIsData?: boolean;
   onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
-const TypeAheadOption = ({ label, description, active, onMouseDown }: TypeAheadOptionProps) => {
+const TypeAheadOption = ({ label, description, active, labelIsData = false, onMouseDown }: TypeAheadOptionProps) => {
   return (
     <button
       type="button"
@@ -17,11 +19,15 @@ const TypeAheadOption = ({ label, description, active, onMouseDown }: TypeAheadO
       }`}
       style={{ fontSize: 13 }}
     >
-      <div className="truncate font-medium" dir="auto">
+      <div className="truncate font-medium" dir="auto" data-i18n-ignore={labelIsData || undefined}>
         {label}
       </div>
       {description && (
-        <div className="text-muted-foreground truncate" style={{ fontSize: 11 }}>
+        <div
+          className="text-muted-foreground truncate"
+          style={{ fontSize: 11 }}
+          data-i18n-ignore={labelIsData || undefined}
+        >
           {description}
         </div>
       )}

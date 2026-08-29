@@ -133,9 +133,13 @@ const PositionCard = ({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate" style={{ fontSize: 13 }}>
-                {isDropTarget ? arabicSource("common.drop_here_to_set") : node.title_ar}
+                {isDropTarget ? (
+                  arabicSource("common.drop_here_to_set")
+                ) : (
+                  <span data-i18n-ignore>{node.title_ar}</span>
+                )}
               </p>
-              <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>
+              <p className="text-muted-foreground truncate" style={{ fontSize: 10 }} data-i18n-ignore>
                 {departmentName}
               </p>
             </div>

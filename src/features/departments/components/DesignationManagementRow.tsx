@@ -27,13 +27,13 @@ const DesignationManagementRow = ({
 
   return (
     <tr className="border-t border-border/30">
-      <td className="px-4 py-3 text-foreground text-sm">
+      <td className="px-4 py-3 text-foreground text-sm" data-i18n-ignore>
         <div>{designation.title_en || designation.title_ar}</div>
         {designation.title_ar && <div className="text-muted-foreground text-xs" dir="rtl">{designation.title_ar}</div>}
       </td>
-      <td className="px-4 py-3 text-muted-foreground text-sm">{designation.department_name || "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground text-sm" data-i18n-ignore>{designation.department_name || "—"}</td>
       <td className="px-4 py-3 text-muted-foreground text-sm">{designation.level}</td>
-      <td className="px-4 py-3 text-muted-foreground text-sm">{designation.reports_to_job_name || "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground text-sm" data-i18n-ignore>{designation.reports_to_job_name || "—"}</td>
       <td className="px-4 py-3 text-muted-foreground text-sm">{designation.employee_count}/{designation.max_headcount}</td>
       <td className="px-4 py-3">
         <StatusBadge colorClassName={designation.is_active ? "border-emerald-500/30 text-emerald-500 bg-emerald-500/10" : "border-muted text-muted-foreground bg-muted/20"}>

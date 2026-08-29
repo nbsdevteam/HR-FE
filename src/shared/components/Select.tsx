@@ -16,6 +16,13 @@ type SelectProps = {
   options: readonly SelectOption[];
   value: string;
   onChange: (value: string) => void;
+  /**
+   * Option labels are backend records (department names, employee names, …)
+   * rather than catalogued UI copy. The dropdown is portaled to `document.body`,
+   * so a `data-i18n-ignore` ancestor at the call site cannot reach it — this
+   * marks the option rows and the trigger label instead.
+   */
+  optionsAreData?: boolean;
   blankLabel?: string;
   placeholder?: string;
   label?: string;
@@ -41,6 +48,7 @@ const Select = ({
   options,
   value,
   onChange,
+  optionsAreData = false,
   blankLabel,
   placeholder,
   label,
@@ -124,6 +132,7 @@ const Select = ({
         <span
           className={`truncate ${selectedLabel ? "text-foreground" : "text-muted-foreground"}`}
           style={{ fontSize: 13 }}
+          data-i18n-ignore={(optionsAreData && Boolean(selected)) || undefined}
         >
           {selectedLabel || placeholder || ""}
         </span>
@@ -159,6 +168,7 @@ const Select = ({
                     label={opt.label}
                     active={opt.value === value}
                     disabled={opt.disabled}
+                    labelIsData={optionsAreData}
                     onMouseDown={handleOptionMouseDown(opt.value)}
                   />
                 ),

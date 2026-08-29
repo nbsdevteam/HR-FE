@@ -18,7 +18,7 @@ const DirectReportRow = ({ node }: DirectReportRowProps) => (
       extraClassName="flex-shrink-0"
       fontSize={10}
     />
-    <div className="min-w-0">
+    <div className="min-w-0" data-i18n-ignore>
       <p className="text-foreground truncate" style={{ fontSize: 11 }}>
         {node.name}
       </p>

@@ -170,6 +170,7 @@ const EditEmployeeModal = ({
           getLabel={stringIdentity}
           value={department}
           onChange={handleDepartmentChange}
+          optionsAreData
         />
       </div>
 
@@ -184,12 +185,18 @@ const EditEmployeeModal = ({
           value={managerId != null ? String(managerId) : ""}
           onChange={handleManagerChange}
           blankLabel={arabicSource("common.without_a_manager_top_of_the_pyramid")}
+          optionsAreData
         />
         {selectedManager && (
           <SelectedManagerCard
             manager={selectedManager}
             avatarName={arabicSource("common.direct_manager")}
-            label={`${arabicSource("hierarchy.director")} ${selectedManager.name}`}
+            label={
+              <>
+                {arabicSource("hierarchy.director")}{" "}
+                <span data-i18n-ignore>{selectedManager.name}</span>
+              </>
+            }
             toneClassName="bg-blue-500/5 border-blue-500/10"
           />
         )}

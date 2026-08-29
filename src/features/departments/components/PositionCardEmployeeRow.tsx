@@ -26,7 +26,7 @@ const PositionCardEmployeeRow = ({
         extraClassName="shrink-0"
         fontSize={9}
       />
-      <span className="text-foreground truncate" style={{ fontSize: 11 }}>
+      <span className="text-foreground truncate" style={{ fontSize: 11 }} data-i18n-ignore>
         {name}
       </span>
     </div>

@@ -107,6 +107,7 @@ const DesignationFormModal = ({
           value={formData.department_id}
           onChange={handleDepartmentChange}
           options={departmentOptions}
+          optionsAreData
           blankLabel={arabicSource("org_structure.none_option")}
           className={FIELD_CLASS}
         />
@@ -115,6 +116,7 @@ const DesignationFormModal = ({
           value={formData.reports_to_job_id}
           onChange={handleReportsToChange}
           options={reportsToOptions}
+          optionsAreData
           blankLabel={arabicSource("org_structure.none_option")}
           className={FIELD_CLASS}
         />

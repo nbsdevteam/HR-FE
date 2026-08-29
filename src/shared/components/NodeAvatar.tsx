@@ -28,7 +28,9 @@ const NodeAvatar = ({
   textClassName = "text-white",
 }: NodeAvatarProps) =>
   photo ? (
-    <img src={photo} alt={name} className={`${sizeClassName} rounded-full object-cover ${extraClassName}`} style={imgStyle} />
+    // `alt` is a person/record name from the backend, and `alt` is one of the
+    // attributes the DOM localizer rewrites — opt it out.
+    <img src={photo} alt={name} data-i18n-ignore className={`${sizeClassName} rounded-full object-cover ${extraClassName}`} style={imgStyle} />
   ) : (
     <div
       className={`${sizeClassName} rounded-full flex items-center justify-center ${extraClassName} ${fallbackClassName}`}

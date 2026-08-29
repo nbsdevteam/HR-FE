@@ -8,7 +8,7 @@ import OrgStructureUnassignedBanner from "./OrgStructureUnassignedBanner";
 import OrgStructureTabs from "./OrgStructureTabs";
 import OrgStructureTreeView from "./OrgStructureTreeView";
 import DepartmentsManagementSection from "./DepartmentsManagementSection";
-import DesignationsManagementSection from "./DesignationsManagementSection";
+// import DesignationsManagementSection from "./DesignationsManagementSection";
 
 type OrgStructureManagementProps = {
   onBack: () => void;
@@ -73,9 +73,10 @@ const OrgStructureManagement = ({ onBack }: OrgStructureManagementProps) => {
       {tab === "departments" && (
         <DepartmentsManagementSection metadata={metadata} />
       )}
-      {tab === "designations" && (
+      {/* This is not used at the moment (the button that leads to it is hidden) */}
+      {/* {tab === "designations" && (
         <DesignationsManagementSection metadata={metadata} />
-      )}
+      )} */}
     </div>
   );
 };

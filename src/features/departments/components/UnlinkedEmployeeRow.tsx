@@ -50,6 +50,7 @@ const UnlinkedEmployeeRow = ({
           <img
             src={employee.profile_picture}
             alt={name}
+            data-i18n-ignore
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
@@ -59,7 +60,7 @@ const UnlinkedEmployeeRow = ({
             </span>
           </div>
         )}
-        <div>
+        <div data-i18n-ignore>
           <p className="text-foreground" style={{ fontSize: 13 }}>
             {name}
           </p>
@@ -77,6 +78,7 @@ const UnlinkedEmployeeRow = ({
           value={selectedManagerDbId}
           onChange={handleManagerChange}
           placeholder={arabicSource("hierarchy.choose_the_direct_manager")}
+          optionsAreData
           className="flex-1"
         />
         <Button

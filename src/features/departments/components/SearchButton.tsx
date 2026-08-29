@@ -31,7 +31,7 @@ const SearchButton = ({ node, onSelect, onClose }: SearchButtonProps) => {
         extraClassName="flex-shrink-0"
         fontSize={11}
       />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1" data-i18n-ignore>
         <p className="text-foreground truncate" style={{ fontSize: 12 }}>
           {node.name}
         </p>

@@ -69,7 +69,7 @@ const DeleteConfirmModal = ({
             extraClassName="shadow-md"
             fontSize={18}
           />
-          <div>
+          <div data-i18n-ignore>
             <h3 className="text-foreground" style={{ fontSize: 14 }}>
               {node.name}
             </h3>
@@ -106,11 +106,16 @@ const DeleteConfirmModal = ({
               titleClassName="text-foreground"
               title={arabicSource("hierarchy.moving_subordinates_to_the_top")}
               description={
-                parentNode
-                  ? `${arabicSource("hierarchy.subordinates_will_be_transferred_to")}${parentNode.name}"`
-                  : arabicSource(
-                      "hierarchy.subordinates_will_be_moved_to_a_higher_level",
-                    )
+                parentNode ? (
+                  <>
+                    {arabicSource("hierarchy.subordinates_will_be_transferred_to")}
+                    <span data-i18n-ignore>{parentNode.name}</span>"
+                  </>
+                ) : (
+                  arabicSource(
+                    "hierarchy.subordinates_will_be_moved_to_a_higher_level",
+                  )
+                )
               }
             />
             <DeleteOptionButton

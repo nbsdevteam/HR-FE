@@ -875,7 +875,7 @@
   "hierarchy.the_liaison_employee_with_their_manager": "The liaison employee with their manager",
   "hierarchy.current_employee": "Current employee",
   "hierarchy.employees_without_attachment": "Employees without attachment",
-  "hierarchy.employees_without_position": "Employees without position (",
+  "hierarchy.employees_without_position": "Employees without position",
   "hierarchy.result_for": "result for \"",
   "hierarchy.moving_subordinates_to_the_top": "Moving subordinates to the top",
   "hierarchy.these_employees_do_not_have_a_specific_manager_identify_their_di": "These employees do not have a specific manager — identify their direct manager",

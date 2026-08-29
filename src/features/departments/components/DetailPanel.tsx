@@ -66,9 +66,9 @@ const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
             fontSize={24}
             imgStyle={{ border: `3px solid ${topColor}` }}
           />
-          <h3 className="text-foreground">{node.name}</h3>
-          <p className="text-muted-foreground mt-0.5" style={{ fontSize: 13 }}>{node.position}</p>
-          <span className="mt-2 px-3 py-1 rounded-full text-white" style={{ fontSize: 11, background: topColor }}>{node.department}</span>
+          <h3 className="text-foreground" data-i18n-ignore>{node.name}</h3>
+          <p className="text-muted-foreground mt-0.5" style={{ fontSize: 13 }} data-i18n-ignore>{node.position}</p>
+          <span className="mt-2 px-3 py-1 rounded-full text-white" style={{ fontSize: 11, background: topColor }} data-i18n-ignore>{node.department}</span>
         </div>
 
         {!isVirtualRoot && (
@@ -80,7 +80,7 @@ const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
                 value={
                   <div className="flex items-center gap-1.5">
                     <NodeAvatar photo={parentNode.photo} name={parentNode.name} color={parentNode.color} initials={parentNode.initials} sizeClassName="w-5 h-5" fontSize={8} />
-                    <span className="text-foreground" style={{ fontSize: 12 }}>{parentNode.name}</span>
+                    <span className="text-foreground" style={{ fontSize: 12 }} data-i18n-ignore>{parentNode.name}</span>
                   </div>
                 }
               />

@@ -2,10 +2,12 @@ type SelectOptionRowProps = {
   label: string;
   active: boolean;
   disabled?: boolean;
+  /** Label is backend data, not catalogued UI copy — keep the DOM localizer off it. */
+  labelIsData?: boolean;
   onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
-const SelectOptionRow = ({ label, active, disabled = false, onMouseDown }: SelectOptionRowProps) => {
+const SelectOptionRow = ({ label, active, disabled = false, labelIsData = false, onMouseDown }: SelectOptionRowProps) => {
   const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>): void => {
     if (disabled) return;
     onMouseDown(e);
@@ -27,7 +29,7 @@ const SelectOptionRow = ({ label, active, disabled = false, onMouseDown }: Selec
       }`}
       style={{ fontSize: 13 }}
     >
-      <span className="truncate block" dir="auto">
+      <span className="truncate block" dir="auto" data-i18n-ignore={labelIsData || undefined}>
         {label}
       </span>
     </button>

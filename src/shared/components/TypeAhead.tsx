@@ -21,6 +21,14 @@ type TypeAheadProps<T> = {
   searchPlaceholder?: string;
   disabled?: boolean;
   showDescription?: boolean;
+  /**
+   * Option labels are backend records (employee names, department names, …)
+   * rather than catalogued UI copy. The popup is portaled to `document.body`,
+   * so a `data-i18n-ignore` ancestor at the call site cannot reach it — this
+   * marks the option rows instead. The trigger renders its value through an
+   * `<input value>`, which the DOM localizer never touches.
+   */
+  optionsAreData?: boolean;
   className?: string;
   openUpward?: boolean;
   /** Called with the typed query on every keystroke — for a server-driven
@@ -53,6 +61,7 @@ const TypeAhead = <T,>({
   searchPlaceholder,
   disabled = false,
   showDescription = true,
+  optionsAreData = false,
   className = "",
   openUpward = false,
   onQueryChange,
@@ -244,6 +253,7 @@ const TypeAhead = <T,>({
               getLabel={getLabel}
               getDescription={getDescription}
               showDescription={showDescription}
+              optionsAreData={optionsAreData}
               activeId={valueKey}
               onOptionMouseDown={handleOptionMouseDown}
               visibleCount={options.length}

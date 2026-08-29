@@ -3,7 +3,9 @@ import { SearchInput } from "@/shared/components";
 import { useWindowedRows } from "@/shared/hooks/useWindowedRows";
 import { arabicSource } from "@/i18n/source";
 import type { DbEmployee } from "@/shared/hooks";
-import UnassignedEmployeeItem, { EMPLOYEE_ITEM_HEIGHT } from "./UnassignedEmployeeItem";
+import UnassignedEmployeeItem, {
+  EMPLOYEE_ITEM_HEIGHT,
+} from "./UnassignedEmployeeItem";
 
 const WINDOWING_THRESHOLD = 40;
 
@@ -43,8 +45,7 @@ const UnassignedEmployeesSidebar = ({
     <div className="w-72 shrink-0 bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col min-h-0">
       <div className="p-3 border-b border-border/30 shrink-0">
         <h3 className="text-foreground mb-2" style={{ fontSize: 14 }}>
-          {arabicSource("hierarchy.employees_without_position")}
-          {totalCount})
+          {arabicSource("hierarchy.employees_without_position")} {totalCount}
         </h3>
         <SearchInput
           iconClassName="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
@@ -59,7 +60,9 @@ const UnassignedEmployeesSidebar = ({
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-2">
         {filteredUnassigned.length > 0 ? (
           <div ref={containerRef}>
-            {isWindowed && topPadding > 0 && <div aria-hidden="true" style={{ height: topPadding }} />}
+            {isWindowed && topPadding > 0 && (
+              <div aria-hidden="true" style={{ height: topPadding }} />
+            )}
             {filteredUnassigned.slice(startIndex, endIndex).map((emp) => (
               <UnassignedEmployeeItem
                 key={emp.id}
@@ -73,10 +76,15 @@ const UnassignedEmployeesSidebar = ({
             )}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-6" style={{ fontSize: 12 }}>
+          <p
+            className="text-center text-muted-foreground py-6"
+            style={{ fontSize: 12 }}
+          >
             {empSearch
               ? arabicSource("common.no_results_found")
-              : arabicSource("hierarchy.all_employees_are_appointed_to_positions")}
+              : arabicSource(
+                  "hierarchy.all_employees_are_appointed_to_positions",
+                )}
           </p>
         )}
       </div>

@@ -4,10 +4,10 @@ import { parse } from "@babel/parser";
 
 const arabicPattern = /\p{Script=Arabic}/u;
 const sqlFiles = [
-  "supabase-migration.sql",
-  "migration-part13-biometric.sql",
-  "database-plain-postgresql.sql",
-  "database-supabase.sql",
+  "database/supabase-migration.sql",
+  "database/migration-part13-biometric.sql",
+  "database/database-plain-postgresql.sql",
+  "database/database-supabase.sql",
 ];
 const serviceFiles = [
   "device-sync/hikvision-api.mjs",

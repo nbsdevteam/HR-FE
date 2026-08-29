@@ -42,11 +42,11 @@ const OrgStructureTreeNode = ({ node, depth, expandedIds, onToggleExpand }: OrgS
           style={{ backgroundColor: node.color }}
           aria-hidden
         />
-        <span className="text-foreground truncate" style={{ fontSize: 13 }}>
+        <span className="text-foreground truncate" style={{ fontSize: 13 }} data-i18n-ignore>
           {node.name}
         </span>
         {node.name_ar && (
-          <span className="text-muted-foreground truncate" style={{ fontSize: 12 }} dir="rtl">
+          <span className="text-muted-foreground truncate" style={{ fontSize: 12 }} dir="rtl" data-i18n-ignore>
             {node.name_ar}
           </span>
         )}

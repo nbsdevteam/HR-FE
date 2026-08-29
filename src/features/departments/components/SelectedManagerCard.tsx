@@ -40,7 +40,7 @@ const SelectedManagerCard = ({
       <p className="text-foreground truncate" style={{ fontSize: 11 }}>
         {label}
       </p>
-      <p className="text-muted-foreground truncate" style={{ fontSize: 10 }}>
+      <p className="text-muted-foreground truncate" style={{ fontSize: 10 }} data-i18n-ignore>
         {manager.department}
       </p>
     </div>

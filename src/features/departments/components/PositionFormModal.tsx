@@ -94,6 +94,7 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
           value={posForm.department_id}
           onChange={handleDepartmentIdChange}
           blankLabel={arabicSource("common.no_section")}
+          optionsAreData
         />
       </div>
       <div>

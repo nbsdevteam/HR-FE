@@ -1,6 +1,7 @@
 import { DEPT_BORDER_COLORS, DEPT_DOT_COLORS } from "@/shared/constants";
 import { STATUS_TONES } from "@/shared/utils/statusColors";
 import { arabicSource } from "@/i18n/source";
+import { HTMLMotionProps } from "motion/react";
 
 export const deptColors = DEPT_BORDER_COLORS;
 
@@ -31,3 +32,16 @@ export const inputCls =
 export const selectCls = inputCls;
 
 export const labelCls = "text-foreground block mb-1.5";
+
+export const PANEL_OVERLAY_CLASS =
+  "fixed inset-0 z-50 flex bg-black/60 backdrop-blur-[4px]";
+
+export const PANEL_CONTENT_CLASS =
+  "ms-auto w-full max-w-[680px] h-full bg-card border-s border-border shadow-2xl flex flex-col overflow-hidden";
+
+export const PANEL_CONTENT_MOTION: HTMLMotionProps<"div"> = {
+  initial: { x: 80, opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  exit: { x: 80, opacity: 0 },
+  transition: { type: "spring", damping: 28, stiffness: 300 },
+};

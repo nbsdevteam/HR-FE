@@ -23,7 +23,7 @@ const OrgCardExtraEmployee = ({
       extraClassName="shrink-0"
       fontSize={8}
     />
-    <span className="text-muted-foreground truncate" style={{ fontSize: 10 }}>
+    <span className="text-muted-foreground truncate" style={{ fontSize: 10 }} data-i18n-ignore>
       {name}
     </span>
   </div>

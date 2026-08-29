@@ -125,7 +125,7 @@ const HierarchyHeader = ({
               >
                 <p className="text-muted-foreground" style={{ fontSize: 12 }}>
                   {arabicSource("hierarchy.there_are_no_results_for")}
-                  {searchQuery}"
+                  <span data-i18n-ignore>{searchQuery}</span>"
                 </p>
               </motion.div>
             )}

@@ -129,6 +129,7 @@ const DepartmentFormModal = ({
           value={formData.parent_id}
           onChange={handleParentChange}
           options={parentOptions}
+          optionsAreData
           blankLabel={arabicSource("org_structure.none_option")}
           className={FIELD_CLASS}
         />
@@ -137,6 +138,7 @@ const DepartmentFormModal = ({
           value={formData.manager_id}
           onChange={handleManagerChange}
           options={managerOptions}
+          optionsAreData
           blankLabel={arabicSource("org_structure.none_option")}
           className={FIELD_CLASS}
         />
@@ -145,6 +147,7 @@ const DepartmentFormModal = ({
           value={formData.default_shift_id}
           onChange={handleShiftChange}
           options={shiftOptions}
+          optionsAreData
           blankLabel={arabicSource("org_structure.none_option")}
           className={FIELD_CLASS}
         />

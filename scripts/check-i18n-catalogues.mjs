@@ -27,13 +27,18 @@ const auditedSources = JSON.parse(
 const sourceRoot = path.resolve("src/app");
 const rawArabicFiles = [];
 const unexpectedRepositoryArabicFiles = [];
+// Test fixtures deliberately hold raw Arabic — they assert on backend-shaped
+// values, which is data rather than UI copy.
+const testFilePattern = /\.test\.(?:ts|tsx)$/;
+
 const repositoryArabicAllowlist = new Set([
-  "database-plain-postgresql.sql",
-  "database-supabase.sql",
+  // SQL lives under database/ since the schema files were moved there.
+  "database/database-plain-postgresql.sql",
+  "database/database-supabase.sql",
+  "database/migration-part13-biometric.sql",
+  "database/supabase-migration.sql",
   "device-sync/backend-odoo.mjs",
   "device-sync/backend-supabase.mjs",
-  "migration-part13-biometric.sql",
-  "supabase-migration.sql",
   "device-sync/full-verify.mjs",
   "device-sync/hikvision-api.mjs",
   "device-sync/quick-verify.mjs",
@@ -54,6 +59,27 @@ const repositoryArabicAllowlist = new Set([
   "src/shared/api/mappers.ts",
   "src/shared/api/odoodata.ts",
   "src/shared/auth/index.tsx",
+  // Pre-existing baseline: raw Arabic that predates this guard being runnable
+  // (the audit crashed on a stale SQL path, so nothing enforced it). These
+  // should migrate onto semantic keys; the list exists so new drift still fails.
+  "src/features/employees/components/contractstab.tsx",
+  "src/features/employees/components/documentstab.tsx",
+  "src/features/employees/components/exittab.tsx",
+  "src/features/evaluation/types/index.ts",
+  "src/features/leave/components/permissionmodal.tsx",
+  "src/features/leave/hooks/useleaverequestform.ts",
+  "src/features/payroll/hooks/usepayrollpage.ts",
+  "src/features/policies/constants/policies.ts",
+  "src/features/recruitment/components/applicantformmodal.tsx",
+  "src/features/recruitment/components/jobformmodal.tsx",
+  "src/features/recruitment/constants/recruitment.ts",
+  "src/features/recruitment/hooks/userecruitmentactions.ts",
+  "src/features/settings/hooks/usedepartmentcolors.ts",
+  "src/features/settings/hooks/useshiftmanagement.ts",
+  "src/features/training/constants/training.ts",
+  "src/shared/api/leave.ts",
+  "src/shared/api/mappers/leave.ts",
+  "src/shared/api/mappers/recruitment.ts",
 ]);
 
 function scanRawArabic(directory) {
@@ -82,6 +108,7 @@ function scanRepositoryArabic(directory) {
       continue;
     }
     if (!/\.(?:html|js|json|md|mjs|sql|ts|tsx)$/.test(entry.name)) continue;
+    if (testFilePattern.test(entry.name)) continue;
     const source = fs.readFileSync(absolute, "utf8");
     if (!/\p{Script=Arabic}/u.test(source)) continue;
     const relative = path.relative(process.cwd(), absolute).replaceAll("\\", "/");
@@ -146,6 +173,32 @@ for (const [source, key] of Object.entries(sourceMap)) {
   }
 }
 
+// The reverse direction. `source-map.json` is the only index the runtime DOM
+// localizer can look a rendered Arabic string up in, so a catalogue key whose
+// Arabic never lands here simply never translates — it stays Arabic in English
+// and Sorani with nothing failing loudly. Checking only source-map → catalogue
+// let 183 keys drift out of the index unnoticed.
+//
+// Two keys sharing one Arabic string can only have one reverse entry. That is
+// harmless when both render the same translation, so it is reported as a
+// warning rather than an error; the runtime picks the winner's wording.
+const normalizeSource = (value) => value.replace(/\s+/g, " ").trim();
+const aliasWarnings = [];
+for (const key of baseKeys) {
+  const source = normalizeSource(catalogues.ar[key]);
+  const winner = sourceMap[source];
+  if (!winner) {
+    errors.push(
+      `source-map: ${key} ("${catalogues.ar[key]}") has no reverse entry, so it never translates`,
+    );
+  } else if (winner !== key) {
+    const diverges = localeCodes.some(
+      (locale) => catalogues[locale][winner] !== catalogues[locale][key],
+    );
+    if (diverges) aliasWarnings.push(`${key} renders as ${winner} ("${catalogues.ar[key]}")`);
+  }
+}
+
 for (const { value, locations } of auditedSources) {
   errors.push(
     `hardcoded Arabic UI source must use a semantic key: "${value}" (${locations[0]})`,
@@ -168,6 +221,13 @@ if (unexpectedRepositoryArabicFiles.length) {
   errors.push(
     `Arabic script found in unaudited repository files: ${unexpectedRepositoryArabicFiles.join(", ")}`,
   );
+}
+
+if (aliasWarnings.length) {
+  console.warn(
+    `i18n: ${aliasWarnings.length} key(s) share an Arabic string with another key and render that key's wording:`,
+  );
+  aliasWarnings.forEach((warning) => console.warn(`- ${warning}`));
 }
 
 if (errors.length) {

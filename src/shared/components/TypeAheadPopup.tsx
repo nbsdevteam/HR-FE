@@ -22,6 +22,8 @@ type TypeAheadPopupProps<T> = {
   getLabel: (item: T) => string;
   getDescription?: (item: T) => string | null | undefined;
   showDescription: boolean;
+  /** Option labels are backend records, not catalogued UI copy. */
+  optionsAreData: boolean;
   activeId: string;
   onOptionMouseDown: (item: T) => (e: React.MouseEvent<HTMLButtonElement>) => void;
   visibleCount: number;
@@ -45,6 +47,7 @@ const TypeAheadPopup = <T,>({
   getLabel,
   getDescription,
   showDescription,
+  optionsAreData,
   activeId,
   onOptionMouseDown,
   visibleCount,
@@ -87,6 +90,7 @@ const TypeAheadPopup = <T,>({
             label={getLabel(item)}
             description={showDescription ? getDescription?.(item) : undefined}
             active={getId(item) === activeId}
+            labelIsData={optionsAreData}
             onMouseDown={onOptionMouseDown(item)}
           />
         ))

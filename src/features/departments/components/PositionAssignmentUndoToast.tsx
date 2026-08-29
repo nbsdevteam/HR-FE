@@ -25,9 +25,9 @@ const PositionAssignmentUndoToast = ({ entry, onUndo }: PositionAssignmentUndoTo
       <span className="flex items-center gap-3">
         <span>
           {arabicSource("common.is_set")}
-          {entry.employeeName}
+          <span data-i18n-ignore>{entry.employeeName}</span>
           {arabicSource("hierarchy.in_position")}
-          {entry.positionTitle}
+          <span data-i18n-ignore>{entry.positionTitle}</span>
           {arabicSource("common.successfully")}
         </span>
         <Button

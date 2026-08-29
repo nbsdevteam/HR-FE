@@ -77,7 +77,7 @@ const OrgCard = ({
                   <UserPlus className="w-4 h-4 text-muted-foreground/40" />
                 </div>
               ) : node.photo ? (
-                <img src={node.photo} alt={node.name} className={`w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-sm ${isOwner ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-card" : ""} ${isSearchMatch ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : ""}`} />
+                <img src={node.photo} alt={node.name} data-i18n-ignore className={`w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-sm ${isOwner ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-card" : ""} ${isSearchMatch ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : ""}`} />
               ) : (
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${isSearchMatch ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : ""}`}
                   style={{ background: isOwner ? "linear-gradient(135deg, #FFD700, #FFA500)" : isCLevel ? `linear-gradient(135deg, ${CLEVEL_COLOR}, #A78BFA)` : node.color }}>
@@ -90,9 +90,9 @@ const OrgCard = ({
               )}
               <div className="min-w-0 flex-1">
                 <p className={`truncate ${isVacant ? "text-muted-foreground/50 italic" : isOwner ? "text-yellow-500" : "text-foreground"}`} style={{ fontSize: 13 }}>
-                  {isVacant ? arabicSource("common.vacant") : node.name}
+                  {isVacant ? arabicSource("common.vacant") : <span data-i18n-ignore>{node.name}</span>}
                 </p>
-                <p className={`truncate ${isCLevel ? "text-purple-400" : "text-muted-foreground"}`} style={{ fontSize: 11 }}>{node.position}</p>
+                <p className={`truncate ${isCLevel ? "text-purple-400" : "text-muted-foreground"}`} style={{ fontSize: 11 }} data-i18n-ignore>{node.position}</p>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ const OrgCard = ({
 
             <div className="mt-2 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground truncate" style={{ fontSize: 10 }}>{node.department}</span>
+                <span className="text-muted-foreground truncate" style={{ fontSize: 10 }} data-i18n-ignore>{node.department}</span>
                 {hc && (
                   <span className={`px-1.5 py-0.5 rounded text-[9px] ${
                     hc.current >= hc.max ? "bg-emerald-500/15 text-emerald-400" :

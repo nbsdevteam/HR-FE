@@ -12,19 +12,14 @@ import EmployeeCustodiesTab from "./EmployeeCustodiesTab";
 import EmployeeLeavesTab from "./EmployeeLeavesTab";
 import EmployeeAttachmentsTab from "./EmployeeAttachmentsTab";
 import EmployeeTerminationDialog from "./EmployeeTerminationDialog";
+import { TAPSDATA } from "../data";
+import {
+  PANEL_CONTENT_CLASS,
+  PANEL_CONTENT_MOTION,
+  PANEL_OVERLAY_CLASS,
+} from "../styles";
 
 /** Full-height sheet: opaque scrim + a panel sliding in from the start edge. */
-const PANEL_OVERLAY_CLASS = "fixed inset-0 z-50 flex bg-black/60 backdrop-blur-[4px]";
-
-const PANEL_CONTENT_CLASS =
-  "ms-auto w-full max-w-[680px] h-full bg-card border-s border-border shadow-2xl flex flex-col overflow-hidden";
-
-const PANEL_CONTENT_MOTION: HTMLMotionProps<"div"> = {
-  initial: { x: 80, opacity: 0 },
-  animate: { x: 0, opacity: 1 },
-  exit: { x: 80, opacity: 0 },
-  transition: { type: "spring", damping: 28, stiffness: 300 },
-};
 
 const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
   const { onClose, allEmployees = [] } = props;
@@ -99,12 +94,14 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
   } = useEmployeeDetailPanel(props);
 
   const handleNewCustodyChange = useCallback(
-    (patch: Partial<typeof newCustody>) => setNewCustody({ ...newCustody, ...patch }),
+    (patch: Partial<typeof newCustody>) =>
+      setNewCustody({ ...newCustody, ...patch }),
     [newCustody, setNewCustody],
   );
 
   const handleNewAttachmentChange = useCallback(
-    (patch: Partial<typeof newAttachment>) => setNewAttachment({ ...newAttachment, ...patch }),
+    (patch: Partial<typeof newAttachment>) =>
+      setNewAttachment({ ...newAttachment, ...patch }),
     [newAttachment, setNewAttachment],
   );
 
@@ -170,7 +167,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
         />
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
-            {modalTab === "info" && (
+            {modalTab === TAPSDATA.INFO && (
               <EmployeeInfoTab
                 editData={editData}
                 isEditing={isEditing}
@@ -204,11 +201,13 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 onLocationCitySearch={handleLocationCitySearch}
                 onAddLocationCity={handleAddLocationCity}
                 onConfirmAddLocationCity={confirmAddLocationCity}
-                onDismissLocationCitySuggestions={dismissLocationCitySuggestions}
+                onDismissLocationCitySuggestions={
+                  dismissLocationCitySuggestions
+                }
               />
             )}
 
-            {modalTab === "custodies" && (
+            {modalTab === TAPSDATA.CUSTODIES && (
               <EmployeeCustodiesTab
                 custodies={custodies}
                 loading={custodiesLoading}
@@ -225,11 +224,14 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
               />
             )}
 
-            {modalTab === "leaves" && (
-              <EmployeeLeavesTab leaves={leaves} loading={leavesLoading} error={leaveError} />
+            {modalTab === TAPSDATA.LEAVES && (
+              <EmployeeLeavesTab
+                leaves={leaves}
+                loading={leavesLoading}
+                error={leaveError}
+              />
             )}
-
-            {modalTab === "attachments" && (
+            {modalTab === TAPSDATA.ATTACHMENTS && (
               <EmployeeAttachmentsTab
                 attachments={editData.attachments}
                 isEditing={isEditing}
