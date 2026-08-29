@@ -11,12 +11,12 @@ type PublicLeaveStatusFormProps = {
 };
 
 /**
- * Track-a-request screen — identifies the employee the same way as the
- * request flow, then asks for the reference code too; the reference alone
- * is not enough, by design (backend hand-off §7).
+ * Track-a-request screen — identified by name (+ verification, when the
+ * link requires it) only. No reference code prompt: it looks up every
+ * request filed by that employee instead of one by code.
  */
 const PublicLeaveStatusForm = ({ page }: PublicLeaveStatusFormProps) => {
-  const { handleBackFromTrack, handleTrackCheckStatus, handleTrackSelectEmployee, info, trackSearch, trackStatus, trackVerification } = page;
+  const { handleBackFromTrack, handleTrackCheckStatus, handleTrackSelectEmployee, info, trackSearch, trackVerification } = page;
   const employee = trackSearch.selected;
   const { primary } = useLocalizedName(employee?.name_ar || "", employee?.name || "");
   const method = info.info?.verification_method || "none";
@@ -24,10 +24,6 @@ const PublicLeaveStatusForm = ({ page }: PublicLeaveStatusFormProps) => {
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     trackSearch.updateQuery(event.target.value);
-  };
-
-  const handleReferenceChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    trackStatus.setReferenceCode(event.target.value);
   };
 
   const handleVerificationChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -39,7 +35,8 @@ const PublicLeaveStatusForm = ({ page }: PublicLeaveStatusFormProps) => {
   };
 
   const handleCheckClick = (): void => {
-    handleTrackCheckStatus();
+    if (!employee) return;
+    handleTrackCheckStatus(employee.id);
   };
 
   return (
@@ -108,21 +105,6 @@ const PublicLeaveStatusForm = ({ page }: PublicLeaveStatusFormProps) => {
             </div>
           )}
 
-          <div>
-            <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
-              {arabicSource("public_leave.reference_label")}
-            </label>
-            <input
-              type="text"
-              dir="ltr"
-              value={trackStatus.referenceCode}
-              onChange={handleReferenceChange}
-              placeholder="LV-2026-00042"
-              className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-              style={{ fontSize: 14 }}
-            />
-          </div>
-
           {trackVerification.error && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -130,15 +112,23 @@ const PublicLeaveStatusForm = ({ page }: PublicLeaveStatusFormProps) => {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={handleCheckClick}
-            disabled={trackVerification.verifying || !trackStatus.referenceCode.trim()}
-            className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
-            style={{ fontSize: 14 }}
-          >
-            {trackVerification.verifying ? arabicSource("public_leave.checking_status") : arabicSource("public_leave.check_status_button")}
-          </button>
+          {prompt ? (
+            <button
+              type="button"
+              onClick={handleCheckClick}
+              disabled={trackVerification.verifying || !trackVerification.value.trim()}
+              className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+              style={{ fontSize: 14 }}
+            >
+              {trackVerification.verifying ? arabicSource("public_leave.checking_status") : arabicSource("public_leave.check_status_button")}
+            </button>
+          ) : (
+            trackVerification.verifying && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              </div>
+            )
+          )}
         </div>
       )}
 

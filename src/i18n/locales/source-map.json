@@ -2386,5 +2386,6 @@
   "تعديل رابط طلب الإجازة": "settings.leave_links_form_title_edit",
   "تعذّر حفظ الرابط. حاول مرة أخرى.": "settings.leave_links_save_error",
   "تعذّر حذف الرابط.": "settings.leave_links_delete_error",
-  "تعذّر تجديد الرابط.": "settings.leave_links_rotate_error"
+  "تعذّر تجديد الرابط.": "settings.leave_links_rotate_error",
+  "لم نجد أي طلبات إجازة مسجّلة باسمك بعد.": "public_leave.status_empty"
 }

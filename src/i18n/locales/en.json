@@ -2451,5 +2451,6 @@
   "settings.leave_links_form_title_edit": "Edit leave request link",
   "settings.leave_links_save_error": "Couldn't save the link. Please try again.",
   "settings.leave_links_delete_error": "Couldn't delete the link.",
-  "settings.leave_links_rotate_error": "Couldn't rotate the link."
+  "settings.leave_links_rotate_error": "Couldn't rotate the link.",
+  "public_leave.status_empty": "We didn't find any leave requests filed under your name yet."
 }

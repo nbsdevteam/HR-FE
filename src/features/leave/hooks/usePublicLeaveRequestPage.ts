@@ -123,18 +123,22 @@ export const usePublicLeaveRequestPage = () => {
     setStep("search");
   }, [trackSearch, trackStatus, trackVerification]);
 
+  const handleTrackCheckStatus = useCallback((employeeId: number) => {
+    void trackVerification.attempt((verificationValue) => trackStatus.load(employeeId, verificationValue));
+  }, [trackStatus, trackVerification]);
+
   const handleTrackSelectEmployee = useCallback((employeeId: number) => {
     const employee = trackSearch.results.find((item) => item.id === employeeId);
     if (!employee) return;
     trackSearch.selectEmployee(employee);
     trackVerification.reset();
-  }, [trackSearch, trackVerification]);
-
-  const handleTrackCheckStatus = useCallback(() => {
-    if (!trackSearch.selected) return;
-    const employeeId = trackSearch.selected.id;
-    void trackVerification.attempt((verificationValue) => trackStatus.load(employeeId, verificationValue));
-  }, [trackSearch.selected, trackStatus, trackVerification]);
+    if (!employee.verification_available) return;
+    // No verification required by this link — go straight to the results
+    // instead of making the employee click a second "check status" button.
+    if (!info.info || info.info.verification_method === "none") {
+      handleTrackCheckStatus(employee.id);
+    }
+  }, [handleTrackCheckStatus, info.info, trackSearch, trackVerification]);
 
   return {
     balances,

@@ -93,6 +93,7 @@ const LeaveLinkFormModal = ({
     <Modal
       onClose={onCancel}
       title={arabicSource(isEditing ? "settings.leave_links_form_title_edit" : "settings.leave_links_form_title_create")}
+      contentClassName="bg-card border border-border/60 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
       footer={
         <ModalFooterActions
           onCancel={onCancel}

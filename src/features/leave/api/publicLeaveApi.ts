@@ -89,11 +89,25 @@ export const submitPublicLeaveRequest = (
   return publicLeaveCall<PublicLeaveSubmitResult>("/api/hr/public/leave/submit", payload);
 }
 
-export const fetchPublicLeaveStatus = (params: {
+/**
+ * Track flow now identifies by name (+ verification) only — no reference
+ * code prompt. The documented `/status` contract (hand-off §7) requires
+ * `reference_code` and returns one request; this call omits it and expects
+ * every request filed by that employee back as a list. **Needs backend
+ * support**: today the endpoint 400s or 404s without `reference_code`, so
+ * this won't return real data until the backend accepts the call without it
+ * and responds with `{ items: [...] }` (or a bare array) of that employee's
+ * requests instead of looking one up by code.
+ */
+export const fetchPublicLeaveStatus = async (params: {
   token: string;
   employee_id: number;
   verification?: string;
-  reference_code: string;
-}): Promise<PublicLeaveStatusResult> => {
-  return publicLeaveCall<PublicLeaveStatusResult>("/api/hr/public/leave/status", params);
+}): Promise<PublicLeaveStatusResult[]> => {
+  const data = await publicLeaveCall<PublicLeaveStatusResult[] | { items?: PublicLeaveStatusResult[] }>(
+    "/api/hr/public/leave/status",
+    params,
+  );
+  if (Array.isArray(data)) return data;
+  return data?.items ?? [];
 }

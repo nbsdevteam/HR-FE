@@ -77,8 +77,8 @@ const PublicLeaveRequest = () => {
       {step === "review" && <PublicLeaveReview page={page} />}
       {step === "success" && <PublicLeaveSuccess page={page} />}
       {step === "track" && (
-        page.trackStatus.status
-          ? <PublicLeaveStatusResult status={page.trackStatus.status} onBack={page.handleBackFromTrack} />
+        page.trackStatus.statuses
+          ? <PublicLeaveStatusResult statuses={page.trackStatus.statuses} onBack={page.handleBackFromTrack} />
           : <PublicLeaveStatusForm page={page} />
       )}
     </PublicLeaveShell>

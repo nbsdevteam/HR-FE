@@ -2451,5 +2451,6 @@
   "settings.leave_links_form_title_edit": "دەستکاریکردنی بەستەری داواکاری مۆڵەت",
   "settings.leave_links_save_error": "نەتوانرا بەستەرەکە پاشەکەوت بکرێت. تکایە دووبارە هەوڵبدەرەوە.",
   "settings.leave_links_delete_error": "نەتوانرا بەستەرەکە بسڕدرێتەوە.",
-  "settings.leave_links_rotate_error": "نەتوانرا بەستەرەکە نوێ بکرێتەوە."
+  "settings.leave_links_rotate_error": "نەتوانرا بەستەرەکە نوێ بکرێتەوە.",
+  "public_leave.status_empty": "هیچ داواکارییەکی مۆڵەت بە ناوی تۆوە هێشتا نەدۆزراوەتەوە."
 }
