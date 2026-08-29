@@ -24,6 +24,7 @@ import type { ReportSortBy, ReportSortDir, ReportViewMode } from "../types";
 import { useEmployeeLookups } from "../hooks/useEmployeeLookups";
 import { useReportFields } from "../hooks/useReportFields";
 import { useReportGeneration } from "../hooks/useReportGeneration";
+import { useReportPrint } from "../hooks/useReportPrint";
 import { getCurrentMonthRange } from "../utils/dateRange";
 import ReportFiltersBar from "./ReportFiltersBar";
 import ReportHistoryPanel from "./ReportHistoryPanel";
@@ -107,6 +108,15 @@ const ReportsWorkspace = () => {
     selectedFieldKeys,
     refetchHistory,
   });
+  const { handlePrint } = useReportPrint({
+    template: selectedTemplate,
+    generatedData,
+    generatedColumns,
+    filterDept,
+    dateFrom,
+    dateTo,
+    selectedEmployeeIds,
+  });
 
   const filteredTemplates = useMemo(() => {
     const list = templates.filter((t) => {
@@ -161,8 +171,6 @@ const ReportsWorkspace = () => {
     () => exportCSV(selectedTemplate),
     [exportCSV, selectedTemplate],
   );
-  const handlePrint = useCallback(() => window.print(), []);
-
   const handleSelectedEmployeeIdsChange = useCallback(
     (ids: string[]) => {
       setSelectedEmployeeIds(ids);
