@@ -46,7 +46,11 @@ const PublicLeaveSuccess = ({ page }: PublicLeaveSuccessProps) => {
     >
       <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
       <h2 className="text-foreground mb-2" style={{ fontSize: 20 }}>{arabicSource("public_leave.success_title")}</h2>
-      <p className="text-muted-foreground mb-1" style={{ fontSize: 14 }}>{arabicSource("public_leave.success_pending_notice")}</p>
+      <p className="text-muted-foreground mb-1" style={{ fontSize: 14 }}>
+        {result.excuse_pending
+          ? arabicSource("public_leave.success_excuse_pending_notice")
+          : arabicSource("public_leave.success_pending_notice")}
+      </p>
       <p className="text-muted-foreground mb-5" style={{ fontSize: 13 }}>{arabicSource("public_leave.success_save_code_hint")}</p>
 
       <div className="inline-flex flex-col items-center gap-1 rounded-xl border border-border bg-muted/10 px-6 py-4">

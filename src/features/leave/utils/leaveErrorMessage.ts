@@ -26,6 +26,9 @@ const LEAVE_ERROR_KEYS: Record<string, ArabicSourceKey> = {
   // v1.17.0 Additional Annual Leave grants
   reason_required: "leave.error_reason_required",
   invalid_additional_days: "leave.error_invalid_additional_days",
+  // v1.16.0 insufficient-balance manager-excuse workflow
+  excuse_followup_blocked: "leave.error_excuse_followup_blocked",
+  excuse_not_pending: "leave.error_excuse_not_pending",
 };
 
 /** `probation_block` responses also carry the probation end date (backend §6). */

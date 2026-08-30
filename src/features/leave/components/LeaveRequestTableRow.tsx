@@ -8,8 +8,10 @@ import { useLocalizedEmployeeName, useLocalizedName } from "@/i18n/useLocalizedN
 import type { TEmployeeNameFields } from "@/i18n/useLocalizedName";
 import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { formatLeaveDuration } from "../utils/formatLeaveDuration";
+import { resolveLeaveExcuseStatus } from "../utils/leaveExcuseStatus";
 import { leaveStatusColors } from "../styles";
 import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
+import LeaveExcuseFollowUpControl from "./LeaveExcuseFollowUpControl";
 
 type LeaveRequestTableRowProps = {
   leave: DbLeaveRequest;
@@ -22,15 +24,17 @@ type LeaveRequestTableRowProps = {
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
+  onFollowUpExcuse: (leave: DbLeaveRequest) => void;
 };
 
-const LeaveRequestTableRow = ({ leave, index, employee, fallbackEmployeeLabel, leaveType, onApprove, onReject, onDelete, onViewAttachments }: LeaveRequestTableRowProps) => {
+const LeaveRequestTableRow = ({ leave, index, employee, fallbackEmployeeLabel, leaveType, onApprove, onReject, onDelete, onViewAttachments, onFollowUpExcuse }: LeaveRequestTableRowProps) => {
   const { primary: localizedEmployeeName } = useLocalizedEmployeeName(employee);
   const { primary: leaveTypeName } = useLocalizedName(
     leaveType?.name_ar ?? leave.leave_type,
     leaveType?.name_en,
   );
   const employeeName = employee ? localizedEmployeeName : fallbackEmployeeLabel;
+  const excuseStatus = resolveLeaveExcuseStatus(leave);
 
   const handleApprove = useCallback(() => onApprove(leave.id), [onApprove, leave.id]);
   const handleReject = useCallback(() => onReject(leave.id), [onReject, leave.id]);
@@ -81,12 +85,18 @@ const LeaveRequestTableRow = ({ leave, index, employee, fallbackEmployeeLabel, l
         <LeaveAttachmentIndicator leave={leave} onViewAttachments={onViewAttachments} />
       </td>
       <td className="px-4 py-3">
-        <StatusBadge colorClassName={leaveStatusColors[normalizeLeaveStatus(leave.status)] || ""}>
-          {translateBackendCode(leave.status, leaveStatusKeys)}
+        <StatusBadge colorClassName={excuseStatus ? excuseStatus.toneClass : (leaveStatusColors[normalizeLeaveStatus(leave.status)] || "")}>
+          {excuseStatus ? excuseStatus.label : translateBackendCode(leave.status, leaveStatusKeys)}
         </StatusBadge>
       </td>
       <td className="px-4 py-3">
-        {isLeavePending(leave.status) ? (
+        {leave.excuse.active && leave.excuse.state === "pending" ? (
+          <LeaveExcuseFollowUpControl leave={leave} onFollowUp={onFollowUpExcuse} />
+        ) : leave.excuse.active ? (
+          <span className="text-muted-foreground" style={{ fontSize: 11 }}>
+            {leave.excuse.decision_comment && <span data-i18n-ignore>{leave.excuse.decision_comment}</span>}
+          </span>
+        ) : isLeavePending(leave.status) ? (
           <div className="flex items-center gap-1">
             <Button
               onClick={handleApprove}

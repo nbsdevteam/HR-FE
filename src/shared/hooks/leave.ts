@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
 import type { DbEmployee } from "./core";
+import type { DbLeaveExcuse } from "./leaveExcuseTypes";
 
 // ——— Phase 3: Leave Management Types ———
 
@@ -132,6 +133,7 @@ export interface DbLeaveRequest {
   attachment_count: number;
   attachments: DbLeaveAttachment[];
   requires_attachment: boolean;
+  excuse: DbLeaveExcuse;
 }
 
 export interface DbLeaveSettings {

@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useLeaveBalanceSummary } from "@/shared/hooks";
 import type { DbLeaveType, DbLeaveBalance, DbLeaveSettings } from "@/shared/hooks";
+import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { earliestLeaveStartDate, firstAccrualDate, formatLeaveDays } from "../utils/accrual";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
@@ -166,10 +167,11 @@ export const useLeaveRequestForm = ({
     }
     if (!selectedType) return;
 
-    if (outOfBalance) {
-      setError(arabicSource("leave.no_balance_remaining"));
-      return;
-    }
+    // Deliberately not blocked client-side on `outOfBalance` (still shown as
+    // a warning above): the backend now routes an insufficient-balance
+    // Annual Leave request into a manager-excuse request instead of
+    // rejecting it outright (backend v1.16.0 §2.3) — the backend, not this
+    // form, is the source of truth for whether that request is allowed.
 
     if (minStartDate && startDate < minStartDate) {
       setError(
@@ -205,9 +207,12 @@ export const useLeaveRequestForm = ({
         ...odooData.leaveRequestEmployeeIdField(selfOnly, employeeId),
         ...(await hourly.buildRequestFields()),
       };
-      await odooData.requestLeave(payload);
+      const created = await odooData.requestLeave(payload);
       setSaving(false);
       hourly.reset();
+      if (created.excuse.active && created.excuse.state === "pending") {
+        localizedAlert(arabicSource("leave.excuse_pending_notice"));
+      }
       await onSubmit();
     } catch (e: any) {
       setError(leaveErrorMessage(e, "فشل إنشاء طلب الإجازة"));
@@ -215,7 +220,7 @@ export const useLeaveRequestForm = ({
     }
   }, [
     employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId, linkError,
-    minStartDate, onSubmit, outOfBalance, reason, selectedType, selfEmployee,
+    minStartDate, onSubmit, reason, selectedType, selfEmployee,
     selfOnly, startDate,
   ]);
 

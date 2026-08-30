@@ -9,6 +9,8 @@ export * from "./settings";
 export * from "./payroll";
 export * from "./leave";
 export * from "./leaveEntitlementAdjustment";
+export * from "./leaveExcuse";
+export * from "./leaveExcuseQueue";
 export * from "./lifecycle";
 export * from "./recruitment";
 export * from "./performance";

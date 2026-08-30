@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import LeaveAttachmentsModal from "./LeaveAttachmentsModal";
+import LeaveExcuseFollowUpModal from "./LeaveExcuseFollowUpModal";
 import LeaveRequestModal from "./LeaveRequestModal";
 import PermissionModal from "./PermissionModal";
 import type { useLeavePage } from "../hooks/useLeavePage";
@@ -55,6 +56,16 @@ const LeaveModals = ({ page }: LeaveModalsProps) => {
             settings={page.leaveSettings}
             onClose={page.handleCloseAttachments}
             onChanged={page.refetchRequests}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {page.followingUpOnExcuse && (
+          <LeaveExcuseFollowUpModal
+            leave={page.followingUpOnExcuse}
+            onClose={page.handleCloseFollowUpExcuse}
+            onSubmit={page.handleSubmitFollowUpExcuse}
           />
         )}
       </AnimatePresence>

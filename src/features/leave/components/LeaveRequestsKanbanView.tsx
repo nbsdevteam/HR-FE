@@ -14,6 +14,7 @@ type LeaveRequestsKanbanViewProps = {
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
+  onFollowUpExcuse: (leave: DbLeaveRequest) => void;
 };
 
 const LeaveRequestsKanbanView = ({
@@ -23,6 +24,7 @@ const LeaveRequestsKanbanView = ({
   onApprove,
   onReject,
   onViewAttachments,
+  onFollowUpExcuse,
 }: LeaveRequestsKanbanViewProps) => {
   const requestsByStatus = useMemo(() => {
     const map = new Map<string, DbLeaveRequest[]>();
@@ -62,6 +64,7 @@ const LeaveRequestsKanbanView = ({
                 onApprove={onApprove}
                 onReject={onReject}
                 onViewAttachments={onViewAttachments}
+                onFollowUpExcuse={onFollowUpExcuse}
               />
             );
           }}

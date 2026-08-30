@@ -1,10 +1,11 @@
-import { CalendarDays, Timer, TrendingDown } from "lucide-react";
+import { CalendarDays, FileQuestion, Timer, TrendingDown } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 
 export const leaveTabs = [
   { id: "requests", label: arabicSource("leave.leave_requests"), icon: CalendarDays },
   { id: "balances", label: arabicSource("leave.leave_balances"), icon: TrendingDown },
   { id: "permissions", label: arabicSource("leave.permissions"), icon: Timer },
+  { id: "excuses", label: arabicSource("leave.excuse_requests"), icon: FileQuestion },
 ] as const;
 
 export type LeaveTabId = (typeof leaveTabs)[number]["id"];

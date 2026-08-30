@@ -108,6 +108,9 @@ export type PublicLeaveSubmitResult = {
   number_of_hours: number;
   duration_unit: PublicLeaveDurationUnit;
   state: string;
+  /** Balance was insufficient on an excuse-eligible type — sent to the direct manager instead of failing (backend v1.16.0 §2.3). */
+  excuse_pending?: boolean;
+  message?: string;
 };
 
 export type PublicLeaveStatusResult = {

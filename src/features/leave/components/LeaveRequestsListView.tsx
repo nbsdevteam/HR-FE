@@ -23,6 +23,7 @@ type LeaveRequestsListViewProps = {
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
+  onFollowUpExcuse: (leave: DbLeaveRequest) => void;
 };
 
 const LeaveRequestsListView = ({
@@ -37,6 +38,7 @@ const LeaveRequestsListView = ({
   onReject,
   onDelete,
   onViewAttachments,
+  onFollowUpExcuse,
 }: LeaveRequestsListViewProps) => {
   const handleSort = (key: LeaveSortKey): void => {
     toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
@@ -74,6 +76,7 @@ const LeaveRequestsListView = ({
           onReject={onReject}
           onDelete={onDelete}
           onViewAttachments={onViewAttachments}
+          onFollowUpExcuse={onFollowUpExcuse}
         />
       );
     }}

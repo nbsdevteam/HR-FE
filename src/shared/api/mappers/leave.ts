@@ -1,6 +1,7 @@
 import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbAccrualExcludedEmployee, DbAccrualExcludedList, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings, DbLeaveLink } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
+import { mapLeaveExcuse } from "./leaveExcuse";
 
 export const mapLeaveType = (r: any): DbLeaveType => {
   return {
@@ -101,6 +102,7 @@ export const mapLeaveRequest = (r: any): DbLeaveRequest => {
     attachment_count: num(r.attachment_count),
     attachments: Array.isArray(r.attachments) ? r.attachments.map(mapLeaveAttachment) : [],
     requires_attachment: bool(r.requires_attachment),
+    excuse: mapLeaveExcuse(r.excuse),
   };
 }
 

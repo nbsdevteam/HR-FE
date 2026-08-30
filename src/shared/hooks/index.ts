@@ -8,6 +8,8 @@ export * from "./payroll";
 export * from "./leave";
 export * from "./leaveAccrual";
 export * from "./leaveEntitlementAdjustment";
+export * from "./leaveExcuseQueue";
+export * from "./leaveExcuseTypes";
 export * from "./leaveLinks";
 export * from "./lifecycle";
 export * from "./recruitment";
