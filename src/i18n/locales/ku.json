@@ -1692,6 +1692,8 @@
   "errors.not_found_title": "لاپەڕەکە نەدۆزرایەوە",
   "errors.not_found_message": "لاپەڕەی داواکراو نەدۆزرایەوە.",
   "errors.back_to_dashboard": "گەڕانەوە بۆ داشبۆرد",
+  "errors.forbidden_title": "ڕێگەت پێنەدراوە",
+  "errors.forbidden_message": "تۆ مۆڵەتی چوونەژوورەوەی ئەم پەڕەیەت نییە.",
   "languages.self_name": "کوردی",
   "languages.selector_label": "هەڵبژاردنی زمان",
   "common.breadcrumb": "ڕێڕەوی گەڕان",

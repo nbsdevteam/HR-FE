@@ -2199,6 +2199,8 @@
   "{{count}} سجلاً": "common.records_many",
   "الصفحة غير موجودة": "errors.not_found_title",
   "تعذر العثور على الصفحة التي طلبتها.": "errors.not_found_message",
+  "غير مصرح بالوصول": "errors.forbidden_title",
+  "ليس لديك الصلاحية اللازمة للوصول إلى هذه الصفحة.": "errors.forbidden_message",
   "العودة إلى لوحة التحكم": "errors.back_to_dashboard",
   "اختيار اللغة": "languages.selector_label",
   "إدارة إعدادات التقارير": "reports.manage_configurations",

@@ -7,6 +7,7 @@ export type SidebarMenuItem = {
   label: string;
   icon: LucideIcon;
   path: string;
+  routeKeys: string[];
 };
 
 type SidebarNavItemProps = {

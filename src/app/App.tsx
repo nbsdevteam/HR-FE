@@ -3,7 +3,18 @@ import { router } from "./router/routes";
 import { publicRouter, isPublicPath } from "./router/publicRoutes";
 import HydrateFallback from "./router/HydrateFallback";
 import AuthProvider, { useAuth } from "@/shared/auth";
+import PermissionsProvider, { usePermissions } from "@/shared/auth/permissions";
 import Login from "@/features/auth/pages/Login";
+
+const AuthedRouter = () => {
+  const { loading } = usePermissions();
+
+  if (loading) {
+    return <HydrateFallback />;
+  }
+
+  return <RouterProvider router={router} />;
+};
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -16,7 +27,11 @@ const AppContent = () => {
     return <Login />;
   }
 
-  return <RouterProvider router={router} />;
+  return (
+    <PermissionsProvider>
+      <AuthedRouter />
+    </PermissionsProvider>
+  );
 };
 
 const App = () => {
