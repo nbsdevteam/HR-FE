@@ -14,26 +14,12 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
 
   const createLeaveType = useCallback(async () => {
     try {
+      // Every `NewLeaveTypeForm` field now matches its `/leave/types/create`
+      // payload key 1:1, so the full form is sent as-is — blank/off fields
+      // resolve to the backend's own sensible defaults (§4 of the hand-off).
       await odooData.createLeaveType({
+        ...newLeaveType,
         name: newLeaveType.name_en || newLeaveType.name_ar,
-        name_ar: newLeaveType.name_ar,
-        code: newLeaveType.code,
-        is_paid: newLeaveType.is_paid,
-        default_days_per_year: newLeaveType.default_days_per_year,
-        allow_half_day: newLeaveType.allow_half_day,
-        requires_attachment: newLeaveType.requires_attachment,
-        allow_hourly: newLeaveType.allow_hourly,
-        is_carryover_allowed: newLeaveType.is_carryover_allowed,
-        max_carryover_days: newLeaveType.max_carryover_days,
-        is_encashable: newLeaveType.is_encashable,
-        encashment_percentage: newLeaveType.encashment_percentage,
-        accrual_method: newLeaveType.accrual_method === "annual" ? "yearly" : newLeaveType.accrual_method,
-        // v1.12.9 accrual policy — `/leave/types/create` accepts these directly.
-        accrual_enabled: newLeaveType.accrual_enabled,
-        accrual_days_per_month: newLeaveType.accrual_days_per_month,
-        probation_blocked: newLeaveType.probation_blocked,
-        color: newLeaveType.color,
-        sort_order: newLeaveType.sort_order,
       });
       setShowNewLeaveTypeForm(false);
       setNewLeaveType({ ...INITIAL_NEW_LEAVE_TYPE });

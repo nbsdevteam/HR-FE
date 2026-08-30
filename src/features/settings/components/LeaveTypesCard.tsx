@@ -5,6 +5,7 @@ import { arabicSource } from "@/i18n/source";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useLeaveTypeManagement } from "../hooks/useLeaveTypeManagement";
+import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
 import LeaveTypeList from "./LeaveTypeList";
 import NewLeaveTypeForm from "./NewLeaveTypeForm";
 
@@ -18,6 +19,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     loading: leaveTypesLoading,
     refetch: refetchLeaveTypes,
   } = useSettingsBootstrap();
+  const { canManage } = useLeaveTypePermissions();
   const {
     showNewLeaveTypeForm,
     setShowNewLeaveTypeForm,
@@ -58,16 +60,18 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleToggleNewLeaveTypeForm}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          {arabicSource("settings.add_type")}
-        </button>
+        {canManage && (
+          <button
+            onClick={handleToggleNewLeaveTypeForm}
+            className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            {arabicSource("settings.add_type")}
+          </button>
+        )}
       </div>
 
-      {showNewLeaveTypeForm && (
+      {canManage && showNewLeaveTypeForm && (
         <NewLeaveTypeForm
           form={newLeaveType}
           onFieldChange={updateNewLeaveType}

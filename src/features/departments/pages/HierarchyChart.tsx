@@ -19,7 +19,6 @@ const HierarchyChart = () => {
   const {
     dbEmployees,
     dbDepartments,
-    dbPositions,
     dbLoading,
     positionsLoading,
     orgTree,
@@ -37,6 +36,7 @@ const HierarchyChart = () => {
     searchInputRef,
     deleteTarget,
     editTarget,
+    changeManagerTarget,
     showUnlinked,
     saving,
     showSetupModal,
@@ -51,9 +51,19 @@ const HierarchyChart = () => {
     panEnabled,
     allNodes,
     departments,
+    jobTitles,
+    managerOptions,
     searchResults,
     searchMatchIds,
     highlightedIds,
+    departmentFilter,
+    jobTitleFilter,
+    managerFilter,
+    hasActiveFilter,
+    setDepartmentFilter,
+    setJobTitleFilter,
+    setManagerFilter,
+    clearFilters,
     departmentStats,
     toggleExpand,
     expandAll,
@@ -61,6 +71,7 @@ const HierarchyChart = () => {
     handleDeleteEmployee,
     handleEditEmployee,
     handleLinkEmployee,
+    handleChangeManagerConfirm,
     handleAddDepartment,
     handleSetupHierarchy,
     handleCleanupDuplicates,
@@ -91,8 +102,10 @@ const HierarchyChart = () => {
     handleCloseSetupModal,
     handleCloseCleanupModal,
     handleCloseAddDepartmentModal,
+    handleCloseChangeManagerModal,
     handleDetailDelete,
     handleDetailEdit,
+    handleDetailChangeManager,
     refetchHierarchyAndPositions,
   } = useHierarchyPage();
 
@@ -154,7 +167,6 @@ const HierarchyChart = () => {
       ) : (
         <HierarchyTreeSection
           dbEmployees={dbEmployees}
-          dbPositions={dbPositions}
           departmentStats={departmentStats}
           deptColors={deptColors}
           saving={saving}
@@ -168,6 +180,17 @@ const HierarchyChart = () => {
           searchMatchIds={searchMatchIds}
           containerRef={containerRef}
           chartContentRef={chartContentRef}
+          departmentOptions={departments}
+          jobTitleOptions={jobTitles}
+          managerOptions={managerOptions}
+          departmentFilter={departmentFilter}
+          jobTitleFilter={jobTitleFilter}
+          managerFilter={managerFilter}
+          hasActiveFilter={hasActiveFilter}
+          onDepartmentFilterChange={setDepartmentFilter}
+          onJobTitleFilterChange={setJobTitleFilter}
+          onManagerFilterChange={setManagerFilter}
+          onClearFilters={clearFilters}
           onTogglePan={handleTogglePan}
           onZoomOut={handleZoomOut}
           onZoomIn={handleZoomIn}
@@ -200,6 +223,7 @@ const HierarchyChart = () => {
         selectedNode={selectedNode}
         deleteTarget={deleteTarget}
         editTarget={editTarget}
+        changeManagerTarget={changeManagerTarget}
         showUnlinked={showUnlinked}
         showSetupModal={showSetupModal}
         showCleanupModal={showCleanupModal}
@@ -211,6 +235,7 @@ const HierarchyChart = () => {
         onDeleteEmployee={handleDeleteEmployee}
         onEditEmployee={handleEditEmployee}
         onLinkEmployee={handleLinkEmployee}
+        onChangeManagerConfirm={handleChangeManagerConfirm}
         onAddDepartment={handleAddDepartment}
         onSetupHierarchy={handleSetupHierarchy}
         onCleanupDuplicates={handleCleanupDuplicates}
@@ -221,10 +246,12 @@ const HierarchyChart = () => {
         onCloseSetupModal={handleCloseSetupModal}
         onCloseCleanupModal={handleCloseCleanupModal}
         onCloseAddDepartmentModal={handleCloseAddDepartmentModal}
+        onCloseChangeManagerModal={handleCloseChangeManagerModal}
         onAddPosition={handleAddPositionSubmit}
         onCloseAddPositionModal={closeAddPositionModal}
         onDetailDelete={handleDetailDelete}
         onDetailEdit={handleDetailEdit}
+        onDetailChangeManager={handleDetailChangeManager}
       />
     </div>
   );

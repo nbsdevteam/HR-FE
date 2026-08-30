@@ -1,25 +1,29 @@
 import { useMemo, useCallback } from "react";
 import { motion } from "motion/react";
-import { Trash2, Edit2, X } from "lucide-react";
+import { Trash2, Edit2, UserCog, X } from "lucide-react";
 import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import { usePermissions } from "@/shared/auth/permissions";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
 import { countDescendants, findParentOf } from "../utils/hierarchyTree";
 import DirectReportRow from "./DirectReportRow";
 import InfoRow from "./InfoRow";
 
-const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
+const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit, onChangeManager }: {
   node: OrgNode; orgTree: OrgNode; onClose: () => void;
   onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
+  onChangeManager: (node: OrgNode) => void;
 }) => {
+  const { hasPermission } = usePermissions();
   const parentNode = useMemo(
     () => findParentOf(orgTree, node.id),
     [orgTree, node.id],
   );
   const teamSize = useMemo(() => countDescendants(node), [node]);
 
+  const canEditReporting = hasPermission("hr.employees.edit");
   const topColor = defaultDeptColorMap[node.department] || node.color;
   const isRoot = node.id === orgTree.id;
   const isVirtualRoot = node.dbId === "__root__";
@@ -31,6 +35,10 @@ const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
   const handleDeleteClick = useCallback((): void => {
     onDelete(node);
   }, [node, onDelete]);
+
+  const handleChangeManagerClick = useCallback((): void => {
+    onChangeManager(node);
+  }, [node, onChangeManager]);
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -47,6 +55,11 @@ const DetailPanel = ({ node, orgTree, onClose, onDelete, onEdit }: {
             {!isRoot && !isVirtualRoot && (
               <button onClick={handleDeleteClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title={arabicSource("common.separation_from_the_structure")}>
                 <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {!isRoot && !isVirtualRoot && canEditReporting && (
+              <button onClick={handleChangeManagerClick} className="w-7 h-7 rounded-full flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors" title={arabicSource("hierarchy.change_manager_action")}>
+                <UserCog className="w-3.5 h-3.5" />
               </button>
             )}
           </div>

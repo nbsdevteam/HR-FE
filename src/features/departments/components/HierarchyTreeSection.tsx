@@ -2,11 +2,12 @@ import { memo } from "react";
 import type { MouseEventHandler, Ref } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Link2, Loader2, Maximize2, Minus, Move, Plus, Users } from "lucide-react";
-import type { DbEmployee, DbPosition } from "@/shared/hooks";
+import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import OrgCard from "./OrgCard";
 import DepartmentStatTile from "./DepartmentStatTile";
+import HierarchyFilterBar from "./HierarchyFilterBar";
 import ToolbarIconButton from "./ToolbarIconButton";
 import ToolbarTextButton from "./ToolbarTextButton";
 
@@ -15,9 +16,10 @@ type DepartmentStat = {
   count: number;
 };
 
+type ManagerOption = { value: string; label: string };
+
 type HierarchyTreeSectionProps = {
   dbEmployees: DbEmployee[];
-  dbPositions: DbPosition[];
   departmentStats: DepartmentStat[];
   deptColors: Record<string, string>;
   saving: boolean;
@@ -31,6 +33,17 @@ type HierarchyTreeSectionProps = {
   searchMatchIds: Set<number>;
   containerRef: Ref<HTMLDivElement>;
   chartContentRef: Ref<HTMLDivElement>;
+  departmentOptions: string[];
+  jobTitleOptions: string[];
+  managerOptions: ManagerOption[];
+  departmentFilter: string;
+  jobTitleFilter: string;
+  managerFilter: string;
+  hasActiveFilter: boolean;
+  onDepartmentFilterChange: (value: string) => void;
+  onJobTitleFilterChange: (value: string) => void;
+  onManagerFilterChange: (value: string) => void;
+  onClearFilters: () => void;
   onTogglePan: () => void;
   onZoomOut: () => void;
   onZoomIn: () => void;
@@ -46,7 +59,6 @@ type HierarchyTreeSectionProps = {
 
 const HierarchyTreeSection = ({
   dbEmployees,
-  dbPositions,
   departmentStats,
   deptColors,
   saving,
@@ -60,6 +72,17 @@ const HierarchyTreeSection = ({
   searchMatchIds,
   containerRef,
   chartContentRef,
+  departmentOptions,
+  jobTitleOptions,
+  managerOptions,
+  departmentFilter,
+  jobTitleFilter,
+  managerFilter,
+  hasActiveFilter,
+  onDepartmentFilterChange,
+  onJobTitleFilterChange,
+  onManagerFilterChange,
+  onClearFilters,
   onTogglePan,
   onZoomOut,
   onZoomIn,
@@ -77,16 +100,10 @@ const HierarchyTreeSection = ({
       <Link2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
       <div>
         <p className="text-foreground" style={{ fontSize: 13 }}>
-          {dbPositions.length > 0
-            ? <>{arabicSource("hierarchy.the_organizational_structure_is_automatically_built_from")} <span className="text-primary">{arabicSource("common.position_structure")}</span> {arabicSource("hierarchy.appoint_employees_from_the_positions_and_designations_tab")}</>
-            : <>{arabicSource("hierarchy.the_organizational_structure_is_automatically_built_from_a_field")} <span className="text-primary">{arabicSource("hierarchy.direct_manager_manager_id")}</span> {arabicSource("hierarchy.in_each_employee_s_data")}</>
-          }
+          {arabicSource("hierarchy.the_organizational_structure_is_automatically_built_from_a_field")} <span className="text-primary">{arabicSource("hierarchy.direct_manager_manager_id")}</span> {arabicSource("hierarchy.in_each_employee_s_data")}
         </p>
         <p className="text-muted-foreground mt-1" style={{ fontSize: 12 }}>
-          {dbPositions.length > 0
-            ? arabicSource("hierarchy.vacant_positions_are_shown_with_a_dashed_frame_card_colors_follo")
-            : arabicSource("hierarchy.to_assign_a_manager_to_an_employee_edit_the_employee_data_from_t")
-          }
+          {arabicSource("hierarchy.to_assign_a_manager_to_an_employee_edit_the_employee_data_from_t")}
         </p>
       </div>
     </div>
@@ -101,6 +118,20 @@ const HierarchyTreeSection = ({
         <DepartmentStatTile key={dept.name} name={dept.name} count={dept.count} color={deptColors[dept.name] || "#888"} delay={(i + 1) * 0.05} />
       ))}
     </div>
+
+    <HierarchyFilterBar
+      departmentOptions={departmentOptions}
+      jobTitleOptions={jobTitleOptions}
+      managerOptions={managerOptions}
+      departmentFilter={departmentFilter}
+      jobTitleFilter={jobTitleFilter}
+      managerFilter={managerFilter}
+      hasActiveFilter={hasActiveFilter}
+      onDepartmentFilterChange={onDepartmentFilterChange}
+      onJobTitleFilterChange={onJobTitleFilterChange}
+      onManagerFilterChange={onManagerFilterChange}
+      onClearFilters={onClearFilters}
+    />
 
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
       className="bg-card/40 backdrop-blur-md border border-border/40 rounded-2xl shadow-lg overflow-hidden">

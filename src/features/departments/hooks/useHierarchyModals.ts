@@ -10,6 +10,7 @@ export const useHierarchyModals = () => {
   const [selectedNode, setSelectedNode] = useState<OrgNode | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<OrgNode | null>(null);
   const [editTarget, setEditTarget] = useState<OrgNode | null>(null);
+  const [changeManagerTarget, setChangeManagerTarget] = useState<OrgNode | null>(null);
   const [showUnlinked, setShowUnlinked] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [showCleanupModal, setShowCleanupModal] = useState(false);
@@ -31,6 +32,11 @@ export const useHierarchyModals = () => {
   const handleCloseDeleteModal = useCallback(() => setDeleteTarget(null), []);
 
   const handleCloseEditModal = useCallback(() => setEditTarget(null), []);
+
+  const handleCloseChangeManagerModal = useCallback(
+    () => setChangeManagerTarget(null),
+    [],
+  );
 
   const handleCloseUnlinkedPanel = useCallback(
     () => setShowUnlinked(false),
@@ -59,6 +65,11 @@ export const useHierarchyModals = () => {
     setEditTarget(node);
   }, []);
 
+  const handleDetailChangeManager = useCallback((node: OrgNode) => {
+    setSelectedNode(null);
+    setChangeManagerTarget(node);
+  }, []);
+
   return {
     selectedNode,
     setSelectedNode,
@@ -66,6 +77,8 @@ export const useHierarchyModals = () => {
     setDeleteTarget,
     editTarget,
     setEditTarget,
+    changeManagerTarget,
+    setChangeManagerTarget,
     showUnlinked,
     showSetupModal,
     setShowSetupModal,
@@ -82,7 +95,9 @@ export const useHierarchyModals = () => {
     handleCloseSetupModal,
     handleCloseCleanupModal,
     handleCloseAddDepartmentModal,
+    handleCloseChangeManagerModal,
     handleDetailDelete,
     handleDetailEdit,
+    handleDetailChangeManager,
   };
 };

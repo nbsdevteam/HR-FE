@@ -1,9 +1,9 @@
 import type { DbDepartment, DbEmployee, DbPosition } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
-import { groupBy, indexBy } from "@/shared/utils/collections";
+import { groupBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode, PositionNode } from "../types";
-import { avatarColors, defaultDeptColorMap, OWNER_COLOR } from "../styles";
+import { avatarColors, defaultDeptColorMap } from "../styles";
 
 export const pickUniqueColor = (usedColors: Set<string>): string => {
   for (const color of avatarColors) {
@@ -79,91 +79,6 @@ export const buildOrgTree = (
         position: arabicSource("common.senior_management"),
         department: arabicSource("common.senior_management"),
         color: "#8B5CF6",
-        photo: null,
-        email: null,
-        children: roots,
-      };
-
-  return { tree, deptColors: dColors };
-};
-
-export const buildOrgTreeFromPositions = (
-  positions: DbPosition[],
-  employees: DbEmployee[],
-  departments: DbDepartment[],
-): { tree: OrgNode; deptColors: Record<string, string> } => {
-  const dColors: Record<string, string> = { ...defaultDeptColorMap };
-  departments.forEach((department) => { if (department.color) dColors[department.name] = department.color; });
-  const deptById = indexBy(departments, (department) => department.id);
-
-  const usedColors = new Set<string>(Object.values(dColors));
-  departments.forEach((department) => {
-    if (!dColors[department.name]) {
-      const color = pickUniqueColor(usedColors);
-      dColors[department.name] = color;
-      usedColors.add(color);
-    }
-  });
-
-  const empsByPos = groupBy(employees, (employee) => employee.position_id);
-  const activePositions = positions.filter((position) => position.is_active);
-
-  let nodeCounter = 1;
-  const posNodeMap = new Map<string, OrgNode>();
-
-  activePositions.forEach((position) => {
-    const dept = position.department_id ? deptById.get(position.department_id) : null;
-    const deptName = dept?.name || arabicSource("common.senior_management");
-    const assignedEmps = empsByPos.get(position.id) ?? [];
-    const primaryEmp = assignedEmps[0];
-    const isVacant = assignedEmps.length === 0;
-    const isTopLevel = position.level === 0;
-    const color = isTopLevel ? OWNER_COLOR : (dColors[deptName] || avatarColors[0]);
-    const name = isVacant ? arabicSource("common.vacant") : empDisplayName(primaryEmp);
-
-    posNodeMap.set(position.id, {
-      id: nodeCounter++,
-      dbId: isVacant ? `pos_${position.id}` : primaryEmp.id,
-      name,
-      initials: name.charAt(0),
-      position: position.title_ar,
-      department: deptName,
-      color,
-      photo: isVacant ? null : (primaryEmp.profile_picture || null),
-      email: isVacant ? null : (primaryEmp.email || null),
-      children: [],
-      isVacant,
-      positionId: position.id,
-      assignedEmployees: assignedEmps.map((employee) => ({
-        id: employee.id,
-        name: empDisplayName(employee),
-        photo: employee.profile_picture || null,
-      })),
-      headcount: { current: assignedEmps.length, max: position.max_headcount },
-    });
-  });
-
-  const roots: OrgNode[] = [];
-  activePositions.forEach((position) => {
-    const node = posNodeMap.get(position.id);
-    if (!node) return;
-    if (position.reports_to_position_id && posNodeMap.has(position.reports_to_position_id)) {
-      posNodeMap.get(position.reports_to_position_id)!.children.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-
-  const tree = roots.length === 1
-    ? roots[0]
-    : {
-        id: 0,
-        dbId: "__root__",
-        name: arabicSource("common.foundation"),
-        initials: arabicSource("common.m"),
-        position: arabicSource("common.senior_management"),
-        department: arabicSource("common.senior_management"),
-        color: OWNER_COLOR,
         photo: null,
         email: null,
         children: roots,

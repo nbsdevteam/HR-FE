@@ -186,7 +186,6 @@ const LeaveRequestModal = ({
         {selectedType?.requires_attachment && (
           <div className="flex items-center gap-2 -mt-2 text-amber-400" style={{ fontSize: 12 }}>
             {arabicSource("leave.this_type_of_leave_requires_an_attachment_medical_report_etc")}
-            {selectedType.attachment_after_days && ` ${arabicSource("leave.after")} ${selectedType.attachment_after_days} ${arabicSource("common.days")}`}
           </div>
         )}
 

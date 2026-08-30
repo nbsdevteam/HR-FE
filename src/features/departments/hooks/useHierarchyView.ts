@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { RefObject } from "react";
 import type { OrgNode } from "../types";
-import { findAncestorIds } from "../utils/hierarchyTree";
+import { findAncestorIds, findParentOf } from "../utils/hierarchyTree";
 
 export type HierarchyViewMode = "tree" | "positions";
 
@@ -30,6 +30,9 @@ export const useHierarchyView = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [jobTitleFilter, setJobTitleFilter] = useState("");
+  const [managerFilter, setManagerFilter] = useState("");
 
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -42,22 +45,58 @@ export const useHierarchyView = ({
     );
   }, [searchQuery, allNodes]);
 
+  const hasActiveFilter = Boolean(departmentFilter || jobTitleFilter || managerFilter);
+
+  const clearFilters = useCallback(() => {
+    setDepartmentFilter("");
+    setJobTitleFilter("");
+    setManagerFilter("");
+  }, []);
+
   const { searchMatchIds, highlightedIds } = useMemo(() => {
     const matchIds = new Set<number>();
     const ancestorIds = new Set<number>();
+
     if (focusedNodeId) {
       matchIds.add(focusedNodeId);
       findAncestorIds(orgTree, focusedNodeId).forEach((id) =>
         ancestorIds.add(id),
       );
-    } else if (searchQuery.trim() && searchResults.length > 0) {
-      searchResults.forEach((node) => {
+      return { searchMatchIds: matchIds, highlightedIds: ancestorIds };
+    }
+
+    const query = searchQuery.trim().toLowerCase();
+    if (!query && !hasActiveFilter) {
+      return { searchMatchIds: matchIds, highlightedIds: ancestorIds };
+    }
+
+    allNodes.forEach((node) => {
+      if (node.dbId === "__root__") return;
+      const matchesQuery =
+        !query ||
+        node.name.toLowerCase().includes(query) ||
+        node.position.toLowerCase().includes(query) ||
+        node.department.toLowerCase().includes(query);
+      const matchesDepartment = !departmentFilter || node.department === departmentFilter;
+      const matchesJobTitle = !jobTitleFilter || node.position === jobTitleFilter;
+      const matchesManager = !managerFilter || findParentOf(orgTree, node.id)?.dbId === managerFilter;
+      if (matchesQuery && matchesDepartment && matchesJobTitle && matchesManager) {
         matchIds.add(node.id);
         findAncestorIds(orgTree, node.id).forEach((id) => ancestorIds.add(id));
-      });
-    }
+      }
+    });
+
     return { searchMatchIds: matchIds, highlightedIds: ancestorIds };
-  }, [searchQuery, searchResults, focusedNodeId, orgTree]);
+  }, [
+    searchQuery,
+    allNodes,
+    focusedNodeId,
+    orgTree,
+    departmentFilter,
+    jobTitleFilter,
+    managerFilter,
+    hasActiveFilter,
+  ]);
 
   const toggleExpand = useCallback((id: number) => {
     setExpandedMap((current) => ({ ...current, [id]: !current[id] }));
@@ -159,6 +198,14 @@ export const useHierarchyView = ({
     searchResults,
     searchMatchIds,
     highlightedIds,
+    departmentFilter,
+    jobTitleFilter,
+    managerFilter,
+    hasActiveFilter,
+    setDepartmentFilter,
+    setJobTitleFilter,
+    setManagerFilter,
+    clearFilters,
     toggleExpand,
     expandAll,
     collapseAll,

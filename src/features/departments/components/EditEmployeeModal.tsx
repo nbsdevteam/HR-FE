@@ -3,6 +3,7 @@ import { Briefcase, Building2, Edit2, UserCheck, Users } from "lucide-react";
 import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
 import { indexBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
+import { usePermissions } from "@/shared/auth/permissions";
 import type { OrgNode } from "../types";
 import { getDescendantIds } from "../utils/hierarchyTree";
 import FieldLabel from "./FieldLabel";
@@ -39,6 +40,9 @@ const EditEmployeeModal = ({
   const [department, setDepartment] = useState(node.department);
   const [managerId, setManagerId] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const { hasPermission } = usePermissions();
+
+  const canEditReporting = hasPermission("hr.employees.edit");
 
   const nodesById = useMemo(
     () => indexBy(allNodes, (candidate) => candidate.id),
@@ -73,15 +77,20 @@ const EditEmployeeModal = ({
     if (name !== node.name) updates.name = name.trim();
     if (position !== node.position) updates.position = position.trim();
     if (department !== node.department) updates.department = department;
-    if (managerId !== null) {
-      const manager = nodesById.get(managerId);
-      if (manager) updates.manager_id = manager.dbId;
-    } else {
-      updates.manager_id = null;
+    // Unauthorized users get a read-only manager field (below), but the
+    // submit logic enforces this independently of what's rendered — local
+    // `managerId` state must never reach the save payload without permission.
+    if (canEditReporting) {
+      if (managerId !== null) {
+        const manager = nodesById.get(managerId);
+        if (manager) updates.manager_id = manager.dbId;
+      } else {
+        updates.manager_id = null;
+      }
     }
 
     onSave(node.dbId, updates);
-  }, [name, position, department, managerId, node, nodesById, onSave]);
+  }, [name, position, department, managerId, node, nodesById, onSave, canEditReporting]);
 
   const handleNameChange = useCallback((value: string): void => {
     setName(value);
@@ -178,27 +187,39 @@ const EditEmployeeModal = ({
         <FieldLabel icon={Users} accentColorClassName="text-blue-400">
           {arabicSource("hierarchy.direct_supervisor_optional")}
         </FieldLabel>
-        <TypeAhead
-          items={validManagers}
-          getId={getManagerId}
-          getLabel={getManagerLabel}
-          value={managerId != null ? String(managerId) : ""}
-          onChange={handleManagerChange}
-          blankLabel={arabicSource("common.without_a_manager_top_of_the_pyramid")}
-          optionsAreData
-        />
-        {selectedManager && (
-          <SelectedManagerCard
-            manager={selectedManager}
-            avatarName={arabicSource("common.direct_manager")}
-            label={
-              <>
-                {arabicSource("hierarchy.director")}{" "}
-                <span data-i18n-ignore>{selectedManager.name}</span>
-              </>
-            }
-            toneClassName="bg-blue-500/5 border-blue-500/10"
-          />
+        {canEditReporting ? (
+          <>
+            <TypeAhead
+              items={validManagers}
+              getId={getManagerId}
+              getLabel={getManagerLabel}
+              value={managerId != null ? String(managerId) : ""}
+              onChange={handleManagerChange}
+              blankLabel={arabicSource("common.without_a_manager_top_of_the_pyramid")}
+              optionsAreData
+            />
+            {selectedManager && (
+              <SelectedManagerCard
+                manager={selectedManager}
+                avatarName={arabicSource("common.direct_manager")}
+                label={
+                  <>
+                    {arabicSource("hierarchy.director")}{" "}
+                    <span data-i18n-ignore>{selectedManager.name}</span>
+                  </>
+                }
+                toneClassName="bg-blue-500/5 border-blue-500/10"
+              />
+            )}
+          </>
+        ) : (
+          <p className="text-muted-foreground" style={{ fontSize: 13 }}>
+            {selectedManager ? (
+              <span data-i18n-ignore>{selectedManager.name}</span>
+            ) : (
+              arabicSource("common.without_a_manager_top_of_the_pyramid")
+            )}
+          </p>
         )}
       </div>
     </Modal>
