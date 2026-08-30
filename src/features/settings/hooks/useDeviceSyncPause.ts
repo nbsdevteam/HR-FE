@@ -3,9 +3,20 @@ import * as odooData from "@/shared/api/odooData";
 import type { DeviceSyncState } from "@/shared/api/devices";
 import { arabicSource } from "@/i18n/source";
 
-export const useDeviceSyncPause = (showToast: (message: string) => void) => {
-  const [state, setState] = useState<DeviceSyncState | null>(null);
-  const [loading, setLoading] = useState(true);
+/**
+ * `bootstrapState`/`bootstrapLoading` come from the Settings bootstrap
+ * context — this hook seeds from them instead of firing its own mount-time
+ * `fetchDeviceSyncState` call. `refresh()`/`updatePaused()` still hit the
+ * standalone endpoints directly, unchanged, so a pause/resume stays
+ * authoritative even if the bootstrap section is later refetched.
+ */
+export const useDeviceSyncPause = (
+  showToast: (message: string) => void,
+  bootstrapState: DeviceSyncState | null,
+  bootstrapLoading: boolean,
+) => {
+  const [state, setState] = useState<DeviceSyncState | null>(bootstrapState);
+  const [loading, setLoading] = useState(bootstrapLoading);
   const [saving, setSaving] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -41,8 +52,10 @@ export const useDeviceSyncPause = (showToast: (message: string) => void) => {
   );
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (bootstrapLoading) return;
+    setState(bootstrapState);
+    setLoading(false);
+  }, [bootstrapLoading, bootstrapState]);
 
   return { state, loading, saving, refresh, updatePaused };
 };

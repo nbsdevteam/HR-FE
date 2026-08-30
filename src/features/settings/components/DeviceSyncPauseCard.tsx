@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { RadioTower } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import StatusBadge from "@/shared/components/StatusBadge";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useDeviceSyncPause } from "../hooks/useDeviceSyncPause";
 import { formatDeviceSyncChangedAt } from "../utils/deviceSyncFormat";
@@ -16,7 +17,8 @@ type TDeviceSyncPauseCardProps = {
 const DeviceSyncPauseCard = ({ showToast }: TDeviceSyncPauseCardProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const { state, loading, saving, updatePaused } = useDeviceSyncPause(showToast);
+  const { deviceSync, loading: bootstrapLoading } = useSettingsBootstrap();
+  const { state, loading, saving, updatePaused } = useDeviceSyncPause(showToast, deviceSync, bootstrapLoading);
 
   const paused = state?.paused ?? false;
   const lastChange = state?.last_change;

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Calendar, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useLeaveTypes } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useLeaveTypeManagement } from "../hooks/useLeaveTypeManagement";
 import LeaveTypeList from "./LeaveTypeList";
@@ -14,10 +14,10 @@ type TLeaveTypesCardProps = {
 
 const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
   const {
-    types: leaveTypes,
+    leaveTypes,
     loading: leaveTypesLoading,
     refetch: refetchLeaveTypes,
-  } = useLeaveTypes();
+  } = useSettingsBootstrap();
   const {
     showNewLeaveTypeForm,
     setShowNewLeaveTypeForm,

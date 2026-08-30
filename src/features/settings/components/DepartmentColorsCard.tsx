@@ -4,23 +4,18 @@ import { Palette } from "lucide-react";
 import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { indexBy } from "@/shared/utils/collections";
-import type { DbDepartment } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useDepartmentColors } from "../hooks/useDepartmentColors";
 import DepartmentColorChip from "./DepartmentColorChip";
 import DepartmentColorSwatchPicker from "./DepartmentColorSwatchPicker";
 
 type TDepartmentColorsCardProps = {
-  departments: DbDepartment[];
-  deptLoading: boolean;
   showToast: (message: string) => void;
 };
 
-const DepartmentColorsCard = ({
-  departments,
-  deptLoading,
-  showToast,
-}: TDepartmentColorsCardProps) => {
+const DepartmentColorsCard = ({ showToast }: TDepartmentColorsCardProps) => {
+  const { departments, loading: deptLoading } = useSettingsBootstrap();
   const {
     deptColorEdits,
     savingDeptColors,

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Clock, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useShifts, type DbDepartment } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useDepartmentShiftAssignments } from "../hooks/useDepartmentShiftAssignments";
 import { useShiftManagement } from "../hooks/useShiftManagement";
@@ -12,21 +12,18 @@ import ShiftDepartmentAssignments from "./ShiftDepartmentAssignments";
 import ShiftList from "./ShiftList";
 
 type TShiftsScheduleCardProps = {
-  departments: DbDepartment[];
-  deptLoading: boolean;
   showToast: (message: string) => void;
 };
 
-const ShiftsScheduleCard = ({
-  departments,
-  deptLoading,
-  showToast,
-}: TShiftsScheduleCardProps) => {
+const ShiftsScheduleCard = ({ showToast }: TShiftsScheduleCardProps) => {
   const {
+    departments,
     shifts,
-    loading: shiftsLoading,
+    loading,
     refetch: refetchShifts,
-  } = useShifts();
+  } = useSettingsBootstrap();
+  const deptLoading = loading;
+  const shiftsLoading = loading;
   const {
     expandedShift,
     toggleExpandedShift,

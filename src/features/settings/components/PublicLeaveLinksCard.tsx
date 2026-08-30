@@ -3,14 +3,14 @@ import { motion } from "motion/react";
 import { Link2, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
-import { useLeaveLinks, useLeaveTypes, type DbDepartment, type DbLeaveLink } from "@/shared/hooks";
+import { useLeaveLinks, type DbLeaveLink } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useLeaveLinkManagement } from "../hooks/useLeaveLinkManagement";
 import LeaveLinkFormModal from "./LeaveLinkFormModal";
 import LeaveLinkList from "./LeaveLinkList";
 
 type PublicLeaveLinksCardProps = {
-  departments: DbDepartment[];
   showToast: (message: string) => void;
 };
 
@@ -19,9 +19,9 @@ type PublicLeaveLinksCardProps = {
  * — same slot as `LeaveTypesCard`/`PublicHolidaysCard`: a flat list of a
  * handful of config records, not a per-employee or per-request screen.
  */
-const PublicLeaveLinksCard = ({ departments, showToast }: PublicLeaveLinksCardProps) => {
+const PublicLeaveLinksCard = ({ showToast }: PublicLeaveLinksCardProps) => {
   const { links, loading, refetch } = useLeaveLinks();
-  const { types: leaveTypes } = useLeaveTypes();
+  const { departments, leaveTypes } = useSettingsBootstrap();
   const [linkPendingDelete, setLinkPendingDelete] = useState<DbLeaveLink | null>(null);
   const {
     closeForm,

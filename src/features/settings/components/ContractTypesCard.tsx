@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { Briefcase, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useContractTypes, type DbContractType } from "@/shared/hooks";
+import type { DbContractType } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
 import TypeList from "./TypeList";
@@ -23,10 +24,10 @@ type TContractTypesCardProps = {
 
 const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
   const {
-    types: contractTypes,
+    contractTypes,
     loading: contractTypesLoading,
     refetch: refetchContractTypes,
-  } = useContractTypes();
+  } = useSettingsBootstrap();
   const {
     showNewContractTypeForm,
     setShowNewContractTypeForm,

@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import { FileCheck, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useDocumentTypes, type DbDocumentType } from "@/shared/hooks";
+import type { DbDocumentType } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useDocumentTypeManagement } from "../hooks/useDocumentTypeManagement";
 import TypeList from "./TypeList";
@@ -21,10 +22,10 @@ type TDocumentTypesCardProps = {
 
 const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
   const {
-    types: documentTypes,
+    documentTypes,
     loading: documentTypesLoading,
     refetch: refetchDocumentTypes,
-  } = useDocumentTypes();
+  } = useSettingsBootstrap();
   const {
     showNewDocTypeForm,
     newDocType,

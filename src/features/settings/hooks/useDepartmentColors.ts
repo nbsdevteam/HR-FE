@@ -38,9 +38,8 @@ export const useDepartmentColors = (departments: DbDepartment[], showToast: (mes
   const saveDeptColors = useCallback(async () => {
     setSavingDeptColors(true);
     try {
-      for (const [deptId, color] of Object.entries(deptColorEdits)) {
-        await odooData.updateDepartment(deptId, { color });
-      }
+      const updates = Object.entries(deptColorEdits).map(([id, color]) => ({ id, color }));
+      await odooData.bulkUpdateDepartments(updates);
       setDeptColorEdits({});
       showToast(arabicSource("settings.section_colors_were_saved_successfully"));
     } catch {

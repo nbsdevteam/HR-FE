@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { Settings2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useConfigurations } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useConfigEdits } from "../hooks/useConfigEdits";
 import { groupByCategory } from "../utils/groupByCategory";
@@ -17,7 +17,7 @@ const ConfigurationsCard = ({ showToast }: IConfigurationsCardProps) => {
     configs,
     loading: configsLoading,
     refetch: refetchConfigs,
-  } = useConfigurations();
+  } = useSettingsBootstrap();
   const { configEdits, setConfigEdit, saveConfigValue } = useConfigEdits(
     refetchConfigs,
     showToast,
