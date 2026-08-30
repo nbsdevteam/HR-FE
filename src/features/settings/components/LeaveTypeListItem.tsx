@@ -3,6 +3,7 @@ import { Check, Pencil, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbLeaveType } from "@/shared/hooks";
+import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
 import SettingsToggle from "./SettingsToggle";
 
 type TLeaveTypeListItemProps = {
@@ -21,6 +22,7 @@ const LeaveTypeListItem = ({
   const [editingDays, setEditingDays] = useState(false);
   const [daysValue, setDaysValue] = useState(String(leaveType.default_days_per_year));
   const { primary, secondary, secondaryDir } = useLocalizedName(leaveType.name_ar, leaveType.name_en);
+  const { canManage } = useLeaveTypePermissions();
 
   const handleToggleActive = useCallback((): void => {
     onToggleActive(leaveType);
@@ -161,12 +163,14 @@ const LeaveTypeListItem = ({
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <SettingsToggle on={leaveType.is_active} onClick={handleToggleActive} />
-        <button
-          onClick={handleDelete}
-          className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        {canManage && (
+          <button
+            onClick={handleDelete}
+            className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

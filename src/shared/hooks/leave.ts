@@ -17,13 +17,13 @@ export interface DbLeaveType {
   min_days_per_request: number;
   allow_half_day: boolean;
   requires_attachment: boolean;
-  attachment_after_days: number | null;
   allow_hourly: boolean;
   gender_restriction: string | null;
   min_service_months: number;
+  /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
+  excuse_on_insufficient_balance: boolean;
   is_carryover_allowed: boolean;
   max_carryover_days: number;
-  carryover_expiry_months: number;
   is_encashable: boolean;
   encashment_percentage: number;
   accrual_method: string;

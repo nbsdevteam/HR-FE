@@ -21,29 +21,45 @@ export interface NewHolidayForm {
   is_recurring: boolean;
 }
 
+export type LeaveTypeGenderRestriction = "" | "male" | "female";
+
 export interface NewLeaveTypeForm {
+  // basic
   name_ar: string;
   name_en: string;
-  code: string;
   is_paid: boolean;
   default_days_per_year: number;
-  allow_half_day: boolean;
-  requires_attachment: boolean;
-  attachment_after_days: number;
-  allow_hourly: boolean;
-  accrual_method: string;
   /** Monthly accrual engine (backend v1.12.9) — 1.75 days per completed month, etc. */
   accrual_enabled: boolean;
   /** `0` lets the backend derive the rate from `default_days_per_year / 12`. */
   accrual_days_per_month: number;
+
+  // advanced: Accrual
+  accrual_method: string;
+
+  // advanced: Leave Rules
+  allow_half_day: boolean;
+  allow_hourly: boolean;
+  requires_attachment: boolean;
   /** Type cannot be taken while the employee is on probation. */
   probation_blocked: boolean;
+  gender_restriction: LeaveTypeGenderRestriction;
+  min_service_months: number;
+  min_days_per_request: number;
+  max_days_per_request: number;
+  /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
+  excuse_on_insufficient_balance: boolean;
+
+  // advanced: Carryover / Encashment
   is_carryover_allowed: boolean;
   max_carryover_days: number;
-  carryover_expiry_months: number;
   is_encashable: boolean;
   encashment_percentage: number;
+
+  // advanced: Other
+  code: string;
   color: string;
+  icon: string;
   sort_order: number;
 }
 

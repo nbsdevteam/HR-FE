@@ -7,9 +7,6 @@ import type {
   NewLeaveTypeForm,
   NotifKey,
   NotifToggles,
-  TypeFormCheckboxConfig,
-  TypeFormRowConfig,
-  NewLeaveTypeForm as NewLeaveTypeFormState,
 } from "../types";
 import { HTMLMotionProps } from "motion/react";
 
@@ -77,23 +74,31 @@ export const INITIAL_NEW_HOLIDAY: NewHolidayForm = {
 export const INITIAL_NEW_LEAVE_TYPE: NewLeaveTypeForm = {
   name_ar: "",
   name_en: "",
-  code: "",
   is_paid: true,
   default_days_per_year: 0,
-  allow_half_day: false,
-  requires_attachment: false,
-  attachment_after_days: 0,
-  allow_hourly: false,
-  accrual_method: "annual",
   accrual_enabled: false,
   accrual_days_per_month: 0,
+
+  accrual_method: "annual",
+
+  allow_half_day: false,
+  allow_hourly: false,
+  requires_attachment: false,
   probation_blocked: false,
+  gender_restriction: "",
+  min_service_months: 0,
+  min_days_per_request: 0,
+  max_days_per_request: 0,
+  excuse_on_insufficient_balance: false,
+
   is_carryover_allowed: false,
   max_carryover_days: 0,
-  carryover_expiry_months: 3,
   is_encashable: false,
   encashment_percentage: 100,
+
+  code: "",
   color: "#3b82f6",
+  icon: "",
   sort_order: 0,
 };
 
@@ -163,60 +168,8 @@ export const ACCRUAL_OPTIONS = [
   { value: "none", label: arabicSource("settings.without_merit") },
 ];
 
-export const ROWS: TypeFormRowConfig<NewLeaveTypeFormState>[] = [
-  {
-    id: "identity",
-    gridClassName: "grid grid-cols-2 md:grid-cols-4 gap-3",
-    fields: [
-      { key: "name_ar", placeholder: arabicSource("settings.name_in_arabic") },
-      {
-        key: "name_en",
-        placeholder: arabicSource("settings.name_english"),
-        dir: "ltr",
-      },
-      {
-        key: "code",
-        placeholder: arabicSource("settings.code_annual"),
-        dir: "ltr",
-      },
-      {
-        key: "default_days_per_year",
-        type: "number",
-        placeholder: arabicSource("settings.days_year"),
-        blankWhenFalsy: true,
-      },
-    ],
-  },
-  {
-    id: "accrual",
-    gridClassName: "grid grid-cols-2 md:grid-cols-4 gap-3",
-    fields: [
-      {
-        key: "accrual_days_per_month",
-        type: "number",
-        placeholder: arabicSource("settings.accrual_days_per_month"),
-        blankWhenFalsy: true,
-      },
-    ],
-  },
-];
-
-export const CHECKBOXES: TypeFormCheckboxConfig<NewLeaveTypeFormState>[] = [
-  { key: "is_paid", label: arabicSource("settings.driven") },
-  { key: "allow_half_day", label: arabicSource("common.half_a_day") },
-  {
-    key: "requires_attachment",
-    label: arabicSource("settings.attachment_required"),
-  },
-  { key: "allow_hourly", label: arabicSource("settings.allow_hourly_leave") },
-  {
-    key: "accrual_enabled",
-    label: arabicSource("settings.enable_monthly_accrual"),
-  },
-  {
-    key: "probation_blocked",
-    label: arabicSource("settings.blocked_during_probation"),
-  },
-  { key: "is_carryover_allowed", label: arabicSource("common.relay") },
-  { key: "is_encashable", label: arabicSource("common.exchangeable") },
+export const GENDER_RESTRICTION_OPTIONS = [
+  { value: "", label: arabicSource("settings.no_gender_restriction") },
+  { value: "male", label: arabicSource("common.male") },
+  { value: "female", label: arabicSource("common.female") },
 ];
