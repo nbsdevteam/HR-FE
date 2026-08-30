@@ -16,6 +16,12 @@ export interface DbLeaveProbationInfo {
   /** True when the employee is skipped by accrual entirely (e.g. no joining date) — show `accrual_excluded_reason` instead of a `0` balance. */
   accrual_excluded: boolean;
   accrual_excluded_reason: string | null;
+  /**
+   * Reference only (backend v1.17.0 §1) — `null` when there's no joining
+   * date. Never use this to compute or suggest a day count; HR decides
+   * Additional Annual Leave grants manually.
+   */
+  years_of_service: number | null;
 }
 
 /** One leave type inside the `/leave/balances` envelope (backend §1). */
@@ -27,6 +33,11 @@ export interface DbLeaveBalanceItem {
   remaining: number;
   requires_allocation: boolean;
   accrual_enabled: boolean;
+  /** The Settings value alone (backend v1.17.0 §1) — was `annual_entitlement` before Additional Annual Leave existed. */
+  base_annual_entitlement: number;
+  /** Sum of this employee's active, already-effective grants for this leave type. `0` if none. */
+  additional_annual_leave: number;
+  /** `base_annual_entitlement + additional_annual_leave`. */
   annual_entitlement: number;
   monthly_accrual: number;
   accrued: number;

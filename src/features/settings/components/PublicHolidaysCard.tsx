@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Plus, PartyPopper } from "lucide-react";
 import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import { usePublicHolidays } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { HOLIDAY_YEAR_OPTIONS } from "../constants/settings";
 import { usePublicHolidayManagement } from "../hooks/usePublicHolidayManagement";
@@ -22,7 +22,7 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
     holidays,
     loading: holidaysLoading,
     refetch: refetchHolidays,
-  } = usePublicHolidays();
+  } = useSettingsBootstrap();
   const {
     holidayYear,
     setHolidayYear,

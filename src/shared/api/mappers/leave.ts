@@ -1,6 +1,7 @@
 import type { DbLeaveType, DbLeaveRequest, DbLeaveBalance, DbLeaveBalanceItem, DbLeaveBalanceSummary, DbLeaveAccrualEntry, DbLeaveAccrualHistory, DbAccrualExcludedEmployee, DbAccrualExcludedList, DbLeavePermission, DbLeavePolicy, DbLeaveAttachment, DbLeaveSettings, DbLeaveLink } from "../../hooks";
 import { arabicSource } from "@/i18n/source";
 import { sid, sornull, num, bool, empty, hhmmFromFloatOrLabel, isActive } from "./mapHelpers";
+import { mapLeaveExcuse } from "./leaveExcuse";
 
 export const mapLeaveType = (r: any): DbLeaveType => {
   return {
@@ -101,6 +102,7 @@ export const mapLeaveRequest = (r: any): DbLeaveRequest => {
     attachment_count: num(r.attachment_count),
     attachments: Array.isArray(r.attachments) ? r.attachments.map(mapLeaveAttachment) : [],
     requires_attachment: bool(r.requires_attachment),
+    excuse: mapLeaveExcuse(r.excuse),
   };
 }
 
@@ -141,6 +143,7 @@ export const mapLeaveBalance = (r: any): DbLeaveBalance => {
 
 /** One `items[]` entry of `/api/hr/leave/balances` (backend §1). */
 export const mapLeaveBalanceItem = (r: any): DbLeaveBalanceItem => {
+  const annualEntitlement = num(r.annual_entitlement);
   return {
     leave_type_id: sid(r.leave_type_id),
     leave_type_name: r.leave_type_name || r.leave_type || "",
@@ -148,7 +151,10 @@ export const mapLeaveBalanceItem = (r: any): DbLeaveBalanceItem => {
     remaining: num(r.remaining),
     requires_allocation: bool(r.requires_allocation),
     accrual_enabled: bool(r.accrual_enabled),
-    annual_entitlement: num(r.annual_entitlement),
+    // Absent on a backend that predates v1.17.0 → the base was the whole entitlement.
+    base_annual_entitlement: num(r.base_annual_entitlement, annualEntitlement),
+    additional_annual_leave: num(r.additional_annual_leave),
+    annual_entitlement: annualEntitlement,
     monthly_accrual: num(r.monthly_accrual),
     accrued: num(r.accrued),
     accrual_periods: num(r.accrual_periods),
@@ -159,6 +165,9 @@ export const mapLeaveBalanceItem = (r: any): DbLeaveBalanceItem => {
   };
 }
 
+/** Reference-only figure (backend §1) — `null` when absent or with no joining date. */
+const yearsOfService = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
+
 export const mapLeaveBalanceSummary = (r: any): DbLeaveBalanceSummary => {
   const rows = Array.isArray(r) ? r : r?.items || r?.balances || [];
   return {
@@ -168,6 +177,7 @@ export const mapLeaveBalanceSummary = (r: any): DbLeaveBalanceSummary => {
     probation_end_date: r?.probation_end_date || null,
     accrual_excluded: bool(r?.accrual_excluded),
     accrual_excluded_reason: r?.accrual_excluded_reason || null,
+    years_of_service: yearsOfService(r?.years_of_service),
     items: rows.map(mapLeaveBalanceItem),
   };
 }
@@ -215,6 +225,7 @@ export const mapLeaveAccrualHistory = (r: any): DbLeaveAccrualHistory => {
     probation_end_date: r?.probation_end_date || null,
     accrual_excluded: bool(r?.accrual_excluded),
     accrual_excluded_reason: r?.accrual_excluded_reason || null,
+    years_of_service: yearsOfService(r?.years_of_service),
     items,
     total_days: num(r?.total_days ?? items.reduce((sum: number, item: DbLeaveAccrualEntry) => sum + item.days, 0)),
   };

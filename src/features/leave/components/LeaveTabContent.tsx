@@ -7,6 +7,7 @@ import type { useLeavePage } from "../hooks/useLeavePage";
 const BalancesTab = lazy(() => import("./BalancesTab"));
 const LeaveRequestsKanbanView = lazy(() => import("./LeaveRequestsKanbanView"));
 const PermissionsTab = lazy(() => import("./PermissionsTab"));
+const ExcusesTab = lazy(() => import("./ExcusesTab"));
 
 type LeaveTabContentProps = {
   page: ReturnType<typeof useLeavePage>;
@@ -41,15 +42,18 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             onReject={page.handleReject}
             onDelete={page.handleDelete}
             onViewAttachments={page.handleViewAttachments}
+            onFollowUpExcuse={page.handleOpenFollowUpExcuse}
           />
         ) : (
           <Suspense fallback={null}>
             <LeaveRequestsKanbanView
               requests={page.filteredRequests}
               empMap={page.empMap}
+              leaveTypes={page.activeLeaveTypes}
               onApprove={page.handleApprove}
               onReject={page.handleReject}
               onViewAttachments={page.handleViewAttachments}
+              onFollowUpExcuse={page.handleOpenFollowUpExcuse}
             />
           </Suspense>
         )}
@@ -91,6 +95,19 @@ const LeaveTabContent = ({ page }: LeaveTabContentProps) => (
             loading={page.permLoading}
             refetch={page.refetchPermissions}
           />
+        </Suspense>
+      </motion.div>
+    )}
+
+    {page.activeTab === "excuses" && (
+      <motion.div
+        key="excuses"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
+        <Suspense fallback={null}>
+          <ExcusesTab />
         </Suspense>
       </motion.div>
     )}

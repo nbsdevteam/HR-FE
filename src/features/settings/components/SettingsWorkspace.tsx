@@ -1,4 +1,3 @@
-import { useHierarchyData } from "@/shared/hooks";
 import { useToast } from "../hooks/useToast";
 import ConfigurationsCard from "./ConfigurationsCard";
 import ContractTypesCard from "./ContractTypesCard";
@@ -19,7 +18,6 @@ import SystemModulesCard from "./SystemModulesCard";
 
 const SettingsWorkspace = () => {
   const { toastMessage, showToast } = useToast();
-  const { departments, loading: deptLoading } = useHierarchyData();
 
   return (
     <div className="space-y-4">
@@ -39,22 +37,14 @@ const SettingsWorkspace = () => {
       <SettingsPageHeader />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DepartmentColorsCard
-          departments={departments}
-          deptLoading={deptLoading}
-          showToast={showToast}
-        />
-        <ShiftsScheduleCard
-          departments={departments}
-          deptLoading={deptLoading}
-          showToast={showToast}
-        />
+        <DepartmentColorsCard showToast={showToast} />
+        <ShiftsScheduleCard showToast={showToast} />
         <SystemModulesCard showToast={showToast} />
         <DeviceSyncPauseCard showToast={showToast} />
         <ConfigurationsCard showToast={showToast} />
         <PublicHolidaysCard showToast={showToast} />
         <LeaveTypesCard showToast={showToast} />
-        <PublicLeaveLinksCard departments={departments} showToast={showToast} />
+        <PublicLeaveLinksCard showToast={showToast} />
         <ContractTypesCard showToast={showToast} />
         <DocumentTypesCard showToast={showToast} />
         <PersonalAccountCard />

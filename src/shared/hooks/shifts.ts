@@ -36,8 +36,10 @@ export interface DbShift {
   updated_at: string;
 }
 
-// ── Mock shifts for local testing ──
-const _mockShifts: DbShift[] = [
+// ── Mock shifts for local testing — also the fallback `useShifts()` and the
+// Settings bootstrap context return on a failed/denied shifts fetch, so both
+// render the same placeholder schedule instead of an empty list. ──
+export const MOCK_SHIFTS: DbShift[] = [
   {
     id: "mock-shift-morning", name: arabicSource("messages.morning_shift"), description: arabicSource("messages.morning_official_working_hours"), is_default: true,
     grace_minutes: 10, late_to_absent_hours: 3, target_hours_per_day: 8,
@@ -92,10 +94,10 @@ export const useShifts = () => {
   const { data: shifts, loading, refetch } = useCachedList("shifts", async () => {
     try {
       const data = await odooData.fetchShifts();
-      return data.length > 0 ? data : _mockShifts;
+      return data.length > 0 ? data : MOCK_SHIFTS;
     } catch (e) {
       console.error(e);
-      return _mockShifts;
+      return MOCK_SHIFTS;
     }
   }, "Failed to load shifts");
   return { shifts, loading, refetch };

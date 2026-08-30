@@ -23,6 +23,7 @@ export const useLeavePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [showPermForm, setShowPermForm] = useState(false);
   const [viewingAttachmentsFor, setViewingAttachmentsFor] = useState<DbLeaveRequest | null>(null);
+  const [followingUpOnExcuse, setFollowingUpOnExcuse] = useState<DbLeaveRequest | null>(null);
   const [viewMode, setViewMode] = useState<LeaveViewMode>("list");
   const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>("start");
   const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">("desc");
@@ -160,6 +161,20 @@ export const useLeavePage = () => {
     setViewingAttachmentsFor(null);
   }, []);
 
+  const handleOpenFollowUpExcuse = useCallback((leave: DbLeaveRequest) => {
+    setFollowingUpOnExcuse(leave);
+  }, []);
+
+  const handleCloseFollowUpExcuse = useCallback(() => {
+    setFollowingUpOnExcuse(null);
+  }, []);
+
+  const handleSubmitFollowUpExcuse = useCallback(async (leaveId: string, note: string) => {
+    await odooData.followUpLeaveExcuse(leaveId, note || undefined);
+    setFollowingUpOnExcuse(null);
+    refetchRequests();
+  }, [refetchRequests]);
+
   // Keep the open attachments modal's leave in sync after an upload/delete
   // triggers a refetch — `requests` gets a fresh object, `viewingAttachmentsFor`
   // otherwise stays pinned to the stale snapshot it was opened with.
@@ -182,12 +197,16 @@ export const useLeavePage = () => {
     empMap,
     filter,
     filteredRequests,
+    followingUpOnExcuse,
     handleApprove,
     handleCloseAttachments,
+    handleCloseFollowUpExcuse,
     handleDelete,
     handleLeaveSubmit,
+    handleOpenFollowUpExcuse,
     handlePermissionSubmit,
     handleReject,
+    handleSubmitFollowUpExcuse,
     handleViewAttachments,
     leaveSettings,
     leaveSortBy,

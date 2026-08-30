@@ -5,11 +5,7 @@ import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import {
-  empDisplayName,
-  type DbLeaveRequest,
-  type DbLeaveType,
-} from "@/shared/hooks";
+import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { leaveCardClass } from "../styles";
 import type { LeaveSortKey } from "../types";
 import LeaveRequestTableRow from "./LeaveRequestTableRow";
@@ -27,6 +23,7 @@ type LeaveRequestsListViewProps = {
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
   onViewAttachments: (leave: DbLeaveRequest) => void;
+  onFollowUpExcuse: (leave: DbLeaveRequest) => void;
 };
 
 const LeaveRequestsListView = ({
@@ -41,6 +38,7 @@ const LeaveRequestsListView = ({
   onReject,
   onDelete,
   onViewAttachments,
+  onFollowUpExcuse,
 }: LeaveRequestsListViewProps) => {
   const handleSort = (key: LeaveSortKey): void => {
     toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
@@ -60,9 +58,6 @@ const LeaveRequestsListView = ({
     }
     renderRow={(leave, index) => {
       const employee = empMap[leave.employee_id];
-      const employeeName = employee
-        ? empDisplayName(employee)
-        : leave.employee_id;
       const leaveType = leaveTypes.find(
         (type) =>
           type.code === leave.leave_type ||
@@ -74,12 +69,14 @@ const LeaveRequestsListView = ({
           key={leave.id}
           leave={leave}
           index={index}
-          employeeName={employeeName}
+          employee={employee}
+          fallbackEmployeeLabel={leave.employee_id}
           leaveType={leaveType}
           onApprove={onApprove}
           onReject={onReject}
           onDelete={onDelete}
           onViewAttachments={onViewAttachments}
+          onFollowUpExcuse={onFollowUpExcuse}
         />
       );
     }}

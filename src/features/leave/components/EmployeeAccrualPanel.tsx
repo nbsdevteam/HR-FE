@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { LoadingState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useLeaveAccruals, useLeaveBalanceSummary, type DbLeaveType } from "@/shared/hooks";
+import AdditionalLeavePanel from "./AdditionalLeavePanel";
 import LeaveAccrualCard from "./LeaveAccrualCard";
 import LeaveAccrualExcludedBanner from "./LeaveAccrualExcludedBanner";
 import LeaveAccrualHistoryTable from "./LeaveAccrualHistoryTable";
@@ -23,13 +24,25 @@ const HISTORY_LIMIT = 24;
  * without the accrual engine see the page exactly as before.
  */
 const EmployeeAccrualPanel = ({ employeeId, leaveTypes }: EmployeeAccrualPanelProps) => {
-  const { summary, loading: summaryLoading, error } = useLeaveBalanceSummary(employeeId);
+  const {
+    summary,
+    loading: summaryLoading,
+    error,
+    refetch: refetchSummary,
+  } = useLeaveBalanceSummary(employeeId);
   const { history, loading: historyLoading } = useLeaveAccruals(employeeId, {
     limit: HISTORY_LIMIT,
   });
 
   const accrualItems = useMemo(
     () => (summary?.items ?? []).filter((item) => item.accrual_enabled),
+    [summary],
+  );
+
+  // Additional Annual Leave only makes sense for types that take an
+  // allocation — granting bonus days is meaningless without one to fund.
+  const grantEligibleItems = useMemo(
+    () => (summary?.items ?? []).filter((item) => item.requires_allocation),
     [summary],
   );
 
@@ -64,7 +77,13 @@ const EmployeeAccrualPanel = ({ employeeId, leaveTypes }: EmployeeAccrualPanelPr
   }
 
   const historyItems = history?.items ?? [];
-  if (!summary.probation && !summary.accrual_excluded && accrualItems.length === 0 && historyItems.length === 0) {
+  if (
+    !summary.probation &&
+    !summary.accrual_excluded &&
+    accrualItems.length === 0 &&
+    historyItems.length === 0 &&
+    grantEligibleItems.length === 0
+  ) {
     return null;
   }
 
@@ -98,6 +117,16 @@ const EmployeeAccrualPanel = ({ employeeId, leaveTypes }: EmployeeAccrualPanelPr
             />
           ))}
         </div>
+      )}
+
+      {grantEligibleItems.length > 0 && (
+        <AdditionalLeavePanel
+          employeeId={summary.employee_id}
+          entitlementItems={grantEligibleItems}
+          leaveTypes={leaveTypes}
+          yearsOfService={summary.years_of_service}
+          onBalanceChanged={refetchSummary}
+        />
       )}
 
       <div className="space-y-2">

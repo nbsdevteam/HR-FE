@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { Zap } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { useSystemModules } from "@/shared/hooks";
+import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { cardCls } from "../styles";
 import { useSystemModuleToggle } from "../hooks/useSystemModuleToggle";
 import { groupByCategory } from "../utils/groupByCategory";
@@ -17,7 +17,7 @@ const SystemModulesCard = ({ showToast }: TSystemModulesCardProps) => {
     modules: sysModules,
     loading: modulesLoading,
     refetch: refetchModules,
-  } = useSystemModules();
+  } = useSettingsBootstrap();
   const { toggleModule } = useSystemModuleToggle(refetchModules, showToast);
 
   const groupedModules = useMemo(

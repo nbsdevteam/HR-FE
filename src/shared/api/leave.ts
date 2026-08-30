@@ -165,7 +165,7 @@ export const requestLeave = async (payload: {
   hour_from?: number;
   attachment?: { file_name: string; file_data: string };
   attachment_ids?: (string | number)[];
-}) => {
+}): Promise<DbLeaveRequest> => {
   const params: Record<string, unknown> = {
     leave_type_id: eid(payload.leave_type_id),
     date_from: payload?.date_from,
@@ -183,7 +183,11 @@ export const requestLeave = async (payload: {
   if (payload?.attachment) params.attachment = payload.attachment;
   if (payload?.attachment_ids?.length)
     params.attachment_ids = payload.attachment_ids.map(eid);
-  return hrCall("/api/hr/leave/request", params);
+  // Still `success: true` when the balance was insufficient on an
+  // excuse-eligible type (backend §2.3) — the caller reads `excuse.active`
+  // to tell that apart from an ordinary approved-on-submit request.
+  const data = await hrCall<unknown>("/api/hr/leave/request", params);
+  return mapLeaveRequest(data);
 };
 
 export const fetchLeaveSettings = async (): Promise<DbLeaveSettings> => {

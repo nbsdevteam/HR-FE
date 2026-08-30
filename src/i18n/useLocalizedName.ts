@@ -38,3 +38,61 @@ export const useLocalizedName = (
     secondaryDir: undefined,
   };
 }
+
+/** The two name columns every employee record carries. */
+export type TEmployeeNameFields = {
+  name?: string | null;
+  arabic_name?: string | null;
+};
+
+const LOGIN_LIKE = /^[a-z0-9._-]+$/i;
+const ARABIC_SCRIPT = /[؀-ۿ]/;
+
+/** "ahmed.ali" is a login handle the backend stores in `name`, not a person's name. */
+const looksLikeLogin = (value: string): boolean =>
+  LOGIN_LIKE.test(value) && (value.includes(".") || value.includes("_"));
+
+/**
+ * Splits an employee's `arabic_name`/`name` columns into the name_ar/name_en
+ * pair the localized-name hooks expect, applying the same guards as
+ * `empDisplayName`: an `arabic_name` holding Latin text is not an Arabic name,
+ * and a login handle is not a display name.
+ */
+export const employeeNamePair = (
+  employee: TEmployeeNameFields | null | undefined,
+): { nameAr: string; nameEn: string | null } => {
+  const arabic = (employee?.arabic_name ?? "").trim();
+  const english = (employee?.name ?? "").trim();
+  const usableArabic = ARABIC_SCRIPT.test(arabic) ? arabic : "";
+  const usableEnglish = english && !looksLikeLogin(english) ? english : "";
+  return {
+    nameAr: usableArabic || usableEnglish || arabic || english || "—",
+    nameEn: usableEnglish || null,
+  };
+};
+
+/**
+ * Non-hook form, for callbacks a component hands to a child (a TypeAhead's
+ * `getLabel`, a `.map()` inside a render prop) where a hook cannot be called.
+ * Pair it with `useIsArabicLanguage` so the value still tracks the language.
+ */
+export const localizedEmployeeName = (
+  employee: TEmployeeNameFields | null | undefined,
+  isArabic: boolean,
+): string => {
+  const { nameAr, nameEn } = employeeNamePair(employee);
+  return isArabic ? nameAr : nameEn || nameAr;
+};
+
+/**
+ * `empDisplayName` always prefers the Arabic column, which is what leaves an
+ * English screen showing Arabic names next to English copy. This picks the
+ * column that matches the active language instead, and falls back to whichever
+ * one the record actually has.
+ */
+export const useLocalizedEmployeeName = (
+  employee: TEmployeeNameFields | null | undefined,
+): TLocalizedName => {
+  const { nameAr, nameEn } = employeeNamePair(employee);
+  return useLocalizedName(nameAr, nameEn);
+};

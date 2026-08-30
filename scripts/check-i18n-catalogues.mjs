@@ -46,6 +46,10 @@ const repositoryArabicAllowlist = new Set([
   "device-sync/sync-service.mjs",
   "device-sync/test-connection.mjs",
   "src/imports/style_guide_hr_system.md",
+  // Documentation, and the HTML shell whose <title> is replaced at runtime by
+  // `syncDocumentLocale` — neither is UI copy that needs a semantic key.
+  "docs/report_naming.md",
+  "index.html",
   "src/features/attendance/components/shiftassigner.tsx",
   "src/features/auth/pages/login.tsx",
   "src/features/employees/pages/lifecycle.tsx",

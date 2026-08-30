@@ -122,6 +122,23 @@ export const updateDepartment = async (
   return hrCall(`/api/hr/departments/${eid(departmentId)}/update`, payload);
 }
 
+export type DepartmentBulkUpdateEntry = { id: string | number } & Record<string, unknown>;
+
+/**
+ * Replaces a sequential `for...of updateDepartment(...)` loop with one
+ * request — all-or-nothing on the backend (every row validated before any
+ * write happens), so a bad row can no longer leave earlier rows applied
+ * (backend "New endpoint" §, departments/bulk-update).
+ */
+export const bulkUpdateDepartments = async (
+  updates: DepartmentBulkUpdateEntry[],
+): Promise<DbDepartment[]> => {
+  const data = await hrCall<{ updated?: any[] }>("/api/hr/departments/bulk-update", {
+    updates: updates.map((update) => ({ ...update, id: eid(update.id) })),
+  });
+  return (data?.updated || []).map(mapDepartment);
+}
+
 export const createDepartment = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/departments/create", payload);
 }

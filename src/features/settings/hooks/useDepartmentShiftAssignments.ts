@@ -16,10 +16,11 @@ export const useDepartmentShiftAssignments = (departments: DbDepartment[], showT
   const saveDeptAssignments = useCallback(async () => {
     setSavingDepts(true);
     try {
-      for (const [deptId, shiftId] of Object.entries(deptShiftAssignments)) {
-        const updateData = shiftId ? { default_shift_id: shiftId } : { default_shift_id: null };
-        await odooData.updateDepartment(deptId, updateData);
-      }
+      const updates = Object.entries(deptShiftAssignments).map(([id, shiftId]) => ({
+        id,
+        default_shift_id: shiftId || null,
+      }));
+      await odooData.bulkUpdateDepartments(updates);
       showToast(arabicSource("settings.section_assignments_were_saved_successfully"));
     } catch {
       showToast(arabicSource("settings.error_saving_partition_assignments"));
