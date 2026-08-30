@@ -35,7 +35,7 @@ const EmployeeBalanceListItem = ({ emp, index, totalUsed, onSelect }: EmployeeBa
         <p className="text-muted-foreground" style={{ fontSize: 12 }}>{emp.department}</p>
       </div>
       <div className="text-end">
-        <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.user")} {totalUsed} {arabicSource("common.days_2")}</p>
+        <p className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("common.used")} {totalUsed} {arabicSource("common.days_2")}</p>
       </div>
     </motion.button>
   );

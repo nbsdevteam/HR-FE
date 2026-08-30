@@ -37,7 +37,7 @@ const LeaveBalanceCard = ({ leaveType: lt, index: i, bal, entitlement }: LeaveBa
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: lt.color }} />
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.user")} {usedDays}</p>
+        <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("common.used")} {usedDays}</p>
         {carryover > 0 && <p className="text-muted-foreground" style={{ fontSize: 11 }}>{arabicSource("leave.relay")} {carryover}</p>}
       </div>
       <div className="flex flex-wrap gap-1 mt-2">

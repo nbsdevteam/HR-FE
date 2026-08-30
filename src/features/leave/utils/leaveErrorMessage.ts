@@ -23,6 +23,9 @@ const LEAVE_ERROR_KEYS: Record<string, ArabicSourceKey> = {
   insufficient_balance: "leave.error_insufficient_balance",
   leave_type_not_found: "leave.error_leave_type_not_found",
   employee_not_found: "leave.error_employee_not_found",
+  // v1.17.0 Additional Annual Leave grants
+  reason_required: "leave.error_reason_required",
+  invalid_additional_days: "leave.error_invalid_additional_days",
 };
 
 /** `probation_block` responses also carry the probation end date (backend §6). */

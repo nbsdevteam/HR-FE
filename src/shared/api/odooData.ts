@@ -11,6 +11,7 @@ export * from "./settings";
 export * from "./payroll";
 export * from "./leave";
 export * from "./leaveAccrual";
+export * from "./leaveEntitlementAdjustments";
 export * from "./leaveAttachments";
 export * from "./lifecycle";
 export * from "./recruitment";

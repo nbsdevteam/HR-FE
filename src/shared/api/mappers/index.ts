@@ -8,6 +8,7 @@ export * from "./positions";
 export * from "./settings";
 export * from "./payroll";
 export * from "./leave";
+export * from "./leaveEntitlementAdjustment";
 export * from "./lifecycle";
 export * from "./recruitment";
 export * from "./performance";
