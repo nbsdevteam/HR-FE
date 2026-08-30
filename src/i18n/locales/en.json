@@ -1692,6 +1692,8 @@
   "errors.not_found_title": "Page not found",
   "errors.not_found_message": "The page you requested could not be found.",
   "errors.back_to_dashboard": "Back to dashboard",
+  "errors.forbidden_title": "Access denied",
+  "errors.forbidden_message": "You don't have permission to access this page.",
   "languages.self_name": "English",
   "languages.selector_label": "Choose language",
   "common.breadcrumb": "Breadcrumb",

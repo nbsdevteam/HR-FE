@@ -1692,6 +1692,8 @@
   "errors.not_found_title": "الصفحة غير موجودة",
   "errors.not_found_message": "تعذر العثور على الصفحة التي طلبتها.",
   "errors.back_to_dashboard": "العودة إلى لوحة التحكم",
+  "errors.forbidden_title": "غير مصرح بالوصول",
+  "errors.forbidden_message": "ليس لديك الصلاحية اللازمة للوصول إلى هذه الصفحة.",
   "languages.self_name": "العربية",
   "languages.selector_label": "اختيار اللغة",
   "common.breadcrumb": "مسار التنقل",

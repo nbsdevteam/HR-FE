@@ -1,6 +1,7 @@
 import { ScanFace, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalOverlay } from "@/shared/components";
+import { usePermissions } from "@/shared/auth/permissions";
 import type { DeviceFacePreview } from "../types";
 
 type DeviceFaceModalProps = {
@@ -10,6 +11,9 @@ type DeviceFaceModalProps = {
 };
 
 const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => {
+  const { hasPermission } = usePermissions();
+  const canManage = hasPermission("hr.devices.manage");
+
   const handleDeleteClick = (_event: React.MouseEvent<HTMLButtonElement>): void => {
     onDelete(face.empNo);
   };
@@ -43,7 +47,7 @@ const DeviceFaceModal = ({ face, onClose, onDelete }: DeviceFaceModalProps) => {
           <span>{arabicSource("devicemanagement.no_face_image_registered")}</span>
         </div>
       )}
-      {face.image && (
+      {face.image && canManage && (
         <Button
           variant="destructive"
           size="sm"

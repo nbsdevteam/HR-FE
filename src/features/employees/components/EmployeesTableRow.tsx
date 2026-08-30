@@ -8,6 +8,7 @@ import { formatCurrency } from "@/shared/utils/currency";
 import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { arabicSource } from "@/i18n/source";
+import { usePermissions } from "@/shared/auth/permissions";
 import { statusColors } from "../styles";
 import type { DeleteEmployeeTarget } from "../types";
 
@@ -25,6 +26,9 @@ type EmployeesTableRowProps = {
 const EmployeesTableRow = ({
   emp, dbEmp, index, isPending, isDeviceSynced, onSelectEmployee, onEditEmployee, onDeleteTargetChange,
 }: EmployeesTableRowProps) => {
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission("hr.employees.edit");
+  const canDeactivate = hasPermission("hr.employees.deactivate");
   const deviceNo = dbEmp?.device_employee_no;
 
   const handleSelect = useCallback(() => onSelectEmployee(emp), [onSelectEmployee, emp]);
@@ -104,16 +108,18 @@ const EmployeesTableRow = ({
             icon={Eye}
             iconClassName="w-4 h-4 text-muted-foreground"
           />
-          <Button
-            variant="unstyled"
-            size="unstyled"
-            rounded="rounded"
-            onClick={handleEdit}
-            className="p-1.5 hover:bg-secondary"
-            icon={Edit}
-            iconClassName="w-4 h-4 text-muted-foreground"
-          />
-          {dbEmp && (
+          {canEdit && (
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              onClick={handleEdit}
+              className="p-1.5 hover:bg-secondary"
+              icon={Edit}
+              iconClassName="w-4 h-4 text-muted-foreground"
+            />
+          )}
+          {dbEmp && canDeactivate && (
             <Button
               variant="unstyled"
               size="unstyled"
