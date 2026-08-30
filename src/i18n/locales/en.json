@@ -2525,5 +2525,16 @@
   "settings.sort_order_label": "Sort order",
   "settings.encashment_percentage_range": "Encashment percentage must be between 0 and 100",
   "settings.days_per_request_range": "Minimum days cannot exceed the maximum",
-  "settings.accrual_days_per_month_hint": "Leave blank to derive from Days per Year ÷ 12"
+  "settings.accrual_days_per_month_hint": "Leave blank to derive from Days per Year ÷ 12",
+  "hierarchy.change_manager_action": "Change Manager",
+  "hierarchy.change_manager_subtitle": "Choose a new direct manager",
+  "hierarchy.change_manager_current_label": "Current manager",
+  "hierarchy.change_manager_new_label": "New manager",
+  "hierarchy.change_manager_confirm_heading": "Confirm the manager change for",
+  "hierarchy.change_manager_continue": "Continue",
+  "hierarchy.change_manager_back": "Back",
+  "hierarchy.filter_all_departments": "All departments",
+  "hierarchy.filter_all_job_titles": "All job titles",
+  "hierarchy.filter_all_managers": "All managers",
+  "hierarchy.clear_filters": "Clear filters"
 }

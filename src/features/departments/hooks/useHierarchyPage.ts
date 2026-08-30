@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useAddPositionForm } from "./useAddPositionForm";
 import { useHierarchyCrud } from "./useHierarchyCrud";
 import { useHierarchyExport } from "./useHierarchyExport";
@@ -56,6 +56,14 @@ export const useHierarchyPage = () => {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const handleChangeManagerConfirm = useCallback(
+    async (empDbId: string, managerDbId: string) => {
+      await handleLinkEmployee(empDbId, managerDbId);
+      modals.setChangeManagerTarget(null);
+    },
+    [handleLinkEmployee, modals.setChangeManagerTarget],
+  );
+
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), TOAST_TIMEOUT_MS);
@@ -83,6 +91,7 @@ export const useHierarchyPage = () => {
     searchInputRef,
     deleteTarget: modals.deleteTarget,
     editTarget: modals.editTarget,
+    changeManagerTarget: modals.changeManagerTarget,
     showUnlinked: modals.showUnlinked,
     saving,
     showSetupModal: modals.showSetupModal,
@@ -97,9 +106,19 @@ export const useHierarchyPage = () => {
     panEnabled: panZoom.panEnabled,
     allNodes: treeData.allNodes,
     departments: treeData.departments,
+    jobTitles: treeData.jobTitles,
+    managerOptions: treeData.managerOptions,
     searchResults: view.searchResults,
     searchMatchIds: view.searchMatchIds,
     highlightedIds: view.highlightedIds,
+    departmentFilter: view.departmentFilter,
+    jobTitleFilter: view.jobTitleFilter,
+    managerFilter: view.managerFilter,
+    hasActiveFilter: view.hasActiveFilter,
+    setDepartmentFilter: view.setDepartmentFilter,
+    setJobTitleFilter: view.setJobTitleFilter,
+    setManagerFilter: view.setManagerFilter,
+    clearFilters: view.clearFilters,
     departmentStats: treeData.departmentStats,
     toggleExpand: view.toggleExpand,
     expandAll: view.expandAll,
@@ -137,8 +156,11 @@ export const useHierarchyPage = () => {
     handleCloseSetupModal: modals.handleCloseSetupModal,
     handleCloseCleanupModal: modals.handleCloseCleanupModal,
     handleCloseAddDepartmentModal: modals.handleCloseAddDepartmentModal,
+    handleCloseChangeManagerModal: modals.handleCloseChangeManagerModal,
     handleDetailDelete: modals.handleDetailDelete,
     handleDetailEdit: modals.handleDetailEdit,
+    handleDetailChangeManager: modals.handleDetailChangeManager,
+    handleChangeManagerConfirm,
     refetchHierarchyAndPositions: treeData.refetchHierarchyAndPositions,
   };
 };

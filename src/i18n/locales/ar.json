@@ -2525,5 +2525,16 @@
   "settings.sort_order_label": "ترتيب العرض",
   "settings.encashment_percentage_range": "نسبة الصرف يجب أن تكون بين 0 و100",
   "settings.days_per_request_range": "أقل عدد أيام لا يمكن أن يكون أكبر من الأقصى",
-  "settings.accrual_days_per_month_hint": "اتركه فارغاً لاشتقاقه من أيام السنة ÷ 12"
+  "settings.accrual_days_per_month_hint": "اتركه فارغاً لاشتقاقه من أيام السنة ÷ 12",
+  "hierarchy.change_manager_action": "تغيير المدير",
+  "hierarchy.change_manager_subtitle": "اختر مديراً مباشراً جديداً",
+  "hierarchy.change_manager_current_label": "المدير الحالي",
+  "hierarchy.change_manager_new_label": "المدير الجديد",
+  "hierarchy.change_manager_confirm_heading": "تأكيد تغيير المدير لـ",
+  "hierarchy.change_manager_continue": "استمرار",
+  "hierarchy.change_manager_back": "رجوع",
+  "hierarchy.filter_all_departments": "كل الأقسام",
+  "hierarchy.filter_all_job_titles": "كل المسميات الوظيفية",
+  "hierarchy.filter_all_managers": "كل المديرين",
+  "hierarchy.clear_filters": "مسح الفلاتر"
 }

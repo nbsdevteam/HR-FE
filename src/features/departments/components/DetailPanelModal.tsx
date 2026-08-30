@@ -21,6 +21,7 @@ type DetailPanelModalProps = {
   onClose: () => void;
   onDelete: (node: OrgNode) => void;
   onEdit: (node: OrgNode) => void;
+  onChangeManager: (node: OrgNode) => void;
 };
 
 const DetailPanelModal = ({
@@ -29,6 +30,7 @@ const DetailPanelModal = ({
   onClose,
   onDelete,
   onEdit,
+  onChangeManager,
 }: DetailPanelModalProps) => (
   <ModalOverlay
     onClose={onClose}
@@ -43,6 +45,7 @@ const DetailPanelModal = ({
         onClose={onClose}
         onDelete={onDelete}
         onEdit={onEdit}
+        onChangeManager={onChangeManager}
       />
     </Suspense>
   </ModalOverlay>

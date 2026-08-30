@@ -5,7 +5,6 @@ import { Users, ChevronDown, UserPlus, Crown } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { CLEVEL_COLOR } from "../styles";
-import { countDescendants } from "../utils/hierarchyTree";
 import OrgCardExtraEmployee from "./OrgCardExtraEmployee";
 import TreeConnectors from "./TreeConnectors";
 
@@ -22,7 +21,7 @@ const OrgCard = ({
   const isSelected = selectedId === node.id;
   const isSearchMatch = searchMatchIds.has(node.id);
   const isHighlighted = highlightedIds.has(node.id);
-  const totalChildren = countDescendants(node);
+  const totalChildren = node.children.length;
   const isDimmed = searchMatchIds.size > 0 && !isSearchMatch && !isHighlighted;
   const isOwner = node.department === arabicSource("common.owner");
   const isCLevel = node.department === arabicSource("common.senior_management");

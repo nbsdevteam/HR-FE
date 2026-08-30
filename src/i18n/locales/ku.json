@@ -2525,5 +2525,16 @@
   "settings.sort_order_label": "ڕیزبەندی پیشاندان",
   "settings.encashment_percentage_range": "ڕێژەی نەقدکردن دەبێت لەنێوان ٠ و ١٠٠ بێت",
   "settings.days_per_request_range": "کەمترین ڕۆژ ناتوانێت زیاتر بێت لە زۆرترین",
-  "settings.accrual_days_per_month_hint": "بەتاڵی بهێڵەرەوە بۆ دەرهێنانی خۆکار لە ڕۆژەکانی ساڵ ÷ ١٢"
+  "settings.accrual_days_per_month_hint": "بەتاڵی بهێڵەرەوە بۆ دەرهێنانی خۆکار لە ڕۆژەکانی ساڵ ÷ ١٢",
+  "hierarchy.change_manager_action": "گۆڕینی بەڕێوەبەر",
+  "hierarchy.change_manager_subtitle": "بەڕێوەبەرێکی ڕاستەوخۆی نوێ هەڵبژێرە",
+  "hierarchy.change_manager_current_label": "بەڕێوەبەری ئێستا",
+  "hierarchy.change_manager_new_label": "بەڕێوەبەری نوێ",
+  "hierarchy.change_manager_confirm_heading": "دڵنیابوونەوە لە گۆڕینی بەڕێوەبەری",
+  "hierarchy.change_manager_continue": "بەردەوامبوون",
+  "hierarchy.change_manager_back": "گەڕانەوە",
+  "hierarchy.filter_all_departments": "هەموو بەشەکان",
+  "hierarchy.filter_all_job_titles": "هەموو ناونیشانە کارەکان",
+  "hierarchy.filter_all_managers": "هەموو بەڕێوەبەرەکان",
+  "hierarchy.clear_filters": "سڕینەوەی فلتەرەکان"
 }
