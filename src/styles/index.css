@@ -1,7 +1,11 @@
 /* Global styles */
+/* fonts.css holds a remote `@import url(...)` — it must stay the first
+   statement in the merged stylesheet (CSS requires @import precede all other
+   rules), so it's imported here before tailwind.css/theme.css expand into
+   real rules. */
+@import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
-@import './fonts.css';
 
 /* Directional navigation glyphs follow the active writing direction. */
 html[dir="rtl"] :where(
