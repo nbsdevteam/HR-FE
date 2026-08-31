@@ -19,6 +19,7 @@ type EmployeeCoreFieldsProps = {
   departmentOptions: DbDepartment[];
   designationOptions: DbPosition[];
   managerOptions: EmployeeOption[];
+  birthDateError: string | null;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
 };
 
@@ -27,6 +28,7 @@ const EmployeeCoreFields = ({
   departmentOptions,
   designationOptions,
   managerOptions,
+  birthDateError,
   onFormChange,
 }: EmployeeCoreFieldsProps) => {
   const handleNationalIdChange = useCallback(
@@ -72,6 +74,12 @@ const EmployeeCoreFields = ({
   const handleSalaryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void =>
       onFormChange({ salary: e.target.value }),
+    [onFormChange],
+  );
+
+  const handleBirthDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void =>
+      onFormChange({ birthDate: e.target.value }),
     [onFormChange],
   );
 
@@ -149,6 +157,17 @@ const EmployeeCoreFields = ({
         onChange={handleSalaryChange}
         placeholder="0"
         dir="ltr"
+      />
+      <LabeledInput
+        label={arabicSource("common.birth_date")}
+        type="date"
+        value={addForm.birthDate}
+        onChange={handleBirthDateChange}
+        max={todayInBaghdad()}
+        error={birthDateError}
+        dir="ltr"
+        addedContainerClasses="w-full col-span-2"
+        addedInputClasses="w-full block"
       />
       <LabeledInput
         label={arabicSource("common.direct_date")}

@@ -2472,5 +2472,7 @@
   "كل المسميات الوظيفية": "hierarchy.filter_all_job_titles",
   "كل المديرين": "hierarchy.filter_all_managers",
   "مسح الفلاتر": "hierarchy.clear_filters",
-  "تعذر تحميل لوحة التحكم": "dashboard.control_panel_unavailable"
+  "تعذر تحميل لوحة التحكم": "dashboard.control_panel_unavailable",
+  "تاريخ الميلاد لا يمكن أن يكون في المستقبل": "employees.birth_date_cannot_be_in_the_future",
+  "تاريخ الميلاد يجب أن يكون بصيغة سنة-شهر-يوم": "employees.birth_date_invalid_format"
 }

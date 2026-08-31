@@ -27,6 +27,7 @@ const Employees = () => {
     addForm,
     addSaving,
     allEmployees,
+    birthDateError,
     cities,
     citySuggestions,
     closeAddModal,
@@ -170,6 +171,7 @@ const Employees = () => {
               addForm={addForm}
               addSaving={addSaving}
               addError={addError}
+              birthDateError={birthDateError}
               deviceSyncStatus={deviceSyncStatus}
               nextEmployeeId={nextEmployeeId}
               loadingNextId={loadingNextId}

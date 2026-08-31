@@ -20,6 +20,7 @@ const baseEmployee: Employee = {
   phone: "",
   joinDate: "",
   startDate: "",
+  birthDate: "",
   endDate: null,
   status: "active",
   salary: 0,

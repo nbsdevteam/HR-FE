@@ -10,6 +10,7 @@ import type {
   EmployeeDetailPanelProps,
   PositionOption,
 } from "../types";
+import { birthDateFieldError } from "../utils/birthDate";
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeAddressForm } from "./useEmployeeAddressForm";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
@@ -26,6 +27,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [editData, setEditData] = useState<Employee>({ ...employee });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [birthDateError, setBirthDateError] = useState<string | null>(null);
   const [addingNewDept, setAddingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState("");
   const [creatingDept, setCreatingDept] = useState(false);
@@ -88,6 +90,9 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   }, [designations, resolvedPositionId, editData.position]);
 
   const handleEditField = useCallback((field: keyof Employee, value: string | number) => {
+    // Editing the date clears the rejection it caused, so a stale message never
+    // sits under an input the user has already corrected.
+    if (field === "birthDate") setBirthDateError(null);
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -135,8 +140,15 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       setSaveError(arabicSource("employees.join_date_cannot_be_in_the_future"));
       return;
     }
+    // The picker is already capped at today; this catches a typed-in date and
+    // keeps `birth_date_in_future` a backstop rather than a round trip.
+    if (editData.birthDate && editData.birthDate > todayInBaghdad()) {
+      setBirthDateError(arabicSource("employees.birth_date_cannot_be_in_the_future"));
+      return;
+    }
     setSaving(true);
     setSaveError(null);
+    setBirthDateError(null);
     try {
       // The backend now patches `address` partially — untouched keys are left
       // alone, so it's safe to just send the current structured values. Ids
@@ -151,6 +163,14 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       if (editData.cityId) address.city_id = Number(editData.cityId);
       else if (editData.city) address.city = editData.city;
       if (editData.residence) address.residence = editData.residence;
+
+      // `/update` is a partial patch, and on it `null` means "not part of this
+      // patch" while `""` *erases* the stored date. So the key only goes out
+      // when the user actually touched the field, and only as `""` when they
+      // emptied a date that was there.
+      const birthDatePatch: Record<string, string> = editData.birthDate !== employee.birthDate
+        ? { birth_date: editData.birthDate || "" }
+        : {};
 
       await odooData.updateEmployee(editData.dbId, {
         name: editData.name,
@@ -174,6 +194,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         emergency_phone: editData.emergencyPhone,
         blood_type: editData.bloodType || null,
         manager_id: editData.managerId || null,
+        ...birthDatePatch,
       });
 
       setIsEditing(false);
@@ -196,7 +217,12 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         } catch { /* non-critical */ }
       }
     } catch (e: unknown) {
-      setSaveError(errorMessage(e));
+      // A rejected birth date writes *nothing* — not one field of the patch —
+      // so the message has to point at the input that has to be fixed and
+      // resubmitted, rather than reading as a generic save failure.
+      const fieldError = birthDateFieldError(e);
+      if (fieldError) setBirthDateError(fieldError);
+      else setSaveError(errorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -204,6 +230,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
+    setBirthDateError(null);
     setEditData({ ...employee });
     custodyForm.setShowAddCustody(false);
     attachmentForm.setShowAddAttachment(false);
@@ -213,6 +240,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     addingNewDept,
     allDepts,
     allPositions,
+    birthDateError,
     creatingDept,
     editData,
     handleCancelEdit,

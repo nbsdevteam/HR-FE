@@ -2537,5 +2537,8 @@
   "hierarchy.filter_all_job_titles": "هەموو ناونیشانە کارەکان",
   "hierarchy.filter_all_managers": "هەموو بەڕێوەبەرەکان",
   "hierarchy.clear_filters": "سڕینەوەی فلتەرەکان",
-  "dashboard.control_panel_unavailable": "نەتوانرا پانێڵی کۆنترۆڵ باربکرێت"
+  "dashboard.control_panel_unavailable": "نەتوانرا پانێڵی کۆنترۆڵ باربکرێت",
+  "common.birth_date": "ڕێکەوتی لەدایکبوون",
+  "employees.birth_date_cannot_be_in_the_future": "بەرواری لەدایکبوون ناتوانێت لە داهاتوودا بێت",
+  "employees.birth_date_invalid_format": "بەرواری لەدایکبوون دەبێت بە شێوازی ساڵ-مانگ-ڕۆژ بێت"
 }

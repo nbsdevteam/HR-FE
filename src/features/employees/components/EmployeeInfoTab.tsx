@@ -10,6 +10,7 @@ import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
 import EmployeeAddressFields from "./EmployeeAddressFields";
+import EmployeeBirthDateField from "./EmployeeBirthDateField";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeEmergencyContactField from "./EmployeeEmergencyContactField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
@@ -39,6 +40,7 @@ type EmployeeInfoTabProps = {
   locationCitySuggestions: GeoCity[];
   creatingLocationCity: boolean;
   locationCityCreateError: string | null;
+  birthDateError: string | null;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
   onDepartmentSelect: (deptId: string, deptName: string) => void;
   onPositionSelect: (positionId: string, positionName: string) => void;
@@ -75,6 +77,7 @@ const EmployeeInfoTab = ({
   locationCitySuggestions,
   creatingLocationCity,
   locationCityCreateError,
+  birthDateError,
   onFieldChange,
   onDepartmentSelect,
   onPositionSelect,
@@ -246,6 +249,12 @@ const EmployeeInfoTab = ({
           <input value={editData.nationalId} onChange={handleNationalIdChange}
             className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
         }
+      />
+      <EmployeeBirthDateField
+        birthDate={editData.birthDate}
+        isEditing={isEditing}
+        error={birthDateError}
+        onFieldChange={onFieldChange}
       />
       <EmployeeEmergencyContactField
         editData={editData}

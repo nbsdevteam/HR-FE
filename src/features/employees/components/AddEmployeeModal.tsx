@@ -14,6 +14,7 @@ type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
   addSaving: boolean;
   addError: string | null;
+  birthDateError: string | null;
   deviceSyncStatus: DeviceSyncStatus;
   nextEmployeeId: number | null;
   loadingNextId: boolean;
@@ -48,6 +49,7 @@ const AddEmployeeModal = ({
   addForm,
   addSaving,
   addError,
+  birthDateError,
   deviceSyncStatus,
   nextEmployeeId,
   loadingNextId,
@@ -124,6 +126,7 @@ const AddEmployeeModal = ({
             departmentOptions={departmentOptions}
             designationOptions={designationOptions}
             managerOptions={managerOptions}
+            birthDateError={birthDateError}
             onFormChange={onFormChange}
           />
           <div className="mt-3">

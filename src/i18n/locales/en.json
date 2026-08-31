@@ -2537,5 +2537,8 @@
   "hierarchy.filter_all_job_titles": "All job titles",
   "hierarchy.filter_all_managers": "All managers",
   "hierarchy.clear_filters": "Clear filters",
-  "dashboard.control_panel_unavailable": "Could not load the control panel"
+  "dashboard.control_panel_unavailable": "Could not load the control panel",
+  "common.birth_date": "Date of birth",
+  "employees.birth_date_cannot_be_in_the_future": "Birth date cannot be in the future",
+  "employees.birth_date_invalid_format": "Birth date must use the YYYY-MM-DD format"
 }

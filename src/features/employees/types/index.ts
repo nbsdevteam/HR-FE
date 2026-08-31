@@ -23,6 +23,7 @@ export type EmployeeAddForm = {
   departmentId: string;
   salary: string;
   joinDate: string;
+  birthDate: string;
   nationalId: string;
   gender: "male" | "female";
   managerId: string;
@@ -88,6 +89,8 @@ export type Employee = {
   phone: string;
   joinDate: string;
   startDate: string;
+  /** ISO `YYYY-MM-DD`, or "" when no birth date is on file. */
+  birthDate: string;
   endDate: string | null;
   status: string;
   salary: number;
