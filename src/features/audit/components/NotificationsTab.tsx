@@ -17,14 +17,15 @@ const NotificationsTab = () => {
   const { notifications, unreadCount, loading, refetch } = useNotifications();
 
   const filtered = useMemo(() => {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
     return notifications.filter((n) => {
       if (filterType !== "all" && n.type !== filterType) return false;
       if (filterCategory !== "all" && n.category !== filterCategory)
         return false;
       if (
-        searchQuery &&
-        !n.title.includes(searchQuery) &&
-        !(n.body || "").includes(searchQuery)
+        normalizedSearch &&
+        !n.title.toLowerCase().includes(normalizedSearch) &&
+        !(n.body || "").toLowerCase().includes(normalizedSearch)
       )
         return false;
       return true;

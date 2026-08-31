@@ -28,14 +28,17 @@ export const filterWarnings = (
   searchQuery: string,
   filterType: string,
   filterStatus: string,
-): WarningWithEmployee[] => warnings.filter((w) => {
-  const matchesSearch = searchQuery === "" ||
-    (w.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     w.reason?.toLowerCase().includes(searchQuery.toLowerCase()));
-  const matchesType = filterType === "" || w.type === filterType;
-  const matchesStatus = filterStatus === "" || w.status === filterStatus;
-  return matchesSearch && matchesType && matchesStatus;
-});
+): WarningWithEmployee[] => {
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  return warnings.filter((w) => {
+    const matchesSearch = normalizedSearch === "" ||
+      (w.employeeName?.toLowerCase().includes(normalizedSearch) ||
+       w.reason?.toLowerCase().includes(normalizedSearch));
+    const matchesType = filterType === "" || w.type === filterType;
+    const matchesStatus = filterStatus === "" || w.status === filterStatus;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+};
 
 // Escalation indicator: count active warnings per employee
 export const computeWarningsByEmployee = (

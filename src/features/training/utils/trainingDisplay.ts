@@ -23,8 +23,9 @@ export const filterPrograms = (
   if (filter !== allLabel) {
     result = result.filter((p) => p.category === filter);
   }
-  if (searchTerm) {
-    result = result.filter((p) => p.title.includes(searchTerm));
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  if (normalizedSearch) {
+    result = result.filter((p) => p.title.toLowerCase().includes(normalizedSearch));
   }
   return result;
 };

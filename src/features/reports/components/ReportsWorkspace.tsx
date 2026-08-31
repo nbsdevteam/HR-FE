@@ -119,13 +119,14 @@ const ReportsWorkspace = () => {
   });
 
   const filteredTemplates = useMemo(() => {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
     const list = templates.filter((t) => {
       if (filterCategory !== "all" && t.category !== filterCategory)
         return false;
       if (
-        searchQuery &&
-        !t.name_ar.includes(searchQuery) &&
-        !(t.name_en || "").toLowerCase().includes(searchQuery.toLowerCase())
+        normalizedSearch &&
+        !t.name_ar.toLowerCase().includes(normalizedSearch) &&
+        !(t.name_en || "").toLowerCase().includes(normalizedSearch)
       )
         return false;
       return true;

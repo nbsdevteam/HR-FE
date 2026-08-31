@@ -75,16 +75,15 @@ const ContractsTab = ({
     [contractTypes],
   );
 
-  const filtered = useMemo(
-    () =>
-      contracts.filter((c) => {
-        if (!search) return true;
-        const emp = empMap[c.employee_id];
-        const name = emp ? empDisplayName(emp) : "";
-        return name.includes(search);
-      }),
-    [contracts, search, empMap],
-  );
+  const filtered = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    return contracts.filter((c) => {
+      if (!normalizedSearch) return true;
+      const emp = empMap[c.employee_id];
+      const name = emp ? empDisplayName(emp) : "";
+      return name.toLowerCase().includes(normalizedSearch);
+    });
+  }, [contracts, search, empMap]);
 
   const handleCreate = useCallback(async () => {
     if (

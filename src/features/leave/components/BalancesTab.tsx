@@ -53,19 +53,18 @@ const BalancesTab = ({
   // Matches both name columns, not just the displayed one: the list now shows
   // English names in English mode, so an Arabic-only match would make a name
   // the user can see unsearchable.
-  const filteredEmployees = useMemo(
-    () =>
-      employees.filter((e) => {
-        if (!search) return true;
-        const { nameAr, nameEn } = employeeNamePair(e);
-        return (
-          nameAr.includes(search) ||
-          Boolean(nameEn?.includes(search)) ||
-          Boolean(e.department?.includes(search))
-        );
-      }),
-    [employees, search],
-  );
+  const filteredEmployees = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    return employees.filter((e) => {
+      if (!normalizedSearch) return true;
+      const { nameAr, nameEn } = employeeNamePair(e);
+      return (
+        nameAr.toLowerCase().includes(normalizedSearch) ||
+        Boolean(nameEn?.toLowerCase().includes(normalizedSearch)) ||
+        Boolean(e.department?.toLowerCase().includes(normalizedSearch))
+      );
+    });
+  }, [employees, search]);
 
   const handleBackToList = (): void => {
     setSelectedEmp(null);
