@@ -1,12 +1,11 @@
 import { useMemo } from "react";
-import { motion } from "motion/react";
 import { Settings2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useConfigEdits } from "../hooks/useConfigEdits";
 import { groupByCategory } from "../utils/groupByCategory";
 import ConfigCategoryGroup from "./ConfigCategoryGroup";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 interface IConfigurationsCardProps {
   showToast: (message: string) => void;
@@ -29,30 +28,14 @@ const ConfigurationsCard = ({ showToast }: IConfigurationsCardProps) => {
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className={`${cardCls} lg:col-span-2`}
+    <SettingsSectionCard
+      icon={Settings2}
+      title={arabicSource("settings.rules_and_settings")}
+      description={arabicSource(
+        "settings.all_editable_values_applied_directly_to_calculations",
+      )}
+      delay={0.3}
     >
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/20">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <Settings2 className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-foreground">
-              {arabicSource("settings.rules_and_settings")}
-            </h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              {arabicSource(
-                "settings.all_editable_values_applied_directly_to_calculations",
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {configsLoading ? (
         <div className="text-muted-foreground text-center py-6">
           {arabicSource("common.loading")}
@@ -78,7 +61,7 @@ const ConfigurationsCard = ({ showToast }: IConfigurationsCardProps) => {
           ))}
         </div>
       )}
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

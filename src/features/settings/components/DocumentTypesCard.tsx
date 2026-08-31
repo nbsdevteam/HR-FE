@@ -1,13 +1,12 @@
 import { useCallback } from "react";
-import { motion } from "motion/react";
 import { FileCheck, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDocumentType } from "@/shared/hooks";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useDocumentTypeManagement } from "../hooks/useDocumentTypeManagement";
 import TypeList from "./TypeList";
 import NewDocTypeForm from "./NewDocTypeForm";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 const documentTypeDescriptionLine = (documentType: DbDocumentType): string =>
   `${
@@ -40,41 +39,29 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
     setShowNewDocTypeForm(!showNewDocTypeForm);
   }, [setShowNewDocTypeForm, showNewDocTypeForm]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className={cardCls}
+  const actions = (
+    <button
+      onClick={handleToggleNewDocTypeForm}
+      className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
     >
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <FileCheck className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-foreground">
-              {arabicSource("settings.types_of_documents")}
-            </h3>
-            <p className="text-muted-foreground text-xs mt-0.5">
-              {arabicSource(
-                "settings.manage_the_types_of_documents_and_documents_required",
-              )}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleToggleNewDocTypeForm}
-          className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
-        >
-          {showNewDocTypeForm ? (
-            <X className="w-4 h-4" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+      {showNewDocTypeForm ? (
+        <X className="w-4 h-4" />
+      ) : (
+        <Plus className="w-4 h-4" />
+      )}
+    </button>
+  );
 
+  return (
+    <SettingsSectionCard
+      icon={FileCheck}
+      title={arabicSource("settings.types_of_documents")}
+      description={arabicSource(
+        "settings.manage_the_types_of_documents_and_documents_required",
+      )}
+      actions={actions}
+      delay={0.1}
+    >
       {showNewDocTypeForm && (
         <NewDocTypeForm
           form={newDocType}
@@ -90,7 +77,7 @@ const DocumentTypesCard = ({ showToast }: TDocumentTypesCardProps) => {
         onToggleActive={toggleDocumentTypeActive}
         onDelete={deleteDocumentTypeEntry}
       />
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

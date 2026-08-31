@@ -1,14 +1,13 @@
 import { useCallback, useState } from "react";
-import { motion } from "motion/react";
 import { Link2, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
 import { useLeaveLinks, type DbLeaveLink } from "@/shared/hooks";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useLeaveLinkManagement } from "../hooks/useLeaveLinkManagement";
 import LeaveLinkFormModal from "./LeaveLinkFormModal";
 import LeaveLinkList from "./LeaveLinkList";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 type PublicLeaveLinksCardProps = {
   showToast: (message: string) => void;
@@ -51,32 +50,24 @@ const PublicLeaveLinksCard = ({ showToast }: PublicLeaveLinksCardProps) => {
     setLinkPendingDelete(null);
   }, [deleteLink, linkPendingDelete]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.08 }}
-      className={cardCls}
+  const actions = (
+    <button
+      onClick={handleAddClick}
+      className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
     >
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <Link2 className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-foreground">{arabicSource("settings.leave_links_title")}</h3>
-            <p className="text-muted-foreground text-xs mt-0.5">{arabicSource("settings.leave_links_subtitle")}</p>
-          </div>
-        </div>
-        <button
-          onClick={handleAddClick}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg text-xs transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          {arabicSource("settings.leave_links_add")}
-        </button>
-      </div>
+      <Plus className="w-3.5 h-3.5" />
+      {arabicSource("settings.leave_links_add")}
+    </button>
+  );
 
+  return (
+    <SettingsSectionCard
+      icon={Link2}
+      title={arabicSource("settings.leave_links_title")}
+      description={arabicSource("settings.leave_links_subtitle")}
+      actions={actions}
+      delay={0.08}
+    >
       <LeaveLinkList
         links={loading ? [] : links}
         onDelete={setLinkPendingDelete}
@@ -105,7 +96,7 @@ const PublicLeaveLinksCard = ({ showToast }: PublicLeaveLinksCardProps) => {
           message={arabicSource("settings.leave_links_delete_confirm_body")}
         />
       )}
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

@@ -1,14 +1,13 @@
 import { useCallback, useMemo } from "react";
-import { motion } from "motion/react";
 import { Palette } from "lucide-react";
 import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { indexBy } from "@/shared/utils/collections";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useDepartmentColors } from "../hooks/useDepartmentColors";
 import DepartmentColorChip from "./DepartmentColorChip";
 import DepartmentColorSwatchPicker from "./DepartmentColorSwatchPicker";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 type TDepartmentColorsCardProps = {
   showToast: (message: string) => void;
@@ -55,28 +54,14 @@ const DepartmentColorsCard = ({ showToast }: TDepartmentColorsCardProps) => {
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0 }}
-      className={cardCls}
+    <SettingsSectionCard
+      icon={Palette}
+      title={arabicSource("settings.section_colors")}
+      description={arabicSource(
+        "settings.appears_on_the_organizational_chart_and_employee_cards",
+      )}
+      delay={0}
     >
-      <div className="flex items-center gap-3 mb-3 pb-2.5 border-b border-border/20">
-        <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
-          <Palette className="w-4 h-4 text-primary" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-foreground" style={{ fontSize: 14 }}>
-            {arabicSource("settings.section_colors")}
-          </h3>
-          <p className="text-muted-foreground" style={{ fontSize: 11 }}>
-            {arabicSource(
-              "settings.appears_on_the_organizational_chart_and_employee_cards",
-            )}
-          </p>
-        </div>
-      </div>
-
       {deptLoading ? (
         <div
           className="text-muted-foreground text-center py-3"
@@ -132,7 +117,7 @@ const DepartmentColorsCard = ({ showToast }: TDepartmentColorsCardProps) => {
           )}
         </div>
       )}
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

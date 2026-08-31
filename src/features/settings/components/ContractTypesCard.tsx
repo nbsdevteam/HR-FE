@@ -1,13 +1,12 @@
 import { useCallback } from "react";
-import { motion } from "motion/react";
 import { Briefcase, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbContractType } from "@/shared/hooks";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
 import TypeList from "./TypeList";
 import NewContractTypeForm from "./NewContractTypeForm";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 const contractTypeDescriptionLine = (contractType: DbContractType): string =>
   `${
@@ -42,41 +41,29 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
     setShowNewContractTypeForm(!showNewContractTypeForm);
   }, [setShowNewContractTypeForm, showNewContractTypeForm]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className={cardCls}
+  const actions = (
+    <button
+      onClick={handleToggleNewContractTypeForm}
+      className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
     >
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <Briefcase className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-foreground">
-              {arabicSource("settings.types_of_contracts")}
-            </h3>
-            <p className="text-muted-foreground text-xs mt-0.5">
-              {arabicSource(
-                "settings.managing_employment_contract_types_and_settings",
-              )}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleToggleNewContractTypeForm}
-          className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer"
-        >
-          {showNewContractTypeForm ? (
-            <X className="w-4 h-4" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+      {showNewContractTypeForm ? (
+        <X className="w-4 h-4" />
+      ) : (
+        <Plus className="w-4 h-4" />
+      )}
+    </button>
+  );
 
+  return (
+    <SettingsSectionCard
+      icon={Briefcase}
+      title={arabicSource("settings.types_of_contracts")}
+      description={arabicSource(
+        "settings.managing_employment_contract_types_and_settings",
+      )}
+      actions={actions}
+      delay={0.1}
+    >
       {showNewContractTypeForm && (
         <NewContractTypeForm
           form={newContractType}
@@ -92,7 +79,7 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
         onToggleActive={toggleContractTypeActive}
         onDelete={deleteContractTypeEntry}
       />
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

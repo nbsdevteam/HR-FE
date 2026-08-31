@@ -1,10 +1,9 @@
-import { motion } from "motion/react";
 import { Calendar, Settings as SettingsIcon } from "lucide-react";
 import { useAppSettings, type MonthFormat } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
-import { cardCls } from "../styles";
 import { MONTH_FORMATS } from "../constants/settings";
 import MonthFormatOption from "./MonthFormatOption";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 const SystemDisplayCard = () => {
   const { settings, updateSettings } = useAppSettings();
@@ -14,18 +13,11 @@ const SystemDisplayCard = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className={cardCls}
+    <SettingsSectionCard
+      icon={SettingsIcon}
+      title={arabicSource("common.system")}
+      delay={0.4}
     >
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-          <SettingsIcon className="w-5 h-5 text-primary" />
-        </div>
-        <h3 className="text-foreground">{arabicSource("common.system")}</h3>
-      </div>
       <div className="space-y-4">
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
           <span className="text-foreground" style={{ fontSize: 13 }}>
@@ -68,7 +60,7 @@ const SystemDisplayCard = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 
