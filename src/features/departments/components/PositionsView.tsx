@@ -145,10 +145,14 @@ const PositionsView = ({
               position="bottom-center"
               toneClassName={
                 toast.startsWith(arabicSource("common.error"))
-                  ? "bg-card border-red-500/40"
-                  : "bg-card border-green-500/40"
+                  ? "bg-toast-error border-toast-error-border"
+                  : "bg-toast-success border-toast-success-border"
               }
-              textClassName="text-foreground"
+              textClassName={
+                toast.startsWith(arabicSource("common.error"))
+                  ? "text-toast-error-fg font-medium"
+                  : "text-toast-success-fg font-medium"
+              }
               textSize={12}
             />
           )

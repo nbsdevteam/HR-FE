@@ -103,6 +103,8 @@ const ShiftAssigner = () => {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  const isErrorToast = toast?.startsWith(arabicSource("common.error")) ?? false;
+
   if (shiftsLoading || assignLoading) {
     return (
       <div className="flex items-center justify-center h-40">
@@ -177,7 +179,8 @@ const ShiftAssigner = () => {
             position="bottom-center"
             textSize={12}
             exit={{ opacity: 0, y: 10 }}
-            toneClassName={toast.startsWith(arabicSource("common.error")) ? "bg-card border-red-500/40" : "bg-card border-green-500/40"}
+            toneClassName={isErrorToast ? "bg-toast-error border-toast-error-border" : "bg-toast-success border-toast-success-border"}
+            textClassName={isErrorToast ? "text-toast-error-fg font-medium" : "text-toast-success-fg font-medium"}
           />
         )}
       </AnimatePresence>

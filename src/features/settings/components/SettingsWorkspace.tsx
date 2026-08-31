@@ -26,8 +26,8 @@ const SettingsWorkspace = () => {
           message={toastMessage}
           shape="banner"
           position="top-full"
-          toneClassName="bg-green-500/20 border border-green-500/50"
-          textClassName="text-green-400"
+          toneClassName="bg-toast-success border border-toast-success-border shadow-lg"
+          textClassName="text-toast-success-fg font-medium"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

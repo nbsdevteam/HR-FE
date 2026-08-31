@@ -15,12 +15,12 @@ type PositionAssignmentUndoToastProps = {
 const PositionAssignmentUndoToast = ({ entry, onUndo }: PositionAssignmentUndoToastProps) => (
   <Toast
     position="bottom-center"
-    toneClassName="bg-card border-green-500/40"
-    textClassName="text-foreground"
+    toneClassName="bg-toast-success border-toast-success-border"
+    textClassName="text-toast-success-fg font-medium"
     textSize={12}
     icon={Check}
-    iconBoxClassName="bg-green-500/15"
-    iconClassName="w-3 h-3 text-green-500"
+    iconBoxClassName="bg-toast-success-border/25"
+    iconClassName="w-3 h-3 text-toast-success-fg"
     message={
       <span className="flex items-center gap-3">
         <span>
@@ -37,7 +37,7 @@ const PositionAssignmentUndoToast = ({ entry, onUndo }: PositionAssignmentUndoTo
           icon={Undo2}
           iconClassName="w-3.5 h-3.5"
           onClick={onUndo}
-          className="px-2 py-1 gap-1.5 text-primary hover:bg-primary/10"
+          className="px-2 py-1 gap-1.5 text-toast-success-fg underline underline-offset-2 hover:bg-toast-success-border/25"
           style={{ fontSize: 12 }}
         >
           {arabicSource("hierarchy.undo")}
