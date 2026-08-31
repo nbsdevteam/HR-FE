@@ -26,7 +26,7 @@ export const useDashboardData = () => {
 
   const { colors } = useChartTheme();
   const { settings: appSettings } = useAppSettings();
-  const { overview, loading } = useControlPanelOverview();
+  const { overview, loading, error } = useControlPanelOverview();
   const { section } = useControlPanelSection(
     kpiSection === "overview" ? null : kpiSection,
   );
@@ -75,6 +75,11 @@ export const useDashboardData = () => {
     handleKpiSectionChange,
     kpiSection,
     loading,
+    // Surfaced so the page can say the aggregate failed. Without it a rejected
+    // request is indistinguishable from a genuinely empty company: every field
+    // in the mapper falls back to 0 and the screen renders a plausible — and
+    // wrong — all-zeros dashboard.
+    error,
     riskScore: dashboardSectionData.riskScore,
     unreadCount: dashboardSectionData.unreadCount,
   };

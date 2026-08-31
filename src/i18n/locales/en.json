@@ -2536,5 +2536,6 @@
   "hierarchy.filter_all_departments": "All departments",
   "hierarchy.filter_all_job_titles": "All job titles",
   "hierarchy.filter_all_managers": "All managers",
-  "hierarchy.clear_filters": "Clear filters"
+  "hierarchy.clear_filters": "Clear filters",
+  "dashboard.control_panel_unavailable": "Could not load the control panel"
 }

@@ -2471,5 +2471,6 @@
   "كل الأقسام": "hierarchy.filter_all_departments",
   "كل المسميات الوظيفية": "hierarchy.filter_all_job_titles",
   "كل المديرين": "hierarchy.filter_all_managers",
-  "مسح الفلاتر": "hierarchy.clear_filters"
+  "مسح الفلاتر": "hierarchy.clear_filters",
+  "تعذر تحميل لوحة التحكم": "dashboard.control_panel_unavailable"
 }

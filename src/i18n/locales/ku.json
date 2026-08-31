@@ -2536,5 +2536,6 @@
   "hierarchy.filter_all_departments": "هەموو بەشەکان",
   "hierarchy.filter_all_job_titles": "هەموو ناونیشانە کارەکان",
   "hierarchy.filter_all_managers": "هەموو بەڕێوەبەرەکان",
-  "hierarchy.clear_filters": "سڕینەوەی فلتەرەکان"
+  "hierarchy.clear_filters": "سڕینەوەی فلتەرەکان",
+  "dashboard.control_panel_unavailable": "نەتوانرا پانێڵی کۆنترۆڵ باربکرێت"
 }
