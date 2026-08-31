@@ -1,4 +1,10 @@
-import { useCallback, type CSSProperties, type ChangeEvent, type ReactNode, type Ref } from "react";
+import {
+  useCallback,
+  type CSSProperties,
+  type ChangeEvent,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { Search, X } from "lucide-react";
 
 interface SearchInputProps {
@@ -41,12 +47,9 @@ const SearchInput = ({
   onClear,
   children,
 }: SearchInputProps) => {
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>): void => {
-      onChange(e.target.value);
-    },
-    [onChange]
-  );
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    onChange(e.target.value);
+  };
 
   return (
     <div className={wrapperClassName ?? DEFAULT_WRAPPER_CLASS}>
