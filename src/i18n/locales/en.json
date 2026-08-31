@@ -812,6 +812,8 @@
   "hierarchy.modify_data": "Modify data",
   "hierarchy.edit_position": "Edit position",
   "hierarchy.modifying_employee_data": "Modifying employee data",
+  "hierarchy.quick_edit_department_and_job_title": "Quick edit — department & job title",
+  "hierarchy.no_job_title": "No job title",
   "hierarchy.activate_drag_to_move": "Activate drag to move",
   "hierarchy.enlarge": "Enlarge",
   "common.added": "Added \"",

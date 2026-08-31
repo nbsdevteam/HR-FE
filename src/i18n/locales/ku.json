@@ -812,6 +812,8 @@
   "hierarchy.modify_data": "دەستکاریکردنی داتا",
   "hierarchy.edit_position": "دەستکاری پۆست",
   "hierarchy.modifying_employee_data": "دەستکاریکردنی داتاکانی کارمەند",
+  "hierarchy.quick_edit_department_and_job_title": "دەستکاریی خێرای بەش و ناونیشانی کار",
+  "hierarchy.no_job_title": "بێ ناونیشانی کار",
   "hierarchy.activate_drag_to_move": "چالاککردنی ڕاکێشان بۆ جوڵە",
   "hierarchy.enlarge": "گەورەکردن",
   "common.added": "زیاد کرا \"",

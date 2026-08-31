@@ -8,6 +8,7 @@ import UnassignedEmployeesSidebar from "./UnassignedEmployeesSidebar";
 import PositionsPanel from "./PositionsPanel";
 import PositionAssignmentUndoToast from "./PositionAssignmentUndoToast";
 import PositionFormModal from "./PositionFormModal";
+import QuickEditDeptDesignationModal from "./QuickEditDeptDesignationModal";
 
 const PositionsView = ({
   dbEmployees,
@@ -32,10 +33,13 @@ const PositionsView = ({
     posForm,
     setPosForm,
     posLoading,
+    positions,
     unassignedEmployees,
     filteredUnassigned,
     isDragActive,
     undoEntry,
+    quickEditEmployee,
+    quickEditSaving,
     posSearch,
     setPosSearch,
     clearPosSearch,
@@ -56,6 +60,9 @@ const PositionsView = ({
     closeAddEditModal,
     openAddModal,
     openEditModal,
+    openQuickEditEmployee,
+    closeQuickEditEmployee,
+    handleQuickEditSave,
   } = usePositionsView({ dbEmployees, dbDepartments, deptColors, refetch });
 
   if (posLoading) {
@@ -116,6 +123,7 @@ const PositionsView = ({
           onAddPosition={openAddModal}
           onDeletePosition={handleDeletePosition}
           onEditPosition={openEditModal}
+          onEditEmployee={openQuickEditEmployee}
         />
       </div>
 
@@ -130,6 +138,20 @@ const PositionsView = ({
             onClose={closeAddEditModal}
             onConfirm={editingPosition ? handleEditPosition : handleAddPosition}
             saving={saving}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Quick department/job-title edit for an assigned employee's row */}
+      <AnimatePresence>
+        {quickEditEmployee && (
+          <QuickEditDeptDesignationModal
+            employee={quickEditEmployee}
+            dbDepartments={dbDepartments}
+            positions={positions}
+            saving={quickEditSaving}
+            onClose={closeQuickEditEmployee}
+            onSave={handleQuickEditSave}
           />
         )}
       </AnimatePresence>

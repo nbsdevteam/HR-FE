@@ -1,4 +1,5 @@
 import { memo } from "react";
+import type { DbEmployee } from "@/shared/hooks";
 import type { PositionDepartmentGroup, PositionNode } from "../types";
 import PositionDepartmentHeaderRow from "./PositionDepartmentHeaderRow";
 import PositionCard from "./PositionCard";
@@ -13,6 +14,7 @@ type PositionDepartmentSectionProps = {
   onAddPosition: (parentId: string | null) => void;
   onDeletePosition: (posId: string) => void;
   onEditPosition: (pos: PositionNode) => void;
+  onEditEmployee: (employee: DbEmployee) => void;
 };
 
 /**
@@ -30,6 +32,7 @@ const PositionDepartmentSection = ({
   onAddPosition,
   onDeletePosition,
   onEditPosition,
+  onEditEmployee,
 }: PositionDepartmentSectionProps) => (
   <div>
     <PositionDepartmentHeaderRow
@@ -56,6 +59,7 @@ const PositionDepartmentSection = ({
             onAddPosition={onAddPosition}
             onDeletePosition={onDeletePosition}
             onEditPosition={onEditPosition}
+            onEditEmployee={onEditEmployee}
           />
         ))}
       </div>

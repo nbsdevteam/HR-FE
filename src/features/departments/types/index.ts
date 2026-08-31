@@ -64,6 +64,12 @@ export type PendingAssignmentUndo = {
   previous: PositionAssignmentSnapshot;
 };
 
+/** Payload for the Positions & Appointments quick department/job-title edit. */
+export type QuickEditDeptDesignationPayload = {
+  department_id: string | null;
+  designation_id: string | null;
+};
+
 // ——— Org-structure admin screen (backend §4) ———
 
 export type OrgStructureTab = "tree" | "departments" | "designations";

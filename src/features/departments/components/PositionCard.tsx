@@ -3,6 +3,7 @@ import type React from "react";
 import { motion } from "motion/react";
 import { Briefcase, Edit2, Plus, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import type { DbEmployee } from "@/shared/hooks";
 import type { PositionFillState, PositionNode, PositionRow } from "../types";
 import PositionCardEmployeeRow from "./PositionCardEmployeeRow";
 
@@ -29,6 +30,7 @@ type PositionCardProps = {
   onAddPosition: (parentId: string | null) => void;
   onDeletePosition: (posId: string) => void;
   onEditPosition: (pos: PositionNode) => void;
+  onEditEmployee: (employee: DbEmployee) => void;
 };
 
 /**
@@ -46,6 +48,7 @@ const PositionCard = ({
   onAddPosition,
   onDeletePosition,
   onEditPosition,
+  onEditEmployee,
 }: PositionCardProps) => {
   const [dragOver, setDragOver] = useState(false);
 
@@ -175,7 +178,12 @@ const PositionCard = ({
         {assigned > 0 && (
           <div className="space-y-1.5">
             {node.assignedEmployees.map((employee) => (
-              <PositionCardEmployeeRow key={employee.id} employee={employee} color={color} />
+              <PositionCardEmployeeRow
+                key={employee.id}
+                employee={employee}
+                color={color}
+                onEditEmployee={onEditEmployee}
+              />
             ))}
           </div>
         )}

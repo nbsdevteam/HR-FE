@@ -803,6 +803,8 @@
   "تعديل البيانات": "hierarchy.modify_data",
   "تعديل المنصب": "hierarchy.edit_position",
   "تعديل بيانات الموظف": "hierarchy.modifying_employee_data",
+  "تعديل سريع للقسم والمسمى الوظيفي": "hierarchy.quick_edit_department_and_job_title",
+  "بدون مسمى وظيفي": "hierarchy.no_job_title",
   "تفعيل السحب للتنقل": "hierarchy.activate_drag_to_move",
   "تكبير": "hierarchy.enlarge",
   "تم إضافة \"": "common.added",

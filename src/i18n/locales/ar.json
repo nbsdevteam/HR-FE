@@ -812,6 +812,8 @@
   "hierarchy.modify_data": "تعديل البيانات",
   "hierarchy.edit_position": "تعديل المنصب",
   "hierarchy.modifying_employee_data": "تعديل بيانات الموظف",
+  "hierarchy.quick_edit_department_and_job_title": "تعديل سريع للقسم والمسمى الوظيفي",
+  "hierarchy.no_job_title": "بدون مسمى وظيفي",
   "hierarchy.activate_drag_to_move": "تفعيل السحب للتنقل",
   "hierarchy.enlarge": "تكبير",
   "common.added": "تم إضافة \"",
