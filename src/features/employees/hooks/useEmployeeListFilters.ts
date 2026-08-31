@@ -74,11 +74,16 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
   /**
    * Client-side filter over the full locally held roster. The list table is
    * server-paginated and does not use this — the kanban board does, because it
-   * has to group every employee into a column at once.
+   * has to group every employee into a column at once. Trimmed + lowercased on
+   * both sides so it matches the server search's case-insensitive behavior.
    */
   const filtered: Employee[] = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
     const list = allEmployees.filter(emp => {
-      const matchSearch = emp.name.includes(search) || emp.position.includes(search) || emp.employeeNumber.includes(search);
+      const matchSearch =
+        emp.name.toLowerCase().includes(normalizedSearch) ||
+        emp.position.toLowerCase().includes(normalizedSearch) ||
+        emp.employeeNumber.toLowerCase().includes(normalizedSearch);
       const matchDept = selectedDept === arabicSource("common.all") || emp.department === selectedDept;
       return matchSearch && matchDept;
     });
