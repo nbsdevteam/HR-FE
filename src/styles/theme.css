@@ -63,6 +63,18 @@
   --toast-info: #10283f;
   --toast-info-border: #3b82f6;
   --toast-info-fg: #bfdbfe;
+  /* Grade ladder — band + matrix ramp, dark values (this app's default theme). */
+  --band-leadership: #cde2fb;
+  --band-middle: #5598e7;
+  --band-delivery: #184f95;
+  --seq-1: #1b3355;
+  --seq-2: #256abf;
+  --seq-3: #5598e7;
+  --seq-4: #b7d3f6;
+  --seq-4-ink: #0b1220;
+  --flag: #e0ac57;
+  --flag-bg: #2a2114;
+  --flag-hair: #4a3a20;
 }
 
 .light-turquoise {
@@ -127,6 +139,18 @@
   --toast-info: #dbeafe;
   --toast-info-border: #2563eb;
   --toast-info-fg: #1e3a8a;
+  /* Grade ladder — band + matrix ramp, light values. */
+  --band-leadership: #104281;
+  --band-middle: #2a78d6;
+  --band-delivery: #86b6ef;
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #5598e7;
+  --seq-4: #184f95;
+  --seq-4-ink: #ffffff;
+  --flag: #8a5100;
+  --flag-bg: #fbf0df;
+  --flag-hair: #e8cfa4;
 }
 
 @theme inline {
@@ -180,6 +204,17 @@
   --color-gold: var(--gold);
   --color-champagne: var(--champagne);
   --color-gold-dark: var(--gold-dark);
+  --color-band-leadership: var(--band-leadership);
+  --color-band-middle: var(--band-middle);
+  --color-band-delivery: var(--band-delivery);
+  --color-seq-1: var(--seq-1);
+  --color-seq-2: var(--seq-2);
+  --color-seq-3: var(--seq-3);
+  --color-seq-4: var(--seq-4);
+  --color-seq-4-ink: var(--seq-4-ink);
+  --color-flag: var(--flag);
+  --color-flag-bg: var(--flag-bg);
+  --color-flag-hair: var(--flag-hair);
 }
 
 @layer base {

@@ -3,6 +3,7 @@ export * from "./ui";
 export * from "./attendance";
 export * from "./shifts";
 export * from "./positions";
+export * from "./grades";
 export * from "./settings";
 export * from "./payroll";
 export * from "./leave";

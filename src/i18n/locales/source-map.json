@@ -2481,5 +2481,18 @@
   "صفوف لكل صفحة": "common.rows_per_page",
   "الانتقال إلى الصفحة": "common.go_to_page",
   "القسم المحدد لم يعد موجوداً، يرجى اختيار قسم آخر": "employees.error_department_not_found",
-  "المسمى الوظيفي المحدد لم يعد موجوداً، يرجى اختيار مسمى آخر": "employees.error_designation_not_found"
+  "المسمى الوظيفي المحدد لم يعد موجوداً، يرجى اختيار مسمى آخر": "employees.error_designation_not_found",
+  "الرتب والمستويات": "hierarchy.grades_and_levels",
+  "عدد الموظفين حسب الرتبة": "hierarchy.headcount_by_grade",
+  "توزيع الرتب حسب القسم": "hierarchy.grade_coverage_by_department",
+  "الرتبة {{code}}": "hierarchy.grade_code",
+  "شاغرة": "hierarchy.unfilled",
+  "من أصل {{total}}": "hierarchy.of_total",
+  "المسميات الوظيفية على هذه الرتبة": "hierarchy.job_titles_on_this_grade",
+  "لا يوجد أحد على هذه الرتبة بعد — إليك موقعها ضمن الهيكل.": "hierarchy.nobody_at_this_grade",
+  "القيادة": "hierarchy.band_leadership",
+  "الإدارة الوسطى": "hierarchy.band_middle",
+  "التنفيذ": "hierarchy.band_delivery",
+  "أقل": "hierarchy.fewer",
+  "أكثر": "hierarchy.more"
 }
