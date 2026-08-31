@@ -17,7 +17,11 @@ const LabeledInput = ({
     <label className={labelCls} style={{ fontSize: 12 }}>
       {label}
     </label>
-    <input className={inputCls + " " + { addedInputClasses }} {...inputProps} />
+    {/* FIXED: Using template literals to properly combine class strings */}
+    <input
+      className={`${inputCls} ${addedInputClasses || ""}`}
+      {...inputProps}
+    />
   </div>
 );
 
