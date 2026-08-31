@@ -54,7 +54,7 @@ const designations: DbPosition[] = [
 ];
 
 const Harness = () => {
-  const { editData, allPositions, resolvedPositionId, handlePositionSelect } = useEmployeeDetailPanel({
+  const { editData, allPositions, fieldErrors, resolvedPositionId, handlePositionSelect } = useEmployeeDetailPanel({
     employee: baseEmployee,
     designations,
     dbDepartments: [],
@@ -72,6 +72,7 @@ const Harness = () => {
         allPositions={allPositions}
         isEditing
         inputClass=""
+        error={fieldErrors.designation}
         onSelectPosition={handlePositionSelect}
       />
     </div>

@@ -2540,5 +2540,10 @@
   "dashboard.control_panel_unavailable": "Could not load the control panel",
   "common.birth_date": "Date of birth",
   "employees.birth_date_cannot_be_in_the_future": "Birth date cannot be in the future",
-  "employees.birth_date_invalid_format": "Birth date must use the YYYY-MM-DD format"
+  "employees.birth_date_invalid_format": "Birth date must use the YYYY-MM-DD format",
+  "common.page": "Page",
+  "common.rows_per_page": "Rows per page",
+  "common.go_to_page": "Go to page",
+  "employees.error_department_not_found": "The selected department no longer exists — please pick another one",
+  "employees.error_designation_not_found": "The selected job title no longer exists — please pick another one"
 }

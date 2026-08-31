@@ -28,6 +28,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     allDepts,
     allPositions,
     birthDateError,
+    fieldErrors,
     confirmAddLocationCity,
     creatingDept,
     creatingLocationCity,
@@ -190,6 +191,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 creatingLocationCity={creatingLocationCity}
                 locationCityCreateError={locationCityCreateError}
                 birthDateError={birthDateError}
+                fieldErrors={fieldErrors}
                 onFieldChange={handleEditField}
                 onDepartmentSelect={handleDepartmentSelect}
                 onPositionSelect={handlePositionSelect}

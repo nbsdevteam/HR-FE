@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { TypeAhead } from "@/shared/components";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { EmployeeAddForm, EmployeeOption } from "../types";
+import type { EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import EmployeeManagerField from "./EmployeeManagerField";
+import EmployeeTypeAheadField from "./EmployeeTypeAheadField";
 import LabeledInput from "./LabeledInput";
 
 const getDepartmentId = (d: DbDepartment): string => d.id;
@@ -12,7 +13,6 @@ const getDepartmentLabel = (d: DbDepartment): string => d.name;
 const getDesignationId = (p: DbPosition): string => p.id;
 const getDesignationLabel = (p: DbPosition): string =>
   p.title_ar || p.title_en || p.id;
-const fieldLabelClass = "text-foreground block mb-1.5";
 
 type EmployeeCoreFieldsProps = {
   addForm: EmployeeAddForm;
@@ -20,6 +20,7 @@ type EmployeeCoreFieldsProps = {
   designationOptions: DbPosition[];
   managerOptions: EmployeeOption[];
   birthDateError: string | null;
+  fieldErrors: EmployeeFieldErrors;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
 };
 
@@ -29,6 +30,7 @@ const EmployeeCoreFields = ({
   designationOptions,
   managerOptions,
   birthDateError,
+  fieldErrors,
   onFormChange,
 }: EmployeeCoreFieldsProps) => {
   const handleNationalIdChange = useCallback(
@@ -119,32 +121,26 @@ const EmployeeCoreFields = ({
         onChange={handleCompanyPhoneChange}
         placeholder="07XXXXXXXXX"
       />
-      <div>
-        <label className={fieldLabelClass} style={{ fontSize: 12 }}>
-          {arabicSource("common.section")}
-        </label>
-        <TypeAhead
-          items={departmentOptions}
-          getId={getDepartmentId}
-          getLabel={getDepartmentLabel}
-          value={addForm.departmentId}
-          onChange={handleDepartmentChange}
-          placeholder={arabicSource("employees.select_the_section")}
-        />
-      </div>
-      <div>
-        <label className={fieldLabelClass} style={{ fontSize: 12 }}>
-          {arabicSource("employees.job_position")}
-        </label>
-        <TypeAhead
-          items={designationOptions}
-          getId={getDesignationId}
-          getLabel={getDesignationLabel}
-          value={addForm.designationId}
-          onChange={handleDesignationChange}
-          placeholder={arabicSource("common.select")}
-        />
-      </div>
+      <EmployeeTypeAheadField
+        label={arabicSource("common.section")}
+        items={departmentOptions}
+        getId={getDepartmentId}
+        getLabel={getDepartmentLabel}
+        value={addForm.departmentId}
+        onChange={handleDepartmentChange}
+        placeholder={arabicSource("employees.select_the_section")}
+        error={fieldErrors.department}
+      />
+      <EmployeeTypeAheadField
+        label={arabicSource("employees.job_position")}
+        items={designationOptions}
+        getId={getDesignationId}
+        getLabel={getDesignationLabel}
+        value={addForm.designationId}
+        onChange={handleDesignationChange}
+        placeholder={arabicSource("common.select")}
+        error={fieldErrors.designation}
+      />
       <EmployeeManagerField
         managerId={addForm.managerId}
         managerOptions={managerOptions}

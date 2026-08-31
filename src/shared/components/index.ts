@@ -15,6 +15,8 @@ export { default as ModalOverlay } from "./ModalOverlay";
 export { default as MultiSelect } from "./MultiSelect";
 export type { MultiSelectItem } from "./MultiSelect";
 export { default as NodeAvatar } from "./NodeAvatar";
+export { default as Pagination, PAGE_SIZE_OPTIONS } from "./Pagination";
+export { default as PaginationPageButton } from "./PaginationPageButton";
 export { default as SearchInput } from "./SearchInput";
 export { default as Select } from "./Select";
 export type { SelectOption } from "./Select";

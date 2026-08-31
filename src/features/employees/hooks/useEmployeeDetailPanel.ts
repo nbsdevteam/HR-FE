@@ -11,6 +11,7 @@ import type {
   PositionOption,
 } from "../types";
 import { birthDateFieldError } from "../utils/birthDate";
+import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeAddressForm } from "./useEmployeeAddressForm";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
@@ -28,6 +29,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [addingNewDept, setAddingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState("");
   const [creatingDept, setCreatingDept] = useState(false);
@@ -96,11 +98,16 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  // Re-picking either foreign key clears the "no longer exists" rejection the
+  // previous choice produced, so a stale message never sits under a select the
+  // user has already corrected.
   const handleDepartmentSelect = useCallback((deptId: string, deptName: string) => {
+    setFieldErrors(prev => ({ ...prev, department: null }));
     setEditData(prev => ({ ...prev, departmentId: deptId, department: deptName }));
   }, []);
 
   const handlePositionSelect = useCallback((positionId: string, positionName: string) => {
+    setFieldErrors(prev => ({ ...prev, designation: null }));
     setEditData(prev => ({ ...prev, positionId, position: positionName }));
   }, []);
 
@@ -149,6 +156,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaving(true);
     setSaveError(null);
     setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     try {
       // The backend now patches `address` partially — untouched keys are left
       // alone, so it's safe to just send the current structured values. Ids
@@ -220,8 +228,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       // A rejected birth date writes *nothing* — not one field of the patch —
       // so the message has to point at the input that has to be fixed and
       // resubmitted, rather than reading as a generic save failure.
-      const fieldError = birthDateFieldError(e);
-      if (fieldError) setBirthDateError(fieldError);
+      const birthError = birthDateFieldError(e);
+      // A rejected `department_id`/`designation_id` writes nothing either
+      // (backend §4) — usually a dropdown option deleted in another tab — so it
+      // belongs on the select the user has to change, not in the form-level box.
+      const rejectedFields = employeeFieldErrors(e);
+      if (birthError) setBirthDateError(birthError);
+      else if (rejectedFields) setFieldErrors(rejectedFields);
       else setSaveError(errorMessage(e));
     } finally {
       setSaving(false);
@@ -231,6 +244,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
     setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setEditData({ ...employee });
     custodyForm.setShowAddCustody(false);
     attachmentForm.setShowAddAttachment(false);
@@ -243,6 +257,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     birthDateError,
     creatingDept,
     editData,
+    fieldErrors,
     handleCancelEdit,
     handleCancelNewDept,
     handleConfirmNewDept,

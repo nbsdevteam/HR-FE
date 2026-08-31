@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { motion } from "motion/react";
+import { AlertTriangle, Users } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
+import EmptyState from "@/shared/components/EmptyState";
+import Pagination from "@/shared/components/Pagination";
 import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
 import { indexBy } from "@/shared/utils/collections";
 import type { Employee } from "@/features/employees";
@@ -8,8 +11,6 @@ import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
-
-const EMPLOYEE_ROW_VIRTUALIZATION = { rowHeight: 61 } as const;
 
 const EMPLOYEE_COLUMNS: ReadonlyArray<{
   label: string;
@@ -35,6 +36,16 @@ type EmployeesListViewProps = {
   pendingEmployees: Set<number>;
   sortBy: EmployeeSortKey;
   sortDir: "asc" | "desc";
+  /** 1-based page number echoed back by the backend (backend §2). */
+  page: number;
+  totalPages: number;
+  /** Matching rows across every page, not just the one rendered. */
+  total: number;
+  perPage: number;
+  loading: boolean;
+  error: string | null;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
   onSortByChange: (sortBy: EmployeeSortKey) => void;
   onSortDirChange: (sortDir: "asc" | "desc") => void;
   onSelectEmployee: (employee: Employee) => void;
@@ -49,6 +60,14 @@ const EmployeesListView = ({
   pendingEmployees,
   sortBy,
   sortDir,
+  page,
+  totalPages,
+  total,
+  perPage,
+  loading,
+  error,
+  onPageChange,
+  onPerPageChange,
   onSortByChange,
   onSortDirChange,
   onSelectEmployee,
@@ -58,6 +77,25 @@ const EmployeesListView = ({
   const dbEmpByPersonId = useMemo(
     () => indexBy(dbEmployees, (e) => e.person_id),
     [dbEmployees],
+  );
+
+  const emptyRow = useMemo(
+    () => (
+      <tr>
+        <td colSpan={EMPLOYEE_COLUMNS.length}>
+          {error ? (
+            <EmptyState icon={AlertTriangle} message={error} />
+          ) : (
+            <EmptyState
+              icon={Users}
+              message={arabicSource("employees.there_are_no_employees")}
+              hint={arabicSource("common.no_results_found")}
+            />
+          )}
+        </td>
+      </tr>
+    ),
+    [error],
   );
 
   const handleSort = useCallback(
@@ -93,21 +131,33 @@ const EmployeesListView = ({
       transition={{ duration: 0.2 }}
       className="bg-card/30 backdrop-blur-md border border-border/40 rounded-xl overflow-hidden shadow-lg"
     >
-      <DataTable
-        wrapperClassName={null}
-        items={employees}
-        header={
-          <SortableHeaderRow
-            columns={EMPLOYEE_COLUMNS}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={handleSort}
-          />
-        }
-        renderRow={renderEmployeeRow}
-        // The roster loads up to 5000 employees; only render the rows near the
-        // viewport. Row height = 36px avatar + py-3 + 1px border.
-        virtualization={EMPLOYEE_ROW_VIRTUALIZATION}
+      {/* Dimmed rather than swapped for a spinner, so the table does not
+          collapse and re-expand on every page step. */}
+      <div className={loading ? "opacity-50 transition-opacity" : "transition-opacity"} aria-busy={loading}>
+        <DataTable
+          wrapperClassName={null}
+          items={employees}
+          header={
+            <SortableHeaderRow
+              columns={EMPLOYEE_COLUMNS}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSort={handleSort}
+            />
+          }
+          renderRow={renderEmployeeRow}
+          emptyRow={emptyRow}
+        />
+      </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        perPage={perPage}
+        loading={loading}
+        onPageChange={onPageChange}
+        onPerPageChange={onPerPageChange}
       />
     </motion.div>
   );

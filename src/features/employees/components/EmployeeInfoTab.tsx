@@ -9,11 +9,13 @@ import { Select, TypeAhead } from "@/shared/components";
 import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
+import type { EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import EmployeeAddressFields from "./EmployeeAddressFields";
 import EmployeeBirthDateField from "./EmployeeBirthDateField";
 import EmployeeDepartmentField from "./EmployeeDepartmentField";
 import EmployeeEmergencyContactField from "./EmployeeEmergencyContactField";
 import EmployeeFieldRow from "./EmployeeFieldRow";
+import EmployeeInputFieldRow from "./EmployeeInputFieldRow";
 import EmployeePositionField from "./EmployeePositionField";
 
 const inputClass = "w-full bg-transparent border-b-2 border-primary/40 focus:border-primary px-1 py-1.5 text-foreground outline-none transition-colors";
@@ -41,6 +43,7 @@ type EmployeeInfoTabProps = {
   creatingLocationCity: boolean;
   locationCityCreateError: string | null;
   birthDateError: string | null;
+  fieldErrors: EmployeeFieldErrors;
   onFieldChange: (field: keyof Employee, value: string | number) => void;
   onDepartmentSelect: (deptId: string, deptName: string) => void;
   onPositionSelect: (positionId: string, positionName: string) => void;
@@ -78,6 +81,7 @@ const EmployeeInfoTab = ({
   creatingLocationCity,
   locationCityCreateError,
   birthDateError,
+  fieldErrors,
   onFieldChange,
   onDepartmentSelect,
   onPositionSelect,
@@ -142,13 +146,9 @@ const EmployeeInfoTab = ({
       transition={{ duration: 0.15 }}
       className="px-6 py-4"
     >
-      <EmployeeFieldRow
-        icon={Hash} label={arabicSource("common.job_number")} value={editData.employeeNumber} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input value={editData.employeeNumber} onChange={handleEmployeeNumberChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={Hash} label={arabicSource("common.job_number")} value={editData.employeeNumber}
+        inputValue={editData.employeeNumber} isEditing={isEditing} onChange={handleEmployeeNumberChange}
       />
       <EmployeeDepartmentField
         department={editData.department}
@@ -164,6 +164,7 @@ const EmployeeInfoTab = ({
         onNewDeptNameChange={onNewDeptNameChange}
         onConfirmNewDept={onConfirmNewDept}
         onCancelNewDept={onCancelNewDept}
+        error={fieldErrors.department}
       />
       <EmployeePositionField
         position={editData.position}
@@ -171,31 +172,20 @@ const EmployeeInfoTab = ({
         allPositions={allPositions}
         isEditing={isEditing}
         inputClass={inputClass}
+        error={fieldErrors.designation}
         onSelectPosition={onPositionSelect}
       />
-      <EmployeeFieldRow
-        icon={Mail} label={arabicSource("common.email")} value={editData.email} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input value={editData.email} onChange={handleEmailChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={Mail} label={arabicSource("common.email")} value={editData.email}
+        inputValue={editData.email} isEditing={isEditing} onChange={handleEmailChange}
       />
-      <EmployeeFieldRow
-        icon={Smartphone} iconColor="text-primary" label={arabicSource("shared.employee_phone")} value={editData.personalPhone || "—"} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input value={editData.personalPhone} onChange={handlePersonalPhoneChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={Smartphone} label={arabicSource("shared.employee_phone")} value={editData.personalPhone || "—"}
+        inputValue={editData.personalPhone} isEditing={isEditing} onChange={handlePersonalPhoneChange}
       />
-      <EmployeeFieldRow
-        icon={PhoneCall} iconColor="text-primary" label={arabicSource("common.company_phone")} value={editData.companyPhone || "—"} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input value={editData.companyPhone} onChange={handleCompanyPhoneChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={PhoneCall} label={arabicSource("common.company_phone")} value={editData.companyPhone || "—"}
+        inputValue={editData.companyPhone} isEditing={isEditing} onChange={handleCompanyPhoneChange}
       />
       <EmployeeAddressFields
         editData={editData}
@@ -217,38 +207,22 @@ const EmployeeInfoTab = ({
         onConfirmAddCity={onConfirmAddLocationCity}
         onDismissCitySuggestions={onDismissLocationCitySuggestions}
       />
-      <EmployeeFieldRow
-        icon={Wallet} iconColor="text-primary" label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")} dir="ltr" highlight
-        isEditing={isEditing}
-        editElement={
-          <input type="number" value={editData.salary} onChange={handleSalaryChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={Wallet} label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")}
+        inputValue={editData.salary} type="number" highlight isEditing={isEditing} onChange={handleSalaryChange}
       />
-      <EmployeeFieldRow
-        icon={CalendarCheck} iconColor="text-emerald-400" label={arabicSource("common.direct_date")} value={editData.startDate} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input type="date" value={editData.startDate} onChange={handleStartDateChange} max={todayInBaghdad()}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={CalendarCheck} iconColor="text-emerald-400" label={arabicSource("common.direct_date")} value={editData.startDate}
+        inputValue={editData.startDate} type="date" max={todayInBaghdad()} isEditing={isEditing} onChange={handleStartDateChange}
       />
-      <EmployeeFieldRow
+      <EmployeeInputFieldRow
         icon={CalendarX} iconColor="text-destructive" label={arabicSource("shared.departure_date")}
-        value={editData.endDate || arabicSource("shared.still_working")} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input type="date" value={editData.endDate || ""} onChange={handleEndDateChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+        value={editData.endDate || arabicSource("shared.still_working")}
+        inputValue={editData.endDate || ""} type="date" isEditing={isEditing} onChange={handleEndDateChange}
       />
-      <EmployeeFieldRow
-        icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId || "—"} dir="ltr"
-        isEditing={isEditing}
-        editElement={
-          <input value={editData.nationalId} onChange={handleNationalIdChange}
-            className={inputClass} style={{ fontSize: 14 }} dir="ltr" />
-        }
+      <EmployeeInputFieldRow
+        icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId || "—"}
+        inputValue={editData.nationalId} isEditing={isEditing} onChange={handleNationalIdChange}
       />
       <EmployeeBirthDateField
         birthDate={editData.birthDate}

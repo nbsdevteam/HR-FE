@@ -2540,5 +2540,10 @@
   "dashboard.control_panel_unavailable": "تعذر تحميل لوحة التحكم",
   "common.birth_date": "تاريخ الميلاد",
   "employees.birth_date_cannot_be_in_the_future": "تاريخ الميلاد لا يمكن أن يكون في المستقبل",
-  "employees.birth_date_invalid_format": "تاريخ الميلاد يجب أن يكون بصيغة سنة-شهر-يوم"
+  "employees.birth_date_invalid_format": "تاريخ الميلاد يجب أن يكون بصيغة سنة-شهر-يوم",
+  "common.page": "الصفحة",
+  "common.rows_per_page": "صفوف لكل صفحة",
+  "common.go_to_page": "الانتقال إلى الصفحة",
+  "employees.error_department_not_found": "القسم المحدد لم يعد موجوداً، يرجى اختيار قسم آخر",
+  "employees.error_designation_not_found": "المسمى الوظيفي المحدد لم يعد موجوداً، يرجى اختيار مسمى آخر"
 }

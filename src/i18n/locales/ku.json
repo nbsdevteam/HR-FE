@@ -2540,5 +2540,10 @@
   "dashboard.control_panel_unavailable": "نەتوانرا پانێڵی کۆنترۆڵ باربکرێت",
   "common.birth_date": "ڕێکەوتی لەدایکبوون",
   "employees.birth_date_cannot_be_in_the_future": "بەرواری لەدایکبوون ناتوانێت لە داهاتوودا بێت",
-  "employees.birth_date_invalid_format": "بەرواری لەدایکبوون دەبێت بە شێوازی ساڵ-مانگ-ڕۆژ بێت"
+  "employees.birth_date_invalid_format": "بەرواری لەدایکبوون دەبێت بە شێوازی ساڵ-مانگ-ڕۆژ بێت",
+  "common.page": "لاپەڕە",
+  "common.rows_per_page": "ڕیز بۆ هەر لاپەڕەیەک",
+  "common.go_to_page": "بڕۆ بۆ لاپەڕە",
+  "employees.error_department_not_found": "بەشی هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە",
+  "employees.error_designation_not_found": "ناونیشانی کاری هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە"
 }

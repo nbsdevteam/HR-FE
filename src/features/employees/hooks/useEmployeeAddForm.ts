@@ -7,6 +7,7 @@ import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
 import { birthDateFieldError } from "../utils/birthDate";
+import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
@@ -41,6 +42,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
   const [nextEmployeeId, setNextEmployeeId] = useState<number | null>(null);
   const [loadingNextId, setLoadingNextId] = useState(false);
@@ -81,6 +83,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setAddForm(defaultAddForm);
     setAddError(null);
     setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setDeviceSyncStatus("idle");
     setNextEmployeeId(null);
     setFacePhotoBase64(null);
@@ -120,6 +123,10 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     // Editing the date clears the rejection it caused, so a stale message never
     // sits under an input the user has already corrected.
     if (updates.birthDate !== undefined) setBirthDateError(null);
+    // Same for the two FK dropdowns: re-picking a department or job title
+    // clears the "no longer exists" message the previous choice produced.
+    if (updates.departmentId !== undefined) setFieldErrors(prev => ({ ...prev, department: null }));
+    if (updates.designationId !== undefined) setFieldErrors(prev => ({ ...prev, designation: null }));
     setAddForm(current => ({ ...current, ...updates }));
   }, []);
 
@@ -191,6 +198,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setAddSaving(true);
     setAddError(null);
     setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
 
     try {
       const newPersonId = nextEmployeeId;
@@ -221,8 +229,10 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
         resetAddForm();
       }, 1500);
     } catch (error: unknown) {
-      const fieldError = birthDateFieldError(error);
-      if (fieldError) setBirthDateError(fieldError);
+      const birthError = birthDateFieldError(error);
+      const rejectedFields = employeeFieldErrors(error);
+      if (birthError) setBirthDateError(birthError);
+      else if (rejectedFields) setFieldErrors(rejectedFields);
       else setAddError(errorMessage(error));
     }
     setAddSaving(false);
@@ -250,6 +260,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     deviceSyncStatus,
     dismissCitySuggestions,
     facePhotoPreview,
+    fieldErrors,
     handleAddCity,
     handleAddEmployee,
     handleCitySearch,

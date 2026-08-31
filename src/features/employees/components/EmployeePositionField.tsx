@@ -11,6 +11,8 @@ type EmployeePositionFieldProps = {
   allPositions: PositionOption[];
   isEditing: boolean;
   inputClass: string;
+  /** Field-level `designation_not_found` rejection from a save (backend §4). */
+  error: string | null;
   onSelectPosition: (positionId: string, positionName: string) => void;
 };
 
@@ -20,6 +22,7 @@ const EmployeePositionField = ({
   allPositions,
   isEditing,
   inputClass,
+  error,
   onSelectPosition,
 }: EmployeePositionFieldProps) => {
   const positionOptions = useMemo<SelectOption[]>(
@@ -40,13 +43,16 @@ const EmployeePositionField = ({
       icon={Briefcase} label={arabicSource("shared.job_title")} value={position}
       isEditing={isEditing}
       editElement={
-        <Select
-          value={positionId || ""}
-          onChange={handlePositionChange}
-          options={positionOptions}
-          className={inputClass}
-          style={{ fontSize: 14 }}
-        />
+        <>
+          <Select
+            value={positionId || ""}
+            onChange={handlePositionChange}
+            options={positionOptions}
+            className={inputClass}
+            style={{ fontSize: 14 }}
+          />
+          {error && <p className="text-destructive mt-1" style={{ fontSize: 11 }} role="alert">{error}</p>}
+        </>
       }
     />
   );
