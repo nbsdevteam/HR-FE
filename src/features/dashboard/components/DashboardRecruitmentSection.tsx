@@ -30,10 +30,9 @@ const DashboardRecruitmentSection = ({
     cfg,
     headcountTrend,
     recruitmentStats,
-    exitProcesses,
+    exitsCompletedTotal,
     cardCls,
     recruitmentPipeline,
-    jobs,
   } = data;
 
   const recruitmentStatCards = useMemo(
@@ -41,7 +40,7 @@ const DashboardRecruitmentSection = ({
       {
         label: arabicSource("common.open_jobs"),
         value: recruitmentStats.openPositions,
-        sub: `${jobs.length} ${arabicSource("dashboard.total")}`,
+        sub: `${recruitmentStats.totalJobs} ${arabicSource("dashboard.total")}`,
         icon: Briefcase,
         color: "text-primary",
       },
@@ -77,7 +76,7 @@ const DashboardRecruitmentSection = ({
         color: "text-purple-400",
       },
     ],
-    [recruitmentStats, jobs, cfg],
+    [recruitmentStats, cfg],
   );
 
   const funnelStages: Array<{
@@ -96,11 +95,7 @@ const DashboardRecruitmentSection = ({
     }));
   }, [recruitmentPipeline]);
 
-  const completedExitsCount = useMemo(
-    () => exitProcesses.filter((p: any) => p.status === "completed").length,
-    [exitProcesses],
-  );
-  const netGrowth = newHireStats.last90 - completedExitsCount;
+  const netGrowth = newHireStats.last90 - exitsCompletedTotal;
 
   const hireVsExitTiles = useMemo(
     () => [
@@ -112,14 +107,14 @@ const DashboardRecruitmentSection = ({
         icon: UserPlus,
       },
       {
-        value: completedExitsCount,
+        value: exitsCompletedTotal,
         label: arabicSource("dashboard.exit_total"),
         colorClassName: "bg-red-500/10 border border-red-500/20",
         textColorClassName: "text-red-400",
         icon: UserX,
       },
     ],
-    [newHireStats, completedExitsCount],
+    [newHireStats, exitsCompletedTotal],
   );
 
   return (

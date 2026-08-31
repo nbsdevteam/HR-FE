@@ -36,12 +36,12 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
     probationCount,
     warningStats,
     pendingLeaves,
-    activeLoans,
+    activeLoansCount,
     evalStats,
     trainingStats,
     recruitmentStats,
-    exitProcesses,
-    notifications,
+    exitsInProgress,
+    notificationsPreview,
   } = data;
 
   const quickIndicators = useMemo(
@@ -54,7 +54,7 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
       },
       {
         label: arabicSource("common.active_loans"),
-        value: activeLoans.length,
+        value: activeLoansCount,
         icon: CreditCard,
         color: "text-blue-400",
       },
@@ -84,21 +84,19 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
       },
       {
         label: arabicSource("dashboard.exits"),
-        value: exitProcesses.filter(
-          (p: any) => p.status !== "completed" && p.status !== "cancelled",
-        ).length,
+        value: exitsInProgress,
         icon: UserX,
         color: "text-red-400",
       },
     ],
     [
       pendingLeaves,
-      activeLoans,
+      activeLoansCount,
       evalStats,
       trainingStats,
       warningStats,
       recruitmentStats,
-      exitProcesses,
+      exitsInProgress,
     ],
   );
 
@@ -168,11 +166,6 @@ export const useDashboardOverviewData = (data: DashboardSectionData) => {
   const riskItemsPreview = useMemo(
     () => riskScore.items.slice(0, 5),
     [riskScore.items],
-  );
-
-  const notificationsPreview = useMemo(
-    () => notifications.slice(0, 6),
-    [notifications],
   );
 
   const alertBanners = useMemo(() => {

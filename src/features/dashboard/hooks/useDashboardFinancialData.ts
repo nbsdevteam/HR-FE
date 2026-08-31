@@ -6,8 +6,8 @@ import type { DashboardSectionData } from "./useDashboardData";
 
 export const useDashboardFinancialData = (data: DashboardSectionData) => {
   const {
-    compensationStats, medianSalary, allAllowances, totalLoanBalance,
-    activeLoans, loanUtilization, exitProcesses,
+    compensationStats, medianSalary, allowanceCount, totalLoanBalance,
+    totalLoanGranted, activeLoansCount, loanUtilization, exitsInProgress,
   } = data;
 
   const financialStats = useMemo(
@@ -29,22 +29,20 @@ export const useDashboardFinancialData = (data: DashboardSectionData) => {
       {
         label: arabicSource("common.total_allowances"),
         value: formatIQD(compensationStats.totalAllowances),
-        sub: `${allAllowances.length} ${arabicSource("dashboard.active_allowance")}`,
+        sub: `${allowanceCount} ${arabicSource("dashboard.active_allowance")}`,
         icon: TrendingUp,
         color: "text-blue-400",
       },
       {
         label: arabicSource("dashboard.loan_balance"),
         value: formatIQD(totalLoanBalance),
-        sub: `${activeLoans.length} ${arabicSource("dashboard.loan")}${loanUtilization}%)`,
+        sub: `${activeLoansCount} ${arabicSource("dashboard.loan")}${loanUtilization}%)`,
         icon: CreditCard,
         color: "text-amber-400",
       },
       {
         label: arabicSource("dashboard.active_exits"),
-        value: exitProcesses.filter(
-          (p: any) => p.status !== "completed" && p.status !== "cancelled",
-        ).length,
+        value: exitsInProgress,
         sub: `${arabicSource("dashboard.end_of_service_benefits")}`,
         icon: UserX,
         color: "text-red-400",
@@ -53,25 +51,23 @@ export const useDashboardFinancialData = (data: DashboardSectionData) => {
     [
       compensationStats,
       medianSalary,
-      allAllowances,
+      allowanceCount,
       totalLoanBalance,
-      activeLoans,
+      activeLoansCount,
       loanUtilization,
-      exitProcesses,
+      exitsInProgress,
     ],
   );
 
-  const totalLoanAmount = useMemo(
-    () =>
-      activeLoans.reduce((s: number, l: any) => s + (l.loan_amount || 0), 0),
-    [activeLoans],
-  );
+  // Granted minus outstanding — both totals now arrive from `loans`, so the
+  // loan rows themselves never reach the browser.
+  const totalLoanAmount = totalLoanGranted;
   const totalPaidLoanAmount = totalLoanAmount - totalLoanBalance;
 
   const loanTiles = useMemo(
     () => [
       {
-        value: activeLoans.length,
+        value: activeLoansCount,
         label: arabicSource("common.active_loans"),
         colorClassName: "bg-blue-500/10 border border-blue-500/20",
         textColorClassName: "text-blue-400",
@@ -85,7 +81,7 @@ export const useDashboardFinancialData = (data: DashboardSectionData) => {
         dir: "ltr" as const,
       },
     ],
-    [activeLoans.length, totalLoanAmount],
+    [activeLoansCount, totalLoanAmount],
   );
 
   const loanPaymentTiles = useMemo(

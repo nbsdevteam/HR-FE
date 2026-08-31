@@ -46,7 +46,7 @@ const DashboardRiskScorecard = ({
       ) : (
         riskItemsPreview.map((item) => (
           <DashboardRiskItemRow
-            key={item.label}
+            key={item.key}
             label={item.label}
             level={item.level}
           />

@@ -10,7 +10,6 @@ import DonutChart from "@/shared/components/donut-chart";
 import CustomBarChart from "@/shared/components/custom-bar-chart";
 import ColorStatTile from "@/shared/components/ColorStatTile";
 import { arabicSource } from "@/i18n/source";
-import { normalizeLeaveStatus } from "@/i18n/status";
 import type { DashboardSectionData } from "../hooks/useDashboardData";
 import DashboardChartCard from "./DashboardChartCard";
 import DashboardMiniBar from "./DashboardMiniBar";
@@ -31,12 +30,13 @@ const DashboardWorkforceSection = ({
     approvedLeaves,
     probationCount,
     pendingLeaves,
-    exitProcesses,
+    rejectedLeaves,
+    totalLeaveRequests,
+    exitsInProgress,
     cardCls,
     deptAttendance,
     tenureDistribution,
     dayOfWeekAttendance,
-    leaveRequests,
     leaveUtilization,
     activeContracts,
   } = data;
@@ -68,24 +68,13 @@ const DashboardWorkforceSection = ({
         textColorClassName: "text-amber-400",
       },
       {
-        value: exitProcesses.filter(
-          (p: any) => p.status !== "completed" && p.status !== "cancelled",
-        ).length,
+        value: exitsInProgress,
         label: arabicSource("dashboard.exits_in_progress"),
         colorClassName: "bg-purple-500/10 border border-purple-500/20",
         textColorClassName: "text-purple-400",
       },
     ],
-    [newHireStats, turnoverRate, exitProcesses],
-  );
-
-  const rejectedLeaves = useMemo(
-    () =>
-      leaveRequests.filter(
-        (r: any) =>
-          normalizeLeaveStatus(r.status) === arabicSource("common.rejected_3"),
-      ).length,
-    [leaveRequests],
+    [newHireStats, turnoverRate, exitsInProgress],
   );
 
   const stats = useMemo(
@@ -192,7 +181,7 @@ const DashboardWorkforceSection = ({
           <div className="space-y-3">
             <div className="text-center p-4 rounded-lg bg-muted/20">
               <p className="text-3xl font-semibold text-primary">
-                {leaveRequests.length}
+                {totalLeaveRequests}
               </p>
               <p className="text-muted-foreground text-xs mt-1">
                 {arabicSource("dashboard.total_orders")}

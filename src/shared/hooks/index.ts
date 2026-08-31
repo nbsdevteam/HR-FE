@@ -16,3 +16,4 @@ export * from "./recruitment";
 export * from "./performance";
 export * from "./reporting";
 export * from "./devices";
+export * from "./controlPanel";

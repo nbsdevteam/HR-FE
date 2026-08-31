@@ -4,14 +4,12 @@ import DashboardChartCard from "./DashboardChartCard";
 import DashboardNotificationRow from "./DashboardNotificationRow";
 
 type DashboardNotificationsPanelProps = {
-  notifications: any[];
   notificationsPreview: any[];
   unreadCount: number;
   cardCls: string;
 };
 
 const DashboardNotificationsPanel = ({
-  notifications,
   notificationsPreview,
   unreadCount,
   cardCls,
@@ -27,7 +25,7 @@ const DashboardNotificationsPanel = ({
       )}
     </h3>
     <div className="space-y-2.5">
-      {notifications.length === 0 ? (
+      {notificationsPreview.length === 0 ? (
         <p className="text-muted-foreground text-sm text-center py-8">
           {arabicSource("common.no_notifications")}
         </p>
