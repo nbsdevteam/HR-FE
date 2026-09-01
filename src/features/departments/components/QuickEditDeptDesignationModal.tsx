@@ -4,13 +4,13 @@ import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { QuickEditDeptDesignationPayload } from "../types";
 import FieldLabel from "./FieldLabel";
 
 const getDepartmentId = (department: DbDepartment): string => department.id;
 const getDepartmentLabel = (department: DbDepartment): string => department.name;
 const getPositionId = (position: DbPosition): string => position.id;
-const getPositionLabel = (position: DbPosition): string => position.title_ar;
 
 type QuickEditDeptDesignationModalProps = {
   employee: DbEmployee;
@@ -36,6 +36,15 @@ const QuickEditDeptDesignationModal = ({
 }: QuickEditDeptDesignationModalProps) => {
   const [departmentId, setDepartmentId] = useState(employee.department_id || "");
   const [designationId, setDesignationId] = useState(employee.position_id || "");
+
+  const isArabic = useIsArabicLanguage();
+
+  // `title_ar`/`title_en` are backend columns, so the option label picks the
+  // column matching the active language rather than always showing Arabic.
+  const getPositionLabel = useCallback(
+    (position: DbPosition): string => localizedName(position.title_ar, position.title_en, isArabic),
+    [isArabic],
+  );
 
   const filterPositionsByDepartment = useCallback(
     (position: DbPosition): boolean => !departmentId || position.department_id === departmentId,

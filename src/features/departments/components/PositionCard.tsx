@@ -3,6 +3,7 @@ import type React from "react";
 import { motion } from "motion/react";
 import { Briefcase, Edit2, Plus, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbEmployee } from "@/shared/hooks";
 import type { PositionFillState, PositionNode, PositionRow } from "../types";
 import PositionCardEmployeeRow from "./PositionCardEmployeeRow";
@@ -53,6 +54,10 @@ const PositionCard = ({
   const [dragOver, setDragOver] = useState(false);
 
   const { node, fillState, canAccept } = row;
+  // `title_ar`/`title_en` are backend columns, not catalogued UI copy, so the
+  // card picks the column matching the active language itself — the global
+  // Arabic auto-translator has no entry for a job title.
+  const { primary: positionTitle } = useLocalizedName(node.title_ar, node.title_en);
   const assigned = node.assignedEmployees.length;
   const vacancies = node.max_headcount - assigned;
 
@@ -139,7 +144,7 @@ const PositionCard = ({
                 {isDropTarget ? (
                   arabicSource("common.drop_here_to_set")
                 ) : (
-                  <span data-i18n-ignore>{node.title_ar}</span>
+                  <span data-i18n-ignore title={positionTitle}>{positionTitle}</span>
                 )}
               </p>
               <p className="text-muted-foreground truncate" style={{ fontSize: 10 }} data-i18n-ignore>

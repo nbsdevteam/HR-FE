@@ -3,6 +3,7 @@ import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
+import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { PendingAssignmentUndo, PositionAssignmentSnapshot } from "../types";
 
 /** How long the "… — Undo" toast stays up. Dragging has no confirm step; this is it. */
@@ -42,6 +43,8 @@ export const usePositionAssignment = ({
   const [overrides, setOverrides] = useState<Record<string, PositionAssignmentSnapshot>>({});
   const [inFlight, setInFlight] = useState(0);
   const [undoEntry, setUndoEntry] = useState<PendingAssignmentUndo | null>(null);
+
+  const isArabic = useIsArabicLanguage();
 
   /** Employee list with the not-yet-reconciled drops applied, so the UI never waits. */
   const effectiveEmployees = useMemo(() => {
@@ -114,7 +117,9 @@ export const usePositionAssignment = ({
       setUndoEntry({
         employeeId,
         employeeName: empDisplayName(employee),
-        positionTitle: position.title_ar,
+        // Captured in the reader's language — `title_ar`/`title_en` are backend
+        // columns the DOM auto-translator has no entry for.
+        positionTitle: localizedName(position.title_ar, position.title_en, isArabic),
         previous,
       });
 
@@ -127,7 +132,7 @@ export const usePositionAssignment = ({
       // Nothing to take back if it never landed — let the error toast through.
       if (!assigned) setUndoEntry(null);
     },
-    [positions, effectiveEmployees, dbDepartments, commit, onToast],
+    [positions, effectiveEmployees, dbDepartments, commit, onToast, isArabic],
   );
 
   const undoAssignment = useCallback(async (): Promise<void> => {

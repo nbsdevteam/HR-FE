@@ -39,6 +39,17 @@ export const useLocalizedName = (
   };
 }
 
+/**
+ * Non-hook form for a plain name_ar/name_en pair, for callbacks a component
+ * hands to a child (a TypeAhead's `getLabel`) or for hooks that build display
+ * strings. Pair it with `useIsArabicLanguage` so the value tracks the language.
+ */
+export const localizedName = (
+  nameAr: string,
+  nameEn: string | null | undefined,
+  isArabic: boolean,
+): string => (isArabic ? nameAr || nameEn || "" : nameEn || nameAr || "");
+
 /** The two name columns every employee record carries. */
 export type TEmployeeNameFields = {
   name?: string | null;
