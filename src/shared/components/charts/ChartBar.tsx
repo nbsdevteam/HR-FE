@@ -1,9 +1,9 @@
 import { memo } from "react";
 import type { CSSProperties } from "react";
+import ChartAxisLabel from "./ChartAxisLabel";
 
 const GROUP_STYLE: CSSProperties = { cursor: "pointer" };
 const BAR_STYLE: CSSProperties = { transition: "all 0.2s ease" };
-const LABEL_STYLE: CSSProperties = { fontSize: 10, fontFamily: "Tajawal" };
 
 type ChartBarProps = {
   index: number;
@@ -14,7 +14,10 @@ type ChartBarProps = {
   color: string;
   opacity: number;
   label: string;
+  /** Label split into the lines to render, from `buildAxisLabelLayout`. */
+  labelLines: string[];
   labelY: number;
+  labelRotation: number;
   onHover: (index: number | null) => void;
 };
 
@@ -27,7 +30,9 @@ const ChartBar = ({
   color,
   opacity,
   label,
+  labelLines,
   labelY,
+  labelRotation,
   onHover,
 }: ChartBarProps) => {
   const handleMouseEnter = (_event: React.MouseEvent<SVGGElement>): void => {
@@ -50,15 +55,13 @@ const ChartBar = ({
         opacity={opacity}
         style={BAR_STYLE}
       />
-      <text
+      <ChartAxisLabel
         x={x + width / 2}
         y={labelY}
-        textAnchor="middle"
-        fill="var(--muted-foreground)"
-        style={LABEL_STYLE}
-      >
-        {label}
-      </text>
+        lines={labelLines}
+        rotation={labelRotation}
+        title={label}
+      />
     </g>
   );
 };

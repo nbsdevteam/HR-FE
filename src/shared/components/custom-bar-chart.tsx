@@ -4,7 +4,15 @@ import { arabicSource } from "@/i18n/source";
 import ChartBar from "./charts/ChartBar";
 import ChartGridLine from "./charts/ChartGridLine";
 import ChartTooltip from "./charts/ChartTooltip";
-import { CHART_PADDING_LEFT, CHART_PADDING_RIGHT, CHART_TICK_COUNT, CHART_WIDTH, buildYTicks, niceMax } from "./chart-utils";
+import {
+  CHART_PADDING_LEFT,
+  CHART_PADDING_RIGHT,
+  CHART_TICK_COUNT,
+  CHART_WIDTH,
+  buildAxisLabelLayout,
+  buildYTicks,
+  niceMax,
+} from "./chart-utils";
 
 interface BarChartItem {
   label: string;
@@ -19,9 +27,10 @@ interface CustomBarChartProps {
 }
 
 const PADDING_TOP = 30;
-const PADDING_BOTTOM = 60;
 const PLOT_WIDTH = CHART_WIDTH - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
 const BAR_GAP = 8;
+/** Distance from the plot floor down to the first label baseline. */
+const LABEL_BASELINE_OFFSET = 14;
 const CONTAINER_STYLE: CSSProperties = { direction: "ltr" };
 
 const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arabicSource("common.value") }: CustomBarChartProps) => {
@@ -38,8 +47,6 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
     [data],
   );
 
-  const plotHeight = height - PADDING_TOP - PADDING_BOTTOM;
-
   const { slotWidth, barWidth } = useMemo(() => {
     const nextSlotWidth = safeData.length > 0 ? PLOT_WIDTH / safeData.length : PLOT_WIDTH;
     return {
@@ -48,13 +55,25 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
     };
   }, [safeData.length]);
 
+  // Wraps / tilts / truncates the x-axis labels so neighbouring names never overlap,
+  // and tells us how much bottom padding that choice needs.
+  const labelLayout = useMemo(
+    () => buildAxisLabelLayout(safeData.map((item) => item.label), slotWidth),
+    [safeData, slotWidth],
+  );
+
   // Y-axis ticks
-  const { chartMax, yTicks } = useMemo(() => {
+  const { plotHeight, chartMax, yTicks } = useMemo(() => {
+    const nextPlotHeight = Math.max(1, height - PADDING_TOP - labelLayout.paddingBottom);
     const maxValue = safeData.length > 0 ? Math.max(...safeData.map((item) => item.value)) : 0;
     const nextChartMax = niceMax(maxValue);
-    const getY = (value: number) => PADDING_TOP + plotHeight - (value / nextChartMax) * plotHeight;
-    return { chartMax: nextChartMax, yTicks: buildYTicks(0, nextChartMax, CHART_TICK_COUNT, getY) };
-  }, [safeData, plotHeight]);
+    const getY = (value: number) => PADDING_TOP + nextPlotHeight - (value / nextChartMax) * nextPlotHeight;
+    return {
+      plotHeight: nextPlotHeight,
+      chartMax: nextChartMax,
+      yTicks: buildYTicks(0, nextChartMax, CHART_TICK_COUNT, getY),
+    };
+  }, [safeData, height, labelLayout.paddingBottom]);
 
   const bars = useMemo(
     () =>
@@ -72,7 +91,7 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
   );
 
   const hoveredBar = hoveredIndex !== null ? bars[hoveredIndex] : undefined;
-  const labelY = PADDING_TOP + plotHeight + 16;
+  const labelY = PADDING_TOP + plotHeight + LABEL_BASELINE_OFFSET;
 
   const handleHover = useCallback((index: number | null): void => {
     setHoveredIndex(index);
@@ -110,7 +129,9 @@ const CustomBarChart = ({ data, color = "#D4AF37", height = 280, barLabel = arab
             color={color}
             opacity={hoveredIndex !== null && hoveredIndex !== index ? 0.5 : 1}
             label={bar.label}
+            labelLines={labelLayout.lines[index] ?? [bar.label]}
             labelY={labelY}
+            labelRotation={labelLayout.rotation}
             onHover={handleHover}
           />
         ))}
