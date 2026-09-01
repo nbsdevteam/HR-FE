@@ -10,11 +10,18 @@ type LeaveRequestHoursRowProps = {
 };
 
 /** Hours + optional start-time inputs shown when the request's duration unit is "hour". */
-const LeaveRequestHoursRow = ({ hours, hourFrom, maxHours, onHoursChange, onHourFromChange }: LeaveRequestHoursRowProps) => (
+const LeaveRequestHoursRow = ({
+  hours,
+  hourFrom,
+  maxHours,
+  onHoursChange,
+  onHourFromChange,
+}: LeaveRequestHoursRowProps) => (
   <div className="grid grid-cols-2 gap-4">
     <div>
       <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
-        {arabicSource("leave.number_of_hours")} * ({arabicSource("leave.maximum_hours_per_request")}: {maxHours})
+        {arabicSource("leave.number_of_hours")}
+        {/* * ({arabicSource("leave.maximum_hours_per_request")}: {maxHours}) */}
       </label>
       <input
         type="number"
@@ -28,7 +35,9 @@ const LeaveRequestHoursRow = ({ hours, hourFrom, maxHours, onHoursChange, onHour
       />
     </div>
     <div>
-      <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.start_time")}</label>
+      <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
+        {arabicSource("leave.start_time")}
+      </label>
       {/* Held as "HH:MM"; converted to the backend's 24h float on submit. */}
       <input
         type="time"

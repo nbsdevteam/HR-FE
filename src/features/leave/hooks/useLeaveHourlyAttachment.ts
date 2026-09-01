@@ -39,10 +39,6 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
   /** `hourFrom` is held as an `<input type="time">` string; the API wants a 24h float. */
   const hourFromFloat = useMemo(() => timeToFloat(hourFrom), [hourFrom]);
 
-  const handleSelectDurationUnit = useCallback((unit: LeaveDurationUnit): void => {
-    setDurationUnit(unit);
-  }, []);
-
   const handleHoursChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     setHours(Number(e.target.value) || 0);
   }, []);
@@ -70,9 +66,9 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
     setAttachmentError("");
   }, []);
 
-  /** Force back to day mode when the newly selected type doesn't allow hourly. */
+  /** Types that allow hourly requests go straight to hour mode — no day/hour choice. */
   const resetForType = useCallback((type: DbLeaveType | null): void => {
-    if (!type?.allow_hourly) setDurationUnit("day");
+    setDurationUnit(type?.allow_hourly ? "hour" : "day");
   }, []);
 
   const validate = useCallback((): string => {
@@ -123,7 +119,6 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
     handleHourFromChange,
     handleHoursChange,
     handleRemoveAttachment,
-    handleSelectDurationUnit,
     hourFrom,
     hourFromFloat,
     hours,

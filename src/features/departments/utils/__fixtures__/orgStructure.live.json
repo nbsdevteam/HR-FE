@@ -1,0 +1,232 @@
+{
+  "departments": [
+    {
+      "department_id": 10,
+      "department": "Administration",
+      "department_ar": "",
+      "parent_department_id": false,
+      "parent_department": "",
+      "sort_order": 0,
+      "employee_count": 2,
+      "position_count": 0,
+      "level_count": 0,
+      "positions": []
+    },
+    {
+      "department_id": 1,
+      "department": "Administration",
+      "department_ar": "",
+      "parent_department_id": false,
+      "parent_department": "",
+      "sort_order": 0,
+      "employee_count": 1,
+      "position_count": 3,
+      "level_count": 2,
+      "positions": [
+        {
+          "position_id": 578,
+          "title": "Administrative Coordinator",
+          "title_ar": "منسق إداري",
+          "level": 1,
+          "seats": 1,
+          "employee_count": 0,
+          "vacancies": 1,
+          "employees": []
+        },
+        {
+          "position_id": 580,
+          "title": "Cleaner",
+          "title_ar": "عامل تنظيف",
+          "level": 2,
+          "seats": 1,
+          "employee_count": 0,
+          "vacancies": 1,
+          "employees": []
+        },
+        {
+          "position_id": 579,
+          "title": "Security Guard",
+          "title_ar": "حارس أمن",
+          "level": 2,
+          "seats": 1,
+          "employee_count": 0,
+          "vacancies": 1,
+          "employees": []
+        }
+      ]
+    },
+    {
+      "department_id": 3,
+      "department": "Call Center",
+      "department_ar": "",
+      "parent_department_id": false,
+      "parent_department": "",
+      "sort_order": 0,
+      "employee_count": 5,
+      "position_count": 1,
+      "level_count": 1,
+      "positions": [
+        {
+          "position_id": 4,
+          "title": "Supervisor",
+          "title_ar": "مشرف",
+          "level": 1,
+          "seats": 3,
+          "employee_count": 4,
+          "vacancies": 0,
+          "employees": [
+            {
+              "employee_id": 4,
+              "name": "abdalmihamen",
+              "employee_code": "EMP00004",
+              "job_title": "Supervisor"
+            },
+            {
+              "employee_id": 41,
+              "name": "abdalrahman.arafat",
+              "employee_code": "EMP00048",
+              "job_title": "Supervisor"
+            },
+            {
+              "employee_id": 55,
+              "name": "abd mahdi abd",
+              "employee_code": "EMP00065",
+              "job_title": "Supervisor"
+            },
+            {
+              "employee_id": 59,
+              "name": "عباس فرج وذيح المحمداوي",
+              "employee_code": "EMP00069",
+              "job_title": "Supervisor"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "department_id": 241,
+      "department": "Human Resources",
+      "department_ar": "",
+      "parent_department_id": false,
+      "parent_department": "",
+      "sort_order": 0,
+      "employee_count": 0,
+      "position_count": 1,
+      "level_count": 1,
+      "positions": [
+        {
+          "position_id": 552,
+          "title": "HR Manager",
+          "title_ar": "مدير الموارد البشرية",
+          "level": 1,
+          "seats": 1,
+          "employee_count": 0,
+          "vacancies": 1,
+          "employees": []
+        }
+      ]
+    },
+    {
+      "department_id": 243,
+      "department": "Warehousing",
+      "department_ar": "",
+      "parent_department_id": false,
+      "parent_department": "",
+      "sort_order": 0,
+      "employee_count": 0,
+      "position_count": 5,
+      "level_count": 2,
+      "positions": [
+        {
+          "position_id": 560,
+          "title": "Warehouse Supervisor",
+          "title_ar": "مشرف المخازن",
+          "level": 1,
+          "seats": 2,
+          "employee_count": 0,
+          "vacancies": 2,
+          "employees": []
+        },
+        {
+          "position_id": 564,
+          "title": "Driver",
+          "title_ar": "سائق",
+          "level": 2,
+          "seats": 2,
+          "employee_count": 0,
+          "vacancies": 2,
+          "employees": []
+        },
+        {
+          "position_id": 563,
+          "title": "Showroom Attendant",
+          "title_ar": "موظف صالة العرض",
+          "level": 2,
+          "seats": 4,
+          "employee_count": 0,
+          "vacancies": 4,
+          "employees": []
+        },
+        {
+          "position_id": 561,
+          "title": "Warehouse Keeper",
+          "title_ar": "أمين المخزن",
+          "level": 2,
+          "seats": 3,
+          "employee_count": 0,
+          "vacancies": 3,
+          "employees": []
+        },
+        {
+          "position_id": 562,
+          "title": "Warehouse Worker",
+          "title_ar": "عامل مخزن",
+          "level": 2,
+          "seats": 1,
+          "employee_count": 0,
+          "vacancies": 1,
+          "employees": []
+        }
+      ]
+    }
+  ],
+  "positions_without_department": [
+    {
+      "position_id": 10,
+      "title": "CFO",
+      "title_ar": "المدير المالي",
+      "level": 1,
+      "seats": 1,
+      "employee_count": 3,
+      "vacancies": 0,
+      "employees": [
+        {
+          "employee_id": 219,
+          "name": "Drashti Dudani",
+          "employee_code": "4456",
+          "job_title": "CFO"
+        },
+        {
+          "employee_id": 72,
+          "name": "MAHDI SALAH",
+          "employee_code": "EMP00083",
+          "job_title": "CFO"
+        },
+        {
+          "employee_id": 192,
+          "name": "new test",
+          "employee_code": "4452",
+          "job_title": "CFO"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "departments": 23,
+    "positions": 47,
+    "seats": 73,
+    "employees_on_positions": 16,
+    "employees_total": 93,
+    "employees_without_department": 7
+  }
+}

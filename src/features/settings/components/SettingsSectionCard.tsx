@@ -17,6 +17,12 @@ type TSettingsSectionCardProps = {
   /** Section-level buttons (e.g. "add type"); shown in the open dialog only. */
   actions?: ReactNode;
   delay?: number;
+  /** Override the dialog card's className — e.g. a wider `max-w` for a table + editor section. */
+  modalContentClassName?: string;
+  /** Called when the dialog opens — lets a caller defer its own data fetch until then. */
+  onOpen?: () => void;
+  /** Called after the dialog closes, in addition to resetting `isOpen` — lets a caller reset its own state (e.g. a selected row). */
+  onClose?: () => void;
   children: ReactNode;
 };
 
@@ -50,17 +56,22 @@ const SettingsSectionCard = ({
   description,
   actions,
   delay = 0,
+  modalContentClassName,
+  onOpen,
+  onClose,
   children,
 }: TSettingsSectionCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpen = useCallback((): void => {
     setIsOpen(true);
-  }, []);
+    onOpen?.();
+  }, [onOpen]);
 
   const handleClose = useCallback((): void => {
     setIsOpen(false);
-  }, []);
+    onClose?.();
+  }, [onClose]);
 
   return (
     <>
@@ -101,7 +112,7 @@ const SettingsSectionCard = ({
       {isOpen && (
         <ModalOverlay
           onClose={handleClose}
-          contentClassName={MODAL_CONTENT_CLASS}
+          contentClassName={modalContentClassName ?? MODAL_CONTENT_CLASS}
           contentMotionProps={MODAL_CONTENT_MOTION}
         >
           <ModalHeader

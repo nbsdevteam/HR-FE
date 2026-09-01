@@ -7,7 +7,6 @@ import LeaveFormError from "./LeaveFormError";
 import LeaveModalActions from "./LeaveModalActions";
 import LeaveRequestAttachmentField from "./LeaveRequestAttachmentField";
 import LeaveRequestDurationSummary from "./LeaveRequestDurationSummary";
-import LeaveRequestDurationToggle from "./LeaveRequestDurationToggle";
 import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
 import LeaveRequestHalfDayRow from "./LeaveRequestHalfDayRow";
 import LeaveRequestHourlySummary from "./LeaveRequestHourlySummary";
@@ -97,14 +96,6 @@ const LeaveRequestModal = ({
           firstAccrualOn={firstAccrualOn}
           outOfBalance={outOfBalance}
         />
-
-        {/* Day / Hour Toggle — only for types that allow hourly requests */}
-        {selectedType?.allow_hourly && (
-          <LeaveRequestDurationToggle
-            durationUnit={hourly.durationUnit}
-            onSelect={hourly.handleSelectDurationUnit}
-          />
-        )}
 
         {!isHourly && (
           <>

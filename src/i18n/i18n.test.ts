@@ -146,6 +146,41 @@ describe("application localization", () => {
     });
   });
 
+  it("localizes input placeholders, which are attributes rather than text nodes", async () => {
+    render(
+      createElement(
+        LocalizationProvider,
+        null,
+        createElement("input", {
+          placeholder: arabicSource("common.search_for_an_employee"),
+          readOnly: true,
+        }),
+      ),
+    );
+    const input = (): HTMLElement => screen.getByRole("textbox");
+    await changeLanguage("en");
+    await waitFor(() => {
+      expect(input()).toHaveAttribute(
+        "placeholder",
+        i18n.getFixedT("en")("common.search_for_an_employee"),
+      );
+    });
+    await changeLanguage("ku");
+    await waitFor(() => {
+      expect(input()).toHaveAttribute(
+        "placeholder",
+        i18n.getFixedT("ku")("common.search_for_an_employee"),
+      );
+    });
+    await changeLanguage("ar");
+    await waitFor(() => {
+      expect(input()).toHaveAttribute(
+        "placeholder",
+        arabicSource("common.search_for_an_employee"),
+      );
+    });
+  });
+
   it("maps backend status codes and keeps unknown values readable", async () => {
     await changeLanguage("en");
     expect(

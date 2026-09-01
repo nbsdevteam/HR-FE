@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { normalizeLanguage } from "./index";
+import { normalizeLanguage, type AppLanguage } from "./index";
 
 type TLocalizedName = {
   primary: string;
@@ -7,10 +7,15 @@ type TLocalizedName = {
   secondaryDir: "ltr" | undefined;
 };
 
+/** The active app language, normalized — re-renders the caller when it changes. */
+export const useAppLanguage = (): AppLanguage => {
+  const { i18n } = useTranslation();
+  return normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+};
+
 /** Whether the active app language is Arabic — drives name_ar/name_en style field selection. */
 export const useIsArabicLanguage = (): boolean => {
-  const { i18n } = useTranslation();
-  return normalizeLanguage(i18n.resolvedLanguage ?? i18n.language) === "ar";
+  return useAppLanguage() === "ar";
 };
 
 /**

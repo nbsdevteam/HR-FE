@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { arabicSource } from "@/i18n/source";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import type {
   AttendanceSortKey,
   AttendanceViewMode,
@@ -13,7 +14,7 @@ import type {
  * the records hook.
  */
 export const useAttendanceViewState = () => {
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(todayInBaghdad());
   const [viewMode, setViewMode] = useState<AttendanceViewMode>("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(

@@ -47,6 +47,11 @@ const Attendance = () => {
     attendanceRows,
     todayStats,
     weeklyAttendance,
+    weekLoading,
+    weekRangeLabel,
+    canGoToNextWeek,
+    handlePreviousWeek,
+    handleNextWeek,
     handleSaveExcuse,
     handleToggleChart,
     handleCloseEmployeeDetail,
@@ -84,7 +89,12 @@ const Attendance = () => {
       <WeeklyAttendanceChart
         chartExpanded={chartExpanded}
         weeklyAttendance={weeklyAttendance}
+        weekLoading={weekLoading}
+        weekRangeLabel={weekRangeLabel}
+        canGoToNextWeek={canGoToNextWeek}
         onToggle={handleToggleChart}
+        onPreviousWeek={handlePreviousWeek}
+        onNextWeek={handleNextWeek}
       />
 
       <AttendanceFilters

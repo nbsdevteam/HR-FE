@@ -8,13 +8,11 @@ import {
 } from "@/shared/hooks";
 import type { DbAttendanceRecord } from "@/shared/hooks";
 import type { ExcuseForm } from "@/features/attendance/types";
-import {
-  buildTodayAttendanceStats,
-  buildWeeklyAttendance,
-} from "@/features/attendance/utils/attendanceDisplay";
+import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
 import { useAttendanceRows } from "./useAttendanceRows";
 import { useAttendanceViewState } from "./useAttendanceViewState";
 import { useExcuseModal } from "./useExcuseModal";
+import { useWeeklyAttendanceChart } from "./useWeeklyAttendanceChart";
 
 /**
  * Composition root for the attendance page — wires the records fetch to the
@@ -45,10 +43,6 @@ export const useAttendancePage = () => {
   } = useAttendanceViewState();
   const { i18n } = useTranslation();
 
-  const thirtyDaysAgo = useMemo(
-    () => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
-    [],
-  );
   const { employees } = useEmployees();
   const { shifts: dbShifts } = useShifts();
   const { departments: dbDepartments } = useHierarchyData();
@@ -56,7 +50,16 @@ export const useAttendancePage = () => {
     records: hookRecords,
     loading,
     refetch: refetchAttendance,
-  } = useAttendanceRecords({ date_from: thirtyDaysAgo });
+  } = useAttendanceRecords({ date: selectedDate });
+
+  const {
+    weeklyAttendance,
+    weekLoading,
+    weekRangeLabel,
+    canGoToNextWeek,
+    handlePreviousWeek,
+    handleNextWeek,
+  } = useWeeklyAttendanceChart(chartExpanded);
 
   const { empMap, attendanceRows } = useAttendanceRows({
     rawRecords,
@@ -77,11 +80,6 @@ export const useAttendancePage = () => {
         i18n.resolvedLanguage,
       ),
     [rawRecords, selectedDate, i18n.resolvedLanguage],
-  );
-
-  const weeklyAttendance = useMemo(
-    () => buildWeeklyAttendance(rawRecords),
-    [rawRecords],
   );
 
   const handleExcuseSaved = useCallback(
@@ -116,13 +114,7 @@ export const useAttendancePage = () => {
 
   useEffect(() => {
     setRawRecords(hookRecords);
-    if (hookRecords.length > 0 && !selectedDate) {
-      const dates = [...new Set(hookRecords.map((r) => r.date))]
-        .sort()
-        .reverse();
-      setSelectedDate(dates[0]);
-    }
-  }, [hookRecords, selectedDate, setSelectedDate]);
+  }, [hookRecords]);
 
   return {
     rawRecords,
@@ -154,6 +146,11 @@ export const useAttendancePage = () => {
     attendanceRows,
     todayStats,
     weeklyAttendance,
+    weekLoading,
+    weekRangeLabel,
+    canGoToNextWeek,
+    handlePreviousWeek,
+    handleNextWeek,
     handleSaveExcuse,
     handleToggleChart,
     handleCloseEmployeeDetail,

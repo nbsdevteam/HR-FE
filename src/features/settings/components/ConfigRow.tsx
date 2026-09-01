@@ -1,6 +1,8 @@
 import { memo, useCallback } from "react";
 import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import { translateCataloguedValue } from "@/i18n/legacy";
+import { useAppLanguage } from "@/i18n/useLocalizedName";
 import type { DbConfiguration } from "@/shared/hooks";
 import type { ConfigValue } from "../types";
 import ConfigSaveButton from "./ConfigSaveButton";
@@ -51,6 +53,27 @@ const ConfigRow = ({
   onEdit,
   onSave,
 }: IConfigRowProps) => {
+  const language = useAppLanguage();
+
+  // Seeded settings are catalogued as `database.seed.*` keys, which cover all
+  // three languages, so the catalogue wins over the row's own `label_en`.
+  // Resolving whole strings here (exact match only) is what keeps a row added
+  // after the catalogue was written fully Arabic, instead of letting the DOM
+  // localizer swap out only the words it happens to recognise mid-sentence.
+  const cataloguedLabel = translateCataloguedValue(config.label_ar, language);
+  const label =
+    language === "ar"
+      ? config.label_ar
+      : cataloguedLabel !== config.label_ar
+        ? cataloguedLabel
+        : config.label_en || config.label_ar;
+
+  // Descriptions have no English column at all, so the catalogue is the only
+  // source; an uncatalogued one stays Arabic rather than becoming a mix.
+  const description = config.description_ar
+    ? translateCataloguedValue(config.description_ar, language)
+    : null;
+
   const handleToggleClick = useCallback((): void => {
     const newVal = !(currentValue === true || currentValue === "true");
     onEdit(config.id, newVal);
@@ -75,12 +98,10 @@ const ConfigRow = ({
 
   return (
     <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
-      <div className="flex-1">
-        <p className="text-foreground text-sm">{config.label_ar}</p>
-        {config.description_ar && (
-          <p className="text-muted-foreground text-xs mt-1">
-            {config.description_ar}
-          </p>
+      <div className="flex-1" data-i18n-ignore>
+        <p className="text-foreground text-sm">{label}</p>
+        {description && (
+          <p className="text-muted-foreground text-xs mt-1">{description}</p>
         )}
       </div>
       <div className="flex items-center gap-2">

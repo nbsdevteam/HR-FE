@@ -22,6 +22,8 @@ type AsyncListOptions = {
   cacheKey?: string;
   /** How long cached data stays fresh. Defaults to `DEFAULT_CACHE_TTL_MS`. */
   ttlMs?: number;
+  /** Skip fetching until true — e.g. a collapsed panel that only needs its data once expanded. Defaults to true. */
+  enabled?: boolean;
 };
 
 /** Combine the resource name with its dep values into one cache identity. */
@@ -50,13 +52,13 @@ export const useAsyncList = <T,>(
   pollMs?: number,
   options: AsyncListOptions = {}
 ) => {
-  const { cacheKey: cacheKeyBase, ttlMs = DEFAULT_CACHE_TTL_MS } = options;
+  const { cacheKey: cacheKeyBase, ttlMs = DEFAULT_CACHE_TTL_MS, enabled = true } = options;
   const cacheKey = buildCacheKey(cacheKeyBase, deps);
   const cached = cacheKey ? readCache<T>(cacheKey) : undefined;
   const servedFromCache = Boolean(cacheKey && isCacheFresh(cacheKey, ttlMs));
 
   const [data, setData] = useState<T[]>(cached?.data ?? []);
-  const [loading, setLoading] = useState(!servedFromCache);
+  const [loading, setLoading] = useState(enabled && !servedFromCache);
   const [error, setError] = useState<string | null>(cached?.error ?? null);
 
   // Keep the latest fetcher in a ref so `fetchData` stays referentially stable
@@ -116,6 +118,10 @@ export const useAsyncList = <T,>(
 
   useEffect(() => {
     mountedRef.current = true;
+    if (!enabled) {
+      setLoading(false);
+      return () => { mountedRef.current = false; };
+    }
     runFetch(false);
     if (!pollMs) return () => { mountedRef.current = false; };
     const interval = setInterval(() => runFetch(true), pollMs);
@@ -124,7 +130,7 @@ export const useAsyncList = <T,>(
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, enabled]);
 
   return { data, loading, error, refetch };
 };
