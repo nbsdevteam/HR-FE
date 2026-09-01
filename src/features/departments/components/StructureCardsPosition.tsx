@@ -1,10 +1,21 @@
+import { useCallback } from "react";
+import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { OrgStructurePosition } from "@/shared/hooks";
-import { isPositionVacant, orgLabel } from "../utils/orgStructure";
+import type { OrgStructureDepartment, OrgStructurePosition } from "@/shared/hooks";
+import { isPositionVacant, orgLabel, positionMatchId } from "../utils/orgStructure";
 import StructureCardsEmployee from "./StructureCardsEmployee";
 
 type StructureCardsPositionProps = {
   position: OrgStructurePosition;
+  department?: OrgStructureDepartment;
+  matchedIds: Set<string>;
+  hasActiveFilter: boolean;
+  onSelectPosition: (position: OrgStructurePosition, department?: OrgStructureDepartment) => void;
+  onSelectEmployee: (
+    employee: OrgStructurePosition["employees"][number],
+    position: OrgStructurePosition,
+    department?: OrgStructureDepartment,
+  ) => void;
 };
 
 /**
@@ -14,15 +25,42 @@ type StructureCardsPositionProps = {
  * an invented name. Grade is not rendered because the payload carries none;
  * seniority is shown by the enclosing level band.
  */
-const StructureCardsPosition = ({ position }: StructureCardsPositionProps) => {
+const StructureCardsPosition = ({
+  position,
+  department,
+  matchedIds,
+  hasActiveFilter,
+  onSelectPosition,
+  onSelectEmployee,
+}: StructureCardsPositionProps) => {
   const { t } = useTranslation();
   const vacant = isPositionVacant(position);
+  const matched = matchedIds.has(positionMatchId(position));
+  const dimmed = hasActiveFilter && !matched;
+
+  const handleClick = useCallback((): void => {
+    onSelectPosition(position, department);
+  }, [onSelectPosition, position, department]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>): void => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      onSelectPosition(position, department);
+    },
+    [onSelectPosition, position, department],
+  );
 
   return (
     <div
-      className={`rounded-lg border p-3 ${
+      data-structure-id={positionMatchId(position)}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      className={`rounded-lg border p-3 text-start cursor-pointer transition-opacity w-full sm:w-64 ${
         vacant ? "border-dashed border-border/60 bg-transparent" : "border-border/40 bg-card/50"
-      }`}
+      } ${matched ? "ring-2 ring-primary/60" : ""} ${dimmed ? "opacity-40" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 truncate font-medium" style={{ fontSize: 13.5 }}>
@@ -58,7 +96,15 @@ const StructureCardsPosition = ({ position }: StructureCardsPositionProps) => {
       ) : (
         <div className="mt-1.5 ps-1">
           {position.employees.map((employee) => (
-            <StructureCardsEmployee key={employee.employee_id} employee={employee} />
+            <StructureCardsEmployee
+              key={employee.employee_id}
+              employee={employee}
+              position={position}
+              department={department}
+              matchedIds={matchedIds}
+              hasActiveFilter={hasActiveFilter}
+              onSelectEmployee={onSelectEmployee}
+            />
           ))}
           {/* Some seats filled, some not — say so rather than leaving it implied. */}
           {position.vacancies > 0 && (

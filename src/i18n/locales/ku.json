@@ -2586,5 +2586,7 @@
   "hierarchy.positions_without_department_hint": "پۆستەکان بە هیچ بەشێک بەستراو نین.",
   "hierarchy.on_positions": "لەسەر پۆستەکان",
   "hierarchy.no_structure_yet": "هێشتا پێکهاتەی ڕێکخراوەیی نییە.",
-  "hierarchy.no_structure_yet_hint": "بەش و پۆست زیاد بکە بۆ ئەوەی لێرە دەربکەوێت."
+  "hierarchy.no_structure_yet_hint": "بەش و پۆست زیاد بکە بۆ ئەوەی لێرە دەربکەوێت.",
+  "hierarchy.level": "ئاست",
+  "hierarchy.employee_code": "کۆدی کارمەند"
 }

@@ -2586,5 +2586,7 @@
   "hierarchy.positions_without_department_hint": "مناصب غير مرتبطة بأي قسم.",
   "hierarchy.on_positions": "على مناصب",
   "hierarchy.no_structure_yet": "لا يوجد هيكل تنظيمي بعد.",
-  "hierarchy.no_structure_yet_hint": "أضف أقسامًا ومناصب لتظهر هنا."
+  "hierarchy.no_structure_yet_hint": "أضف أقسامًا ومناصب لتظهر هنا.",
+  "hierarchy.level": "المستوى",
+  "hierarchy.employee_code": "رمز الموظف"
 }

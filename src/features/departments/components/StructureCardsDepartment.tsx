@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { OrgStructureDepartment } from "@/shared/hooks";
+import type { OrgStructureDepartment, OrgStructurePosition } from "@/shared/hooks";
 import {
   departmentSeats,
   departmentStaffOnPositions,
@@ -13,16 +13,30 @@ import StructureCardsLevelGroup from "./StructureCardsLevelGroup";
 
 type StructureCardsDepartmentProps = {
   department: OrgStructureDepartment;
+  matchedIds: Set<string>;
+  hasActiveFilter: boolean;
+  onSelectPosition: (position: OrgStructurePosition, department?: OrgStructureDepartment) => void;
+  onSelectEmployee: (
+    employee: OrgStructurePosition["employees"][number],
+    position: OrgStructurePosition,
+    department?: OrgStructureDepartment,
+  ) => void;
 };
 
 /**
- * The root card of the structure: one department, its positions grouped into
- * seniority bands, and the real people in each.
+ * The root card of the graph: one department, full-width, with its positions
+ * grouped into seniority bands and the real people in each.
  *
  * A department with no positions still renders — its emptiness is part of the
  * structure, not a reason to hide it.
  */
-const StructureCardsDepartment = ({ department }: StructureCardsDepartmentProps) => {
+const StructureCardsDepartment = ({
+  department,
+  matchedIds,
+  hasActiveFilter,
+  onSelectPosition,
+  onSelectEmployee,
+}: StructureCardsDepartmentProps) => {
   const { t } = useTranslation();
 
   const groups = useMemo(
@@ -63,14 +77,22 @@ const StructureCardsDepartment = ({ department }: StructureCardsDepartmentProps)
         </div>
       </header>
 
-      <div className="px-4 py-3 space-y-3">
+      <div className="px-4 py-4 space-y-4">
         {groups.length === 0 ? (
           <p className="text-muted-foreground" style={{ fontSize: 12.5 }}>
             {t("hierarchy.no_positions_defined")}
           </p>
         ) : (
           groups.map((group) => (
-            <StructureCardsLevelGroup key={group.level ?? "none"} group={group} />
+            <StructureCardsLevelGroup
+              key={group.level ?? "none"}
+              group={group}
+              department={department}
+              matchedIds={matchedIds}
+              hasActiveFilter={hasActiveFilter}
+              onSelectPosition={onSelectPosition}
+              onSelectEmployee={onSelectEmployee}
+            />
           ))
         )}
 

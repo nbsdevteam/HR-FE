@@ -6,14 +6,12 @@ import { useDepartmentMetadata } from "@/shared/hooks";
 import HierarchyHeader from "../components/HierarchyHeader";
 import HierarchyModals from "../components/HierarchyModals";
 import HierarchyToast from "../components/HierarchyToast";
-import HierarchyTreeSection from "../components/HierarchyTreeSection";
 import HierarchyViewModeToggle from "../components/HierarchyViewModeToggle";
 import SearchCountToast from "../components/SearchCountToast";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
 const PositionsView = lazy(() => import("../components/PositionsView"));
-const GradesView = lazy(() => import("../components/GradesView"));
-const StructureCardsView = lazy(() => import("../components/StructureCardsView"));
+const HierarchyStructureSection = lazy(() => import("../components/HierarchyStructureSection"));
 
 const HierarchyChart = () => {
   const [, setSearchParams] = useSearchParams();
@@ -28,7 +26,6 @@ const HierarchyChart = () => {
     unlinkedEmps,
     viewMode,
     setViewMode,
-    expandedMap,
     selectedNode,
     zoom,
     searchQuery,
@@ -53,23 +50,23 @@ const HierarchyChart = () => {
     panEnabled,
     allNodes,
     departments,
-    jobTitles,
-    managerOptions,
     searchResults,
-    searchMatchIds,
-    highlightedIds,
+    structureTree,
+    structureLoading,
+    structureError,
+    structureMatchedIds,
+    structureDepartmentOptions,
+    structureJobTitleOptions,
     departmentFilter,
     jobTitleFilter,
-    managerFilter,
     hasActiveFilter,
     setDepartmentFilter,
     setJobTitleFilter,
-    setManagerFilter,
     clearFilters,
-    departmentStats,
-    toggleExpand,
-    expandAll,
-    collapseAll,
+    selectedStructureItem,
+    handleSelectStructurePosition,
+    handleSelectStructureEmployee,
+    handleCloseStructureDetail,
     handleDeleteEmployee,
     handleEditEmployee,
     handleLinkEmployee,
@@ -96,7 +93,6 @@ const HierarchyChart = () => {
     handleZoomOut,
     handleZoomIn,
     handleResetZoom,
-    handleSelectNode,
     handleCloseSelectedNode,
     handleCloseDeleteModal,
     handleCloseEditModal,
@@ -127,10 +123,9 @@ const HierarchyChart = () => {
   }
 
   // The positions tab is locked to the screen — its two panes scroll on their
-  // own, so the page must not. Every other view keeps the normal page flow.
+  // own, so the page must not. The current-structure (level-wise graph) tab
+  // keeps the normal page flow.
   const isPositionsView = viewMode === "positions";
-  const isGradesView = viewMode === "grades";
-  const isStructureView = viewMode === "structure";
 
   return (
     <div className={isPositionsView ? "h-full flex flex-col gap-6 min-h-0" : "space-y-6"}>
@@ -168,58 +163,44 @@ const HierarchyChart = () => {
             />
           </Suspense>
         </div>
-      ) : isGradesView ? (
-        <Suspense fallback={null}>
-          <GradesView />
-        </Suspense>
-      ) : isStructureView ? (
-        <Suspense fallback={null}>
-          <StructureCardsView />
-        </Suspense>
       ) : (
-        <HierarchyTreeSection
-          dbEmployees={dbEmployees}
-          departmentStats={departmentStats}
-          deptColors={deptColors}
-          saving={saving}
-          panEnabled={panEnabled}
-          isDragging={isDragging}
-          zoom={zoom}
-          orgTree={orgTree}
-          expandedMap={expandedMap}
-          selectedNodeId={selectedNode?.id ?? null}
-          highlightedIds={highlightedIds}
-          searchMatchIds={searchMatchIds}
-          containerRef={containerRef}
-          chartContentRef={chartContentRef}
-          departmentOptions={departments}
-          jobTitleOptions={jobTitles}
-          managerOptions={managerOptions}
-          departmentFilter={departmentFilter}
-          jobTitleFilter={jobTitleFilter}
-          managerFilter={managerFilter}
-          hasActiveFilter={hasActiveFilter}
-          onDepartmentFilterChange={setDepartmentFilter}
-          onJobTitleFilterChange={setJobTitleFilter}
-          onManagerFilterChange={setManagerFilter}
-          onClearFilters={clearFilters}
-          onTogglePan={handleTogglePan}
-          onZoomOut={handleZoomOut}
-          onZoomIn={handleZoomIn}
-          onResetZoom={handleResetZoom}
-          onExpandAll={expandAll}
-          onCollapseAll={collapseAll}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onToggleExpand={toggleExpand}
-          onSelectNode={handleSelectNode}
-        />
+        <Suspense fallback={null}>
+          <HierarchyStructureSection
+            tree={structureTree}
+            loading={structureLoading}
+            error={structureError}
+            panEnabled={panEnabled}
+            isDragging={isDragging}
+            zoom={zoom}
+            containerRef={containerRef}
+            chartContentRef={chartContentRef}
+            departmentOptions={structureDepartmentOptions}
+            jobTitleOptions={structureJobTitleOptions}
+            departmentFilter={departmentFilter}
+            jobTitleFilter={jobTitleFilter}
+            hasActiveFilter={hasActiveFilter}
+            matchedIds={structureMatchedIds}
+            selectedItem={selectedStructureItem}
+            onDepartmentFilterChange={setDepartmentFilter}
+            onJobTitleFilterChange={setJobTitleFilter}
+            onClearFilters={clearFilters}
+            onTogglePan={handleTogglePan}
+            onZoomOut={handleZoomOut}
+            onZoomIn={handleZoomIn}
+            onResetZoom={handleResetZoom}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onSelectPosition={handleSelectStructurePosition}
+            onSelectEmployee={handleSelectStructureEmployee}
+            onCloseDetail={handleCloseStructureDetail}
+          />
+        </Suspense>
       )}
 
       <SearchCountToast
         searchQuery={searchQuery}
-        matchCount={searchMatchIds.size}
+        matchCount={structureMatchedIds.size}
         onClearSearch={clearSearch}
       />
       <HierarchyToast message={toast} />

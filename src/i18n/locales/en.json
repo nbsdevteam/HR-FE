@@ -2586,5 +2586,7 @@
   "hierarchy.positions_without_department_hint": "Positions not linked to any department.",
   "hierarchy.on_positions": "On positions",
   "hierarchy.no_structure_yet": "No organizational structure yet.",
-  "hierarchy.no_structure_yet_hint": "Add departments and positions and they will appear here."
+  "hierarchy.no_structure_yet_hint": "Add departments and positions and they will appear here.",
+  "hierarchy.level": "Level",
+  "hierarchy.employee_code": "Employee code"
 }

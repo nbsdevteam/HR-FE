@@ -1,12 +1,20 @@
 import { useMemo } from "react";
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { OrgStructurePosition } from "@/shared/hooks";
+import type { OrgStructureDepartment, OrgStructurePosition } from "@/shared/hooks";
 import { groupPositionsByLevel } from "../utils/orgStructure";
 import StructureCardsLevelGroup from "./StructureCardsLevelGroup";
 
 type StructureCardsOrphansProps = {
   positions: OrgStructurePosition[];
+  matchedIds: Set<string>;
+  hasActiveFilter: boolean;
+  onSelectPosition: (position: OrgStructurePosition, department?: OrgStructureDepartment) => void;
+  onSelectEmployee: (
+    employee: OrgStructurePosition["employees"][number],
+    position: OrgStructurePosition,
+    department?: OrgStructureDepartment,
+  ) => void;
 };
 
 /**
@@ -16,7 +24,13 @@ type StructureCardsOrphansProps = {
  * own labelled group rather than being folded into a real department — which
  * would misattribute them.
  */
-const StructureCardsOrphans = ({ positions }: StructureCardsOrphansProps) => {
+const StructureCardsOrphans = ({
+  positions,
+  matchedIds,
+  hasActiveFilter,
+  onSelectPosition,
+  onSelectEmployee,
+}: StructureCardsOrphansProps) => {
   const { t } = useTranslation();
   const groups = useMemo(() => groupPositionsByLevel(positions), [positions]);
 
@@ -37,9 +51,16 @@ const StructureCardsOrphans = ({ positions }: StructureCardsOrphansProps) => {
           </p>
         </div>
       </header>
-      <div className="px-4 py-3 space-y-3">
+      <div className="px-4 py-4 space-y-4">
         {groups.map((group) => (
-          <StructureCardsLevelGroup key={group.level ?? "none"} group={group} />
+          <StructureCardsLevelGroup
+            key={group.level ?? "none"}
+            group={group}
+            matchedIds={matchedIds}
+            hasActiveFilter={hasActiveFilter}
+            onSelectPosition={onSelectPosition}
+            onSelectEmployee={onSelectEmployee}
+          />
         ))}
       </div>
     </section>

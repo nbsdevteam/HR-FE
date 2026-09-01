@@ -5,10 +5,16 @@ import {
   departmentSeats,
   departmentStaffOnPositions,
   departmentStaffWithoutPosition,
+  employeeMatchId,
   groupPositionsByLevel,
   isDepartmentEmpty,
   isPositionVacant,
+  matchStructureIds,
   orgLabel,
+  positionMatchId,
+  searchStructureNodes,
+  structureDepartmentOptions,
+  structureJobTitleOptions,
 } from "./orgStructure";
 
 /**
@@ -176,5 +182,81 @@ describe("mapper resilience", () => {
       ],
     });
     expect(mapped.departments[0].positions[0].level).toBeNull();
+  });
+});
+
+describe("structure filter options", () => {
+  it("lists every department once, in first-seen order", () => {
+    const options = structureDepartmentOptions(tree);
+    expect(new Set(options).size).toBe(options.length);
+    expect(options).toEqual(tree.departments.map((d) => orgLabel(d.department, d.department_ar)).filter((label, index, all) => all.indexOf(label) === index));
+  });
+
+  it("lists every position title once, across departments and orphans", () => {
+    const options = structureJobTitleOptions(tree);
+    expect(new Set(options).size).toBe(options.length);
+    const supervisor = dept("Warehousing").positions[0];
+    expect(options).toContain(orgLabel(supervisor.title, supervisor.title_ar));
+  });
+
+  it("returns nothing for a null tree", () => {
+    expect(structureDepartmentOptions(null)).toEqual([]);
+    expect(structureJobTitleOptions(null)).toEqual([]);
+  });
+});
+
+describe("searchStructureNodes", () => {
+  it("matches a position by its English title even when the Arabic label is displayed", () => {
+    const supervisor = dept("Warehousing").positions[0];
+    const hits = searchStructureNodes(tree, "Warehouse Supervisor");
+    expect(hits.some((h) => h.kind === "position" && h.id === positionMatchId(supervisor))).toBe(true);
+  });
+
+  it("matches a position by department name", () => {
+    const hits = searchStructureNodes(tree, "Warehousing");
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((h) => h.department === "Warehousing")).toBe(true);
+  });
+
+  it("matches an employee by name", () => {
+    const supervisor = dept("Call Center").positions[0];
+    const employee = supervisor.employees[0];
+    const hits = searchStructureNodes(tree, employee.name);
+    expect(hits.some((h) => h.kind === "employee" && h.id === employeeMatchId(employee))).toBe(true);
+  });
+
+  it("returns nothing for an empty query", () => {
+    expect(searchStructureNodes(tree, "")).toEqual([]);
+    expect(searchStructureNodes(tree, "   ")).toEqual([]);
+  });
+});
+
+describe("matchStructureIds", () => {
+  it("returns an empty set when nothing is active", () => {
+    const matched = matchStructureIds(tree, { query: "", departmentFilter: "", jobTitleFilter: "" });
+    expect(matched.size).toBe(0);
+  });
+
+  it("marks a position matched by an employee-name query, and the employee too", () => {
+    const supervisor = dept("Call Center").positions[0];
+    const employee = supervisor.employees[0];
+    const matched = matchStructureIds(tree, { query: employee.name, departmentFilter: "", jobTitleFilter: "" });
+    expect(matched.has(positionMatchId(supervisor))).toBe(true);
+    expect(matched.has(employeeMatchId(employee))).toBe(true);
+  });
+
+  it("combines department and job-title filters with AND semantics", () => {
+    const warehousing = dept("Warehousing");
+    const supervisor = warehousing.positions.find((p) => p.title === "Warehouse Supervisor");
+    expect(supervisor).toBeDefined();
+    if (!supervisor) return;
+    const matched = matchStructureIds(tree, {
+      query: "",
+      departmentFilter: orgLabel(warehousing.department, warehousing.department_ar),
+      jobTitleFilter: orgLabel(supervisor.title, supervisor.title_ar),
+    });
+    expect(matched.has(positionMatchId(supervisor))).toBe(true);
+    const others = warehousing.positions.filter((p) => p.title !== "Warehouse Supervisor");
+    others.forEach((p) => expect(matched.has(positionMatchId(p))).toBe(false));
   });
 });

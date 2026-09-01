@@ -6,6 +6,7 @@ import { useHierarchyModals } from "./useHierarchyModals";
 import { useHierarchyPanZoom } from "./useHierarchyPanZoom";
 import { useHierarchyTreeData } from "./useHierarchyTreeData";
 import { useHierarchyView } from "./useHierarchyView";
+import { useStructureView } from "./useStructureView";
 
 const TOAST_TIMEOUT_MS = 3000;
 
@@ -20,11 +21,8 @@ export const useHierarchyPage = () => {
 
   const treeData = useHierarchyTreeData();
   const panZoom = useHierarchyPanZoom();
-  const view = useHierarchyView({
-    orgTree: treeData.orgTree,
-    allNodes: treeData.allNodes,
-    containerRef: panZoom.containerRef,
-  });
+  const view = useHierarchyView();
+  const structureView = useStructureView({ containerRef: panZoom.containerRef });
   const modals = useHierarchyModals();
   const positionForm = useAddPositionForm({
     refetchPositions: treeData.refetchPositions,
@@ -81,11 +79,7 @@ export const useHierarchyPage = () => {
     unlinkedEmps: treeData.unlinkedEmps,
     viewMode: view.viewMode,
     setViewMode: view.setViewMode,
-    expandedMap: view.expandedMap,
-    selectedNode: modals.selectedNode,
     zoom: panZoom.zoom,
-    searchQuery: view.searchQuery,
-    showSearchResults: view.showSearchResults,
     containerRef: panZoom.containerRef,
     chartContentRef,
     searchInputRef,
@@ -106,23 +100,27 @@ export const useHierarchyPage = () => {
     panEnabled: panZoom.panEnabled,
     allNodes: treeData.allNodes,
     departments: treeData.departments,
-    jobTitles: treeData.jobTitles,
-    managerOptions: treeData.managerOptions,
-    searchResults: view.searchResults,
-    searchMatchIds: view.searchMatchIds,
-    highlightedIds: view.highlightedIds,
-    departmentFilter: view.departmentFilter,
-    jobTitleFilter: view.jobTitleFilter,
-    managerFilter: view.managerFilter,
-    hasActiveFilter: view.hasActiveFilter,
-    setDepartmentFilter: view.setDepartmentFilter,
-    setJobTitleFilter: view.setJobTitleFilter,
-    setManagerFilter: view.setManagerFilter,
-    clearFilters: view.clearFilters,
-    departmentStats: treeData.departmentStats,
-    toggleExpand: view.toggleExpand,
-    expandAll: view.expandAll,
-    collapseAll: view.collapseAll,
+    selectedNode: modals.selectedNode,
+    // Structure (level-wise graph) view state — the tab's chart content.
+    structureTree: structureView.structureTree,
+    structureLoading: structureView.structureLoading,
+    structureError: structureView.structureError,
+    searchQuery: structureView.structureSearchQuery,
+    showSearchResults: structureView.structureShowSearchResults,
+    searchResults: structureView.structureSearchResults,
+    structureMatchedIds: structureView.structureMatchedIds,
+    structureDepartmentOptions: structureView.structureDepartmentOptions,
+    structureJobTitleOptions: structureView.structureJobTitleOptions,
+    departmentFilter: structureView.structureDepartmentFilter,
+    jobTitleFilter: structureView.structureJobTitleFilter,
+    hasActiveFilter: structureView.structureHasActiveFilter,
+    setDepartmentFilter: structureView.setStructureDepartmentFilter,
+    setJobTitleFilter: structureView.setStructureJobTitleFilter,
+    clearFilters: structureView.clearStructureFilters,
+    selectedStructureItem: structureView.selectedStructureItem,
+    handleSelectStructurePosition: structureView.handleSelectStructurePosition,
+    handleSelectStructureEmployee: structureView.handleSelectStructureEmployee,
+    handleCloseStructureDetail: structureView.handleCloseStructureDetail,
     handleDeleteEmployee,
     handleEditEmployee,
     handleLinkEmployee,
@@ -136,19 +134,18 @@ export const useHierarchyPage = () => {
     handleMouseDown: panZoom.handleMouseDown,
     handleMouseMove: panZoom.handleMouseMove,
     handleMouseUp: panZoom.handleMouseUp,
-    handleSearchSelect: view.handleSearchSelect,
-    clearSearch: view.clearSearch,
+    handleSearchSelect: structureView.handleStructureSearchSelect,
+    clearSearch: structureView.clearStructureSearch,
     handlePrint,
     handleExportPNG,
-    handleSearchChange: view.handleSearchChange,
-    handleSearchFocus: view.handleSearchFocus,
+    handleSearchChange: structureView.handleStructureSearchChange,
+    handleSearchFocus: structureView.handleStructureSearchFocus,
     handleShowUnlinked: modals.handleShowUnlinked,
-    handleCloseSearchResults: view.handleCloseSearchResults,
+    handleCloseSearchResults: structureView.handleCloseStructureSearchResults,
     handleTogglePan: panZoom.handleTogglePan,
     handleZoomOut: panZoom.handleZoomOut,
     handleZoomIn: panZoom.handleZoomIn,
     handleResetZoom: panZoom.handleResetZoom,
-    handleSelectNode: modals.handleSelectNode,
     handleCloseSelectedNode: modals.handleCloseSelectedNode,
     handleCloseDeleteModal: modals.handleCloseDeleteModal,
     handleCloseEditModal: modals.handleCloseEditModal,
