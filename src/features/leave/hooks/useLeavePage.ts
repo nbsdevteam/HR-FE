@@ -38,7 +38,10 @@ export const useLeavePage = () => {
   const { policies } = useLeavePolicies();
   const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests();
   const currentYear = new Date().getFullYear();
-  const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(currentYear);
+  const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(
+    currentYear,
+    activeTab === "balances",
+  );
   const { permissions, loading: permLoading, refetch: refetchPermissions } = useLeavePermissions();
   const { settings: leaveSettings } = useLeaveSettings();
 

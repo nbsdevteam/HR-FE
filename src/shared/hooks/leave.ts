@@ -213,12 +213,13 @@ export const useLeaveRequests = (filters?: { employeeId?: string; status?: strin
   return { requests, loading, refetch };
 }
 
-export const useLeaveBalances = (year?: number) => {
+export const useLeaveBalances = (year?: number, enabled = true) => {
   const { data: balances, loading, refetch } = useCachedList(
     "leaveBalances",
     () => odooData.fetchLeaveBalances(year),
     "Failed to load leave balances",
     [year],
+    enabled,
   );
   return { balances, loading, refetch };
 }
