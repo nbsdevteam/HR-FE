@@ -13,6 +13,7 @@ import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
 const PositionsView = lazy(() => import("../components/PositionsView"));
 const GradesView = lazy(() => import("../components/GradesView"));
+const OrgStructureView = lazy(() => import("../components/OrgStructureView"));
 
 const HierarchyChart = () => {
   const [, setSearchParams] = useSearchParams();
@@ -129,6 +130,7 @@ const HierarchyChart = () => {
   // own, so the page must not. Every other view keeps the normal page flow.
   const isPositionsView = viewMode === "positions";
   const isGradesView = viewMode === "grades";
+  const isStructureView = viewMode === "structure";
 
   return (
     <div className={isPositionsView ? "h-full flex flex-col gap-6 min-h-0" : "space-y-6"}>
@@ -169,6 +171,10 @@ const HierarchyChart = () => {
       ) : isGradesView ? (
         <Suspense fallback={null}>
           <GradesView />
+        </Suspense>
+      ) : isStructureView ? (
+        <Suspense fallback={null}>
+          <OrgStructureView />
         </Suspense>
       ) : (
         <HierarchyTreeSection
