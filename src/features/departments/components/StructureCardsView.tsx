@@ -5,8 +5,8 @@ import { EmptyState, LoadingState } from "@/shared/components";
 import { useStructureTreeExpansion } from "../hooks/useStructureTreeExpansion";
 import ReportingTreeBanner from "./ReportingTreeBanner";
 import ReportingTreeView from "./ReportingTreeView";
+import StructureCardsForest from "./StructureCardsForest";
 import StructureCardsOrphans from "./StructureCardsOrphans";
-import StructureCardsRoot from "./StructureCardsRoot";
 import StructureCardsSummary from "./StructureCardsSummary";
 
 type StructureCardsViewProps = {
@@ -43,7 +43,7 @@ const StructureCardsView = ({
   onSelectEmployee,
 }: StructureCardsViewProps) => {
   const { t } = useTranslation();
-  const { expandedDepartments, toggleDepartment } = useStructureTreeExpansion();
+  const { collapsedDepartments, toggleDepartment } = useStructureTreeExpansion();
 
   if (loading) {
     return <LoadingState message={t("common.loading")} variant="stacked" />;
@@ -80,15 +80,21 @@ const StructureCardsView = ({
 
       {tree.reporting_tree_is_flat && <ReportingTreeBanner />}
 
-      {/* Only this container scrolls horizontally — the page body never does. */}
+      {/*
+        Only this container scrolls horizontally — the page body never does.
+        `min-w-max` makes the inner box as wide as its widest row, so centred
+        content overflows to the right only. Centring inside a box narrower
+        than its content pushes the left-hand cards past the scroll origin,
+        where they cannot be reached.
+      */}
       <div className="overflow-x-auto">
         <div className="min-w-max mx-auto py-4">
           {showReportingTree ? (
             <ReportingTreeView roots={tree.reporting_tree} />
           ) : (
-            <StructureCardsRoot
-              tree={tree}
-              expandedDepartments={expandedDepartments}
+            <StructureCardsForest
+              departments={tree.departments}
+              collapsedDepartments={collapsedDepartments}
               onToggleDepartment={toggleDepartment}
               matchedIds={matchedIds}
               hasActiveFilter={hasActiveFilter}
