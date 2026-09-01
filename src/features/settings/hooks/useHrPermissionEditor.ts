@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { arabicSource } from "@/i18n/source";
 import {
   fetchHrUserPermissions,
   resetHrUserPermissions,
@@ -45,7 +46,7 @@ export const useHrPermissionEditor = (
       setInitialTree(merged);
       setNotes(data.admin_notes ?? "");
     } catch (e: any) {
-      showToast(e?.message || "تعذر تحميل صلاحيات المستخدم");
+      showToast(e?.message || arabicSource("settings.roles_permissions_load_error"));
     } finally {
       setLoading(false);
     }
@@ -68,10 +69,10 @@ export const useHrPermissionEditor = (
         : tree;
       setTree(merged);
       setInitialTree(merged);
-      showToast("تم حفظ الصلاحيات");
+      showToast(arabicSource("settings.roles_permissions_save_success"));
       onSaved();
     } catch (e: any) {
-      showToast(e?.message || "تعذر حفظ الصلاحيات");
+      showToast(e?.message || arabicSource("settings.roles_permissions_save_error"));
     } finally {
       setSaving(false);
     }
@@ -88,10 +89,10 @@ export const useHrPermissionEditor = (
       setTree(merged);
       setInitialTree(merged);
       setNotes("");
-      showToast("تمت إعادة الضبط للافتراضي");
+      showToast(arabicSource("settings.roles_permissions_reset_success"));
       onSaved();
     } catch (e: any) {
-      showToast(e?.message || "تعذر إعادة الضبط");
+      showToast(e?.message || arabicSource("settings.roles_permissions_reset_error"));
     } finally {
       setResetting(false);
     }

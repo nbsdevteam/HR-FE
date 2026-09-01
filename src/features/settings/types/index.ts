@@ -126,3 +126,6 @@ export interface LeaveLinkFormState {
   leave_type_ids: string[];
   department_ids: string[];
 }
+
+/** "Users" = Phase 1 per-user overrides, "job_roles" = Phase 2 job-title role templates. */
+export type RolesPermissionsTabId = "users" | "job_roles";

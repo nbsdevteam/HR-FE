@@ -81,6 +81,11 @@ const repositoryArabicAllowlist = new Set([
   "src/features/recruitment/hooks/userecruitmentactions.ts",
   "src/features/settings/hooks/usedepartmentcolors.ts",
   "src/features/settings/hooks/useshiftmanagement.ts",
+  // Hand-maintained Arabic section/action label map for the permission
+  // checkbox grid — schema-driven keys (e.g. `roles_permissions`, `manage`),
+  // not static UI copy, so it stays outside the catalogue rather than adding
+  // one key per schema leaf.
+  "src/features/settings/utils/permissionlabels.ts",
   "src/features/training/constants/training.ts",
   "src/shared/api/leave.ts",
   "src/shared/api/mappers/leave.ts",

@@ -90,3 +90,56 @@ export const setHrUserPermissions = (
 /** Clears this user's individual HR override — falls back to role/job-title baseline. */
 export const resetHrUserPermissions = (userId: number): Promise<HrAdminSetPermissionsResponse> =>
   hrCall<HrAdminSetPermissionsResponse>(`/api/hr/admin/users/${userId}/permissions/reset`, {});
+
+export interface HrRoleListItem {
+  job_title: string;
+  label: string;
+  crm_role: string;
+  notes: string;
+  user_count: number;
+  hr_permissions: HrPermissionTree;
+  is_hr_only: boolean;
+}
+
+export interface HrRolesListParams {
+  search?: string;
+  active?: boolean;
+}
+
+export interface HrRolesListResponse {
+  items: HrRoleListItem[];
+  total: number;
+}
+
+export interface HrRoleUpsertPayload {
+  job_title: string;
+  permissions: HrPermissionTree;
+  label: string;
+  notes: string;
+  apply_to_all_users: boolean;
+}
+
+export interface HrRoleUpsertResponse {
+  job_title: string;
+  label: string;
+  crm_role: string;
+  hr_permissions: HrPermissionTree;
+  user_count: number;
+  is_hr_only: boolean;
+  applied_to_all_users: boolean;
+}
+
+export const fetchHrRoles = (params: HrRolesListParams = {}): Promise<HrRolesListResponse> =>
+  hrCall<HrRolesListResponse>("/api/hr/admin/roles/list", { active: true, ...params });
+
+/**
+ * `permissions` must be the complete `hr` tree, same contract as
+ * `setHrUserPermissions` — any section omitted here reads back as unset on
+ * the next load.
+ */
+export const upsertHrRole = (payload: HrRoleUpsertPayload): Promise<HrRoleUpsertResponse> =>
+  hrCall<HrRoleUpsertResponse>("/api/hr/admin/roles/upsert", { ...payload });
+
+/** Soft-deletes (deactivates) an HR-only role template; rejected server-side for a shared job title. */
+export const deleteHrRole = (jobTitle: string): Promise<{ job_title: string }> =>
+  hrCall<{ job_title: string }>("/api/hr/admin/roles/delete", { job_title: jobTitle });
