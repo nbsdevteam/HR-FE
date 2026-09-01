@@ -14,6 +14,12 @@ type StructureCardsLevelGroupProps = {
     position: OrgStructurePosition,
     department?: OrgStructureDepartment,
   ) => void;
+  /**
+   * Registers a position card's DOM node so an ancestor can draw a connector
+   * wire to it. Omitted for rows that aren't part of a wired tree (the
+   * orphan bucket has no seniority chain to connect).
+   */
+  registerCardRef?: (index: number, el: HTMLDivElement | null) => void;
 };
 
 /**
@@ -31,6 +37,7 @@ const StructureCardsLevelGroup = ({
   hasActiveFilter,
   onSelectPosition,
   onSelectEmployee,
+  registerCardRef,
 }: StructureCardsLevelGroupProps) => {
   const { t } = useTranslation();
 
@@ -49,16 +56,20 @@ const StructureCardsLevelGroup = ({
         <div className="flex-1 border-t border-border/40" />
       </div>
       <div className="flex flex-wrap justify-center gap-4">
-        {group.positions.map((position) => (
-          <StructureCardsPosition
+        {group.positions.map((position, index) => (
+          <div
             key={position.position_id}
-            position={position}
-            department={department}
-            matchedIds={matchedIds}
-            hasActiveFilter={hasActiveFilter}
-            onSelectPosition={onSelectPosition}
-            onSelectEmployee={onSelectEmployee}
-          />
+            ref={registerCardRef ? (el) => registerCardRef(index, el) : undefined}
+          >
+            <StructureCardsPosition
+              position={position}
+              department={department}
+              matchedIds={matchedIds}
+              hasActiveFilter={hasActiveFilter}
+              onSelectPosition={onSelectPosition}
+              onSelectEmployee={onSelectEmployee}
+            />
+          </div>
         ))}
       </div>
     </div>

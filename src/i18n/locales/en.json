@@ -822,6 +822,8 @@
   "hierarchy.the_organizational_structure_is_automatically_built_from": "The organizational structure is automatically built from",
   "hierarchy.the_organizational_structure_is_automatically_built_from_a_field": "The organizational structure is automatically built from a field",
   "hierarchy.current_structure": "Current structure",
+  "hierarchy.organization": "Organization",
+  "hierarchy.overall_structure": "Overall structure",
   "hierarchy.organizational_structure": "Organizational Structure",
   "hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign": "Create the positions first and then drag the employees to assign them",
   "hierarchy.create_position": "Create position",

@@ -2,8 +2,9 @@ import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { OrgStructureDepartment, OrgStructurePosition, OrgStructureTree } from "@/shared/hooks";
 import { EmptyState, LoadingState } from "@/shared/components";
-import StructureCardsDepartment from "./StructureCardsDepartment";
+import { useStructureTreeExpansion } from "../hooks/useStructureTreeExpansion";
 import StructureCardsOrphans from "./StructureCardsOrphans";
+import StructureCardsRoot from "./StructureCardsRoot";
 import StructureCardsSummary from "./StructureCardsSummary";
 
 type StructureCardsViewProps = {
@@ -40,6 +41,7 @@ const StructureCardsView = ({
   onSelectEmployee,
 }: StructureCardsViewProps) => {
   const { t } = useTranslation();
+  const { expandedDepartments, toggleDepartment } = useStructureTreeExpansion();
 
   if (loading) {
     return <LoadingState message={t("common.loading")} variant="stacked" />;
@@ -66,18 +68,19 @@ const StructureCardsView = ({
     <div className="space-y-4">
       <StructureCardsSummary totals={tree.totals} />
 
-      {/* Departments arrive pre-sorted by the backend — rendered in array order. */}
-      <div className="space-y-4">
-        {tree.departments.map((department) => (
-          <StructureCardsDepartment
-            key={department.department_id}
-            department={department}
+      {/* Only this container scrolls horizontally — the page body never does. */}
+      <div className="overflow-x-auto">
+        <div className="min-w-max mx-auto py-4">
+          <StructureCardsRoot
+            tree={tree}
+            expandedDepartments={expandedDepartments}
+            onToggleDepartment={toggleDepartment}
             matchedIds={matchedIds}
             hasActiveFilter={hasActiveFilter}
             onSelectPosition={onSelectPosition}
             onSelectEmployee={onSelectEmployee}
           />
-        ))}
+        </div>
       </div>
 
       <StructureCardsOrphans
