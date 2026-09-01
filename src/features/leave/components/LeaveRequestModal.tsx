@@ -8,7 +8,6 @@ import LeaveModalActions from "./LeaveModalActions";
 import LeaveRequestAttachmentField from "./LeaveRequestAttachmentField";
 import LeaveRequestDurationSummary from "./LeaveRequestDurationSummary";
 import LeaveRequestEmployeeField from "./LeaveRequestEmployeeField";
-import LeaveRequestHalfDayRow from "./LeaveRequestHalfDayRow";
 import LeaveRequestHourlySummary from "./LeaveRequestHourlySummary";
 import LeaveRequestHoursRow from "./LeaveRequestHoursRow";
 import LeaveRequestProbationNotice from "./LeaveRequestProbationNotice";
@@ -39,11 +38,11 @@ const LeaveRequestModal = ({
 }: LeaveRequestModalProps) => {
   const {
     balanceWarning, blockedByProbation, days, employeeId, endDate, error,
-    firstAccrualOn, halfDayPeriod, handleEmployeeChange, handleEndDateChange,
-    handleIsHalfDayChange, handleReasonChange, handleSelectLeaveType,
+    firstAccrualOn, handleEmployeeChange, handleEndDateChange,
+    handleReasonChange, handleSelectLeaveType,
     handleStartDateChange, handleSubmit, hourly, isHalfDay, isHourly,
     leaveTypeId, minStartDate, outOfBalance, probationEndDate, reason,
-    remainingBalance, saving, selectedType, selfEmployee, setHalfDayPeriod,
+    remainingBalance, saving, selectedType, selfEmployee,
     startDate,
   } = useLeaveRequestForm({ employees, leaveTypes, balances, selfOnly, linkError, settings, onSubmit });
 
@@ -99,16 +98,6 @@ const LeaveRequestModal = ({
 
         {!isHourly && (
           <>
-            {/* Half Day Toggle */}
-            {selectedType?.allow_half_day && (
-              <LeaveRequestHalfDayRow
-                isHalfDay={isHalfDay}
-                halfDayPeriod={halfDayPeriod}
-                onIsHalfDayChange={handleIsHalfDayChange}
-                onHalfDayPeriodChange={setHalfDayPeriod}
-              />
-            )}
-
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -45,7 +45,6 @@ export const useLeaveRequestForm = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isHalfDay, setIsHalfDay] = useState(false);
-  const [halfDayPeriod, setHalfDayPeriod] = useState<"morning" | "afternoon">("morning");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -132,16 +131,12 @@ export const useLeaveRequestForm = ({
 
   const handleSelectLeaveType = useCallback((leaveType: DbLeaveType) => {
     setLeaveTypeId(leaveType.id);
-    if (!leaveType.allow_half_day) setIsHalfDay(false);
+    setIsHalfDay(leaveType.allow_half_day);
     hourly.resetForType(leaveType);
   }, [hourly]);
 
   const handleEmployeeChange = useCallback((id: string): void => {
     setEmployeeId(String(id));
-  }, []);
-
-  const handleIsHalfDayChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setIsHalfDay(e.target.checked);
   }, []);
 
   const handleStartDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -247,10 +242,8 @@ export const useLeaveRequestForm = ({
     probationEndDate,
     endDate,
     error,
-    halfDayPeriod,
     handleEmployeeChange,
     handleEndDateChange,
-    handleIsHalfDayChange,
     handleReasonChange,
     handleSelectLeaveType,
     handleStartDateChange,
@@ -264,7 +257,6 @@ export const useLeaveRequestForm = ({
     saving,
     selectedType,
     selfEmployee,
-    setHalfDayPeriod,
     startDate,
   };
 };
