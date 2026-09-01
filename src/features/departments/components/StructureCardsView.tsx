@@ -5,8 +5,8 @@ import { EmptyState, LoadingState } from "@/shared/components";
 import { useStructureTreeExpansion } from "../hooks/useStructureTreeExpansion";
 import ReportingTreeBanner from "./ReportingTreeBanner";
 import ReportingTreeView from "./ReportingTreeView";
+import StructureCardsForest from "./StructureCardsForest";
 import StructureCardsOrphans from "./StructureCardsOrphans";
-import StructureCardsRoot from "./StructureCardsRoot";
 import StructureCardsSummary from "./StructureCardsSummary";
 
 type StructureCardsViewProps = {
@@ -82,12 +82,18 @@ const StructureCardsView = ({
 
       {/* Only this container scrolls horizontally — the page body never does. */}
       <div className="overflow-x-auto">
-        <div className="min-w-max mx-auto py-4">
-          {showReportingTree ? (
+        {showReportingTree ? (
+          /* A wired diagram: it must keep its own width so the connectors stay
+             attached, and scroll rather than wrap. */
+          <div className="min-w-max mx-auto py-4">
             <ReportingTreeView roots={tree.reporting_tree} />
-          ) : (
-            <StructureCardsRoot
-              tree={tree}
+          </div>
+        ) : (
+          /* Independent department roots — no wires between them, so they wrap
+             to the viewport instead of forcing a horizontal scroll. */
+          <div className="py-4">
+            <StructureCardsForest
+              departments={tree.departments}
               expandedDepartments={expandedDepartments}
               onToggleDepartment={toggleDepartment}
               matchedIds={matchedIds}
@@ -95,8 +101,8 @@ const StructureCardsView = ({
               onSelectPosition={onSelectPosition}
               onSelectEmployee={onSelectEmployee}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Already nested inside the reporting tree (as department_id:false roots) — rendering it again here would double-count. */}
