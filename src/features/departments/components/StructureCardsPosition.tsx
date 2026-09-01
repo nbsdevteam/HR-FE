@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 import type { OrgStructurePosition } from "@/shared/hooks";
 import { isPositionVacant, orgLabel } from "../utils/orgStructure";
-import OrgStructureEmployeeRow from "./OrgStructureEmployeeRow";
+import StructureCardsEmployee from "./StructureCardsEmployee";
 
-type OrgStructurePositionRowProps = {
+type StructureCardsPositionProps = {
   position: OrgStructurePosition;
 };
 
@@ -14,7 +14,7 @@ type OrgStructurePositionRowProps = {
  * an invented name. Grade is not rendered because the payload carries none;
  * seniority is shown by the enclosing level band.
  */
-const OrgStructurePositionRow = ({ position }: OrgStructurePositionRowProps) => {
+const StructureCardsPosition = ({ position }: StructureCardsPositionProps) => {
   const { t } = useTranslation();
   const vacant = isPositionVacant(position);
 
@@ -58,7 +58,7 @@ const OrgStructurePositionRow = ({ position }: OrgStructurePositionRowProps) => 
       ) : (
         <div className="mt-1.5 ps-1">
           {position.employees.map((employee) => (
-            <OrgStructureEmployeeRow key={employee.employee_id} employee={employee} />
+            <StructureCardsEmployee key={employee.employee_id} employee={employee} />
           ))}
           {/* Some seats filled, some not — say so rather than leaving it implied. */}
           {position.vacancies > 0 && (
@@ -72,4 +72,4 @@ const OrgStructurePositionRow = ({ position }: OrgStructurePositionRowProps) => 
   );
 };
 
-export default OrgStructurePositionRow;
+export default StructureCardsPosition;

@@ -2,9 +2,9 @@ import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useOrgStructure } from "@/shared/hooks";
 import { EmptyState, LoadingState } from "@/shared/components";
-import OrgStructureDepartmentCard from "./OrgStructureDepartmentCard";
-import OrgStructureOrphanPositions from "./OrgStructureOrphanPositions";
-import OrgStructureSummaryHeader from "./OrgStructureSummaryHeader";
+import StructureCardsDepartment from "./StructureCardsDepartment";
+import StructureCardsOrphans from "./StructureCardsOrphans";
+import StructureCardsSummary from "./StructureCardsSummary";
 
 /**
  * The Organizational Structure tab: department → position → employee.
@@ -15,7 +15,7 @@ import OrgStructureSummaryHeader from "./OrgStructureSummaryHeader";
  * Grade is not displayed anywhere, and cannot be — the payload carries no
  * grade code, name or band. See `docs/ORGANIZATIONAL_STRUCTURE_FE_HANDOFF.md`.
  */
-const OrgStructureView = () => {
+const StructureCardsView = () => {
   const { t } = useTranslation();
   const { tree, loading, error } = useOrgStructure();
 
@@ -42,21 +42,21 @@ const OrgStructureView = () => {
 
   return (
     <div className="space-y-4">
-      <OrgStructureSummaryHeader totals={tree.totals} />
+      <StructureCardsSummary totals={tree.totals} />
 
       {/* Departments arrive pre-sorted by the backend — rendered in array order. */}
       <div className="grid gap-4 lg:grid-cols-2">
         {tree.departments.map((department) => (
-          <OrgStructureDepartmentCard
+          <StructureCardsDepartment
             key={department.department_id}
             department={department}
           />
         ))}
       </div>
 
-      <OrgStructureOrphanPositions positions={tree.positions_without_department} />
+      <StructureCardsOrphans positions={tree.positions_without_department} />
     </div>
   );
 };
 
-export default OrgStructureView;
+export default StructureCardsView;

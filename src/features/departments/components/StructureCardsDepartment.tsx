@@ -9,9 +9,9 @@ import {
   groupPositionsByLevel,
   orgLabel,
 } from "../utils/orgStructure";
-import OrgStructureLevelGroup from "./OrgStructureLevelGroup";
+import StructureCardsLevelGroup from "./StructureCardsLevelGroup";
 
-type OrgStructureDepartmentCardProps = {
+type StructureCardsDepartmentProps = {
   department: OrgStructureDepartment;
 };
 
@@ -22,7 +22,7 @@ type OrgStructureDepartmentCardProps = {
  * A department with no positions still renders — its emptiness is part of the
  * structure, not a reason to hide it.
  */
-const OrgStructureDepartmentCard = ({ department }: OrgStructureDepartmentCardProps) => {
+const StructureCardsDepartment = ({ department }: StructureCardsDepartmentProps) => {
   const { t } = useTranslation();
 
   const groups = useMemo(
@@ -70,7 +70,7 @@ const OrgStructureDepartmentCard = ({ department }: OrgStructureDepartmentCardPr
           </p>
         ) : (
           groups.map((group) => (
-            <OrgStructureLevelGroup key={group.level ?? "none"} group={group} />
+            <StructureCardsLevelGroup key={group.level ?? "none"} group={group} />
           ))
         )}
 
@@ -92,4 +92,4 @@ const OrgStructureDepartmentCard = ({ department }: OrgStructureDepartmentCardPr
   );
 };
 
-export default OrgStructureDepartmentCard;
+export default StructureCardsDepartment;

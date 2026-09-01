@@ -100,14 +100,24 @@ A filled position, from live data:
 ## 2. Department → Position → Employee
 
 ```
-OrgStructureView                      fetches once, renders the grid
- └── OrgStructureDepartmentCard       root card — one department
-      └── OrgStructureLevelGroup      one seniority band ("Level 1")
-           └── OrgStructurePositionRow    one position + its seats/vacancy state
-                └── OrgStructureEmployeeRow  one real person
- └── OrgStructureOrphanPositions      positions with no department
- └── OrgStructureSummaryHeader        the five population tiles
+StructureCardsView                    fetches once, renders the grid
+ └── StructureCardsDepartment         root card — one department
+      └── StructureCardsLevelGroup    one seniority band ("Level 1")
+           └── StructureCardsPosition     one position + its seats/vacancy state
+                └── StructureCardsEmployee   one real person
+ └── StructureCardsOrphans            positions with no department
+ └── StructureCardsSummary            five shared StatCard tiles
 ```
+
+> **Why `StructureCards*` and not `OrgStructure*`:** an unrelated
+> `OrgStructure*` family already exists in the same folder
+> (`OrgStructureManagement`, `OrgStructureTabs`, `OrgStructureTreeView`,
+> `OrgStructureUnassignedBanner`, `OrgStructureListHeader`,
+> `OrgStructureTreeNode`) for the department/designation **management** screen,
+> backed by the `org_structure.*` i18n namespace. Sharing the prefix across two
+> unrelated features would be a maintenance trap. The data-layer names
+> (`OrgStructureTree`, `useOrgStructure`, `mapOrgStructureTree`) keep the
+> `OrgStructure` prefix because they mirror the API, not those components.
 
 Rendered shape:
 
@@ -214,14 +224,18 @@ src/shared/api/mappers/orgStructure.ts               mapOrgStructureTree
 src/features/departments/utils/orgStructure.ts       pure transforms
 src/features/departments/utils/orgStructure.test.ts  18 tests
 src/features/departments/utils/__fixtures__/orgStructure.live.json
-src/features/departments/components/OrgStructureView.tsx
-src/features/departments/components/OrgStructureSummaryHeader.tsx
-src/features/departments/components/OrgStructureDepartmentCard.tsx
-src/features/departments/components/OrgStructureLevelGroup.tsx
-src/features/departments/components/OrgStructurePositionRow.tsx
-src/features/departments/components/OrgStructureEmployeeRow.tsx
-src/features/departments/components/OrgStructureOrphanPositions.tsx
+src/features/departments/components/StructureCardsView.tsx
+src/features/departments/components/StructureCardsSummary.tsx
+src/features/departments/components/StructureCardsDepartment.tsx
+src/features/departments/components/StructureCardsLevelGroup.tsx
+src/features/departments/components/StructureCardsPosition.tsx
+src/features/departments/components/StructureCardsEmployee.tsx
+src/features/departments/components/StructureCardsOrphans.tsx
 ```
+
+All seven are under the 300-line limit (`npm run size-check` passes), declared
+as `const` arrow components with a trailing `export default`, and the summary
+tiles use the shared `StatCard` rather than a local tile — per `CLAUDE.md`.
 
 **Modified**
 ```

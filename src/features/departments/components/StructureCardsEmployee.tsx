@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
 import type { OrgStructureEmployee } from "@/shared/hooks";
 
-type OrgStructureEmployeeRowProps = {
+type StructureCardsEmployeeProps = {
   employee: OrgStructureEmployee;
 };
 
@@ -11,7 +11,7 @@ type OrgStructureEmployeeRowProps = {
  * Only rendered from `position.employees`, which the backend populates from
  * actual records — this component never receives a placeholder.
  */
-const OrgStructureEmployeeRow = ({ employee }: OrgStructureEmployeeRowProps) => (
+const StructureCardsEmployee = ({ employee }: StructureCardsEmployeeProps) => (
   <div className="flex items-center gap-2.5 py-1">
     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
       <User className="w-3.5 h-3.5" />
@@ -31,4 +31,4 @@ const OrgStructureEmployeeRow = ({ employee }: OrgStructureEmployeeRowProps) => 
   </div>
 );
 
-export default OrgStructureEmployeeRow;
+export default StructureCardsEmployee;

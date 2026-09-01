@@ -13,7 +13,7 @@ import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
 const PositionsView = lazy(() => import("../components/PositionsView"));
 const GradesView = lazy(() => import("../components/GradesView"));
-const OrgStructureView = lazy(() => import("../components/OrgStructureView"));
+const StructureCardsView = lazy(() => import("../components/StructureCardsView"));
 
 const HierarchyChart = () => {
   const [, setSearchParams] = useSearchParams();
@@ -174,7 +174,7 @@ const HierarchyChart = () => {
         </Suspense>
       ) : isStructureView ? (
         <Suspense fallback={null}>
-          <OrgStructureView />
+          <StructureCardsView />
         </Suspense>
       ) : (
         <HierarchyTreeSection

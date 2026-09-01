@@ -3,9 +3,9 @@ import { HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { OrgStructurePosition } from "@/shared/hooks";
 import { groupPositionsByLevel } from "../utils/orgStructure";
-import OrgStructureLevelGroup from "./OrgStructureLevelGroup";
+import StructureCardsLevelGroup from "./StructureCardsLevelGroup";
 
-type OrgStructureOrphanPositionsProps = {
+type StructureCardsOrphansProps = {
   positions: OrgStructurePosition[];
 };
 
@@ -16,7 +16,7 @@ type OrgStructureOrphanPositionsProps = {
  * own labelled group rather than being folded into a real department — which
  * would misattribute them.
  */
-const OrgStructureOrphanPositions = ({ positions }: OrgStructureOrphanPositionsProps) => {
+const StructureCardsOrphans = ({ positions }: StructureCardsOrphansProps) => {
   const { t } = useTranslation();
   const groups = useMemo(() => groupPositionsByLevel(positions), [positions]);
 
@@ -39,11 +39,11 @@ const OrgStructureOrphanPositions = ({ positions }: OrgStructureOrphanPositionsP
       </header>
       <div className="px-4 py-3 space-y-3">
         {groups.map((group) => (
-          <OrgStructureLevelGroup key={group.level ?? "none"} group={group} />
+          <StructureCardsLevelGroup key={group.level ?? "none"} group={group} />
         ))}
       </div>
     </section>
   );
 };
 
-export default OrgStructureOrphanPositions;
+export default StructureCardsOrphans;

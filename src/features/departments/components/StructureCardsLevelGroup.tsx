@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import type { OrgLevelGroup } from "../utils/orgStructure";
-import OrgStructurePositionRow from "./OrgStructurePositionRow";
+import StructureCardsPosition from "./StructureCardsPosition";
 
-type OrgStructureLevelGroupProps = {
+type StructureCardsLevelGroupProps = {
   group: OrgLevelGroup;
 };
 
@@ -13,7 +13,7 @@ type OrgStructureLevelGroupProps = {
  * several positions — the band label is the level the backend assigned, never
  * a running count of rows.
  */
-const OrgStructureLevelGroup = ({ group }: OrgStructureLevelGroupProps) => {
+const StructureCardsLevelGroup = ({ group }: StructureCardsLevelGroupProps) => {
   const { t } = useTranslation();
 
   return (
@@ -28,11 +28,11 @@ const OrgStructureLevelGroup = ({ group }: OrgStructureLevelGroupProps) => {
       </p>
       <div className="space-y-2">
         {group.positions.map((position) => (
-          <OrgStructurePositionRow key={position.position_id} position={position} />
+          <StructureCardsPosition key={position.position_id} position={position} />
         ))}
       </div>
     </div>
   );
 };
 
-export default OrgStructureLevelGroup;
+export default StructureCardsLevelGroup;
