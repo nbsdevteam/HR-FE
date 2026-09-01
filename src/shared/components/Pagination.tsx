@@ -1,7 +1,12 @@
 import { useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { PAGE_GAP, pageRange, pageWindow, type PageWindowItem } from "@/shared/utils/pagination";
+import {
+  PAGE_GAP,
+  pageRange,
+  pageWindow,
+  type PageWindowItem,
+} from "@/shared/utils/pagination";
 import Button from "./Button";
 import Select from "./Select";
 import PaginationPageButton from "./PaginationPageButton";
@@ -32,8 +37,14 @@ const Pagination = ({
   onPageChange,
   onPerPageChange,
 }: PaginationProps) => {
-  const pages = useMemo<PageWindowItem[]>(() => pageWindow(page, totalPages), [page, totalPages]);
-  const range = useMemo(() => pageRange(page, perPage, total), [page, perPage, total]);
+  const pages = useMemo<PageWindowItem[]>(
+    () => pageWindow(page, totalPages),
+    [page, totalPages],
+  );
+  const range = useMemo(
+    () => pageRange(page, perPage, total),
+    [page, perPage, total],
+  );
 
   const handlePrevious = useCallback((): void => {
     if (page > 1) onPageChange(page - 1);
@@ -43,9 +54,12 @@ const Pagination = ({
     if (page < totalPages) onPageChange(page + 1);
   }, [onPageChange, page, totalPages]);
 
-  const handlePerPageChange = useCallback((value: string): void => {
-    onPerPageChange?.(Number(value));
-  }, [onPerPageChange]);
+  const handlePerPageChange = useCallback(
+    (value: string): void => {
+      onPerPageChange?.(Number(value));
+    },
+    [onPerPageChange],
+  );
 
   // A single page of results needs no navigation, but the row count is still
   // worth showing — so the control collapses to the summary rather than vanishing.
@@ -56,12 +70,17 @@ const Pagination = ({
       aria-label={arabicSource("common.pagination")}
       className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-border/40"
     >
-      <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: 12 }}>
+      <div
+        className="flex items-center gap-2 text-muted-foreground"
+        style={{ fontSize: 12 }}
+      >
         <span data-i18n-ignore dir="ltr">
           {range.from}&ndash;{range.to}
         </span>
         <span>/</span>
-        <span data-i18n-ignore dir="ltr">{total}</span>
+        <span data-i18n-ignore dir="ltr">
+          {total}
+        </span>
       </div>
 
       {showNav && (
@@ -69,7 +88,7 @@ const Pagination = ({
           <Button
             variant="ghost"
             size="sm"
-            icon={ChevronRight}
+            icon={ChevronLeft}
             disabled={loading || page <= 1}
             onClick={handlePrevious}
             aria-label={arabicSource("common.go_to_previous_page")}
@@ -101,7 +120,7 @@ const Pagination = ({
           <Button
             variant="ghost"
             size="sm"
-            icon={ChevronLeft}
+            icon={ChevronRight}
             iconPosition="trailing"
             disabled={loading || page >= totalPages}
             onClick={handleNext}
