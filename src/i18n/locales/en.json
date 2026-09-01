@@ -627,7 +627,7 @@
   "diagnostics.rpc_function": "RPC function",
   "common.column": "column",
   "diagnostics.scans_all_tables_views_new_columns_storage_buckets_and_rpc_funct": "scans all tables, views, new columns, storage buckets, and RPC functions",
-  "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo": "? All his data will be deleted from the system and he will be removed from the fingerprint device.",
+  "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo": "? He will be hidden from every list and picker and removed from the fingerprint device, while his attendance, leave and payroll history stay on record. He can be restored later.",
   "employees.optional_can_be_added_later": "(optional — can be added later)",
   "employees.automatic": "(automatic)",
   "common.procedures": "Procedures",
@@ -2630,5 +2630,13 @@
   "settings.roles_permissions_load_error": "Could not load permissions",
   "settings.roles_permissions_save_error": "Could not save permissions",
   "settings.roles_permissions_reset_success": "Permissions reset to default",
-  "settings.roles_permissions_reset_error": "Could not reset permissions"
+  "settings.roles_permissions_reset_error": "Could not reset permissions",
+  "employees.include_archived_label": "Show archived employees",
+  "employees.in_use_message_prefix": "Cannot archive employee",
+  "employees.in_use_message_middle": "because they have",
+  "employees.reports_suffix": "direct report(s)",
+  "employees.departments_suffix": "managed department(s). Reassign them first, or archive anyway",
+  "employees.force_delete_action": "Archive anyway",
+  "employees.error_suspending_employee": "Error suspending employee:",
+  "employees.error_restoring_employee": "Error restoring employee:"
 }

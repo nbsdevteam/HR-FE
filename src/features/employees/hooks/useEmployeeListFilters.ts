@@ -13,6 +13,8 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
   const [viewMode, setViewMode] = useState<EmployeeViewMode>("list");
   const [sortBy, setSortBy] = useState<EmployeeSortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  /** Shows archived (soft-deleted) employees alongside active ones — backend §3.4. */
+  const [includeArchived, setIncludeArchived] = useState(false);
 
   const allEmployees = useMemo(() => toEmployees(dbEmployees), [dbEmployees]);
 
@@ -100,12 +102,14 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     deviceSyncedSet,
     employeeOptions,
     filtered,
+    includeArchived,
     kanbanDepts,
     pendingEmployees,
     realDepts,
     search,
     selectedDept,
     selectedDeptId,
+    setIncludeArchived,
     setSearch,
     setSelectedDept,
     setSortBy,

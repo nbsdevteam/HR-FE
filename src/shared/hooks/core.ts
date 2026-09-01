@@ -14,9 +14,11 @@ export const useCachedList = <T,>(
   fetcher: () => Promise<T[]>,
   errorFallback = "Failed to load data",
   deps: DependencyList = [],
+  enabled = true,
 ) => {
   const { data, loading, error, refetch } = useAsyncList(fetcher, deps, errorFallback, undefined, {
     cacheKey,
+    enabled,
   });
   return { data, loading, error, refetch };
 };
@@ -80,6 +82,8 @@ export interface DbEmployee {
   position_id: string | null;
   direct_manager_id: string | null;
   device_employee_no: string | null;
+  /** `false` once archived via the delete endpoint's default (non-hard) mode. */
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

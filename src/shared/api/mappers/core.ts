@@ -44,6 +44,7 @@ export const mapEmployee = (r: any): DbEmployee => {
     position_id: sornull(r.designation_id || r.position_id),
     direct_manager_id: sornull(r.manager_id || r.direct_manager_id),
     device_employee_no: r.device_employee_no || null,
+    is_active: isActive(r),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
   };

@@ -8,6 +8,7 @@ import { sortEmployees } from "../utils/employeeSort";
 import { useEmployeeAddForm } from "./useEmployeeAddForm";
 import { useEmployeeDeleteFlow } from "./useEmployeeDeleteFlow";
 import { useEmployeeListFilters } from "./useEmployeeListFilters";
+import { useEmployeeStatusActions } from "./useEmployeeStatusActions";
 import { useEmployeesPaged } from "./useEmployeesPaged";
 
 /** Detail-only fields the lean `/employees/list` endpoint never echoes back, so a
@@ -33,6 +34,7 @@ export const useEmployeesPage = () => {
   const [detailStartsInEditMode, setDetailStartsInEditMode] = useState(false);
   const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
   const [recentEdits, setRecentEdits] = useState<Record<string, LeanListGapFields>>({});
+  const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
 
   const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
   const { positions: designations } = usePositions();
@@ -41,6 +43,7 @@ export const useEmployeesPage = () => {
   const paged = useEmployeesPaged({
     search: listFilters.search,
     departmentId: listFilters.selectedDeptId,
+    includeArchived: listFilters.includeArchived,
     // The kanban board groups the whole roster into columns, so it keeps using
     // the full-roster fetch; paging it would hide employees behind a pager the
     // board has nowhere to put.
@@ -55,7 +58,8 @@ export const useEmployeesPage = () => {
   }, [refetch, paged.refetchPage]);
 
   const addFormState = useEmployeeAddForm(dbEmployees, designations, refetchAll);
-  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll);
+  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll, currentEmployeeId);
+  const statusActions = useEmployeeStatusActions(refetchAll);
 
   /** The server-returned page, ordered by the table's active sort column. */
   const pagedEmployees = useMemo(
@@ -100,12 +104,22 @@ export const useEmployeesPage = () => {
     });
   }, []);
 
+  // Used to withhold the delete/suspend row actions for the signed-in user's
+  // own employee record (backend §3.2, `employee_self_delete`).
+  useEffect(() => {
+    odooData.fetchCurrentEmployee().then(me => setCurrentEmployeeId(me.id)).catch((e: unknown) => {
+      console.error("Failed to load current employee", e);
+    });
+  }, []);
+
   return {
     ...addFormState,
     ...deleteFlow,
     ...listFilters,
     ...paged,
+    ...statusActions,
     pagedEmployees,
+    currentEmployeeId,
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,

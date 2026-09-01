@@ -627,7 +627,7 @@
   "diagnostics.rpc_function": "فەنکشنی RPC",
   "common.column": "ستوونی",
   "diagnostics.scans_all_tables_views_new_columns_storage_buckets_and_rpc_funct": "هەموو خشتەکان، بینینەکان، ستوونی نوێ، سەتڵەکانی هەڵگرتن و فەنکشنەکانی RPC سکان دەکات",
-  "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo": "؟ هەموو داتاکانی لە سیستەمەکە دەسڕدرێتەوە و لە ئامێری پەنجەمۆرەکە دەردەهێنرێت.",
+  "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo": "؟ لە هەموو لیست و هەڵبژاردنەکان شاردراوە دەبێت و لە ئامێری پەنجەمۆرەکە دەردەهێنرێت، بەڵام تۆماری ئامادەبوون و مۆڵەت و مووچەی دەمێنێتەوە. دواتر دەتوانرێت بگەڕێندرێتەوە.",
   "employees.optional_can_be_added_later": "(هەڵبژاردە — دەتوانرێت دواتر زیاد بکرێت)",
   "employees.automatic": "(ئۆتۆماتیکی)",
   "common.procedures": "ڕێکارەکان",
@@ -2630,5 +2630,13 @@
   "settings.roles_permissions_load_error": "نەتوانرا دەسەڵاتەکان بار بکرێن",
   "settings.roles_permissions_save_error": "نەتوانرا دەسەڵاتەکان پاشەکەوت بکرێن",
   "settings.roles_permissions_reset_success": "دەسەڵاتەکان گەڕێندرانەوە بۆ بنەڕەت",
-  "settings.roles_permissions_reset_error": "نەتوانرا ڕێکبخرێتەوە بۆ بنەڕەت"
+  "settings.roles_permissions_reset_error": "نەتوانرا ڕێکبخرێتەوە بۆ بنەڕەت",
+  "employees.include_archived_label": "کارمەندە ئەرشیفکراوەکان نیشان بدە",
+  "employees.in_use_message_prefix": "ناتوانرێت کارمەندەکە ئەرشیف بکرێت",
+  "employees.in_use_message_middle": "چونکە",
+  "employees.reports_suffix": "کارمەندی ژێردەستی هەیە",
+  "employees.departments_suffix": "بەشی بەڕێوەدەبات. سەرەتا نوێی بکەرەوە یان بە هەر شێوەیەک ئەرشیفی بکە",
+  "employees.force_delete_action": "لەگەڵ ئەوەشدا ئەرشیف بکە",
+  "employees.error_suspending_employee": "هەڵە لە ڕاگرتنی کارمەند:",
+  "employees.error_restoring_employee": "هەڵە لە گەڕاندنەوەی کارمەند:"
 }

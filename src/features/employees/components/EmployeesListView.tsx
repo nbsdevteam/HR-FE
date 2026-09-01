@@ -51,6 +51,9 @@ type EmployeesListViewProps = {
   onSelectEmployee: (employee: Employee) => void;
   onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
+  onSuspendEmployee: (employeeId: string) => void;
+  onRestoreEmployee: (employeeId: string) => void;
+  currentEmployeeId: string | null;
 };
 
 const EmployeesListView = ({
@@ -73,6 +76,9 @@ const EmployeesListView = ({
   onSelectEmployee,
   onEditEmployee,
   onDeleteTargetChange,
+  onSuspendEmployee,
+  onRestoreEmployee,
+  currentEmployeeId,
 }: EmployeesListViewProps) => {
   const dbEmpByPersonId = useMemo(
     () => indexBy(dbEmployees, (e) => e.person_id),
@@ -106,20 +112,29 @@ const EmployeesListView = ({
   );
 
   const renderEmployeeRow = useCallback(
-    (emp: Employee, i: number) => (
-      <EmployeesTableRow
-        key={emp.dbId}
-        emp={emp}
-        dbEmp={dbEmpByPersonId.get(emp.id)}
-        index={i}
-        isPending={pendingEmployees.has(emp.id)}
-        isDeviceSynced={deviceSyncedSet.has(emp.id)}
-        onSelectEmployee={onSelectEmployee}
-        onEditEmployee={onEditEmployee}
-        onDeleteTargetChange={onDeleteTargetChange}
-      />
-    ),
-    [dbEmpByPersonId, pendingEmployees, deviceSyncedSet, onSelectEmployee, onEditEmployee, onDeleteTargetChange],
+    (emp: Employee, i: number) => {
+      const dbEmp = dbEmpByPersonId.get(emp.id);
+      return (
+        <EmployeesTableRow
+          key={emp.dbId}
+          emp={emp}
+          dbEmp={dbEmp}
+          index={i}
+          isPending={pendingEmployees.has(emp.id)}
+          isDeviceSynced={deviceSyncedSet.has(emp.id)}
+          isSelf={Boolean(dbEmp && currentEmployeeId && dbEmp.id === currentEmployeeId)}
+          onSelectEmployee={onSelectEmployee}
+          onEditEmployee={onEditEmployee}
+          onDeleteTargetChange={onDeleteTargetChange}
+          onSuspendEmployee={onSuspendEmployee}
+          onRestoreEmployee={onRestoreEmployee}
+        />
+      );
+    },
+    [
+      dbEmpByPersonId, pendingEmployees, deviceSyncedSet, currentEmployeeId,
+      onSelectEmployee, onEditEmployee, onDeleteTargetChange, onSuspendEmployee, onRestoreEmployee,
+    ],
   );
 
   return (

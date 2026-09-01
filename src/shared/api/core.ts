@@ -35,6 +35,21 @@ export type EmployeeListParams = {
   search?: string;
   departmentId?: string | number | null;
   status?: string | null;
+  /** Includes archived rows alongside active ones (backend §3.4). */
+  includeArchived?: boolean;
+};
+
+export type EmployeeDeleteResult = {
+  id: number;
+  deleted: boolean;
+  hard: boolean;
+  active?: boolean;
+  status?: string;
+  end_date?: string | null;
+  report_count?: number;
+  department_count?: number;
+  name?: string;
+  employee_code?: string;
 };
 
 /**
@@ -78,6 +93,7 @@ export const fetchEmployeesPage = async (params: EmployeeListParams = {}): Promi
   if (search) body.search = search;
   if (params.departmentId != null && params.departmentId !== "") body.department_id = eid(params.departmentId);
   if (params.status) body.status = params.status;
+  if (params.includeArchived) body.include_archived = true;
 
   const data = await hrCall<RawEmployeeListPage | unknown[]>("/api/hr/employees/list", body);
   const rows = Array.isArray(data) ? data : (data?.items ?? []);
@@ -179,6 +195,29 @@ export const updateEmployee = async (employeeId: string | number, payload: Recor
 
 export const setEmployeeStatus = async (employeeId: string | number, status: string) => {
   return hrCall(`/api/hr/employees/${eid(employeeId)}/set_status`, { status });
+}
+
+/**
+ * Guarded archive by default (`active = false`, `status = 'exited'`); `hard: true`
+ * permanently removes the row and is refused once any history exists
+ * (`employee_has_records`). `force: true` only waives the archive path's
+ * direct-reports / managed-departments refusal (`employee_in_use`) (backend §3).
+ */
+export const deleteEmployee = async (
+  employeeId: string | number,
+  opts: { hard?: boolean; force?: boolean; endDate?: string } = {},
+): Promise<EmployeeDeleteResult> => {
+  return hrCall<EmployeeDeleteResult>(`/api/hr/employees/${eid(employeeId)}/delete`, {
+    hard: !!opts.hard,
+    force: !!opts.force,
+    ...(opts.endDate ? { end_date: opts.endDate } : {}),
+  });
+}
+
+/** Un-archives an employee: `active = true`, `status = 'active'`, clears `end_date` (backend §3.3). */
+export const restoreEmployee = async (employeeId: string | number): Promise<DbEmployee> => {
+  const row = await hrCall<any>(`/api/hr/employees/${eid(employeeId)}/restore`, {});
+  return mapEmployee(row);
 }
 
 export const updateDepartment = async (

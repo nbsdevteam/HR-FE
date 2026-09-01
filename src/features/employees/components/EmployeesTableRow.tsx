@@ -1,6 +1,6 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
-import { AlertCircle, Edit, Eye, Fingerprint, Trash2 } from "lucide-react";
+import { AlertCircle, ArchiveRestore, Edit, Eye, Fingerprint, PauseCircle, Trash2 } from "lucide-react";
 import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
@@ -18,24 +18,35 @@ type EmployeesTableRowProps = {
   index: number;
   isPending: boolean;
   isDeviceSynced: boolean;
+  isSelf: boolean;
   onSelectEmployee: (employee: Employee) => void;
   onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
+  onSuspendEmployee: (employeeId: string) => void;
+  onRestoreEmployee: (employeeId: string) => void;
 };
 
 const EmployeesTableRow = ({
-  emp, dbEmp, index, isPending, isDeviceSynced, onSelectEmployee, onEditEmployee, onDeleteTargetChange,
+  emp, dbEmp, index, isPending, isDeviceSynced, isSelf,
+  onSelectEmployee, onEditEmployee, onDeleteTargetChange, onSuspendEmployee, onRestoreEmployee,
 }: EmployeesTableRowProps) => {
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission("hr.employees.edit");
-  const canDeactivate = hasPermission("hr.employees.deactivate");
+  const canDeactivate = hasPermission("hr.employees.deactivate") || hasPermission("hr.employees.delete");
   const deviceNo = dbEmp?.device_employee_no;
+  const isArchived = dbEmp ? !dbEmp.is_active : false;
 
   const handleSelect = useCallback(() => onSelectEmployee(emp), [onSelectEmployee, emp]);
   const handleEdit = useCallback(() => onEditEmployee(emp), [onEditEmployee, emp]);
   const handleDeleteTargetChange = useCallback(() => {
     if (dbEmp) onDeleteTargetChange({ id: dbEmp.id, name: emp.name });
   }, [onDeleteTargetChange, dbEmp, emp.name]);
+  const handleSuspendClick = useCallback(() => {
+    if (dbEmp) onSuspendEmployee(dbEmp.id);
+  }, [onSuspendEmployee, dbEmp]);
+  const handleRestoreClick = useCallback(() => {
+    if (dbEmp) onRestoreEmployee(dbEmp.id);
+  }, [onRestoreEmployee, dbEmp]);
 
   return (
     <motion.tr
@@ -119,7 +130,29 @@ const EmployeesTableRow = ({
               iconClassName="w-4 h-4 text-muted-foreground"
             />
           )}
-          {dbEmp && canDeactivate && (
+          {dbEmp && canDeactivate && isArchived && (
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              onClick={handleRestoreClick}
+              className="p-1.5 hover:bg-secondary"
+              icon={ArchiveRestore}
+              iconClassName="w-4 h-4 text-muted-foreground"
+            />
+          )}
+          {dbEmp && canDeactivate && !isArchived && !isSelf && (
+            <Button
+              variant="unstyled"
+              size="unstyled"
+              rounded="rounded"
+              onClick={handleSuspendClick}
+              className="p-1.5 hover:bg-secondary"
+              icon={PauseCircle}
+              iconClassName="w-4 h-4 text-muted-foreground"
+            />
+          )}
+          {dbEmp && canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"
               size="unstyled"

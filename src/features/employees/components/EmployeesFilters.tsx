@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Filter } from "lucide-react";
 import { SearchInput, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
@@ -9,20 +10,28 @@ type EmployeesFiltersProps = {
   search: string;
   selectedDept: string;
   departments: string[];
+  includeArchived: boolean;
   onSearchChange: (search: string) => void;
   onDepartmentChange: (department: string) => void;
+  onIncludeArchivedChange: (includeArchived: boolean) => void;
 };
 
 const EmployeesFilters = ({
   search,
   selectedDept,
   departments,
+  includeArchived,
   onSearchChange,
   onDepartmentChange,
+  onIncludeArchivedChange,
 }: EmployeesFiltersProps) => {
-  const handleDepartmentChange = (value: string): void => {
+  const handleDepartmentChange = useCallback((value: string): void => {
     onDepartmentChange(value);
-  };
+  }, [onDepartmentChange]);
+
+  const handleIncludeArchivedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    onIncludeArchivedChange(e.target.checked);
+  }, [onIncludeArchivedChange]);
 
   return (
     <div className="flex flex-wrap items-center gap-4">
@@ -45,6 +54,10 @@ const EmployeesFilters = ({
           style={{ height: 38 }}
         />
       </div>
+      <label className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer">
+        <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} />
+        {arabicSource("employees.include_archived_label")}
+      </label>
     </div>
   );
 };

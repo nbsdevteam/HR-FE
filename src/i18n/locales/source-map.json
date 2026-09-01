@@ -621,7 +621,7 @@
   "دالة RPC": "diagnostics.rpc_function",
   "عمود": "common.column",
   "يفحص كل الجداول والـ Views والأعمدة الجديدة والـ Storage Buckets والـ RPC Functions": "diagnostics.scans_all_tables_views_new_columns_storage_buckets_and_rpc_funct",
-  "؟ سيتم حذف جميع بياناته من النظام وإزالته من جهاز البصمة.": "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo",
+  "؟ سيتم إخفاؤه من كل القوائم والاختيارات وإزالته من جهاز البصمة، مع الاحتفاظ بسجله وسجل حضوره ورواتبه. يمكن استعادته لاحقاً.": "employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo",
   "(اختياري — يمكن إضافتها لاحقاً)": "employees.optional_can_be_added_later",
   "(تلقائي)": "employees.automatic",
   "إجراءات": "common.procedures",
@@ -2552,5 +2552,13 @@
   "تعذر تحميل صلاحيات المستخدم": "settings.roles_permissions_load_error",
   "تعذر حفظ الصلاحيات": "settings.roles_permissions_save_error",
   "تمت إعادة الضبط للافتراضي": "settings.roles_permissions_reset_success",
-  "تعذر إعادة الضبط": "settings.roles_permissions_reset_error"
+  "تعذر إعادة الضبط": "settings.roles_permissions_reset_error",
+  "إظهار الموظفين المؤرشفين": "employees.include_archived_label",
+  "لا يمكن أرشفة الموظف": "employees.in_use_message_prefix",
+  "لأن لديه": "employees.in_use_message_middle",
+  "موظف تابع له": "employees.reports_suffix",
+  "قسم يديره. أعد تعيينهم أولاً أو أرشف على أي حال": "employees.departments_suffix",
+  "أرشفة على أي حال": "employees.force_delete_action",
+  "خطأ في تعليق الموظف:": "employees.error_suspending_employee",
+  "خطأ في استعادة الموظف:": "employees.error_restoring_employee"
 }

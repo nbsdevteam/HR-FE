@@ -45,6 +45,12 @@ export type DeleteEmployeeTarget = {
   name: string;
 };
 
+/** Counts returned by an `employee_in_use` refusal — direct reports / managed departments (backend §3.2). */
+export type EmployeeInUseGuard = {
+  reportCount: number;
+  departmentCount: number;
+};
+
 export type CustodyStatus = "active" | "returned" | "damaged" | "lost";
 
 export type Custody = {

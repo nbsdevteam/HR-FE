@@ -20,7 +20,12 @@ type GradeRungProps = {
  * seats nor staff — a fully budgeted grade with nobody in it is *vacant*, and
  * must still list its positions.
  */
-const GradeRung = ({ row, maxSeatCount, isExpanded, onToggle }: GradeRungProps) => {
+const GradeRung = ({
+  row,
+  maxSeatCount,
+  isExpanded,
+  onToggle,
+}: GradeRungProps) => {
   const { t } = useTranslation();
   const isUnfilled = row.seats === 0 && row.employee_count === 0;
   const isVacant = row.seats > 0 && row.employee_count === 0;
@@ -39,11 +44,13 @@ const GradeRung = ({ row, maxSeatCount, isExpanded, onToggle }: GradeRungProps) 
         onClick={handleToggle}
         aria-expanded={isExpanded}
         title={t("hierarchy.grade_code", { code: row.code })}
-        className="w-full flex items-start gap-4 py-3 text-start cursor-pointer rounded-lg hover:bg-muted/20 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+        className="w-full flex items-start gap-4 py-3 text-start cursor-pointer rounded-lg hover:bg-muted/20 transition-colors focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
       >
         <span
           className={`absolute start-0 top-3 w-10 h-10 rounded-full flex items-center justify-center font-semibold ring-4 ring-background shrink-0 ${
-            isUnfilled ? "border-2 border-dashed border-flag bg-flag-bg text-flag" : `${bandClass} text-white`
+            isUnfilled
+              ? "border-2 border-dashed border-flag bg-flag-bg text-flag"
+              : `${bandClass} text-white`
           }`}
           style={{ fontSize: 13 }}
         >
@@ -52,7 +59,9 @@ const GradeRung = ({ row, maxSeatCount, isExpanded, onToggle }: GradeRungProps) 
 
         <span className="flex-1 min-w-0">
           <span className="flex items-center gap-2">
-            <span className="font-medium" style={{ fontSize: 14 }}>{row.name}</span>
+            <span className="font-medium" style={{ fontSize: 14 }}>
+              {row.name}
+            </span>
             {isVacant && (
               <span
                 className="rounded-full border border-dashed border-flag-hair bg-flag-bg px-2 py-0.5 text-flag"
@@ -81,12 +90,23 @@ const GradeRung = ({ row, maxSeatCount, isExpanded, onToggle }: GradeRungProps) 
                   className="block h-full rounded-e-md bg-muted/70 overflow-hidden"
                   style={{ width: `${seatWidthPercent}%` }}
                 >
-                  <span className={`block h-full rounded-e-md ${bandClass}`} style={{ width: `${filledWidthPercent}%` }} />
+                  <span
+                    className={`block h-full rounded-e-md ${bandClass}`}
+                    style={{ width: `${filledWidthPercent}%` }}
+                  />
                 </span>
               </span>
-              <span className="tabular-nums text-muted-foreground shrink-0" style={{ fontSize: 12 }}>
-                {t("hierarchy.filled_of_seats", { filled: row.employee_count, seats: row.seats })}
-                {row.vacancies > 0 ? ` · ${t("hierarchy.n_vacant", { count: row.vacancies })}` : ""}
+              <span
+                className="tabular-nums text-muted-foreground shrink-0"
+                style={{ fontSize: 12 }}
+              >
+                {t("hierarchy.filled_of_seats", {
+                  filled: row.employee_count,
+                  seats: row.seats,
+                })}
+                {row.vacancies > 0
+                  ? ` · ${t("hierarchy.n_vacant", { count: row.vacancies })}`
+                  : ""}
               </span>
             </span>
           )}
@@ -97,11 +117,15 @@ const GradeRung = ({ row, maxSeatCount, isExpanded, onToggle }: GradeRungProps) 
         <div className="ms-16 mb-4 rounded-lg border border-border/40 bg-card/50 p-3">
           {isUnfilled ? (
             <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-              {row.description || arabicSource("hierarchy.nobody_at_this_grade")}
+              {row.description ||
+                arabicSource("hierarchy.nobody_at_this_grade")}
             </p>
           ) : (
             <>
-              <p className="text-muted-foreground mb-2" style={{ fontSize: 11 }}>
+              <p
+                className="text-muted-foreground mb-2"
+                style={{ fontSize: 11 }}
+              >
                 {arabicSource("hierarchy.job_titles_on_this_grade")}
               </p>
               {row.titles.map((title) => (

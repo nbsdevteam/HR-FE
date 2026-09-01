@@ -17,6 +17,8 @@ type UseEmployeesPagedParams = {
   search: string;
   /** `null` for "all departments". */
   departmentId: string | null;
+  /** Shows archived employees alongside active ones (backend §3.4). */
+  includeArchived?: boolean;
   /** Skip fetching entirely while the list view is not the one on screen. */
   enabled?: boolean;
 };
@@ -29,7 +31,7 @@ type UseEmployeesPagedParams = {
  * page and could not filter the rest. The full-roster `useEmployees` fetch is
  * untouched and still backs the stats, the kanban board and every dropdown.
  */
-export const useEmployeesPaged = ({ search, departmentId, enabled = true }: UseEmployeesPagedParams) => {
+export const useEmployeesPaged = ({ search, departmentId, includeArchived = false, enabled = true }: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
   const [result, setResult] = useState<EmployeeListPage>(EMPTY_PAGE);
@@ -62,7 +64,7 @@ export const useEmployeesPaged = ({ search, departmentId, enabled = true }: UseE
   // result set is usually past the end of the new one.
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, departmentId]);
+  }, [debouncedSearch, departmentId, includeArchived]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -71,7 +73,7 @@ export const useEmployeesPaged = ({ search, departmentId, enabled = true }: UseE
     setLoading(true);
 
     odooData
-      .fetchEmployeesPage({ page, limit: perPage, search: debouncedSearch, departmentId })
+      .fetchEmployeesPage({ page, limit: perPage, search: debouncedSearch, departmentId, includeArchived })
       .then(next => {
         if (requestRef.current !== requestId) return;
         setResult(next);
@@ -85,7 +87,7 @@ export const useEmployeesPaged = ({ search, departmentId, enabled = true }: UseE
       .finally(() => {
         if (requestRef.current === requestId) setLoading(false);
       });
-  }, [enabled, page, perPage, debouncedSearch, departmentId, reloadToken]);
+  }, [enabled, page, perPage, debouncedSearch, departmentId, includeArchived, reloadToken]);
 
   // A deletion can empty the last page; step back rather than stranding the
   // user on a page that will always render zero rows.

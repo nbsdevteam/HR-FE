@@ -36,10 +36,12 @@ const Employees = () => {
     countries,
     creatingCity,
     cityCreateError,
+    currentEmployeeId,
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,
     deleteConfirm,
+    deleteGuard,
     deleting,
     designationOptions,
     designations,
@@ -62,8 +64,11 @@ const Employees = () => {
     handleDetailSave,
     handleEditEmployee,
     handleFacePhoto,
+    handleRestoreEmployee,
     handleSelectEmployee,
     handleStateChange,
+    handleSuspendEmployee,
+    includeArchived,
     kanbanDepts,
     loadingCities,
     loadingCountries,
@@ -81,10 +86,11 @@ const Employees = () => {
     pendingEmployees,
     perPage,
     realDepts,
+    requestDeleteEmployee,
     search,
     selectedDept,
     selectedEmployee,
-    setDeleteConfirm,
+    setIncludeArchived,
     setSearch,
     setSelectedDept,
     setSortBy,
@@ -120,8 +126,10 @@ const Employees = () => {
         search={search}
         selectedDept={selectedDept}
         departments={realDepts}
+        includeArchived={includeArchived}
         onSearchChange={setSearch}
         onDepartmentChange={setSelectedDept}
+        onIncludeArchivedChange={setIncludeArchived}
       />
 
       <AnimatePresence mode="wait">
@@ -145,7 +153,10 @@ const Employees = () => {
             onSortDirChange={setSortDir}
             onSelectEmployee={handleSelectEmployee}
             onEditEmployee={handleEditEmployee}
-            onDeleteTargetChange={setDeleteConfirm}
+            onDeleteTargetChange={requestDeleteEmployee}
+            onSuspendEmployee={handleSuspendEmployee}
+            onRestoreEmployee={handleRestoreEmployee}
+            currentEmployeeId={currentEmployeeId}
           />
         ) : (
           <Suspense
@@ -229,13 +240,21 @@ const Employees = () => {
           <ConfirmDeleteModal
             title={arabicSource("employees.confirm_deletion")}
             message={
-              <>
-                {arabicSource("employees.are_you_sure_you_want_to_delete_the_employee")}{" "}
-                <span className="text-foreground font-medium">{deleteConfirm.name}</span>
-                {arabicSource("employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo")}
-              </>
+              deleteGuard ? (
+                <>
+                  {arabicSource("employees.in_use_message_prefix")}{" "}
+                  <span className="text-foreground font-medium">{deleteConfirm.name}</span>{" "}
+                  {arabicSource("employees.in_use_message_middle")} {deleteGuard.reportCount} {arabicSource("employees.reports_suffix")}, {deleteGuard.departmentCount} {arabicSource("employees.departments_suffix")}
+                </>
+              ) : (
+                <>
+                  {arabicSource("employees.are_you_sure_you_want_to_delete_the_employee")}{" "}
+                  <span className="text-foreground font-medium">{deleteConfirm.name}</span>
+                  {arabicSource("employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo")}
+                </>
+              )
             }
-            confirmLabel={arabicSource("employees.delete_employee")}
+            confirmLabel={deleteGuard ? arabicSource("employees.force_delete_action") : arabicSource("employees.delete_employee")}
             loadingLabel={arabicSource("employees.deleting")}
             loading={deleting}
             onConfirm={handleDeleteEmployee}

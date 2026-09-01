@@ -4,12 +4,33 @@ import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import type { DeleteEmployeeTarget } from "../types";
+import type { HrApiError } from "@/shared/api/client";
+import type { DeleteEmployeeTarget, EmployeeInUseGuard } from "../types";
 import { errorMessage } from "../utils/errorMessage";
 
-export const useEmployeeDeleteFlow = (dbEmployees: DbEmployee[], refetch: () => void) => {
+/**
+ * Archive flow for the employee list/kanban delete button (backend §3). The
+ * button now sends `deleteEmployee` (archive, not `set_status: "suspended"` —
+ * see FE hand-off §1/§4.2), so the employee disappears from every list and
+ * picker instead of quietly staying active. An `employee_in_use` refusal
+ * re-arms the same target with the returned counts so the confirm modal can
+ * re-prompt for `force: true`; `me.id` never reaches this flow at all, since
+ * the caller is expected to withhold the action for their own row.
+ */
+export const useEmployeeDeleteFlow = (
+  dbEmployees: DbEmployee[],
+  refetch: () => void,
+  currentEmployeeId?: string | null,
+) => {
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteEmployeeTarget | null>(null);
+  const [deleteGuard, setDeleteGuard] = useState<EmployeeInUseGuard | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const requestDeleteEmployee = useCallback((target: DeleteEmployeeTarget) => {
+    if (currentEmployeeId && target.id === currentEmployeeId) return;
+    setDeleteGuard(null);
+    setDeleteConfirm(target);
+  }, [currentEmployeeId]);
 
   const handleDeleteEmployee = useCallback(async () => {
     if (!deleteConfirm) return;
@@ -23,24 +44,37 @@ export const useEmployeeDeleteFlow = (dbEmployees: DbEmployee[], refetch: () => 
           // Device removal is best-effort.
         }
       }
-      await odooData.setEmployeeStatus(deleteConfirm.id, "suspended");
+      await odooData.deleteEmployee(deleteConfirm.id, { force: Boolean(deleteGuard) });
       refetch();
       setDeleteConfirm(null);
+      setDeleteGuard(null);
     } catch (error: unknown) {
-      const message = errorMessage(error);
-      console.error("Delete failed:", message);
-      localizedAlert(arabicSource("employees.error_deleting_employee") + " " + message);
+      const apiError = error as HrApiError | undefined;
+      if (apiError?.code === "employee_in_use") {
+        setDeleteGuard({
+          reportCount: Number(apiError.details?.report_count) || 0,
+          departmentCount: Number(apiError.details?.department_count) || 0,
+        });
+      } else {
+        const message = errorMessage(error);
+        console.error("Delete failed:", message);
+        localizedAlert(arabicSource("employees.error_deleting_employee") + " " + message);
+      }
     }
     setDeleting(false);
-  }, [dbEmployees, deleteConfirm, refetch]);
+  }, [dbEmployees, deleteConfirm, deleteGuard, refetch]);
 
-  const closeDeleteModal = useCallback(() => setDeleteConfirm(null), []);
+  const closeDeleteModal = useCallback(() => {
+    setDeleteConfirm(null);
+    setDeleteGuard(null);
+  }, []);
 
   return {
     closeDeleteModal,
     deleteConfirm,
+    deleteGuard,
     deleting,
     handleDeleteEmployee,
-    setDeleteConfirm,
+    requestDeleteEmployee,
   };
 };
