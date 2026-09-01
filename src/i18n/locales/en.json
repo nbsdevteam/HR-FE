@@ -2638,5 +2638,6 @@
   "employees.departments_suffix": "managed department(s). Reassign them first, or archive anyway",
   "employees.force_delete_action": "Archive anyway",
   "employees.error_suspending_employee": "Error suspending employee:",
-  "employees.error_restoring_employee": "Error restoring employee:"
+  "employees.error_restoring_employee": "Error restoring employee:",
+  "hierarchy.reporting_tree_flat_banner": "No reporting lines have been defined yet. Positions are shown without a hierarchy."
 }

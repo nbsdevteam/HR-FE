@@ -65,6 +65,26 @@ export interface OrgStructureDepartment {
   positions: OrgStructurePosition[];
 }
 
+/**
+ * One node of the reporting-line tree — a position, its department, and its
+ * direct reports, recursively. Extends `OrgStructurePosition` rather than
+ * duplicating its fields (position/employees are identical shapes).
+ *
+ * A reporting line can cross departments, so `department`/`department_ar`
+ * are carried on every node rather than inherited from an ancestor.
+ */
+export interface OrgReportingNode extends OrgStructurePosition {
+  /** `null` = reports to nobody — a real root, never a synthetic one. */
+  reports_to_position_id: string | null;
+  /** `null` = no department (Odoo sends `false`). */
+  department_id: string | null;
+  /** May be empty — fall back to `title`/`department`. */
+  department_ar: string;
+  department: string;
+  /** Same node shape, recursive. Pre-sorted by the backend — render in array order. */
+  children: OrgReportingNode[];
+}
+
 export interface OrgStructureTotals {
   departments: number;
   positions: number;
@@ -79,6 +99,14 @@ export interface OrgStructureTree {
   departments: OrgStructureDepartment[];
   /** Positions carrying no department. Kept separate so the UI can label them honestly — never fold them into a real department. */
   positions_without_department: OrgStructurePosition[];
+  /**
+   * The same 39 positions, nested by `reports_to_position_id` instead of
+   * grouped by department. A position with no reporting line, or whose
+   * reported-to position is missing/cyclic, becomes a root here.
+   */
+  reporting_tree: OrgReportingNode[];
+  /** `true` while no reporting line has been entered anywhere — `reporting_tree` is flat (every node a childless root). */
+  reporting_tree_is_flat: boolean;
   totals: OrgStructureTotals;
 }
 

@@ -1,11 +1,12 @@
 import type {
+  OrgReportingNode,
   OrgStructureDepartment,
   OrgStructureEmployee,
   OrgStructurePosition,
   OrgStructureTotals,
   OrgStructureTree,
 } from "../../hooks";
-import { sid, sornull, num } from "./mapHelpers";
+import { bool, sid, sornull, num } from "./mapHelpers";
 
 /**
  * `/api/hr/org-structure/tree`.
@@ -55,6 +56,26 @@ const mapDepartment = (r: any): OrgStructureDepartment => {
   };
 };
 
+/**
+ * A `reporting_tree` node — reuses `mapPosition` rather than duplicating its
+ * fields, then layers on the reporting-line/department/recursion fields the
+ * flat position payload doesn't carry.
+ *
+ * `reports_to_position_id` and `department_id` arrive as `false` (Odoo's
+ * "no value"), not `null`, so `sornull()` is required here — `sid()` would
+ * stringify `false` into `"false"`.
+ */
+const mapReportingNode = (r: any): OrgReportingNode => {
+  return {
+    ...mapPosition(r),
+    reports_to_position_id: sornull(r.reports_to_position_id),
+    department_id: sornull(r.department_id),
+    department: r.department || "",
+    department_ar: r.department_ar || "",
+    children: Array.isArray(r.children) ? r.children.map(mapReportingNode) : [],
+  };
+};
+
 const mapTotals = (r: any): OrgStructureTotals => {
   return {
     departments: num(r?.departments),
@@ -72,6 +93,8 @@ export const mapOrgStructureTree = (r: any): OrgStructureTree => {
     positions_without_department: Array.isArray(r?.positions_without_department)
       ? r.positions_without_department.map(mapPosition)
       : [],
+    reporting_tree: Array.isArray(r?.reporting_tree) ? r.reporting_tree.map(mapReportingNode) : [],
+    reporting_tree_is_flat: bool(r?.reporting_tree_is_flat),
     totals: mapTotals(r?.totals),
   };
 };

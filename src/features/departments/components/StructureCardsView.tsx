@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import type { OrgStructureDepartment, OrgStructurePosition, OrgStructureTree } from "@/shared/hooks";
 import { EmptyState, LoadingState } from "@/shared/components";
 import { useStructureTreeExpansion } from "../hooks/useStructureTreeExpansion";
+import ReportingTreeBanner from "./ReportingTreeBanner";
+import ReportingTreeView from "./ReportingTreeView";
 import StructureCardsOrphans from "./StructureCardsOrphans";
 import StructureCardsRoot from "./StructureCardsRoot";
 import StructureCardsSummary from "./StructureCardsSummary";
@@ -52,7 +54,9 @@ const StructureCardsView = ({
   }
 
   const hasContent =
-    tree.departments.length > 0 || tree.positions_without_department.length > 0;
+    tree.departments.length > 0 ||
+    tree.positions_without_department.length > 0 ||
+    tree.reporting_tree.length > 0;
 
   if (!hasContent) {
     return (
@@ -64,32 +68,47 @@ const StructureCardsView = ({
     );
   }
 
+  // Real reporting lines exist — render the tree they actually describe.
+  // While `reporting_tree_is_flat`, fall back to the department-grouped view
+  // instead (task doc §6): the screen stays useful today, and switches to
+  // the reporting tree automatically the moment HR enters a reporting line.
+  const showReportingTree = !tree.reporting_tree_is_flat && tree.reporting_tree.length > 0;
+
   return (
     <div className="space-y-4">
       <StructureCardsSummary totals={tree.totals} />
 
+      {tree.reporting_tree_is_flat && <ReportingTreeBanner />}
+
       {/* Only this container scrolls horizontally — the page body never does. */}
       <div className="overflow-x-auto">
         <div className="min-w-max mx-auto py-4">
-          <StructureCardsRoot
-            tree={tree}
-            expandedDepartments={expandedDepartments}
-            onToggleDepartment={toggleDepartment}
-            matchedIds={matchedIds}
-            hasActiveFilter={hasActiveFilter}
-            onSelectPosition={onSelectPosition}
-            onSelectEmployee={onSelectEmployee}
-          />
+          {showReportingTree ? (
+            <ReportingTreeView roots={tree.reporting_tree} />
+          ) : (
+            <StructureCardsRoot
+              tree={tree}
+              expandedDepartments={expandedDepartments}
+              onToggleDepartment={toggleDepartment}
+              matchedIds={matchedIds}
+              hasActiveFilter={hasActiveFilter}
+              onSelectPosition={onSelectPosition}
+              onSelectEmployee={onSelectEmployee}
+            />
+          )}
         </div>
       </div>
 
-      <StructureCardsOrphans
-        positions={tree.positions_without_department}
-        matchedIds={matchedIds}
-        hasActiveFilter={hasActiveFilter}
-        onSelectPosition={onSelectPosition}
-        onSelectEmployee={onSelectEmployee}
-      />
+      {/* Already nested inside the reporting tree (as department_id:false roots) — rendering it again here would double-count. */}
+      {!showReportingTree && (
+        <StructureCardsOrphans
+          positions={tree.positions_without_department}
+          matchedIds={matchedIds}
+          hasActiveFilter={hasActiveFilter}
+          onSelectPosition={onSelectPosition}
+          onSelectEmployee={onSelectEmployee}
+        />
+      )}
     </div>
   );
 };

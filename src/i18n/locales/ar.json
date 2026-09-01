@@ -2638,5 +2638,6 @@
   "employees.departments_suffix": "قسم يديره. أعد تعيينهم أولاً أو أرشف على أي حال",
   "employees.force_delete_action": "أرشفة على أي حال",
   "employees.error_suspending_employee": "خطأ في تعليق الموظف:",
-  "employees.error_restoring_employee": "خطأ في استعادة الموظف:"
+  "employees.error_restoring_employee": "خطأ في استعادة الموظف:",
+  "hierarchy.reporting_tree_flat_banner": "لم يتم تحديد خطوط تسلسل إداري بعد. تُعرض المناصب دون تسلسل هرمي."
 }
