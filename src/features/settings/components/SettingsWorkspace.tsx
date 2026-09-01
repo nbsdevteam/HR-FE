@@ -9,6 +9,7 @@ import NotificationsCard from "./NotificationsCard";
 import PersonalAccountCard from "./PersonalAccountCard";
 import PublicHolidaysCard from "./PublicHolidaysCard";
 import PublicLeaveLinksCard from "./PublicLeaveLinksCard";
+import RolesPermissionsCard from "./RolesPermissionsCard";
 import SecurityCard from "./SecurityCard";
 import SettingsPageHeader from "./SettingsPageHeader";
 import Toast from "@/shared/components/Toast";
@@ -47,6 +48,7 @@ const SettingsWorkspace = () => {
         <PublicLeaveLinksCard showToast={showToast} />
         <ContractTypesCard showToast={showToast} />
         <DocumentTypesCard showToast={showToast} />
+        <RolesPermissionsCard showToast={showToast} />
         <PersonalAccountCard />
         <NotificationsCard />
         <SecurityCard />

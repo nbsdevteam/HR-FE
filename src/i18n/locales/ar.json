@@ -2574,5 +2574,21 @@
   "common.rows_per_page": "صفوف لكل صفحة",
   "common.go_to_page": "الانتقال إلى الصفحة",
   "employees.error_department_not_found": "القسم المحدد لم يعد موجوداً، يرجى اختيار قسم آخر",
-  "employees.error_designation_not_found": "المسمى الوظيفي المحدد لم يعد موجوداً، يرجى اختيار مسمى آخر"
+  "employees.error_designation_not_found": "المسمى الوظيفي المحدد لم يعد موجوداً، يرجى اختيار مسمى آخر",
+  "settings.category_kpi": "مؤشرات الأداء",
+  "settings.category_risk": "المخاطر",
+  "settings.roles_permissions_title": "الأدوار والصلاحيات",
+  "settings.roles_permissions_description": "إدارة صلاحيات الموارد البشرية لكل مستخدم",
+  "settings.roles_permissions_explainer": "يتم تحديد الصلاحيات الفعلية على الخادم (الدور، المسمى الوظيفي، والاستثناءات الفردية) — هذا الدليل يعرض تلك البيانات المحسوبة.",
+  "settings.roles_permissions_role_column": "الدور",
+  "settings.roles_permissions_override_column": "استثناء",
+  "settings.roles_permissions_all_roles": "كل الأدوار",
+  "settings.roles_permissions_empty": "لا يوجد مستخدمون",
+  "settings.roles_permissions_users_count_suffix": "مستخدم",
+  "settings.roles_permissions_custom_badge": "مخصص",
+  "settings.roles_permissions_back_to_directory": "العودة إلى الدليل",
+  "settings.roles_permissions_last_modified_by": "آخر تعديل بواسطة",
+  "settings.roles_permissions_notes_label": "ملاحظات (سبب هذا الاستثناء)",
+  "settings.roles_permissions_notes_placeholder": "مثال: تغطية عرض الرواتب أثناء غياب الموظف",
+  "settings.roles_permissions_reset_to_default": "إعادة الضبط للافتراضي"
 }
