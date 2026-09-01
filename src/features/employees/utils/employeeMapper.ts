@@ -41,6 +41,8 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     phone: employee.personal_phone || "—",
     joinDate,
     startDate: joinDate,
+    // "" rather than a placeholder: the edit form binds a date input to this.
+    birthDate: employee.birth_date || "",
     endDate: employee.end_date || null,
     status: (statusMap[employee.status || arabicSource("common.is_active")] || arabicSource("common.is_active")) as Employee["status"],
     salary: employee.monthly_salary || 0,

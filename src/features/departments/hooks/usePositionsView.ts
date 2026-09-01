@@ -5,7 +5,7 @@ import { indexBy } from "@/shared/utils/collections";
 import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import type { PositionNode } from "../types";
+import type { PositionNode, QuickEditDeptDesignationPayload } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
 import type { PositionFormState } from "../components/PositionFormModal";
 import { usePositionAssignment } from "./usePositionAssignment";
@@ -38,6 +38,8 @@ export const usePositionsView = ({
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [posForm, setPosForm] = useState<PositionFormState>(EMPTY_POSITION_FORM);
+  const [quickEditEmployee, setQuickEditEmployee] = useState<DbEmployee | null>(null);
+  const [quickEditSaving, setQuickEditSaving] = useState(false);
 
   const { positions, loading: posLoading, refetch: refetchPositions } = usePositions();
 
@@ -197,6 +199,33 @@ export const usePositionsView = ({
     });
   }, []);
 
+  const openQuickEditEmployee = useCallback((employee: DbEmployee): void => {
+    setQuickEditEmployee(employee);
+  }, []);
+
+  const closeQuickEditEmployee = useCallback((): void => {
+    setQuickEditEmployee(null);
+  }, []);
+
+  const handleQuickEditSave = useCallback(
+    async (payload: QuickEditDeptDesignationPayload): Promise<void> => {
+      if (!quickEditEmployee) return;
+      setQuickEditSaving(true);
+      try {
+        await odooData.updateEmployee(quickEditEmployee.id, payload);
+        setToast(arabicSource("hierarchy.employee_data_has_been_updated_successfully"));
+        setQuickEditEmployee(null);
+        refetch();
+        refetchPositions();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "";
+        setToast(`${arabicSource("common.error_2")} ${message}`);
+      }
+      setQuickEditSaving(false);
+    },
+    [quickEditEmployee, refetch, refetchPositions],
+  );
+
   useEffect(() => {
     if (toast) {
       const t = setTimeout(() => setToast(null), 3000);
@@ -216,10 +245,13 @@ export const usePositionsView = ({
     posForm,
     setPosForm,
     posLoading,
+    positions,
     unassignedEmployees,
     filteredUnassigned,
     isDragActive: draggingEmployeeId !== null,
     undoEntry,
+    quickEditEmployee,
+    quickEditSaving,
     handleEmployeeDragStateChange,
     handleDrop,
     undoAssignment,
@@ -229,6 +261,9 @@ export const usePositionsView = ({
     closeAddEditModal,
     openAddModal,
     openEditModal,
+    openQuickEditEmployee,
+    closeQuickEditEmployee,
+    handleQuickEditSave,
     ...filters,
   };
 };

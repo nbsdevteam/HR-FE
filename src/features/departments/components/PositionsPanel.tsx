@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { Loader2, Network, Plus } from "lucide-react";
 import { Button, EmptyState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import type { DbEmployee } from "@/shared/hooks";
 import type { PositionDepartmentGroup, PositionFilter, PositionNode } from "../types";
 import PositionsFilterBar from "./PositionsFilterBar";
 import PositionDepartmentSection from "./PositionDepartmentSection";
@@ -24,6 +25,7 @@ type PositionsPanelProps = {
   onAddPosition: (parentId: string | null) => void;
   onDeletePosition: (posId: string) => void;
   onEditPosition: (pos: PositionNode) => void;
+  onEditEmployee: (employee: DbEmployee) => void;
 };
 
 /**
@@ -48,6 +50,7 @@ const PositionsPanel = ({
   onAddPosition,
   onDeletePosition,
   onEditPosition,
+  onEditEmployee,
 }: PositionsPanelProps) => {
   const handleAddRootPositionClick = useCallback((): void => {
     onAddPosition(null);
@@ -112,6 +115,7 @@ const PositionsPanel = ({
               onAddPosition={onAddPosition}
               onDeletePosition={onDeletePosition}
               onEditPosition={onEditPosition}
+              onEditEmployee={onEditEmployee}
             />
           ))
         )}

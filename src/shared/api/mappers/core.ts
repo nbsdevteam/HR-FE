@@ -27,6 +27,9 @@ export const mapEmployee = (r: any): DbEmployee => {
     personal_phone: r.personal_phone || r.phone || null,
     company_phone: r.company_phone || null,
     join_date: r.joining_date || r.join_date || null,
+    // `dob` is the legacy detail-only key; `birth_date` wins and is the one
+    // the list endpoint carries.
+    birth_date: r.birth_date || r.dob || null,
     end_date: r.end_date || null,
     status: r.status || null,
     address,

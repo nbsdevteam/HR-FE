@@ -1,14 +1,13 @@
 import { useCallback } from "react";
-import { motion } from "motion/react";
 import { Plus, PartyPopper } from "lucide-react";
 import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { HOLIDAY_YEAR_OPTIONS } from "../constants/settings";
 import { usePublicHolidayManagement } from "../hooks/usePublicHolidayManagement";
 import HolidayList from "./HolidayList";
 import NewHolidayForm from "./NewHolidayForm";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 type TPublicHolidaysCardProps = {
   showToast: (message: string) => void;
@@ -48,30 +47,14 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
   }, [setShowNewHolidayForm]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className={`${cardCls} lg:col-span-2`}
+    <SettingsSectionCard
+      icon={PartyPopper}
+      title={arabicSource("settings.public_holidays")}
+      description={arabicSource(
+        "settings.holidays_are_automatically_excluded_from_absence_and_tardiness_c",
+      )}
+      delay={0.4}
     >
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/20">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <PartyPopper className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-foreground">
-              {arabicSource("settings.public_holidays")}
-            </h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              {arabicSource(
-                "settings.holidays_are_automatically_excluded_from_absence_and_tardiness_c",
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {holidaysLoading ? (
         <div className="text-muted-foreground text-center py-6">
           {arabicSource("common.loading")}
@@ -113,7 +96,7 @@ const PublicHolidaysCard = ({ showToast }: TPublicHolidaysCardProps) => {
           <HolidayList holidays={filteredHolidays} onDelete={deleteHoliday} />
         </div>
       )}
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

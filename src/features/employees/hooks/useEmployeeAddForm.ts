@@ -6,6 +6,9 @@ import { todayInBaghdad } from "@/shared/utils/timezone";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
+import { birthDateFieldError } from "../utils/birthDate";
+import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
+import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
 import { errorMessage } from "../utils/errorMessage";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 
@@ -18,6 +21,7 @@ const defaultAddForm: EmployeeAddForm = {
   departmentId: "",
   salary: "",
   joinDate: "",
+  birthDate: "",
   nationalId: "",
   gender: "male",
   managerId: "",
@@ -37,6 +41,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const [addForm, setAddForm] = useState<EmployeeAddForm>(defaultAddForm);
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
   const [nextEmployeeId, setNextEmployeeId] = useState<number | null>(null);
   const [loadingNextId, setLoadingNextId] = useState(false);
@@ -76,6 +82,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const resetAddForm = useCallback(() => {
     setAddForm(defaultAddForm);
     setAddError(null);
+    setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setDeviceSyncStatus("idle");
     setNextEmployeeId(null);
     setFacePhotoBase64(null);
@@ -112,6 +120,13 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   }, [addSaving, resetAddForm]);
 
   const updateAddForm = useCallback((updates: Partial<EmployeeAddForm>) => {
+    // Editing the date clears the rejection it caused, so a stale message never
+    // sits under an input the user has already corrected.
+    if (updates.birthDate !== undefined) setBirthDateError(null);
+    // Same for the two FK dropdowns: re-picking a department or job title
+    // clears the "no longer exists" message the previous choice produced.
+    if (updates.departmentId !== undefined) setFieldErrors(prev => ({ ...prev, department: null }));
+    if (updates.designationId !== undefined) setFieldErrors(prev => ({ ...prev, designation: null }));
     setAddForm(current => ({ ...current, ...updates }));
   }, []);
 
@@ -174,44 +189,21 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
       setAddError(arabicSource("employees.join_date_cannot_be_in_the_future"));
       return;
     }
+    // The picker is already capped at today; this catches a typed-in date and
+    // keeps `birth_date_in_future` a backstop rather than a round trip.
+    if (addForm.birthDate && addForm.birthDate > todayInBaghdad()) {
+      setBirthDateError(arabicSource("employees.birth_date_cannot_be_in_the_future"));
+      return;
+    }
     setAddSaving(true);
     setAddError(null);
+    setBirthDateError(null);
+    setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
 
     try {
       const newPersonId = nextEmployeeId;
 
-      // The backend takes address as a single nested object (§3 of the address
-      // spec) — only include the keys the user actually filled in. Ids come
-      // from picking an item off the country/state/city dropdowns, so they're
-      // always present alongside a name; send the id — "the id wins" server-side.
-      const address: Record<string, string | number> = {};
-      if (addForm.countryId) address.country_id = Number(addForm.countryId);
-      else if (addForm.country) address.country = addForm.country;
-      if (addForm.stateId) address.state_id = Number(addForm.stateId);
-      else if (addForm.state) address.state = addForm.state;
-      if (addForm.cityId) address.city_id = Number(addForm.cityId);
-      else if (addForm.city) address.city = addForm.city;
-      if (addForm.residence) address.residence = addForm.residence;
-
-      await odooData.createEmployee({
-        name: addForm.name,
-        email: addForm.email || null,
-        personal_phone: addForm.personalPhone || null,
-        phone: addForm.personalPhone || addForm.companyPhone || null,
-        address,
-        monthly_salary: parseFloat(addForm.salary) || 0,
-        join_date: addForm.joinDate || null,
-        national_id: addForm.nationalId || null,
-        status: "active",
-        person_id: newPersonId,
-        device_employee_no: String(newPersonId),
-        gender: addForm.gender || null,
-        manager_id: addForm.managerId || null,
-        department_id: addForm.departmentId || null,
-        designation_id: addForm.designationId || null,
-        nationality: addForm.nationality || null,
-        work_location: addForm.workLocation || "",
-      });
+      await odooData.createEmployee(buildEmployeeCreatePayload(addForm, newPersonId));
 
       setDeviceSyncStatus("syncing");
       try {
@@ -237,7 +229,11 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
         resetAddForm();
       }, 1500);
     } catch (error: unknown) {
-      setAddError(errorMessage(error));
+      const birthError = birthDateFieldError(error);
+      const rejectedFields = employeeFieldErrors(error);
+      if (birthError) setBirthDateError(birthError);
+      else if (rejectedFields) setFieldErrors(rejectedFields);
+      else setAddError(errorMessage(error));
     }
     setAddSaving(false);
   }, [addForm, facePhotoBase64, nextEmployeeId, refetch, resetAddForm]);
@@ -251,6 +247,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   return {
     addError,
     addForm,
+    birthDateError,
     addSaving,
     cities,
     citySuggestions,
@@ -263,6 +260,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     deviceSyncStatus,
     dismissCitySuggestions,
     facePhotoPreview,
+    fieldErrors,
     handleAddCity,
     handleAddEmployee,
     handleCitySearch,

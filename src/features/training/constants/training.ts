@@ -85,20 +85,20 @@ export const categoryCardBgColors = [
   "bg-emerald-500/5 border-emerald-500/20",
 ];
 
-export const TOAST_TONE_BORDER: Record<ToastType, string> = {
-  success: "border-green-500/40",
-  error: "border-red-500/40",
-  info: "border-blue-500/40",
+export const TOAST_TONE_SURFACE: Record<ToastType, string> = {
+  success: "bg-toast-success border-toast-success-border",
+  error: "bg-toast-error border-toast-error-border",
+  info: "bg-toast-info border-toast-info-border",
 };
 
 export const TOAST_TONE_ICON_BG: Record<ToastType, string> = {
-  success: "bg-green-500/20",
-  error: "bg-red-500/20",
-  info: "bg-blue-500/20",
+  success: "bg-toast-success-border/25",
+  error: "bg-toast-error-border/25",
+  info: "bg-toast-info-border/25",
 };
 
-export const TOAST_TONE_ICON_COLOR: Record<ToastType, string> = {
-  success: "text-green-400",
-  error: "text-red-400",
-  info: "text-blue-400",
+export const TOAST_TONE_TEXT: Record<ToastType, string> = {
+  success: "text-toast-success-fg",
+  error: "text-toast-error-fg",
+  info: "text-toast-info-fg",
 };

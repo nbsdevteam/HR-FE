@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import type { DeviceStatusDevice } from "@/shared/api/controlPanel";
 
 // ——— Biometric Device Status ———
 
@@ -30,94 +31,70 @@ export interface DeviceStatus {
   status: "online" | "stale" | "offline" | "no_device";
 }
 
-/** Odoo Datetime fields are UTC-naive ("YYYY-MM-DD HH:MM:SS"). Parse as UTC. */
-function odooUtcMs(value: string | null | undefined): number | null {
-  if (!value) return null;
-  const raw = String(value).trim();
-  if (!raw) return null;
-  const iso = raw.includes("T") ? raw : raw.replace(" ", "T");
-  const hasTz = /([zZ]|[+-]\d{2}:?\d{2})$/.test(iso);
-  const d = new Date(hasTz ? iso : `${iso}Z`);
-  const ms = d.getTime();
-  return Number.isNaN(ms) ? null : ms;
-}
+const EMPTY_STATUS: DeviceStatus = {
+  devices: [],
+  totalDevices: 0,
+  activeDevices: 0,
+  lastSyncAt: null,
+  syncAgeMinutes: 999,
+  todayDeviceEvents: 0,
+  status: "no_device",
+};
 
-/** Combines two fetches into one derived status object, so this doesn't fit useAsyncList's plain-T[] contract. */
+const mapDevice = (device: DeviceStatusDevice): DbBiometricDevice => ({
+  id: String(device.id),
+  name: device.name || "",
+  model: device.model_name || device.model || "",
+  serial_number: device.serial_number || "",
+  ip_address: device.ip_address || "",
+  port: device.port || 443,
+  protocol: device.use_https ? "https" : "http",
+  username: device.username || null,
+  location: device.location || null,
+  is_active: device.active !== false,
+  last_sync_at: device.last_sync_at || null,
+  last_heartbeat_at: device.last_heartbeat_at || null,
+  config: {},
+  created_at: "",
+});
+
+/**
+ * TopBar device health, from a single `/api/hr/devices/status` call.
+ *
+ * This used to fetch the device list *and* a full day of attendance rows every
+ * 120 s just to count device punches and derive a freshness bucket. The server
+ * computes `status`, `sync_age_minutes` and `today_device_events` now, so the
+ * poll costs one small response. Still not `useAsyncList`: the result is a
+ * derived object, not a list.
+ */
 export const useDeviceStatus = () => {
-  const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>({
-    devices: [], totalDevices: 0, activeDevices: 0,
-    lastSyncAt: null, syncAgeMinutes: 999,
-    todayDeviceEvents: 0, status: "no_device",
-  });
+  const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>(EMPTY_STATUS);
   const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     try {
-      let devs: DbBiometricDevice[] = [];
-      let todayDeviceEvents = 0;
-      const today = new Date().toISOString().slice(0, 10);
-
-      const rows = await odooData.fetchDevices();
-      devs = rows.map((d: any) => ({
-        id: String(d.id),
-        name: d.name || "",
-        model: d.model_name || d.model || "",
-        serial_number: d.serial_number || "",
-        ip_address: d.ip_address || "",
-        port: d.port || 443,
-        protocol: d.use_https ? "https" : "http",
-        username: d.username || null,
-        location: d.location || null,
-        is_active: d.active !== false,
-        last_sync_at: d.last_sync_at || null,
-        last_heartbeat_at: d.last_heartbeat_at || null,
-        config: {},
-        created_at: "",
-      }));
-      const att = await odooData.fetchAttendance(today);
-      todayDeviceEvents = att.filter(a => a.source === "device").length;
-
-      const totalDevices = devs.length;
-      const activeDevices = devs.filter(d => d.is_active).length;
-      // Use the freshest of last_sync_at / last_heartbeat_at (both Odoo UTC-naive).
-      let lastSyncAt: string | null = null;
-      let lastMs: number | null = null;
-      for (const d of devs) {
-        for (const ts of [d.last_sync_at, d.last_heartbeat_at]) {
-          const ms = odooUtcMs(ts);
-          if (ms != null && (lastMs == null || ms > lastMs)) {
-            lastMs = ms;
-            lastSyncAt = ts;
-          }
-        }
-      }
-      let syncAgeMinutes = 999;
-      if (lastMs != null) {
-        syncAgeMinutes = Math.max(0, Math.round((Date.now() - lastMs) / 60000));
-      }
-      let status: DeviceStatus["status"] = "no_device";
-      if (totalDevices > 0) {
-        if (syncAgeMinutes <= 10) status = "online";
-        else if (syncAgeMinutes <= 60) status = "stale";
-        else status = "offline";
-      }
-
+      const payload = await odooData.fetchDeviceStatus();
       setDeviceStatus({
-        devices: devs, totalDevices, activeDevices,
-        lastSyncAt, syncAgeMinutes, todayDeviceEvents, status,
+        devices: (payload.devices ?? []).map(mapDevice),
+        totalDevices: payload.total_devices ?? 0,
+        activeDevices: payload.active_devices ?? 0,
+        lastSyncAt: payload.last_sync_at ?? null,
+        syncAgeMinutes: payload.sync_age_minutes ?? 999,
+        todayDeviceEvents: payload.today_device_events ?? 0,
+        status: payload.status ?? "no_device",
       });
     } catch {
-      setDeviceStatus(prev => ({ ...prev, status: "no_device" }));
+      setDeviceStatus((prev) => ({ ...prev, status: "no_device" }));
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     refresh();
     // Auto-refresh every 2 minutes
     const interval = setInterval(refresh, 120000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refresh]);
 
   return { deviceStatus, loading, refresh };
-}
+};

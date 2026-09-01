@@ -110,10 +110,10 @@ const Policies = () => {
           message={page?.toastMessage}
           icon={CheckCircle}
           position="bottom-start"
-          toneClassName="bg-card border-green-500/40"
-          iconBoxClassName="bg-green-500/20"
-          iconClassName="w-3 h-3 text-green-400"
-          textClassName="text-foreground text-sm"
+          toneClassName="bg-toast-success border-toast-success-border"
+          iconBoxClassName="bg-toast-success-border/25"
+          iconClassName="w-3 h-3 text-toast-success-fg"
+          textClassName="text-toast-success-fg text-sm font-medium"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}

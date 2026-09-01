@@ -23,7 +23,7 @@ const DashboardFinancialSection = ({
     colors,
     payrollMoM,
     monthlyPayroll,
-    activeLoans,
+    activeLoansCount,
     cardCls,
     totalSalaries,
     avgSalary,
@@ -164,7 +164,7 @@ const DashboardFinancialSection = ({
           <h3 className="text-foreground mb-4">
             {arabicSource("dashboard.loan_portfolio")}
           </h3>
-          {activeLoans.length === 0 ? (
+          {activeLoansCount === 0 ? (
             <p className="text-muted-foreground text-sm text-center py-8">
               {arabicSource("dashboard.there_are_no_active_loans")}
             </p>

@@ -87,3 +87,46 @@ export const translateBackendCode = (
   if (!key || !i18n.exists(key)) return code;
   return i18n.t(key);
 }
+
+/**
+ * Display labels for the raw English enum keys the aggregate endpoints return.
+ *
+ * The Control Panel endpoints count against the real backend enums, so nothing
+ * downstream may compare a payload value to an Arabic label — these maps exist
+ * purely to render one.
+ */
+
+/** Applicant pipeline stages, in the order the recruitment funnel draws them. */
+export const applicantStageLabel: Readonly<Record<string, string>> = {
+  applied: arabicSource("common.introduction"),
+  screening: arabicSource("common.sort"),
+  interview_1: arabicSource("common.interview"),
+  interview_2: arabicSource("common.interview"),
+  assessment: arabicSource("common.test"),
+  offer: arabicSource("common.job_offer"),
+  hired: arabicSource("common.assigned"),
+  rejected: arabicSource("common.rejected_3"),
+};
+
+/**
+ * Warning types. `lugal.hr.warning` uses a fixed English selection and the FE
+ * shows the configured Arabic list; the two line up by position, which is the
+ * same contract `src/features/warnings/constants/warnings.ts` relies on.
+ */
+const ODOO_WARNING_TYPE_ORDER = ["verbal", "written", "first", "second", "final"];
+
+export const warningTypeLabel: Readonly<Record<string, string>> =
+  Object.fromEntries(
+    arabicSource("warnings.oral_first_written_second_written_final_written_chapter")
+      .split(",")
+      .map((label, index) => [ODOO_WARNING_TYPE_ORDER[index] ?? label, label.trim()]),
+  );
+
+/** Working week, Sunday–Thursday, as `attendance.by_day_of_week_90d` keys them. */
+export const dayOfWeekLabel: Readonly<Record<string, string>> = {
+  sunday: arabicSource("common.sunday_2"),
+  monday: arabicSource("common.monday"),
+  tuesday: arabicSource("common.tuesday"),
+  wednesday: arabicSource("common.wednesday"),
+  thursday: arabicSource("common.thursday"),
+};

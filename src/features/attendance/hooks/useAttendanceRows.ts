@@ -132,12 +132,13 @@ export const useAttendanceRows = ({
   const attendanceRows: AttendanceRow[] = useMemo(() => {
     let filtered = dayRows;
 
-    if (searchTerm) {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (normalizedSearch) {
       filtered = filtered.filter(
         (row) =>
-          row.employee.includes(searchTerm) ||
-          row.deviceNo.includes(searchTerm) ||
-          row.department.includes(searchTerm),
+          row.employee.toLowerCase().includes(normalizedSearch) ||
+          row.deviceNo.toLowerCase().includes(normalizedSearch) ||
+          row.department.toLowerCase().includes(normalizedSearch),
       );
     }
     if (statusFilter !== arabicSource("common.all")) {

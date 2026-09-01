@@ -12,6 +12,7 @@ import SearchCountToast from "../components/SearchCountToast";
 import { useHierarchyPage } from "../hooks/useHierarchyPage";
 
 const PositionsView = lazy(() => import("../components/PositionsView"));
+const GradesView = lazy(() => import("../components/GradesView"));
 
 const HierarchyChart = () => {
   const [, setSearchParams] = useSearchParams();
@@ -127,6 +128,7 @@ const HierarchyChart = () => {
   // The positions tab is locked to the screen — its two panes scroll on their
   // own, so the page must not. Every other view keeps the normal page flow.
   const isPositionsView = viewMode === "positions";
+  const isGradesView = viewMode === "grades";
 
   return (
     <div className={isPositionsView ? "h-full flex flex-col gap-6 min-h-0" : "space-y-6"}>
@@ -164,6 +166,10 @@ const HierarchyChart = () => {
             />
           </Suspense>
         </div>
+      ) : isGradesView ? (
+        <Suspense fallback={null}>
+          <GradesView />
+        </Suspense>
       ) : (
         <HierarchyTreeSection
           dbEmployees={dbEmployees}

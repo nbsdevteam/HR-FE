@@ -60,11 +60,16 @@ export const useLeavePage = () => {
     if (filter !== arabicSource("common.all")) {
       list = list.filter((request) => normalizeLeaveStatus(request.status) === filter);
     }
-    if (search) {
+    const normalizedSearch = search.trim().toLowerCase();
+    if (normalizedSearch) {
       list = list.filter((request) => {
         const employee = empMap[request.employee_id];
         const name = employee ? empDisplayName(employee) : "";
-        return name.includes(search) || request.leave_type.includes(search) || (request.reason || "").includes(search);
+        return (
+          name.toLowerCase().includes(normalizedSearch) ||
+          request.leave_type.toLowerCase().includes(normalizedSearch) ||
+          (request.reason || "").toLowerCase().includes(normalizedSearch)
+        );
       });
     }
 

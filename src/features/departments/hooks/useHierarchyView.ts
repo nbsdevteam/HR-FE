@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 import type { OrgNode } from "../types";
 import { findAncestorIds, findParentOf } from "../utils/hierarchyTree";
 
-export type HierarchyViewMode = "tree" | "positions";
+export type HierarchyViewMode = "tree" | "positions" | "grades";
 
 /** Matches the tree's expand animation before scrolling the first hit into view. */
 const SCROLL_TO_MATCH_DELAY_MS = 350;

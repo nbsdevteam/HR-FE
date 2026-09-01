@@ -1,128 +1,87 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import * as odooData from "@/shared/api/odooData";
 import { useChartTheme } from "@/shared/components/chart-utils";
-import {
-  useEmployees, useAttendanceRecords, useMonthlyRecords,
-  useLeaveRequests, useEmployeeContracts,
-  useEmployeeDocuments, useLoans, useNotifications,
-  useEvaluations, useWarnings, useTrainingPrograms, useTrainingParticipants,
-  useExitProcesses, useJobOpenings, useApplicants, useLeaveBalances,
-  useEmployeeAllowances, useEmployeeDeductions,
-  useConfigurations,
-} from "@/shared/hooks";
+import { useControlPanelOverview, useControlPanelSection } from "@/shared/hooks";
 import { useAppSettings } from "@/app/providers";
-import type { DashboardKpiSection, DashboardServerCards } from "../types";
+import type { DashboardKpiSection } from "../types";
 import { dashboardCardClass } from "../styles";
-import { useDashboardRiskConfig } from "./useDashboardRiskConfig";
-import { useDashboardCoreStats } from "./useDashboardCoreStats";
-import { useDashboardAttendanceStats } from "./useDashboardAttendanceStats";
-import { useDashboardWorkforceStats } from "./useDashboardWorkforceStats";
-import { useDashboardFinancialStats } from "./useDashboardFinancialStats";
-import { useDashboardPerformanceStats } from "./useDashboardPerformanceStats";
-import { useDashboardRecruitmentStats } from "./useDashboardRecruitmentStats";
-import { useDashboardRiskScore } from "./useDashboardRiskScore";
-import { useDashboardChartData } from "./useDashboardChartData";
+import { buildDashboardSectionData } from "../utils/mapControlPanel";
 
+/**
+ * The whole Control Panel, from two requests on mount instead of nineteen.
+ *
+ * `/api/hr/control-panel/overview` carries every number the overview tab shows;
+ * `/api/hr/control-panel/section` carries one KPI tab's extras and is fetched
+ * only when that tab is opened. Both go through `requestCache`, so re-opening a
+ * tab inside the 60 s TTL costs nothing.
+ *
+ * The one wrinkle: the overview's Quick Indicators card shows three numbers
+ * that live in the compliance and recruitment sections (reviews awaited,
+ * training under way, open jobs). Those two sections are therefore prefetched
+ * — but only once the overview has resolved, so first paint still costs two
+ * requests, and the prefetch warms the cache the tabs themselves read from.
+ */
 export const useDashboardData = () => {
   const [kpiSection, setKpiSection] = useState<DashboardKpiSection>("overview");
-  const [serverCards, setServerCards] = useState<DashboardServerCards | null>(null);
+  const [prefetchExtras, setPrefetchExtras] = useState(false);
 
   const { colors } = useChartTheme();
   const { settings: appSettings } = useAppSettings();
-  const { employees, loading: empLoading } = useEmployees();
-  const { records: attendance, loading: attLoading } = useAttendanceRecords();
-  const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
-  const loading = empLoading || attLoading || mrLoading;
+  const { overview, loading, error } = useControlPanelOverview();
+  const { section } = useControlPanelSection(
+    kpiSection === "overview" ? null : kpiSection,
+  );
+  const { section: complianceExtras } = useControlPanelSection(
+    prefetchExtras ? "compliance" : null,
+  );
+  const { section: recruitmentExtras } = useControlPanelSection(
+    prefetchExtras ? "recruitment" : null,
+  );
 
-  const { requests: leaveRequests } = useLeaveRequests();
-  const { contracts } = useEmployeeContracts();
-  const { documents: empDocuments } = useEmployeeDocuments();
-  const { loans } = useLoans();
-  const { notifications, unreadCount } = useNotifications();
-  const { evaluations } = useEvaluations();
-  const { warnings } = useWarnings();
-  const { programs: trainingPrograms } = useTrainingPrograms();
-  const { participants: trainingParticipants } = useTrainingParticipants();
-  const { processes: exitProcesses } = useExitProcesses();
-  const { jobs } = useJobOpenings();
-  const { applicants } = useApplicants();
-  const { balances: leaveBalances } = useLeaveBalances(new Date().getFullYear());
-  const { allowances: allAllowances } = useEmployeeAllowances();
-  const { deductions: allDeductions } = useEmployeeDeductions();
-  const { configs } = useConfigurations();
+  const dashboardSectionData = useMemo(
+    () => ({
+      ...buildDashboardSectionData(
+        overview,
+        section,
+        {
+          evaluations: complianceExtras?.evaluations,
+          training: complianceExtras?.training,
+          recruitment: recruitmentExtras?.recruitment,
+        },
+        appSettings.monthFormat,
+      ),
+      colors,
+      cardCls: dashboardCardClass,
+    }),
+    [
+      overview,
+      section,
+      complianceExtras,
+      recruitmentExtras,
+      appSettings.monthFormat,
+      colors,
+    ],
+  );
 
-  const cfg = useDashboardRiskConfig(configs);
-
-  const {
-    totalEmployees, activeEmployees, inactiveEmployees, totalSalaries, avgSalary, medianSalary, departmentData,
-  } = useDashboardCoreStats(employees, cfg);
-
-  const { attendanceStats, deptAttendance, dayOfWeekAttendance, attendanceChartData, monthlyPayroll } =
-    useDashboardAttendanceStats(attendance, totalEmployees, serverCards, employees, monthlyRecords, appSettings);
-
-  const {
-    pendingLeaves, approvedLeaves, activeContracts, probationCount, tenureStats, turnoverRate,
-    newHireStats, leaveUtilization, headcountTrend, expiryStats,
-  } = useDashboardWorkforceStats(leaveRequests, contracts, employees, totalEmployees, exitProcesses, leaveBalances, appSettings, empDocuments, cfg);
-
-  const { activeLoans, totalLoanBalance, loanUtilization, compensationStats, salaryByDept, payrollMoM } =
-    useDashboardFinancialStats(loans, totalEmployees, allAllowances, allDeductions, totalSalaries, employees, monthlyPayroll);
-
-  const { evalStats, warningStats, trainingStats } =
-    useDashboardPerformanceStats(evaluations, totalEmployees, warnings, cfg, trainingPrograms, trainingParticipants);
-
-  const { recruitmentStats, recruitmentPipeline } = useDashboardRecruitmentStats(jobs, applicants);
-
-  const riskScore = useDashboardRiskScore(expiryStats, warningStats, attendanceStats, turnoverRate, pendingLeaves, cfg);
-
-  const { tenureDistribution, warningDistribution } =
-    useDashboardChartData(tenureStats, warningStats);
-
-  const cardCls = dashboardCardClass;
-
-  const dashboardSectionData = useMemo(() => ({
-    activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
-    expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
-    pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, activeContracts, totalSalaries, avgSalary, medianSalary,
-    salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
-  }), [
-    activeEmployees, inactiveEmployees, totalEmployees, attendanceStats, compensationStats, turnoverRate, newHireStats, tenureStats, approvedLeaves, cfg, riskScore,
-    expiryStats, probationCount, warningStats, departmentData, colors, attendanceChartData, headcountTrend, payrollMoM, monthlyPayroll,
-    pendingLeaves, activeLoans, evalStats, trainingStats, recruitmentStats, exitProcesses, notifications, unreadCount, cardCls, deptAttendance,
-    tenureDistribution, dayOfWeekAttendance, leaveRequests, leaveUtilization, activeContracts, totalSalaries, avgSalary, medianSalary,
-    salaryByDept, loanUtilization, totalLoanBalance, allAllowances, allDeductions, warningDistribution, evaluations, trainingPrograms, recruitmentPipeline, jobs, applicants,
-  ]);
-
-  const handleKpiSectionChange = useCallback((section: DashboardKpiSection) => {
-    setKpiSection(section);
+  const handleKpiSectionChange = useCallback((next: DashboardKpiSection) => {
+    setKpiSection(next);
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        // The endpoint has shipped both shapes: `{ cards: {...} }` and the bare
-        // card object, so accept either rather than assuming one.
-        const data = (await odooData.fetchHrDashboard()) as
-          | (DashboardServerCards & { cards?: DashboardServerCards })
-          | null;
-        const cards = data?.cards ?? data;
-        if (!cancelled && cards) setServerCards(cards);
-      } catch {
-        if (!cancelled) setServerCards(null);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
+    if (overview) setPrefetchExtras(true);
+  }, [overview]);
 
   return {
     dashboardSectionData,
     handleKpiSectionChange,
     kpiSection,
     loading,
-    riskScore,
-    unreadCount,
+    // Surfaced so the page can say the aggregate failed. Without it a rejected
+    // request is indistinguishable from a genuinely empty company: every field
+    // in the mapper falls back to 0 and the screen renders a plausible — and
+    // wrong — all-zeros dashboard.
+    error,
+    riskScore: dashboardSectionData.riskScore,
+    unreadCount: dashboardSectionData.unreadCount,
   };
 };
 

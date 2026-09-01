@@ -29,11 +29,15 @@ export const filterEvaluations = (
   keys: EmployeeSortKeys,
 ): DbEvaluation[] => {
   const allLabel = arabicSource("common.all");
+  const normalizedSearch = searchText.trim().toLowerCase();
   return evaluations.filter((evaluation) => {
     if (filterStatus !== allLabel && evaluation.status !== filterStatus) return false;
-    if (!searchText) return true;
+    if (!normalizedSearch) return true;
     const name = keys.names[evaluation.employee_id] || "";
-    return name.includes(searchText) || evaluation.period.includes(searchText);
+    return (
+      name.toLowerCase().includes(normalizedSearch) ||
+      evaluation.period.toLowerCase().includes(normalizedSearch)
+    );
   });
 };
 

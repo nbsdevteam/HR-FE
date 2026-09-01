@@ -4,6 +4,7 @@ import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import { Button, ModalHeader, ModalOverlay } from "@/shared/components";
 import type { DeviceSyncStatus, EmployeeAddForm, EmployeeOption } from "../types";
+import type { EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import EmployeeCoreFields from "./EmployeeCoreFields";
 import EmployeeDeviceSyncBanner from "./EmployeeDeviceSyncBanner";
 import EmployeeFingerprintSection from "./EmployeeFingerprintSection";
@@ -14,6 +15,9 @@ type AddEmployeeModalProps = {
   addForm: EmployeeAddForm;
   addSaving: boolean;
   addError: string | null;
+  birthDateError: string | null;
+  /** Field-level `department_not_found` / `designation_not_found` rejections (backend §4). */
+  fieldErrors: EmployeeFieldErrors;
   deviceSyncStatus: DeviceSyncStatus;
   nextEmployeeId: number | null;
   loadingNextId: boolean;
@@ -48,6 +52,8 @@ const AddEmployeeModal = ({
   addForm,
   addSaving,
   addError,
+  birthDateError,
+  fieldErrors,
   deviceSyncStatus,
   nextEmployeeId,
   loadingNextId,
@@ -124,6 +130,8 @@ const AddEmployeeModal = ({
             departmentOptions={departmentOptions}
             designationOptions={designationOptions}
             managerOptions={managerOptions}
+            birthDateError={birthDateError}
+            fieldErrors={fieldErrors}
             onFormChange={onFormChange}
           />
           <div className="mt-3">

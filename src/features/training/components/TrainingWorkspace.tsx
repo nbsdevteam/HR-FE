@@ -34,9 +34,9 @@ import TrainingProgramsGrid from "./TrainingProgramsGrid";
 import TrainingStatsGrid from "./TrainingStatsGrid";
 import WeightDistributionCard from "./WeightDistributionCard";
 import {
-  TOAST_TONE_BORDER,
   TOAST_TONE_ICON_BG,
-  TOAST_TONE_ICON_COLOR,
+  TOAST_TONE_SURFACE,
+  TOAST_TONE_TEXT,
 } from "../constants/training";
 
 const TrainingWorkspace = () => {
@@ -116,10 +116,10 @@ const TrainingWorkspace = () => {
             message={toast.message}
             icon={CheckCircle}
             position="bottom-start"
-            toneClassName={`bg-card ${TOAST_TONE_BORDER[toast.type]}`}
+            toneClassName={TOAST_TONE_SURFACE[toast.type]}
             iconBoxClassName={TOAST_TONE_ICON_BG[toast.type]}
-            iconClassName={`w-3 h-3 ${TOAST_TONE_ICON_COLOR[toast.type]}`}
-            textClassName="text-foreground text-sm"
+            iconClassName={`w-3 h-3 ${TOAST_TONE_TEXT[toast.type]}`}
+            textClassName={`${TOAST_TONE_TEXT[toast.type]} text-sm font-medium`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}

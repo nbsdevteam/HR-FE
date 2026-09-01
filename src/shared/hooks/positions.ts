@@ -1,5 +1,6 @@
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
+import type { GradeCode } from "./grades";
 
 export interface DbPosition {
   id: string;
@@ -10,6 +11,10 @@ export interface DbPosition {
   department_name: string | null;
   reports_to_position_id: string | null;
   reports_to_job_name: string | null;
+  /** Reporting-tree depth, relative to a branch and computed client-side at
+   *  create time (`usePositionsView.handleAddPosition`) — NOT seniority. Two
+   *  positions at the same `level` can be nothing alike in rank. Use
+   *  `grade_code` for company-wide seniority comparisons instead. */
   level: number;
   max_headcount: number;
   employee_count: number;
@@ -17,6 +22,9 @@ export interface DbPosition {
   description: string | null;
   created_at: string;
   updated_at: string;
+  /** Company-wide seniority grade, from `hr.job.grade_id`. `null` until the position is graded. */
+  grade_id: string | null;
+  grade_code: GradeCode | null;
 }
 
 export const usePositions = () => {

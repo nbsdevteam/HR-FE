@@ -23,14 +23,16 @@ const HierarchyToast = ({ message }: HierarchyToastProps) => {
           position="bottom-center"
           toneClassName={
             isError
-              ? "bg-card border-red-500/40"
-              : "bg-card border-green-500/40"
+              ? "bg-toast-error border-toast-error-border"
+              : "bg-toast-success border-toast-success-border"
           }
-          iconBoxClassName={isError ? "bg-red-500/20" : "bg-green-500/20"}
+          iconBoxClassName={isError ? "bg-toast-error-border/25" : "bg-toast-success-border/25"}
           iconClassName={
-            isError ? "w-3 h-3 text-red-400" : "w-3 h-3 text-green-400"
+            isError
+              ? "w-3 h-3 text-toast-error-fg"
+              : "w-3 h-3 text-toast-success-fg"
           }
-          textClassName="text-foreground"
+          textClassName={isError ? "text-toast-error-fg font-medium" : "text-toast-success-fg font-medium"}
           textSize={12}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

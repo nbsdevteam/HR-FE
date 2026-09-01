@@ -9,11 +9,12 @@ import AttendanceSourceIndicators from "../components/AttendanceSourceIndicators
 import WeeklyAttendanceChart from "../components/WeeklyAttendanceChart";
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceRecordsView from "../components/AttendanceRecordsView";
-import ExcuseModal from "../components/ExcuseModal";
 
 const EmployeeAttendanceDetail = lazy(
   () => import("../components/EmployeeAttendanceDetail"),
 );
+
+const ExcuseModal = lazy(() => import("../components/ExcuseModal"));
 
 const Attendance = () => {
   const {

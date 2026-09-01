@@ -4,6 +4,7 @@ import type { DbDepartment, DbEmployee } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { toEmployees } from "../utils/employeeMapper";
+import { sortEmployees } from "../utils/employeeSort";
 import type { EmployeeSortKey, EmployeeViewMode } from "../types";
 
 export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments: DbDepartment[]) => {
@@ -37,6 +38,27 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     return [arabicSource("common.all"), ...sorted];
   }, [allEmployees, dbDepartments]);
 
+  /**
+   * The department filter is chosen by name (the kanban board groups by name,
+   * and `realDepts` carries names that only ever appear on an employee row),
+   * but the paginated list endpoint filters by `department_id`. Employee rows
+   * carry both, so they close the gap for any name the department list itself
+   * doesn't cover.
+   */
+  const departmentIdByName = useMemo(() => {
+    const byName = new Map<string, string>();
+    for (const e of dbEmployees) {
+      if (e.department && e.department_id && !byName.has(e.department)) byName.set(e.department, e.department_id);
+    }
+    for (const d of dbDepartments) byName.set(d.name, d.id);
+    return byName;
+  }, [dbEmployees, dbDepartments]);
+
+  const selectedDeptId = useMemo(
+    () => selectedDept === arabicSource("common.all") ? null : departmentIdByName.get(selectedDept) ?? null,
+    [selectedDept, departmentIdByName],
+  );
+
   const deviceSyncedSet = useMemo(() => {
     const set = new Set<number>();
     dbEmployees.forEach(e => {
@@ -49,25 +71,23 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     return new Set(dbEmployees.filter(e => e.status === arabicSource("common.pending")).map(e => e.person_id));
   }, [dbEmployees]);
 
+  /**
+   * Client-side filter over the full locally held roster. The list table is
+   * server-paginated and does not use this — the kanban board does, because it
+   * has to group every employee into a column at once. Trimmed + lowercased on
+   * both sides so it matches the server search's case-insensitive behavior.
+   */
   const filtered: Employee[] = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
     const list = allEmployees.filter(emp => {
-      const matchSearch = emp.name.includes(search) || emp.position.includes(search) || emp.employeeNumber.includes(search);
+      const matchSearch =
+        emp.name.toLowerCase().includes(normalizedSearch) ||
+        emp.position.toLowerCase().includes(normalizedSearch) ||
+        emp.employeeNumber.toLowerCase().includes(normalizedSearch);
       const matchDept = selectedDept === arabicSource("common.all") || emp.department === selectedDept;
       return matchSearch && matchDept;
     });
-    const dir = sortDir === "asc" ? 1 : -1;
-    list.sort((a, b) => {
-      if (sortBy === "name") return dir * a.name.localeCompare(b.name, "ar");
-      if (sortBy === "employeeNumber") return dir * a.employeeNumber.localeCompare(b.employeeNumber);
-      if (sortBy === "deviceNo") return dir * (parseInt(a.employeeNumber || "0") - parseInt(b.employeeNumber || "0"));
-      if (sortBy === "department") return dir * a.department.localeCompare(b.department, "ar");
-      if (sortBy === "position") return dir * a.position.localeCompare(b.position, "ar");
-      if (sortBy === "status") return dir * a.status.localeCompare(b.status, "ar");
-      if (sortBy === "joinDate") return dir * (a.joinDate || "").localeCompare(b.joinDate || "");
-      if (sortBy === "salary") return dir * (a.salary - b.salary);
-      return 0;
-    });
-    return list;
+    return sortEmployees(list, sortBy, sortDir);
   }, [allEmployees, search, selectedDept, sortBy, sortDir]);
 
   const kanbanDepts = useMemo(
@@ -85,6 +105,7 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     realDepts,
     search,
     selectedDept,
+    selectedDeptId,
     setSearch,
     setSelectedDept,
     setSortBy,

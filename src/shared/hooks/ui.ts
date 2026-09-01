@@ -126,3 +126,22 @@ export const usePopupPosition = (
 
   return { anchorRef, rect };
 };
+
+/**
+ * `value` held back until it stops changing for `delayMs`.
+ *
+ * Used to keep a keystroke in a search box from firing one server request per
+ * character. The first value is returned immediately, so an initial render
+ * never waits out the delay before it can fetch.
+ */
+export const useDebouncedValue = <T,>(value: T, delayMs = 300): T => {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    if (value === debounced) return;
+    const timer = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(timer);
+  }, [value, debounced, delayMs]);
+
+  return debounced;
+};

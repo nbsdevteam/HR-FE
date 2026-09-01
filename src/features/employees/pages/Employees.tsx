@@ -27,6 +27,7 @@ const Employees = () => {
     addForm,
     addSaving,
     allEmployees,
+    birthDateError,
     cities,
     citySuggestions,
     closeAddModal,
@@ -48,6 +49,7 @@ const Employees = () => {
     dismissCitySuggestions,
     employeeOptions,
     facePhotoPreview,
+    fieldErrors,
     filtered,
     handleAddCity,
     handleAddEmployee,
@@ -68,8 +70,16 @@ const Employees = () => {
     loadingNextId,
     loadingStates,
     nextEmployeeId,
+    onPageChange,
+    onPerPageChange,
     openAddModal,
+    pageError,
+    pageLoading,
+    pageNumber,
+    pageTotal,
+    pagedEmployees,
     pendingEmployees,
+    perPage,
     realDepts,
     search,
     selectedDept,
@@ -84,6 +94,7 @@ const Employees = () => {
     sortBy,
     sortDir,
     states,
+    totalPages,
     updateAddForm,
     viewMode,
   } = useEmployeesPage();
@@ -116,12 +127,20 @@ const Employees = () => {
       <AnimatePresence mode="wait">
         {viewMode === "list" ? (
           <EmployeesListView
-            employees={filtered}
+            employees={pagedEmployees}
             dbEmployees={dbEmployees}
             deviceSyncedSet={deviceSyncedSet}
             pendingEmployees={pendingEmployees}
             sortBy={sortBy}
             sortDir={sortDir}
+            page={pageNumber}
+            totalPages={totalPages}
+            total={pageTotal}
+            perPage={perPage}
+            loading={pageLoading}
+            error={pageError}
+            onPageChange={onPageChange}
+            onPerPageChange={onPerPageChange}
             onSortByChange={setSortBy}
             onSortDirChange={setSortDir}
             onSelectEmployee={handleSelectEmployee}
@@ -170,6 +189,8 @@ const Employees = () => {
               addForm={addForm}
               addSaving={addSaving}
               addError={addError}
+              birthDateError={birthDateError}
+              fieldErrors={fieldErrors}
               deviceSyncStatus={deviceSyncStatus}
               nextEmployeeId={nextEmployeeId}
               loadingNextId={loadingNextId}

@@ -5,7 +5,7 @@ import { pct } from "../utils/dashboardFormat";
 import type { DashboardSectionData } from "./useDashboardData";
 
 export const useDashboardComplianceData = (data: DashboardSectionData) => {
-  const { cfg, expiryStats, warningStats, evalStats, trainingStats, evaluations } = data;
+  const { cfg, expiryStats, warningStats, evalStats, trainingStats, ratingDistribution } = data;
 
   const complianceStats = useMemo(
     () => [
@@ -54,55 +54,37 @@ export const useDashboardComplianceData = (data: DashboardSectionData) => {
     [evalStats, cfg, warningStats, trainingStats, expiryStats],
   );
 
+  // `rating_distribution` omits a rating with no evaluations rather than
+  // sending a zero, so every read defaults.
   const ratingLevels = useMemo(
     () => [
       {
         label: arabicSource("dashboard.featured_5"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 5,
-        ).length,
+        count: ratingDistribution["5"] ?? 0,
         color: "bg-emerald-500",
       },
       {
         label: arabicSource("dashboard.exceeding_expectations_4"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 4,
-        ).length,
+        count: ratingDistribution["4"] ?? 0,
         color: "bg-blue-500",
       },
       {
         label: arabicSource("dashboard.within_expected_3"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 3,
-        ).length,
+        count: ratingDistribution["3"] ?? 0,
         color: "bg-primary",
       },
       {
         label: arabicSource("dashboard.below_expectations_2"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 2,
-        ).length,
+        count: ratingDistribution["2"] ?? 0,
         color: "bg-amber-500",
       },
       {
         label: arabicSource("dashboard.not_achieved_1"),
-        count: evaluations.filter(
-          (e: any) =>
-            e.status === arabicSource("common.complete") &&
-            e.overall_rating === 1,
-        ).length,
+        count: ratingDistribution["1"] ?? 0,
         color: "bg-red-500",
       },
     ],
-    [evaluations],
+    [ratingDistribution],
   );
 
   const trainingTiles = useMemo(

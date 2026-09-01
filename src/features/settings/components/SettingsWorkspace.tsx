@@ -26,8 +26,8 @@ const SettingsWorkspace = () => {
           message={toastMessage}
           shape="banner"
           position="top-full"
-          toneClassName="bg-green-500/20 border border-green-500/50"
-          textClassName="text-green-400"
+          toneClassName="bg-toast-success border border-toast-success-border shadow-lg"
+          textClassName="text-toast-success-fg font-medium"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -36,7 +36,7 @@ const SettingsWorkspace = () => {
 
       <SettingsPageHeader />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         <DepartmentColorsCard showToast={showToast} />
         <ShiftsScheduleCard showToast={showToast} />
         <SystemModulesCard showToast={showToast} />

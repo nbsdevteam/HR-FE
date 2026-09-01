@@ -14,6 +14,8 @@ type EmployeeDepartmentFieldProps = {
   creatingDept: boolean;
   newDeptName: string;
   inputClass: string;
+  /** Field-level `department_not_found` rejection from a save (backend §4). */
+  error: string | null;
   onSelectDepartment: (deptId: string, deptName: string) => void;
   onStartAddingDept: () => void;
   onNewDeptNameChange: (value: string) => void;
@@ -30,6 +32,7 @@ const EmployeeDepartmentField = ({
   creatingDept,
   newDeptName,
   inputClass,
+  error,
   onSelectDepartment,
   onStartAddingDept,
   onNewDeptNameChange,
@@ -103,13 +106,16 @@ const EmployeeDepartmentField = ({
             </button>
           </div>
         ) : (
-          <Select
-            value={departmentId || ""}
-            onChange={handleDepartmentChange}
-            options={departmentOptions}
-            className={inputClass}
-            style={{ fontSize: 14 }}
-          />
+          <>
+            <Select
+              value={departmentId || ""}
+              onChange={handleDepartmentChange}
+              options={departmentOptions}
+              className={inputClass}
+              style={{ fontSize: 14 }}
+            />
+            {error && <p className="text-destructive mt-1" style={{ fontSize: 11 }} role="alert">{error}</p>}
+          </>
         )
       }
     />

@@ -60,6 +60,8 @@ export interface DbEmployee {
   personal_phone: string | null;
   company_phone: string | null;
   join_date: string | null;
+  /** `hr.employee.birthday`, ISO `YYYY-MM-DD`. `null` when no birth date is on file. */
+  birth_date: string | null;
   end_date: string | null;
   status: string | null;
   address: string | null;

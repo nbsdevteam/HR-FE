@@ -24,7 +24,6 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
     monthlyPayroll,
     payrollMoM,
     riskScore,
-    notifications,
     unreadCount,
     cardCls,
   } = data;
@@ -97,7 +96,6 @@ const DashboardOverviewSection = ({ data }: DashboardOverviewSectionProps) => {
           cardCls={cardCls}
         />
         <DashboardNotificationsPanel
-          notifications={notifications}
           notificationsPreview={notificationsPreview}
           unreadCount={unreadCount}
           cardCls={cardCls}

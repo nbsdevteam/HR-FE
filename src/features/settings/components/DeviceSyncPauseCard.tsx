@@ -1,14 +1,13 @@
 import { useState, useCallback } from "react";
-import { motion } from "motion/react";
 import { RadioTower } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import StatusBadge from "@/shared/components/StatusBadge";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
-import { cardCls } from "../styles";
 import { useDeviceSyncPause } from "../hooks/useDeviceSyncPause";
 import { formatDeviceSyncChangedAt } from "../utils/deviceSyncFormat";
 import SettingsToggle from "./SettingsToggle";
 import DeviceSyncPauseModal from "./DeviceSyncPauseModal";
+import SettingsSectionCard from "./SettingsSectionCard";
 
 type TDeviceSyncPauseCardProps = {
   showToast: (message: string) => void;
@@ -38,24 +37,12 @@ const DeviceSyncPauseCard = ({ showToast }: TDeviceSyncPauseCardProps) => {
   }, [updatePaused, paused, reason]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.25 }}
-      className={cardCls}
+    <SettingsSectionCard
+      icon={RadioTower}
+      title={arabicSource("settings.device_sync_pause_title")}
+      description={arabicSource("settings.device_sync_pause_description")}
+      delay={0.25}
     >
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-          <RadioTower className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-foreground">{arabicSource("settings.device_sync_pause_title")}</h3>
-          <p className="text-muted-foreground text-sm mt-1">
-            {arabicSource("settings.device_sync_pause_description")}
-          </p>
-        </div>
-      </div>
-
       {loading ? (
         <div className="text-muted-foreground text-center py-6">{arabicSource("common.loading")}</div>
       ) : (
@@ -108,7 +95,7 @@ const DeviceSyncPauseCard = ({ showToast }: TDeviceSyncPauseCardProps) => {
           onCancel={handleModalCancel}
         />
       )}
-    </motion.div>
+    </SettingsSectionCard>
   );
 };
 

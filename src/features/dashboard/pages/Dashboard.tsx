@@ -3,6 +3,8 @@ import DashboardHeader from "../components/DashboardHeader";
 import DashboardKpiTabs from "../components/DashboardKpiTabs";
 import DashboardOverviewSection from "../components/DashboardOverviewSection";
 import LoadingState from "@/shared/components/LoadingState";
+import EmptyState from "@/shared/components/EmptyState";
+import { AlertTriangle } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useDashboardData } from "../hooks/useDashboardData";
 
@@ -25,6 +27,7 @@ const Dashboard = () => {
     handleKpiSectionChange,
     kpiSection,
     loading,
+    error,
     riskScore,
     unreadCount,
   } = useDashboardData();
@@ -32,6 +35,16 @@ const Dashboard = () => {
   if (loading) {
     return (
       <LoadingState message={arabicSource("dashboard.loading_control_panel")} />
+    );
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        icon={AlertTriangle}
+        message={arabicSource("dashboard.control_panel_unavailable")}
+        hint={error}
+      />
     );
   }
 

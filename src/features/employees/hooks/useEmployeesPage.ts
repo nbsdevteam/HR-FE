@@ -3,9 +3,12 @@ import type { Employee } from "@/features/employees";
 import { useEmployees, usePositions } from "@/shared/hooks";
 import type { DbDepartment } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
+import { toEmployees } from "../utils/employeeMapper";
+import { sortEmployees } from "../utils/employeeSort";
 import { useEmployeeAddForm } from "./useEmployeeAddForm";
 import { useEmployeeDeleteFlow } from "./useEmployeeDeleteFlow";
 import { useEmployeeListFilters } from "./useEmployeeListFilters";
+import { useEmployeesPaged } from "./useEmployeesPaged";
 
 /** Detail-only fields the lean `/employees/list` endpoint never echoes back, so a
  * post-save refetch would otherwise redisplay them as blank even though the save
@@ -35,8 +38,30 @@ export const useEmployeesPage = () => {
   const { positions: designations } = usePositions();
 
   const listFilters = useEmployeeListFilters(dbEmployees, dbDepartmentOptions);
-  const addFormState = useEmployeeAddForm(dbEmployees, designations, refetch);
-  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetch);
+  const paged = useEmployeesPaged({
+    search: listFilters.search,
+    departmentId: listFilters.selectedDeptId,
+    // The kanban board groups the whole roster into columns, so it keeps using
+    // the full-roster fetch; paging it would hide employees behind a pager the
+    // board has nowhere to put.
+    enabled: listFilters.viewMode === "list",
+  });
+
+  // A create/update/delete has to invalidate both reads: the cached full roster
+  // that feeds the stats and dropdowns, and the current page of the table.
+  const refetchAll = useCallback(() => {
+    refetch();
+    paged.refetchPage();
+  }, [refetch, paged.refetchPage]);
+
+  const addFormState = useEmployeeAddForm(dbEmployees, designations, refetchAll);
+  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll);
+
+  /** The server-returned page, ordered by the table's active sort column. */
+  const pagedEmployees = useMemo(
+    () => sortEmployees(toEmployees(paged.pageEmployees), listFilters.sortBy, listFilters.sortDir),
+    [paged.pageEmployees, listFilters.sortBy, listFilters.sortDir],
+  );
 
   const selectedEmployeeOptions = useMemo(
     () => selectedEmployee ? listFilters.employeeOptions.filter(e => e.dbId !== selectedEmployee.dbId) : listFilters.employeeOptions,
@@ -64,10 +89,10 @@ export const useEmployeesPage = () => {
     if (saved) {
       setRecentEdits(prev => ({ ...prev, [saved.dbId]: pickLeanListGapFields(saved) }));
     }
-    refetch();
+    refetchAll();
     setSelectedEmployee(null);
     setDetailStartsInEditMode(false);
-  }, [refetch]);
+  }, [refetchAll]);
 
   useEffect(() => {
     odooData.fetchDepartments().then(setDbDepartmentOptions).catch((e: unknown) => {
@@ -79,6 +104,8 @@ export const useEmployeesPage = () => {
     ...addFormState,
     ...deleteFlow,
     ...listFilters,
+    ...paged,
+    pagedEmployees,
     dbDepartmentOptions,
     dbEmployees,
     dbLoading,

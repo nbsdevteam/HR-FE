@@ -18,5 +18,7 @@ export const mapPosition = (r: any): DbPosition => {
     description: r.description || null,
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+    grade_id: sornull(r.grade_id),
+    grade_code: (r.grade_code ?? null) as DbPosition["grade_code"],
   };
 }

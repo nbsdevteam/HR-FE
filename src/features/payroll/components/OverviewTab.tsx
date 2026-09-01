@@ -46,9 +46,12 @@ const OverviewTab = ({
   const [paySortDir, setPaySortDir] = useState<"asc" | "desc">("asc");
 
   const filtered = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
     const list = payrollData.filter(
       (r: any) =>
-        !search || r.name.includes(search) || r.department.includes(search),
+        !normalizedSearch ||
+        r.name.toLowerCase().includes(normalizedSearch) ||
+        r.department.toLowerCase().includes(normalizedSearch),
     );
     const dir = paySortDir === "asc" ? 1 : -1;
     list.sort((a: any, b: any) => {

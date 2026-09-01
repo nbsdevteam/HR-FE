@@ -4,97 +4,153 @@
 .dark-enhanced {
   --font-size: 16px;
   --background: #050505;
-  --foreground: #FFF8E1;
-  --card: #0F0F0F;
-  --card-foreground: #FFF8E1;
-  --popover: #0F0F0F;
-  --popover-foreground: #FFF8E1;
-  --primary: #F0C419;
+  --foreground: #fff8e1;
+  --card: #0f0f0f;
+  --card-foreground: #fff8e1;
+  --popover: #0f0f0f;
+  --popover-foreground: #fff8e1;
+  --primary: #f0c419;
   --primary-foreground: #000000;
-  --secondary: #1F1F1F;
-  --secondary-foreground: #FFF8E1;
-  --muted: #1A1A1A;
-  --muted-foreground: #B0A080;
-  --accent: #F7E7CE;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #fff8e1;
+  --muted: #1a1a1a;
+  --muted-foreground: #b0a080;
+  --accent: #f7e7ce;
   --accent-foreground: #000000;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
   --border: rgba(240, 196, 25, 0.2);
   --input: rgba(240, 196, 25, 0.1);
-  --input-background: #0F0F0F;
-  --switch-background: #1F1F1F;
+  --input-background: #0f0f0f;
+  --switch-background: #1f1f1f;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #F0C419;
-  --chart-1: #F0C419;
-  --chart-2: #FFF8E1;
-  --chart-3: #B8941F;
-  --chart-4: #8B7355;
-  --chart-5: #DCC6A0;
+  --ring: #f0c419;
+  --chart-1: #f0c419;
+  --chart-2: #fff8e1;
+  --chart-3: #b8941f;
+  --chart-4: #8b7355;
+  --chart-5: #dcc6a0;
   --radius: 0.75rem;
   --sidebar: #080808;
-  --sidebar-foreground: #FFF8E1;
-  --sidebar-primary: #F0C419;
+  --sidebar-foreground: #fff8e1;
+  --sidebar-primary: #f0c419;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #1A1A1A;
-  --sidebar-accent-foreground: #FFF8E1;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #fff8e1;
   --sidebar-border: rgba(240, 196, 25, 0.2);
-  --sidebar-ring: #F0C419;
-  --gold: #FFD700;
-  --champagne: #FDF5E6;
-  --gold-dark: #B8860B;
-  --gold-gradient: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
-  --orb-1: rgba(240,196,25,0.1);
-  --orb-2: rgba(253,245,230,0.07);
-  --orb-3: rgba(240,196,25,0.06);
+  --sidebar-ring: #f0c419;
+  --gold: #ffd700;
+  --champagne: #fdf5e6;
+  --gold-dark: #b8860b;
+  --gold-gradient: linear-gradient(
+    to right,
+    #bf953f 0%,
+    #fcf6ba 25%,
+    #b38728 50%,
+    #fbf5b7 75%,
+    #aa771c 100%
+  );
+  --orb-1: rgba(240, 196, 25, 0.1);
+  --orb-2: rgba(253, 245, 230, 0.07);
+  --orb-3: rgba(240, 196, 25, 0.06);
+  --toast-success: #0e3b26;
+  --toast-success-border: #22c55e;
+  --toast-success-fg: #bbf7d0;
+  --toast-error: #3d1414;
+  --toast-error-border: #ef4444;
+  --toast-error-fg: #fecaca;
+  --toast-info: #10283f;
+  --toast-info-border: #3b82f6;
+  --toast-info-fg: #bfdbfe;
+  /* Grade ladder — band + matrix ramp, dark values (this app's default theme). */
+  --band-leadership: #cde2fb;
+  --band-middle: #5598e7;
+  --band-delivery: #184f95;
+  --seq-1: #1b3355;
+  --seq-2: #256abf;
+  --seq-3: #5598e7;
+  --seq-4: #b7d3f6;
+  --seq-4-ink: #0b1220;
+  --flag: #e0ac57;
+  --flag-bg: #2a2114;
+  --flag-hair: #4a3a20;
 }
 
 .light-turquoise {
   --font-size: 16px;
-  --background: #FFFFFF;
-  --foreground: #0F172A;
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #06B6D4;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F0FDFF;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #ECFEFF;
-  --accent-foreground: #0F172A;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #06b6d4;
+  --primary-foreground: #ffffff;
+  --secondary: #f0fdff;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #ecfeff;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
   --border: rgba(6, 182, 212, 0.2);
   --input: rgba(6, 182, 212, 0.1);
-  --input-background: #F9FAFB;
-  --switch-background: #E2E8F0;
+  --input-background: #f9fafb;
+  --switch-background: #e2e8f0;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #06B6D4;
-  --chart-1: #06B6D4;
-  --chart-2: #67E8F9;
-  --chart-3: #0891B2;
-  --chart-4: #164E63;
-  --chart-5: #A5F3FC;
+  --ring: #06b6d4;
+  --chart-1: #06b6d4;
+  --chart-2: #67e8f9;
+  --chart-3: #0891b2;
+  --chart-4: #164e63;
+  --chart-5: #a5f3fc;
   --radius: 0.75rem;
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #06B6D4;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0FDFF;
-  --sidebar-accent-foreground: #0F172A;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #06b6d4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0fdff;
+  --sidebar-accent-foreground: #0f172a;
   --sidebar-border: rgba(6, 182, 212, 0.2);
-  --sidebar-ring: #06B6D4;
-  --gold: #06B6D4;
-  --champagne: #ECFEFF;
-  --gold-dark: #0891B2;
-  --gold-gradient: linear-gradient(to right, #06B6D4, #67E8F9, #0891B2, #67E8F9, #06B6D4);
-  --orb-1: rgba(6,182,212,0.06);
-  --orb-2: rgba(6,182,212,0.04);
-  --orb-3: rgba(6,182,212,0.03);
+  --sidebar-ring: #06b6d4;
+  --gold: #06b6d4;
+  --champagne: #ecfeff;
+  --gold-dark: #0891b2;
+  --gold-gradient: linear-gradient(
+    to right,
+    #06b6d4,
+    #67e8f9,
+    #0891b2,
+    #67e8f9,
+    #06b6d4
+  );
+  --orb-1: rgba(6, 182, 212, 0.06);
+  --orb-2: rgba(6, 182, 212, 0.04);
+  --orb-3: rgba(6, 182, 212, 0.03);
+  --toast-success: #dcfce7;
+  --toast-success-border: #16a34a;
+  --toast-success-fg: #14532d;
+  --toast-error: #fee2e2;
+  --toast-error-border: #dc2626;
+  --toast-error-fg: #7f1d1d;
+  --toast-info: #dbeafe;
+  --toast-info-border: #2563eb;
+  --toast-info-fg: #1e3a8a;
+  /* Grade ladder — band + matrix ramp, light values. */
+  --band-leadership: #104281;
+  --band-middle: #2a78d6;
+  --band-delivery: #86b6ef;
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #5598e7;
+  --seq-4: #184f95;
+  --seq-4-ink: #ffffff;
+  --flag: #8a5100;
+  --flag-bg: #fbf0df;
+  --flag-hair: #e8cfa4;
 }
 
 @theme inline {
@@ -114,6 +170,15 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-toast-success: var(--toast-success);
+  --color-toast-success-border: var(--toast-success-border);
+  --color-toast-success-fg: var(--toast-success-fg);
+  --color-toast-error: var(--toast-error);
+  --color-toast-error-border: var(--toast-error-border);
+  --color-toast-error-fg: var(--toast-error-fg);
+  --color-toast-info: var(--toast-info);
+  --color-toast-info-border: var(--toast-info-border);
+  --color-toast-info-fg: var(--toast-info-fg);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -139,12 +204,23 @@
   --color-gold: var(--gold);
   --color-champagne: var(--champagne);
   --color-gold-dark: var(--gold-dark);
+  --color-band-leadership: var(--band-leadership);
+  --color-band-middle: var(--band-middle);
+  --color-band-delivery: var(--band-delivery);
+  --color-seq-1: var(--seq-1);
+  --color-seq-2: var(--seq-2);
+  --color-seq-3: var(--seq-3);
+  --color-seq-4: var(--seq-4);
+  --color-seq-4-ink: var(--seq-4-ink);
+  --color-flag: var(--flag);
+  --color-flag-bg: var(--flag-bg);
+  --color-flag-hair: var(--flag-hair);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    font-family: 'Tajawal', sans-serif;
+    font-family: "Tajawal", sans-serif;
   }
 
   body {
@@ -230,21 +306,50 @@
 }
 
 @keyframes shine {
-  to { background-position: 200% center; }
+  to {
+    background-position: 200% center;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); }
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+  }
 }
 
+/* 1. Force the interactive icon to remain visible with a distinct color */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(15deg);
+  cursor: pointer;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* 2. Fix inner typography color configurations inside the input container */
+input[type="date"] {
+  color-scheme: dark; /* Signals the browser to use a dark-mode native dropdown */
+  color: var(--foreground) !important;
+}
