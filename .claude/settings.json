@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"/c/Users/DELL/AppData/Local/Temp/claude/bundled-skills/2.1.251/49fb72247b60f7ca8b486807935455e0/run/examples/\")",
+      "Read(//c/Users/DELL/AppData/Local/Temp/claude/bundled-skills/2.1.251/49fb72247b60f7ca8b486807935455e0/run/examples//**)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:5273/src/features/departments/pages/HierarchyChart.tsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5273/src/features/departments/pages/HierarchyChart.tsx)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
