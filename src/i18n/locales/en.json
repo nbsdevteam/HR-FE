@@ -822,7 +822,7 @@
   "hierarchy.the_organizational_structure_is_automatically_built_from": "The organizational structure is automatically built from",
   "hierarchy.the_organizational_structure_is_automatically_built_from_a_field": "The organizational structure is automatically built from a field",
   "hierarchy.current_structure": "Current structure",
-  "hierarchy.organizational_structure": "Organizational Structure-",
+  "hierarchy.organizational_structure": "Organizational Structure",
   "hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign": "Create the positions first and then drag the employees to assign them",
   "hierarchy.create_position": "Create position",
   "hierarchy.create_the_first_position": "Create the first position",
@@ -2575,6 +2575,16 @@
   "common.go_to_page": "Go to page",
   "employees.error_department_not_found": "The selected department no longer exists — please pick another one",
   "employees.error_designation_not_found": "The selected job title no longer exists — please pick another one",
-  "settings.category_kpi": "Performance indicators",
-  "settings.category_risk": "Risks"
+  "hierarchy.level_n": "Level {{level}}",
+  "hierarchy.no_level": "No level",
+  "hierarchy.n_positions": "{{count}} positions",
+  "hierarchy.positions_total": "Positions",
+  "hierarchy.departments_count": "Departments",
+  "hierarchy.n_employees": "{{count}} employees",
+  "hierarchy.no_positions_defined": "No positions defined for this department.",
+  "hierarchy.n_without_position": "{{count}} without a position",
+  "hierarchy.positions_without_department_hint": "Positions not linked to any department.",
+  "hierarchy.on_positions": "On positions",
+  "hierarchy.no_structure_yet": "No organizational structure yet.",
+  "hierarchy.no_structure_yet_hint": "Add departments and positions and they will appear here."
 }

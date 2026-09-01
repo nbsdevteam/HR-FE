@@ -822,7 +822,7 @@
   "hierarchy.the_organizational_structure_is_automatically_built_from": "پێکهاتەی ڕێکخراوەیی بە شێوەیەکی ئۆتۆماتیکی لە...",
   "hierarchy.the_organizational_structure_is_automatically_built_from_a_field": "پێکهاتەی ڕێکخراوەیی بە شێوەیەکی ئۆتۆماتیکی لە بوارێکەوە دروست دەکرێت",
   "hierarchy.current_structure": "پێکهاتەی ئێستا",
-  "hierarchy.organizational_structure": "پێکهاتەی ڕێکخراوەیی-",
+  "hierarchy.organizational_structure": "پێکهاتەی ڕێکخراوەیی",
   "hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign": "سەرەتا پۆستەکان دروست بکە و پاشان کارمەندەکان ڕابکێشە بۆ ئەوەی دیارییان بکەیت",
   "hierarchy.create_position": "پێگە دروست بکە",
   "hierarchy.create_the_first_position": "شوێنی یەکەم دروست بکە",
@@ -2575,6 +2575,16 @@
   "common.go_to_page": "بڕۆ بۆ لاپەڕە",
   "employees.error_department_not_found": "بەشی هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە",
   "employees.error_designation_not_found": "ناونیشانی کاری هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە",
-  "settings.category_kpi": "نیشاندەرەکانی کارایی",
-  "settings.category_risk": "مەترسییەکان"
+  "hierarchy.level_n": "ئاست {{level}}",
+  "hierarchy.no_level": "بێ ئاست",
+  "hierarchy.n_positions": "{{count}} پۆست",
+  "hierarchy.positions_total": "پۆستەکان",
+  "hierarchy.departments_count": "بەشەکان",
+  "hierarchy.n_employees": "{{count}} کارمەند",
+  "hierarchy.no_positions_defined": "هیچ پۆستێک بۆ ئەم بەشە دیاری نەکراوە.",
+  "hierarchy.n_without_position": "{{count}} بەبێ پۆست",
+  "hierarchy.positions_without_department_hint": "پۆستەکان بە هیچ بەشێک بەستراو نین.",
+  "hierarchy.on_positions": "لەسەر پۆستەکان",
+  "hierarchy.no_structure_yet": "هێشتا پێکهاتەی ڕێکخراوەیی نییە.",
+  "hierarchy.no_structure_yet_hint": "بەش و پۆست زیاد بکە بۆ ئەوەی لێرە دەربکەوێت."
 }

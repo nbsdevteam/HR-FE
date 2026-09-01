@@ -1,8 +1,8 @@
-import { BarChart3, GitBranch, Network } from "lucide-react";
+import { BarChart3, Building2, GitBranch, Network } from "lucide-react";
 import { TabButton, TabGroup } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
-type ViewMode = "tree" | "positions" | "grades";
+type ViewMode = "tree" | "positions" | "grades" | "structure";
 
 type HierarchyViewModeToggleProps = {
   viewMode: ViewMode;
@@ -30,6 +30,13 @@ const HierarchyViewModeToggle = ({ viewMode, onViewModeChange }: HierarchyViewMo
       label={arabicSource("hierarchy.grades_and_levels")}
       icon={BarChart3}
       isActive={viewMode === "grades"}
+      onSelect={onViewModeChange}
+    />
+    <TabButton
+      id="structure"
+      label={arabicSource("hierarchy.organizational_structure")}
+      icon={Building2}
+      isActive={viewMode === "structure"}
       onSelect={onViewModeChange}
     />
   </TabGroup>
