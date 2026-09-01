@@ -10,8 +10,16 @@ import {
   type WeeklyAttendanceRow,
 } from "../types";
 
-/** Sunday → Thursday, the working week the chart reports on. */
-const WEEK_DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
+/** Sunday → Saturday, the full calendar week the chart reports on. */
+const WEEK_DAY_KEYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
 
 const attendanceStatusKeyByLabel: Record<string, AttendanceStatusCountKey> = {
   [arabicSource("common.present")]: "present",
@@ -76,7 +84,7 @@ export const buildTodayAttendanceStats = (
   };
 };
 
-/** Per-weekday status tallies for the weekly bar chart (most recent day first). */
+/** Per-weekday status tallies for the weekly bar chart, Sunday through Saturday. */
 export const buildWeeklyAttendance = (
   records: DbAttendanceRecord[],
 ): WeeklyAttendanceRow[] => {
@@ -99,7 +107,7 @@ export const buildWeeklyAttendance = (
   return WEEK_DAY_KEYS.map((day) => ({
     day: dayNames[day] || day,
     ...byDay.get(day)!,
-  })).reverse();
+  }));
 };
 
 export const verifyModeLabel = (mode: string | null): string => {

@@ -49,6 +49,7 @@ const repositoryArabicAllowlist = new Set([
   // Documentation, and the HTML shell whose <title> is replaced at runtime by
   // `syncDocumentLocale` — neither is UI copy that needs a semantic key.
   "docs/report_naming.md",
+  "docsandmds/leave type settings add.md",
   "index.html",
   "src/features/attendance/components/shiftassigner.tsx",
   "src/features/auth/pages/login.tsx",

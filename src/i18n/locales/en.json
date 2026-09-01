@@ -2574,5 +2574,7 @@
   "common.rows_per_page": "Rows per page",
   "common.go_to_page": "Go to page",
   "employees.error_department_not_found": "The selected department no longer exists — please pick another one",
-  "employees.error_designation_not_found": "The selected job title no longer exists — please pick another one"
+  "employees.error_designation_not_found": "The selected job title no longer exists — please pick another one",
+  "settings.category_kpi": "Performance indicators",
+  "settings.category_risk": "Risks"
 }

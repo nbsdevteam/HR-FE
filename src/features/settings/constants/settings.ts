@@ -56,12 +56,24 @@ export const DAYS_OF_WEEK = [
   { key: "saturday", label: arabicSource("common.saturday") },
 ];
 
+/**
+ * Every `configurations.category` the seed data ships. An uncovered category
+ * falls through to its raw slug, which renders as a bare English word among
+ * the localized section headings.
+ */
 export const categoryLabels: Record<string, string> = {
   payroll: arabicSource("settings.salaries_and_compensation"),
   leave: arabicSource("common.vacations"),
   attendance: arabicSource("common.attendance_and_departure"),
   employee: arabicSource("settings.personnel_affairs"),
   system: arabicSource("common.system"),
+  evaluation: arabicSource("common.evaluation"),
+  kpi: arabicSource("settings.category_kpi"),
+  lifecycle: arabicSource("common.employee_life_cycle"),
+  recruitment: arabicSource("common.recruitment"),
+  risk: arabicSource("settings.category_risk"),
+  training: arabicSource("common.training"),
+  warnings: arabicSource("common.alarms"),
 };
 
 export const INITIAL_NEW_HOLIDAY: NewHolidayForm = {

@@ -2574,5 +2574,7 @@
   "common.rows_per_page": "ڕیز بۆ هەر لاپەڕەیەک",
   "common.go_to_page": "بڕۆ بۆ لاپەڕە",
   "employees.error_department_not_found": "بەشی هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە",
-  "employees.error_designation_not_found": "ناونیشانی کاری هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە"
+  "employees.error_designation_not_found": "ناونیشانی کاری هەڵبژێردراو ئیتر بوونی نییە — تکایە یەکێکی تر هەڵبژێرە",
+  "settings.category_kpi": "نیشاندەرەکانی کارایی",
+  "settings.category_risk": "مەترسییەکان"
 }

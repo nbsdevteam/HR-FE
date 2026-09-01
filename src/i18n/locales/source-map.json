@@ -2507,5 +2507,7 @@
   "{{graded}} من أصل {{total}} موظف": "hierarchy.graded_of_total",
   "إجمالي المقاعد": "hierarchy.seats_total",
   "بلا قسم": "hierarchy.no_department",
-  "بلا منصب": "hierarchy.without_position"
+  "بلا منصب": "hierarchy.without_position",
+  "مؤشرات الأداء": "settings.category_kpi",
+  "المخاطر": "settings.category_risk"
 }
