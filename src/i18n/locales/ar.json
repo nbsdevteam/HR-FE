@@ -822,6 +822,8 @@
   "hierarchy.the_organizational_structure_is_automatically_built_from": "الهيكل التنظيمي يُبنى تلقائياً من",
   "hierarchy.the_organizational_structure_is_automatically_built_from_a_field": "الهيكل التنظيمي يُبنى تلقائياً من حقل",
   "hierarchy.current_structure": "الهيكل الحالي",
+  "hierarchy.organization": "المؤسسة",
+  "hierarchy.overall_structure": "الهيكل العام",
   "hierarchy.organizational_structure": "الهيكل التنظيمي",
   "hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign": "أنشئ المناصب أولاً ثم اسحب الموظفين لتعيينهم",
   "hierarchy.create_position": "إنشاء المنصب",

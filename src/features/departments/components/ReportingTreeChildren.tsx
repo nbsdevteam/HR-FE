@@ -11,8 +11,8 @@ type ReportingTreeChildrenProps = {
 };
 
 /**
- * Fans a node's direct reports out from its card, wired the same way a
- * department's level bands fan out beneath it (`StructureCardsLevelChain`).
+ * Fans a node's direct reports out from its card, wired the same way
+ * department cards fan out from the root (`StructureCardsRoot`).
  */
 const ReportingTreeChildren = ({ parentRef, nodes, depth }: ReportingTreeChildrenProps) => {
   const childRefs = useRef<(HTMLDivElement | null)[]>([]);
