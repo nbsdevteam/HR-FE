@@ -1,4 +1,5 @@
 import { arabicSource } from "@/i18n/source";
+import LoadingState from "@/shared/components/LoadingState";
 
 const PoliciesLoadingState = () => (
   <div className="space-y-6">
@@ -8,7 +9,7 @@ const PoliciesLoadingState = () => (
         <p className="text-muted-foreground mt-1">{arabicSource("common.internal_policies_and_systems_manual")}</p>
       </div>
     </div>
-    <div className="text-center py-8 text-muted-foreground">{arabicSource("common.loading")}</div>
+    <LoadingState variant="compact" message={arabicSource("common.loading")} />
   </div>
 );
 
