@@ -168,7 +168,7 @@ const HierarchyChart = () => {
         </div>
       ) : isGradesView ? (
         <Suspense fallback={null}>
-          <GradesView departments={dbDepartments} />
+          <GradesView />
         </Suspense>
       ) : (
         <HierarchyTreeSection
