@@ -118,7 +118,6 @@ const LeaveRequestModal = ({
 
             <LeaveRequestDurationSummary
               days={days}
-              isHalfDay={isHalfDay}
               remainingBalance={remainingBalance}
               warning={balanceWarning}
             />

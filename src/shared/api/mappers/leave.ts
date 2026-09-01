@@ -81,8 +81,10 @@ export const mapLeaveRequest = (r: any): DbLeaveRequest => {
     start_date: r.date_from || r.start_date || "",
     end_date: r.date_to || r.end_date || "",
     days: num(r.number_of_days ?? r.days),
+    // The API sends `half_day`; `is_half_day` is only a legacy row shape.
+    // There is no period field — a half day is always the first half of the
+    // working day (half-day handoff §1, §4).
     is_half_day: bool(r.half_day ?? r.is_half_day),
-    half_day_period: r.half_day_period || null,
     reason: r.reason || null,
     status: mapLeaveStatus(r.state || r.status || ""),
     approved_by: r.approved_by || null,

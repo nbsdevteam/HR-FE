@@ -114,7 +114,6 @@ export interface DbLeaveRequest {
   end_date: string;
   days: number;
   is_half_day: boolean;
-  half_day_period: string | null;
   reason: string | null;
   status: string;
   approved_by: string | null;

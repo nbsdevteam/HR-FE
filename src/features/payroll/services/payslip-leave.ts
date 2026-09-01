@@ -14,8 +14,8 @@ export interface LeaveRequest {
   start_date: string;
   end_date: string;
   days: number;
+  /** Mapped from the API's `half_day` by `mapLeaveRequest`. */
   is_half_day?: boolean;
-  half_day_period?: string | null;
   status: string;
 }
 
@@ -30,7 +30,6 @@ export interface LeaveDateEntry {
   leaveType: string;
   isUnpaid: boolean;
   isHalfDay: boolean;
-  halfDayPeriod?: string | null;
 }
 
 /**
@@ -93,7 +92,6 @@ export const buildLeaveDateMap = (
         leaveType: lv.leave_type,
         isUnpaid,
         isHalfDay: lv.is_half_day || false,
-        halfDayPeriod: lv.half_day_period,
       };
       cur = nextDate(cur);
     }

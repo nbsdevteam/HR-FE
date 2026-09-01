@@ -1,5 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import type { DbLeaveRequest } from "@/shared/hooks";
+import { formatLeaveDays } from "./accrual";
 import { formatHourFloat } from "./hourFloat";
 
 /**
@@ -7,6 +8,10 @@ import { formatHourFloat } from "./hourFloat";
  * otherwise. Appends the Odoo-computed effective hours only when they differ
  * from what was requested (window overlapping non-working time) — showing it
  * unconditionally would just repeat the same number on every common case.
+ *
+ * A half day arrives as `days = 0.5`, so it needs no wording of its own —
+ * pairing the count with a "half a day" unit read as "0.5 half a day"
+ * (half-day handoff §6).
  */
 export const formatLeaveDuration = (leave: DbLeaveRequest): string => {
   if (leave.is_hourly) {
@@ -16,5 +21,5 @@ export const formatLeaveDuration = (leave: DbLeaveRequest): string => {
     }
     return base;
   }
-  return `${leave.days} ${leave.is_half_day ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}`;
+  return `${formatLeaveDays(leave.days)} ${arabicSource("common.days_2")}`;
 };

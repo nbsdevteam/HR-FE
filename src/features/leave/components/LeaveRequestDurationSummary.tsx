@@ -4,16 +4,21 @@ import { formatLeaveDays } from "../utils/accrual";
 
 type LeaveRequestDurationSummaryProps = {
   days: number;
-  isHalfDay: boolean;
   remainingBalance: number | null;
   /** Non-blocking "over balance" hint — Odoo decides against the work calendar. */
   warning?: string;
 };
 
-/** "Duration: N days" strip with the employee's remaining balance alongside. */
+/**
+ * "Duration: N days" strip with the employee's remaining balance alongside.
+ *
+ * A half day is `days = 0.5` — the same number the backend books and the
+ * payslip reads — rather than a separate wording, so the two cannot disagree
+ * (half-day handoff §5.4, §6). Both numbers on this row go through
+ * `formatLeaveDays`, so the duration and the balance are formatted alike.
+ */
 const LeaveRequestDurationSummary = ({
   days,
-  isHalfDay,
   remainingBalance,
   warning = "",
 }: LeaveRequestDurationSummaryProps) => {
@@ -27,8 +32,8 @@ const LeaveRequestDurationSummary = ({
         <div className="flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-primary" />
           <span className="text-primary" style={{ fontSize: 13 }}>
-            {arabicSource("common.duration_2")} {days}{" "}
-            {isHalfDay ? arabicSource("common.half_a_day") : arabicSource("common.days_2")}
+            {arabicSource("common.duration_2")} {formatLeaveDays(days)}{" "}
+            {arabicSource("common.days_2")}
           </span>
         </div>
         {remainingBalance !== null && (
