@@ -1,6 +1,13 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
-import { AlertCircle, ArchiveRestore, Edit, Eye, Fingerprint, PauseCircle, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  ArchiveRestore,
+  Edit,
+  Eye,
+  Fingerprint,
+  Trash2,
+} from "lucide-react";
 import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
@@ -27,23 +34,42 @@ type EmployeesTableRowProps = {
 };
 
 const EmployeesTableRow = ({
-  emp, dbEmp, index, isPending, isDeviceSynced, isSelf,
-  onSelectEmployee, onEditEmployee, onDeleteTargetChange, onSuspendEmployee, onRestoreEmployee,
+  emp,
+  dbEmp,
+  index,
+  isPending,
+  isDeviceSynced,
+  isSelf,
+  onSelectEmployee,
+  onEditEmployee,
+  onDeleteTargetChange,
+  onSuspendEmployee,
+  onRestoreEmployee,
 }: EmployeesTableRowProps) => {
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission("hr.employees.edit");
-  const canDeactivate = hasPermission("hr.employees.deactivate") || hasPermission("hr.employees.delete");
+  const canDeactivate =
+    hasPermission("hr.employees.deactivate") ||
+    hasPermission("hr.employees.delete");
   const deviceNo = dbEmp?.device_employee_no;
   const isArchived = dbEmp ? !dbEmp.is_active : false;
 
-  const handleSelect = useCallback(() => onSelectEmployee(emp), [onSelectEmployee, emp]);
-  const handleEdit = useCallback(() => onEditEmployee(emp), [onEditEmployee, emp]);
+  const handleSelect = useCallback(
+    () => onSelectEmployee(emp),
+    [onSelectEmployee, emp],
+  );
+  const handleEdit = useCallback(
+    () => onEditEmployee(emp),
+    [onEditEmployee, emp],
+  );
   const handleDeleteTargetChange = useCallback(() => {
     if (dbEmp) onDeleteTargetChange({ id: dbEmp.id, name: emp.name });
   }, [onDeleteTargetChange, dbEmp, emp.name]);
-  const handleSuspendClick = useCallback(() => {
-    if (dbEmp) onSuspendEmployee(dbEmp.id);
-  }, [onSuspendEmployee, dbEmp]);
+
+  // const handleSuspendClick = useCallback(() => {
+  //   if (dbEmp) onSuspendEmployee(dbEmp.id);
+  // }, [onSuspendEmployee, dbEmp]);
+
   const handleRestoreClick = useCallback(() => {
     if (dbEmp) onRestoreEmployee(dbEmp.id);
   }, [onRestoreEmployee, dbEmp]);
@@ -71,43 +97,85 @@ const EmployeesTableRow = ({
           />
           <div>
             <p className="text-foreground">{emp.name}</p>
-            <p className="text-muted-foreground" style={{ fontSize: 12 }}>{emp.email}</p>
+            <p className="text-muted-foreground" style={{ fontSize: 12 }}>
+              {emp.email}
+            </p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{emp.employeeNumber}</td>
+      <td
+        className="px-4 py-3 text-muted-foreground"
+        style={{ fontSize: 13 }}
+        dir="ltr"
+      >
+        {emp.employeeNumber}
+      </td>
       <td className="px-4 py-3 text-center">
         {deviceNo ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/30 border border-border/30 font-mono text-foreground" style={{ fontSize: 12 }}>
-            <Fingerprint className="w-3 h-3 text-primary/60" />
-            #{deviceNo}
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/30 border border-border/30 font-mono text-foreground"
+            style={{ fontSize: 12 }}
+          >
+            <Fingerprint className="w-3 h-3 text-primary/60" />#{deviceNo}
           </span>
         ) : (
-          <span className="text-muted-foreground/40" style={{ fontSize: 11 }}>—</span>
+          <span className="text-muted-foreground/40" style={{ fontSize: 11 }}>
+            —
+          </span>
         )}
       </td>
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp.department}</td>
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>{emp.position}</td>
+      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>
+        {emp.department}
+      </td>
+      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }}>
+        {emp.position}
+      </td>
       <td className="px-4 py-3">
-        <StatusBadge colorClassName={getStatusColor(emp.status, statusColors)}>{translateBackendCode(emp.status, employeeStatusKeys)}</StatusBadge>
+        <StatusBadge colorClassName={getStatusColor(emp.status, statusColors)}>
+          {translateBackendCode(emp.status, employeeStatusKeys)}
+        </StatusBadge>
       </td>
       <td className="px-4 py-3">
         {isPending ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400" style={{ fontSize: 11 }}>
-            <AlertCircle className="w-3 h-3" /> {arabicSource("employees.missing_data")}
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400"
+            style={{ fontSize: 11 }}
+          >
+            <AlertCircle className="w-3 h-3" />{" "}
+            {arabicSource("employees.missing_data")}
           </span>
         ) : isDeviceSynced ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400" style={{ fontSize: 11 }}>
-            <Fingerprint className="w-3 h-3" /> {arabicSource("employees.registered")}
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+            style={{ fontSize: 11 }}
+          >
+            <Fingerprint className="w-3 h-3" />{" "}
+            {arabicSource("employees.registered")}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-muted-foreground/20 bg-muted/10 text-muted-foreground" style={{ fontSize: 11 }}>
-            <Fingerprint className="w-3 h-3" /> {arabicSource("employees.is_not_registered")}
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-muted-foreground/20 bg-muted/10 text-muted-foreground"
+            style={{ fontSize: 11 }}
+          >
+            <Fingerprint className="w-3 h-3" />{" "}
+            {arabicSource("employees.is_not_registered")}
           </span>
         )}
       </td>
-      <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: 13 }} dir="ltr">{emp.startDate}</td>
-      <td className="px-4 py-3 text-foreground" style={{ fontSize: 13 }} dir="ltr">{formatCurrency(emp.salary, emp.currency)}</td>
+      <td
+        className="px-4 py-3 text-muted-foreground"
+        style={{ fontSize: 13 }}
+        dir="ltr"
+      >
+        {emp.startDate}
+      </td>
+      <td
+        className="px-4 py-3 text-foreground"
+        style={{ fontSize: 13 }}
+        dir="ltr"
+      >
+        {formatCurrency(emp.salary, emp.currency)}
+      </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
           <Button
@@ -141,7 +209,7 @@ const EmployeesTableRow = ({
               iconClassName="w-4 h-4 text-muted-foreground"
             />
           )}
-          {dbEmp && canDeactivate && !isArchived && !isSelf && (
+          {/* {dbEmp && canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"
               size="unstyled"
@@ -151,7 +219,7 @@ const EmployeesTableRow = ({
               icon={PauseCircle}
               iconClassName="w-4 h-4 text-muted-foreground"
             />
-          )}
+          )} */}
           {dbEmp && canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"

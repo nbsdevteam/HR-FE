@@ -37,7 +37,9 @@ const DeviceOverviewTab = () => {
   const handleDoor = useCallback(async (action: "open" | "close") => {
     setDoorLoading(true);
     try {
-      await fetch(`${DEVICE_SYNC_API}/device/door/${action}`, { method: "POST" });
+      await fetch(`${DEVICE_SYNC_API}/device/door/${action}`, {
+        method: "POST",
+      });
     } catch {
       // Device can be offline.
     }
@@ -60,9 +62,15 @@ const DeviceOverviewTab = () => {
 
   return (
     <div className="space-y-6">
-      <DeviceInfoCard info={info} network={network} door={door} deviceIp={deviceIp} onRefresh={load} />
+      <DeviceInfoCard
+        info={info}
+        network={network}
+        door={door}
+        deviceIp={deviceIp}
+        onRefresh={load}
+      />
       {capacity && <DeviceCapacitySection capacity={capacity} />}
-      <DeviceDoorControl loading={doorLoading} onDoorAction={handleDoor} />
+      {/* <DeviceDoorControl loading={doorLoading} onDoorAction={handleDoor} /> */}
     </div>
   );
 };
