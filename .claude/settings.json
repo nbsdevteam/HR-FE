@@ -8,7 +8,8 @@
       "Bash(curl -s http://localhost:5273/src/features/departments/pages/HierarchyChart.tsx)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5273/src/features/departments/pages/HierarchyChart.tsx)",
       "Bash(git commit -m ' *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(node /c/Users/DELL/AppData/Local/Temp/claude/c--Users-DELL-OneDrive-----------Work-HR/2d053233-3fdc-4617-868b-6f2da47faffa/scratchpad/checkUnused.js src/features/payroll/hooks/usePayrollMetadata.ts src/features/payroll/hooks/usePayrollListPaged.ts src/features/payroll/hooks/usePayrollEmployeeDetail.ts src/features/payroll/utils/mapPayrollDetail.ts src/features/payroll/hooks/usePayrollDetailPanel.ts src/features/payroll/hooks/usePayrollPage.ts src/features/payroll/types/index.ts src/features/payroll/components/OverviewTab.tsx src/features/payroll/components/PayrollOverviewRow.tsx src/features/payroll/components/PayrollHeader.tsx src/features/payroll/components/PayrollDetailPanelContainer.tsx src/features/payroll/components/PayrollDetailPanel.tsx src/features/payroll/components/PayrollTabContent.tsx src/features/payroll/pages/Payroll.tsx src/features/payroll/components/CalendarDayCell.tsx src/shared/api/payroll.ts src/shared/api/payrollTypes.ts src/features/payroll/components/PayrollLedgerEditor.tsx)"
     ]
   }
 }

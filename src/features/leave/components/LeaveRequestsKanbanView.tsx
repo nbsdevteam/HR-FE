@@ -49,6 +49,7 @@ const LeaveRequestsKanbanView = ({
           items={requestsByStatus.get(column.key) || []}
           emptyIcon={CalendarDays}
           emptyMessage={arabicSource("leave.no_requests")}
+          bodyClassName="p-3 space-y-3 min-h-[200px] max-h-[520px] overflow-y-auto"
           renderItem={(leave, i) => {
             const employee = empMap[leave.employee_id];
             const leaveType = leaveTypes.find(
