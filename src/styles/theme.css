@@ -296,6 +296,15 @@
   background-color: var(--gold);
 }
 
+.kanban-column-scroll {
+  scrollbar-width: thin;
+}
+
+.kanban-column-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
 .text-gradient-gold {
   background: var(--gold-gradient);
   background-size: 200% auto;

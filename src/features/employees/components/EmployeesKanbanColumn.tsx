@@ -46,7 +46,7 @@ const EmployeesKanbanColumn = ({
       emptyMessage={arabicSource("employees.there_are_no_employees")}
       headerClassName="p-3 border-b border-border/20 flex items-center justify-between"
       labelFontSize={13}
-      bodyClassName="p-3 space-y-8 min-h-[140px] pt-8 max-h-[70vh] overflow-y-auto"
+      bodyClassName="p-3 space-y-8 min-h-[140px] pt-8 max-h-[70vh] overflow-y-auto kanban-column-scroll"
       renderItem={renderTile}
     />
   );
