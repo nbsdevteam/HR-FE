@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { OrgStructureDepartment, OrgStructurePosition, OrgStructureTree } from "@/shared/hooks";
@@ -8,6 +9,9 @@ import ReportingTreeView from "./ReportingTreeView";
 import StructureCardsForest from "./StructureCardsForest";
 import StructureCardsOrphans from "./StructureCardsOrphans";
 import StructureCardsSummary from "./StructureCardsSummary";
+import StructureTreeView from "./StructureTreeView";
+import StructureViewModeToggle from "./StructureViewModeToggle";
+import type { StructureViewMode } from "./StructureViewModeToggle";
 
 type StructureCardsViewProps = {
   tree: OrgStructureTree | null;
@@ -42,8 +46,13 @@ const StructureCardsView = ({
   onSelectPosition,
   onSelectEmployee,
 }: StructureCardsViewProps) => {
+  const [viewMode, setViewMode] = useState<StructureViewMode>("tree");
   const { t } = useTranslation();
   const { collapsedDepartments, toggleDepartment } = useStructureTreeExpansion();
+
+  const handleViewModeChange = useCallback((next: StructureViewMode): void => {
+    setViewMode(next);
+  }, []);
 
   if (loading) {
     return <LoadingState message={t("common.loading")} variant="stacked" />;
@@ -80,6 +89,13 @@ const StructureCardsView = ({
 
       {tree.reporting_tree_is_flat && <ReportingTreeBanner />}
 
+      {/* Both alternatives below are department-driven; the reporting tree has its own shape. */}
+      {!showReportingTree && (
+        <div className="flex justify-end">
+          <StructureViewModeToggle mode={viewMode} onChange={handleViewModeChange} />
+        </div>
+      )}
+
       {/*
         Only this container scrolls horizontally — the page body never does.
         `min-w-max` makes the inner box as wide as its widest row, so centred
@@ -89,9 +105,21 @@ const StructureCardsView = ({
       */}
       <div className="overflow-x-auto">
         <div className="min-w-max mx-auto py-4">
-          {showReportingTree ? (
-            <ReportingTreeView roots={tree.reporting_tree} />
-          ) : (
+          {showReportingTree && <ReportingTreeView roots={tree.reporting_tree} />}
+
+          {!showReportingTree && viewMode === "tree" && (
+            <StructureTreeView
+              departments={tree.departments}
+              collapsedDepartments={collapsedDepartments}
+              onToggleDepartment={toggleDepartment}
+              matchedIds={matchedIds}
+              hasActiveFilter={hasActiveFilter}
+              onSelectPosition={onSelectPosition}
+              onSelectEmployee={onSelectEmployee}
+            />
+          )}
+
+          {!showReportingTree && viewMode === "cards" && (
             <StructureCardsForest
               departments={tree.departments}
               collapsedDepartments={collapsedDepartments}

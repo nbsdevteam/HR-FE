@@ -786,6 +786,8 @@
   "الهيكل التنظيمي يُبنى تلقائياً من": "hierarchy.the_organizational_structure_is_automatically_built_from",
   "الهيكل التنظيمي يُبنى تلقائياً من حقل": "hierarchy.the_organizational_structure_is_automatically_built_from_a_field",
   "الهيكل الحالي": "hierarchy.current_structure",
+  "عرض شجري": "hierarchy.tree_view",
+  "عرض البطاقات": "hierarchy.card_view",
   "أنشئ المناصب أولاً ثم اسحب الموظفين لتعيينهم": "hierarchy.create_the_positions_first_and_then_drag_the_employees_to_assign",
   "إنشاء المنصب": "hierarchy.create_position",
   "إنشاء أول منصب": "hierarchy.create_the_first_position",
