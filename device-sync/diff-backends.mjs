@@ -64,7 +64,7 @@ async function fetchSupabaseDay(dateStr) {
 async function fetchOdooDay(dateStr) {
   const map = new Map();
   let offset = 0;
-  const limit = 500;
+  const limit = 100; // server-enforced cap on /api/hr/attendance/list
   for (;;) {
     const page = await odoo.call("/api/hr/attendance/list", { date_from: dateStr, date_to: dateStr, limit, offset });
     const items = page?.items || [];
@@ -77,8 +77,8 @@ async function fetchOdooDay(dateStr) {
         });
       }
     }
-    if (items.length < limit) break;
-    offset += limit;
+    if (!page?.pagination?.has_next) break;
+    offset = page.pagination.next_offset ?? offset + limit;
   }
   return map;
 }

@@ -15,6 +15,77 @@ export type AttendanceFetchOpts = {
   limit?: number;
 };
 
+/** data.pagination from /api/hr/attendance/list — everything needed for Previous / Next / page buttons. */
+export type AttendancePagination = {
+  total: number;
+  count: number;
+  limit: number;
+  offset: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+  next_offset: number | null;
+  prev_offset: number | null;
+};
+
+export type AttendanceListData = {
+  items: any[];
+  total: number;
+  limit: number;
+  offset: number;
+  page: number;
+  per_page: number;
+  pagination: AttendancePagination;
+};
+
+export type AttendanceListParams = {
+  employee_id?: number | string;
+  employee_ids?: number[];
+  date_from?: string;
+  date_to?: string;
+  status?: string;
+  source?: string;
+  search?: string;
+  /** 1–100; omit for the server default of 20. */
+  limit?: number;
+  /** (page - 1) * limit */
+  offset?: number;
+  /** 1-based; alternative to offset. Wins over offset if both are sent. */
+  page?: number;
+};
+
+/** Server-enforced cap on `/api/hr/attendance/list` — a larger `limit` is silently clamped to this. */
+const ATTENDANCE_PAGE_MAX_LIMIT = 100;
+
+/** Fetch a single page, returning the full pagination envelope alongside the mapped rows. */
+export const fetchAttendancePage = async (
+  params: AttendanceListParams,
+): Promise<{ rows: DbAttendanceRecord[]; pagination: AttendancePagination }> => {
+  const data = await hrCall<AttendanceListData>("/api/hr/attendance/list", params);
+  return { rows: data.items.map(mapAttendance), pagination: data.pagination };
+};
+
+/** Walk every page (100 rows at a time) until `has_next` is false. */
+const fetchAllAttendance = async (
+  params: AttendanceListParams,
+): Promise<DbAttendanceRecord[]> => {
+  const all: DbAttendanceRecord[] = [];
+  let offset = 0;
+  for (;;) {
+    const { rows, pagination } = await fetchAttendancePage({
+      ...params,
+      limit: ATTENDANCE_PAGE_MAX_LIMIT,
+      offset,
+    });
+    all.push(...rows);
+    if (!pagination.has_next) break;
+    offset = pagination.next_offset ?? offset + ATTENDANCE_PAGE_MAX_LIMIT;
+  }
+  return all;
+};
+
 export const fetchAttendance = async (
   dateOrOpts?: string | AttendanceFetchOpts,
 ): Promise<DbAttendanceRecord[]> => {
@@ -22,10 +93,7 @@ export const fetchAttendance = async (
     typeof dateOrOpts === "string" || dateOrOpts === undefined
       ? { date: dateOrOpts }
       : dateOrOpts;
-  const params: Record<string, unknown> = {
-    limit: opts?.limit ?? (opts?.date || opts?.employee_id ? 500 : 5000),
-    offset: 0,
-  };
+  const params: AttendanceListParams = {};
   if (opts?.date) {
     params.date_from = opts?.date;
     params.date_to = opts?.date;
@@ -35,8 +103,15 @@ export const fetchAttendance = async (
   if (opts?.employee_id != null && opts?.employee_id !== "") {
     params.employee_id = Number(opts?.employee_id) || opts?.employee_id;
   }
-  const rows = await items<any>("/api/hr/attendance/list", params);
-  return rows.map(mapAttendance);
+
+  // A caller asking for a page-sized slice gets exactly that; anyone else
+  // (no limit, or a legacy `limit: 500/5000`) gets every matching row via
+  // an offset walk — the server caps a single request at 100 regardless.
+  if (opts?.limit != null && opts.limit <= ATTENDANCE_PAGE_MAX_LIMIT) {
+    const { rows } = await fetchAttendancePage({ ...params, limit: opts.limit, offset: 0 });
+    return rows;
+  }
+  return fetchAllAttendance(params);
 };
 
 export const fetchMonthlyRecords = async (

@@ -214,6 +214,20 @@ export function createBackend(config, ctx) {
   // ══════════════════════════════════════════
   // Attendance
   // ══════════════════════════════════════════
+  /** Walk every page (server-capped at 100/request) of a day's attendance. */
+  async function _attendanceForDay(dateStr) {
+    const items = [];
+    let offset = 0;
+    const limit = 100;
+    for (;;) {
+      const page = await odoo.call("/api/hr/attendance/list", { date_from: dateStr, date_to: dateStr, limit, offset });
+      items.push(...(page?.items || []));
+      if (!page?.pagination?.has_next) break;
+      offset = page.pagination.next_offset ?? offset + limit;
+    }
+    return items;
+  }
+
   async function _attendanceForDate(employeeId, dateStr) {
     const page = await odoo.call("/api/hr/attendance/list", {
       employee_id: employeeId,
@@ -408,13 +422,13 @@ export function createBackend(config, ctx) {
     );
 
     try {
-      const [attToday, employees, shifts] = await Promise.all([
-        odoo.call("/api/hr/attendance/list", { date_from: today, date_to: today, limit: 5000 }),
+      const [attTodayItems, employees, shifts] = await Promise.all([
+        _attendanceForDay(today),
         _listAllEmployees(),
         _listAllShifts(),
       ]);
 
-      const openRows = (attToday?.items || []).filter((a) => a.check_in && !a.check_out);
+      const openRows = attTodayItems.filter((a) => a.check_in && !a.check_out);
       if (openRows.length === 0) return;
 
       const empMap = new Map(employees.map((e) => [e.id, e]));
@@ -476,14 +490,14 @@ export function createBackend(config, ctx) {
     log("🔍", `Checking absences for ${today} (${dayOfWeek})...`);
 
     try {
-      const [employees, shifts, attToday] = await Promise.all([
+      const [employees, shifts, attTodayItems] = await Promise.all([
         _listAllEmployees(),
         _listAllShifts(),
-        odoo.call("/api/hr/attendance/list", { date_from: today, date_to: today, limit: 5000 }),
+        _attendanceForDay(today),
       ]);
 
       const shiftMap = new Map(shifts.map((s) => [s.id, s]));
-      const presentIds = new Set((attToday?.items || []).map((a) => a.employee_id));
+      const presentIds = new Set(attTodayItems.map((a) => a.employee_id));
 
       let absentCount = 0;
       for (const emp of employees) {
