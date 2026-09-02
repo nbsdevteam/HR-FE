@@ -15,6 +15,40 @@ import type {
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
+import type {
+  PayrollEmployeeDetailResponse,
+  PayrollListRequest,
+  PayrollListResponse,
+  PayrollMetadataResponse,
+  PayslipGenerateRequest,
+} from "./payrollTypes";
+
+/** Cacheable master data for the Salary screen (backend §5) — no transactional data. */
+export const fetchPayrollMetadata = (): Promise<PayrollMetadataResponse> =>
+  hrCall("/api/hr/payroll/metadata", {});
+
+/** One page of pre-computed payroll rows for one month (backend §4). */
+export const fetchPayrollList = (params: PayrollListRequest): Promise<PayrollListResponse> =>
+  hrCall("/api/hr/payroll/list", { ...params });
+
+/** One employee's full breakdown for one month, loaded only while the detail panel is open (backend §6). */
+export const fetchPayrollEmployeeDetail = (
+  employeeId: string | number,
+  month: string,
+): Promise<PayrollEmployeeDetailResponse> =>
+  hrCall(`/api/hr/payroll/employee/${eid(employeeId)}`, { month });
+
+/**
+ * Server-side payslip generation (backend §8) — the backend computes the
+ * month with the `v2` engine and persists it. No `payslips` array: the
+ * frontend never sends a payroll calculation.
+ */
+export const generatePayslipsServer = (payload: PayslipGenerateRequest) =>
+  hrCall("/api/hr/payroll/payslips/generate", {
+    month: payload.month,
+    employee_ids: payload.employee_ids,
+    replace_month: Boolean(payload.replace_month),
+  });
 
 const loans = crudFactory("/api/hr/payroll/loans");
 const allowanceTypes = crudFactory("/api/hr/payroll/allowance_types");

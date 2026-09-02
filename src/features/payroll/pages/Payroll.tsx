@@ -10,17 +10,15 @@ import type { PayrollTabId } from "../types";
 
 const Payroll = () => {
   const page = usePayrollPage();
-  const { setActiveTab, setSelectedMonth } = page;
+  const { setActiveTab, handleMonthChange } = page;
 
   const handleTabChange = useCallback((tabId: PayrollTabId) => {
     setActiveTab(tabId);
   }, [setActiveTab]);
 
-  const handleMonthChange = useCallback((month: string) => {
-    setSelectedMonth(month);
-  }, [setSelectedMonth]);
-
-  if (page.loading) {
+  // Metadata + first page load only — subsequent month/page/search changes
+  // dim the table in place instead of tearing down the whole screen.
+  if (page.initialLoading) {
     return <LoadingState message={arabicSource("payroll.loading_salary_data")} />;
   }
 
@@ -29,13 +27,12 @@ const Payroll = () => {
       <PayrollHeader
         availableMonths={page.availableMonths}
         displayMonth={page.displayMonth}
-        payrollCount={page.payrollData.length}
+        payrollCount={page.total}
         payslipsSaved={page.payslipsSaved}
         savingPayslips={page.savingPayslips}
         selectedMonth={page.selectedMonth}
         onMonthChange={handleMonthChange}
-        onSavePayslips={page.handleSavePayslips}
-        onServerComputePayslips={page.handleServerComputePayslips}
+        onGeneratePayslips={page.handleGeneratePayslips}
       />
 
       <PayrollTabs activeTab={page.activeTab} onTabChange={handleTabChange} />

@@ -19,11 +19,17 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
         exit={{ opacity: 0 }}
       >
         <OverviewTab
-          payrollData={page.payrollData}
-          totalBasic={page.totalBasic}
-          totalNet={page.totalNet}
-          totalDeductions={page.totalDeductions}
-          totalEmployees={page.totalEmployees}
+          items={page.items}
+          totals={page.totals}
+          loading={page.listLoading}
+          search={page.search}
+          onSearchChange={page.handleSearchChange}
+          page={page.page}
+          perPage={page.perPage}
+          totalPages={page.totalPages}
+          total={page.total}
+          onPageChange={page.onPageChange}
+          onPerPageChange={page.onPerPageChange}
           onViewPayslip={page.setSelectedEmpId}
         />
       </motion.div>

@@ -1,209 +1,109 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import * as odooData from "@/shared/api/odooData";
-import {
-  useEmployees, useShifts,
-  useHierarchyData, usePublicHolidays, useConfigurations, useAllowanceTypes,
-  useEmployeeAllowances, useDeductionTypes, useEmployeeDeductions, useLoans,
-  useMonthlyRecords, useMonthlyLedgers, useAttendanceRecords, useLeaveRequests,
-  useLeaveTypes,
-} from "@/shared/hooks";
+import { useEmployees } from "@/shared/hooks";
+import { generatePayslipsServer } from "@/shared/api/payroll";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
-import type { DbEmployee } from "@/shared/hooks";
-import { type LeaveRequest } from "@/features/payroll";
-import { buildPayrollRow, type PayrollRow } from "../utils/buildPayrollRow";
 import { arabicSource } from "@/i18n/source";
+import { errorMessage } from "../utils/errorMessage";
+import { usePayrollMetadata } from "./usePayrollMetadata";
+import { usePayrollListPaged } from "./usePayrollListPaged";
 import type { PayrollTabId } from "../types";
 
 export const usePayrollPage = () => {
   const [activeTab, setActiveTab] = useState<PayrollTabId>("overview");
   const [selectedMonth, setSelectedMonth] = useState("");
-
-  // Detail panel state
+  const [search, setSearch] = useState("");
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
   const [savingPayslips, setSavingPayslips] = useState(false);
   const [payslipsSaved, setPayslipsSaved] = useState(false);
 
-  const { employees, loading: empLoading } = useEmployees();
   const { settings: appSettings } = useAppSettings();
-  const { shifts: dbShifts } = useShifts();
-  const { departments: dbDepartments } = useHierarchyData();
-  const { holidays: dbHolidays } = usePublicHolidays();
-  useConfigurations();
-  const { types: allowanceTypes } = useAllowanceTypes();
-  const { allowances: allEmployeeAllowances } = useEmployeeAllowances();
-  const { types: deductionTypes } = useDeductionTypes();
-  const { deductions: allEmployeeDeductions } = useEmployeeDeductions();
-  const { loans: allLoans } = useLoans();
-  const { records: monthlyRecords, loading: mrLoading } = useMonthlyRecords();
-  const { ledgers, loading: ledLoading, refetch: refetchLedgers } = useMonthlyLedgers();
-  const { records: attRecords, loading: attLoading } = useAttendanceRecords();
-  const { requests: leaveReqRows, loading: lvLoading } = useLeaveRequests({ status: "مقبول" });
-  const { types: leaveTypes } = useLeaveTypes();
+  const { metadata, loading: metadataLoading } = usePayrollMetadata();
+  // Full roster kept only for the (out-of-scope) Upload tab — the Salary list
+  // itself never holds more than one page of employees.
+  const { employees } = useEmployees();
+  const list = usePayrollListPaged({
+    month: selectedMonth,
+    search,
+    departmentId: null,
+    employeeId: null,
+    status: null,
+  });
 
-  const displayMonth = (m: string) => formatMonthYear(m, appSettings.monthFormat);
-  const leaveRequests = leaveReqRows as LeaveRequest[];
-  const loading = empLoading || mrLoading || ledLoading || attLoading || lvLoading;
+  const availableMonths = metadata?.available_months ?? [];
+  const initialLoading = metadataLoading && !metadata;
 
-  const leaveTypeInfos = useMemo(
-    () => leaveTypes.map((t) => ({ code: t.code || t.id, name_ar: t.name_ar || t.name_en || "", is_paid: Boolean(t.is_paid) })),
-    [leaveTypes],
+  const displayMonth = useCallback(
+    (m: string) => formatMonthYear(m, appSettings.monthFormat),
+    [appSettings.monthFormat],
   );
 
-  const empMap = useMemo(() => {
-    const m: Record<string, DbEmployee> = {};
-    employees.forEach((e) => { m[e.id] = e; });
-    return m;
-  }, [employees]);
+  const handleSearchChange = useCallback((value: string): void => {
+    setSearch(value);
+  }, []);
 
-  const availableMonths = useMemo(() => {
-    const months = new Set<string>();
-    monthlyRecords.forEach((r) => months.add(r.month_year));
-    attRecords.forEach((r) => {
-      const m = r.date?.substring(0, 7);
-      if (m) months.add(m);
-    });
-    // Also add current month
-    const now = new Date();
-    months.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
-    return [...months].sort().reverse();
-  }, [monthlyRecords, attRecords]);
+  const handleMonthChange = useCallback((month: string): void => {
+    setSelectedMonth(month);
+  }, []);
 
-  // Create holiday set for O(1) lookups
-  const holidayDates = useMemo(() => new Set(dbHolidays.map(h => h.date)), [dbHolidays]);
-
-  // Build payroll data for selected month
-  const payrollData = useMemo(() => {
-    const monthAtt = attRecords.filter((r) => r.date?.startsWith(selectedMonth));
-    const monthRecs = monthlyRecords.filter((r) => r.month_year === selectedMonth);
-
-    const empIds = new Set<string>();
-    monthAtt.forEach((r) => empIds.add(r.employee_id));
-    monthRecs.forEach((r) => empIds.add(r.employee_id));
-
-    const rows: PayrollRow[] = [];
-
-    for (const empId of empIds) {
-      const row = buildPayrollRow(
-        empId, empMap, dbDepartments, dbShifts,
-        allEmployeeAllowances, allowanceTypes, allEmployeeDeductions, deductionTypes, allLoans,
-        monthAtt, selectedMonth, holidayDates, leaveRequests, leaveTypeInfos, ledgers,
-      );
-      if (row) rows.push(row);
-    }
-
-    return rows.sort((a, b) => a.name.localeCompare(b.name, "ar"));
-  }, [attRecords, monthlyRecords, selectedMonth, empMap, ledgers, leaveRequests, leaveTypeInfos, holidayDates, allEmployeeAllowances, allowanceTypes, allEmployeeDeductions, deductionTypes, allLoans, dbDepartments, dbShifts]);
-
-  // Stats
-  const { totalBasic, totalNet, totalDeductions, totalEmployees } = useMemo(() => {
-    const basic = payrollData.reduce((s, r) => s + r.basicSalary, 0);
-    const net = payrollData.reduce((s, r) => s + r.netSalary, 0);
-    return {
-      totalBasic: basic,
-      totalNet: net,
-      totalDeductions: basic - net,
-      totalEmployees: payrollData.length,
-    };
-  }, [payrollData]);
-
-  // Persist payslips
-  const handleSavePayslips = useCallback(async () => {
-    if (payrollData.length === 0) return;
-    setSavingPayslips(true);
-    try {
-      const rows = payrollData.map((row: any) => ({
-        employee_id: row.empId,
-        month: selectedMonth,
-        basic_salary: row.basicSalary,
-        currency: row.currency,
-        days_worked: row.daysWorked,
-        total_hours: row.totalHours,
-        overtime_hours: row.overtime,
-        shortfall_hours: row.shortfall,
-        absence_days: row.absences,
-        net_salary: row.netSalary,
-        late_deduction: row.calc?.salaryByCurrency?.[row.currency]?.lateDeduction || 0,
-        shortfall_deduction: row.calc?.salaryByCurrency?.[row.currency]?.shortfallDeduction || 0,
-        absence_deduction: row.calc?.salaryByCurrency?.[row.currency]?.absenceDeduction || 0,
-        overtime_payment: row.calc?.salaryByCurrency?.[row.currency]?.overtimePayment || 0,
-        generated_at: new Date().toISOString(),
-      }));
-
-      await odooData.generatePayslips({
-        month: selectedMonth,
-        payslips: rows,
-        replace_month: true,
-      });
-
-      setPayslipsSaved(true);
-      setTimeout(() => setPayslipsSaved(false), 3000);
-    } catch (e: any) {
-      console.error("Failed to save payslips:", e.message);
-      localizedAlert(arabicSource("payroll.error_saving_statements") + " " + e.message);
-    }
-    setSavingPayslips(false);
-  }, [payrollData, selectedMonth]);
-
-  /** Server-side compute (attendance/leave/holiday) — same snapshot contract. */
-  const handleServerComputePayslips = useCallback(async () => {
+  const handleGeneratePayslips = useCallback(async (): Promise<void> => {
     if (!selectedMonth) return;
     setSavingPayslips(true);
     try {
-      await odooData.computePayrollServer(selectedMonth);
+      await generatePayslipsServer({ month: selectedMonth, replace_month: true });
       setPayslipsSaved(true);
+      list.refetchList();
       setTimeout(() => setPayslipsSaved(false), 3000);
-      localizedAlert("Server payroll computed");
-    } catch (e: any) {
-      console.error("Server payroll compute failed:", e.message);
-      localizedAlert(arabicSource("payroll.error_saving_statements") + " " + e.message);
+    } catch (e: unknown) {
+      const message = errorMessage(e);
+      console.error("Failed to generate payslips:", message);
+      localizedAlert(`${arabicSource("payroll.error_saving_statements")} ${message}`);
     }
     setSavingPayslips(false);
-  }, [selectedMonth]);
-
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonth, list.refetchList]);
 
   useEffect(() => {
-    if (selectedMonth) return;
-    if (monthlyRecords.length > 0) {
-      const months = [...new Set(monthlyRecords.map((r) => r.month_year))].sort().reverse();
-      setSelectedMonth(months[0]);
-    } else {
-      const now = new Date();
-      setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
-    }
-  }, [monthlyRecords, selectedMonth]);
+    if (selectedMonth || !metadata) return;
+    setSelectedMonth(metadata.current_month);
+  }, [metadata, selectedMonth]);
 
-  return {
-    activeTab,
-    allEmployeeAllowances,
-    allEmployeeDeductions,
-    allLoans,
-    allowanceTypes,
-    appSettings,
-    availableMonths,
-    dbDepartments,
-    dbShifts,
-    deductionTypes,
-    displayMonth,
-    employees,
-    holidayDates,
-    handleSavePayslips,
-    handleServerComputePayslips,
-    ledgers,
-    loading,
-    payrollData,
-    payslipsSaved,
-    refetchLedgers,
-    savingPayslips,
-    selectedEmpId,
-    selectedMonth,
-    setActiveTab,
-    setSelectedEmpId,
-    setSelectedMonth,
-    totalBasic,
-    totalDeductions,
-    totalEmployees,
-    totalNet,
-  };
+  return useMemo(
+    () => ({
+      activeTab,
+      appSettings,
+      availableMonths,
+      displayMonth,
+      employees,
+      handleGeneratePayslips,
+      handleMonthChange,
+      handleSearchChange,
+      initialLoading,
+      items: list.items,
+      listError: list.listError,
+      listLoading: list.listLoading,
+      metadata,
+      onPageChange: list.onPageChange,
+      onPerPageChange: list.onPerPageChange,
+      page: list.page,
+      payslipsSaved,
+      perPage: list.perPage,
+      refetchList: list.refetchList,
+      savingPayslips,
+      search,
+      selectedEmpId,
+      selectedMonth,
+      setActiveTab,
+      setSelectedEmpId,
+      total: list.total,
+      totalPages: list.totalPages,
+      totals: list.totals,
+      totalsLoading: list.totalsLoading,
+    }),
+    [
+      activeTab, appSettings, availableMonths, displayMonth, employees,
+      handleGeneratePayslips, handleMonthChange, handleSearchChange, initialLoading,
+      list, metadata, payslipsSaved, savingPayslips, search, selectedEmpId, selectedMonth,
+    ],
+  );
 };

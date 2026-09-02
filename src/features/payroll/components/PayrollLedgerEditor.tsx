@@ -1,9 +1,14 @@
 import { Loader2, Pencil, Save, Plus, Minus } from "lucide-react";
-import type { DbMonthlyLedger } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { payrollCardClass as cardCls } from "../styles";
 import PayrollLedgerRow from "./PayrollLedgerRow";
 import PayrollCurrencyToggleButton from "./PayrollCurrencyToggleButton";
+
+type LedgerCurrencyTotals = {
+  loan_by_currency?: Record<string, number>;
+  tip_by_currency?: Record<string, number>;
+  penalty_by_currency?: Record<string, number>;
+};
 
 type PayrollLedgerEditorProps = {
   ledgerCurrency: "IQD" | "USD";
@@ -19,7 +24,7 @@ type PayrollLedgerEditorProps = {
   onLedgerTipChange: (value: number) => void;
   ledgerPenalty: number;
   onLedgerPenaltyChange: (value: number) => void;
-  currentLedger: DbMonthlyLedger | undefined;
+  currentLedger: LedgerCurrencyTotals | undefined;
 };
 
 const PayrollLedgerEditor = ({

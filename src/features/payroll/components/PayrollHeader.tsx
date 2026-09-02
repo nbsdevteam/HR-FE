@@ -1,19 +1,9 @@
-import { Download, Calculator, CheckCircle } from "lucide-react";
+import { useCallback } from "react";
+import { Download, CheckCircle } from "lucide-react";
 import { Button, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { payrollSelectClass } from "../styles";
-
-type PayrollHeaderProps = {
-  availableMonths: string[];
-  displayMonth: (month: string) => string;
-  payrollCount: number;
-  payslipsSaved: boolean;
-  savingPayslips: boolean;
-  selectedMonth: string;
-  onMonthChange: (month: string) => void;
-  onSavePayslips: () => void;
-  onServerComputePayslips: () => void;
-};
+import type { PayrollHeaderProps } from "../types";
 
 const PayrollHeader = ({
   availableMonths,
@@ -23,12 +13,12 @@ const PayrollHeader = ({
   savingPayslips,
   selectedMonth,
   onMonthChange,
-  onSavePayslips,
-  onServerComputePayslips,
+  onGeneratePayslips,
 }: PayrollHeaderProps) => {
-  const handleMonthChange = (value: string): void => {
-    onMonthChange(value);
-  };
+  const handleMonthChange = useCallback(
+    (value: string): void => onMonthChange(value),
+    [onMonthChange],
+  );
 
   const saveButtonIcon = payslipsSaved ? CheckCircle : Download;
   const saveButtonLabel = savingPayslips
@@ -57,7 +47,7 @@ const PayrollHeader = ({
         style={{ width: 180 }}
       />
       <Button
-        onClick={onSavePayslips}
+        onClick={onGeneratePayslips}
         disabled={savingPayslips || payslipsSaved || payrollCount === 0}
         loading={savingPayslips}
         icon={saveButtonIcon}
@@ -67,19 +57,6 @@ const PayrollHeader = ({
         style={{ fontSize: 13 }}
       >
         {saveButtonLabel}
-      </Button>
-      <Button
-        onClick={onServerComputePayslips}
-        disabled={savingPayslips || !selectedMonth}
-        title="Server compute from attendance/leave/holidays"
-        variant="outline"
-        size="unstyled"
-        rounded="rounded-lg"
-        className="flex items-center gap-2 px-4 py-2.5"
-        style={{ fontSize: 13 }}
-        icon={Calculator}
-      >
-        Server compute
       </Button>
     </div>
   </div>

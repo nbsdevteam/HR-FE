@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
 import { Button } from "@/shared/components";
@@ -22,6 +22,7 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
     avgHoursPerDay,
     calc,
     currentLedger,
+    detailLoading,
     displayMonth,
     editingLedger,
     excuseAbsence,
@@ -85,6 +86,8 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
     [setShowAbsence],
   );
 
+  const hasContent = Boolean(selectedData && calc);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -121,116 +124,128 @@ const PayrollDetailPanel = (props: PayrollDetailPanelProps) => {
                   iconClassName="w-5 h-5 text-foreground"
                   aria-label={arabicSource("common.close")}
                 />
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                    <span className="text-primary" style={{ fontSize: 18 }}>
-                      {selectedData.name.charAt(0)}
-                    </span>
+                {hasContent && selectedData && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <span className="text-primary" style={{ fontSize: 18 }}>
+                        {selectedData.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <h2 className="text-foreground">{selectedData.name}</h2>
+                      <p
+                        className="text-muted-foreground"
+                        style={{ fontSize: 13 }}
+                      >
+                        {selectedData.department} — {displayMonth(selectedMonth)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-foreground">{selectedData.name}</h2>
-                    <p
-                      className="text-muted-foreground"
-                      style={{ fontSize: 13 }}
-                    >
-                      {selectedData.department} — {displayMonth(selectedMonth)}
-                    </p>
-                  </div>
+                )}
+              </div>
+
+              {!hasContent && detailLoading && (
+                <div className="flex items-center justify-center py-24 text-muted-foreground">
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 </div>
-              </div>
-
-              <PayrollSummaryChips
-                calc={calc}
-                avgHoursPerDay={avgHoursPerDay}
-                hasShortfallRecords={shortfallRecs.length > 0}
-                hasAbsenceRecords={absenceRecs.length > 0}
-                leaveRecsCount={leaveRecs.length}
-                paidLeaveCount={paidLeaveCount}
-                unpaidLeaveCount={unpaidLeaveCount}
-                showCalendar={showCalendar}
-                onShowShortfall={handleShowShortfall}
-                onShowAbsence={handleShowAbsence}
-                onToggleCalendar={handleToggleCalendar}
-              />
-
-              {/* Ledger Editor + Salary Breakdown */}
-              <div className="flex flex-col gap-5">
-                <PayrollLedgerEditor
-                  ledgerCurrency={ledgerCurrency}
-                  onLedgerCurrencyChange={setLedgerCurrency}
-                  editingLedger={editingLedger}
-                  onStartEdit={handleStartEditLedger}
-                  onCancelEdit={handleCancelEditLedger}
-                  onSave={handleSaveLedger}
-                  ledgerSaving={ledgerSaving}
-                  ledgerLoan={ledgerLoan}
-                  onLedgerLoanChange={setLedgerLoan}
-                  ledgerTip={ledgerTip}
-                  onLedgerTipChange={setLedgerTip}
-                  ledgerPenalty={ledgerPenalty}
-                  onLedgerPenaltyChange={setLedgerPenalty}
-                  currentLedger={currentLedger}
-                />
-
-                {Object.values(calc.salaryByCurrency).map((sc) => (
-                  <PayrollSalaryBreakdownCard
-                    key={sc.currency}
-                    sc={sc}
-                    calc={calc}
-                    monthLabel={displayMonth(selectedMonth)}
-                  />
-                ))}
-              </div>
-
-              {leaveRecs.length > 0 && (
-                <PayrollLeaveDaysCard
-                  leaveRecs={leaveRecs}
-                  paidLeaveCount={paidLeaveCount}
-                  unpaidLeaveCount={unpaidLeaveCount}
-                />
               )}
 
-              <AnimatePresence>
-                {showCalendar && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <CalendarView
-                      records={records}
-                      settings={DEFAULT_SETTINGS}
-                      monthYear={selectedMonth}
-                      onExcuseAbsence={excuseAbsence}
-                      onExcuseShortfall={excuseShortfall}
+              {hasContent && calc && (
+                <>
+                  <PayrollSummaryChips
+                    calc={calc}
+                    avgHoursPerDay={avgHoursPerDay}
+                    hasShortfallRecords={shortfallRecs.length > 0}
+                    hasAbsenceRecords={absenceRecs.length > 0}
+                    leaveRecsCount={leaveRecs.length}
+                    paidLeaveCount={paidLeaveCount}
+                    unpaidLeaveCount={unpaidLeaveCount}
+                    showCalendar={showCalendar}
+                    onShowShortfall={handleShowShortfall}
+                    onShowAbsence={handleShowAbsence}
+                    onToggleCalendar={handleToggleCalendar}
+                  />
+
+                  {/* Ledger Editor + Salary Breakdown */}
+                  <div className="flex flex-col gap-5">
+                    <PayrollLedgerEditor
+                      ledgerCurrency={ledgerCurrency}
+                      onLedgerCurrencyChange={setLedgerCurrency}
+                      editingLedger={editingLedger}
+                      onStartEdit={handleStartEditLedger}
+                      onCancelEdit={handleCancelEditLedger}
+                      onSave={handleSaveLedger}
+                      ledgerSaving={ledgerSaving}
+                      ledgerLoan={ledgerLoan}
+                      onLedgerLoanChange={setLedgerLoan}
+                      ledgerTip={ledgerTip}
+                      onLedgerTipChange={setLedgerTip}
+                      ledgerPenalty={ledgerPenalty}
+                      onLedgerPenaltyChange={setLedgerPenalty}
+                      currentLedger={currentLedger}
                     />
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Shortfall Popover */}
-              <AnimatePresence>
-                {showShortfall && (
-                  <ShortfallPopover
-                    records={shortfallRecs}
-                    targetHours={DEFAULT_SETTINGS.targetWorkingHoursPerDay}
-                    onClose={handleCloseShortfall}
-                    onExcuse={excuseShortfall}
-                  />
-                )}
-              </AnimatePresence>
+                    {Object.values(calc.salaryByCurrency).map((sc) => (
+                      <PayrollSalaryBreakdownCard
+                        key={sc.currency}
+                        sc={sc}
+                        calc={calc}
+                        monthLabel={displayMonth(selectedMonth)}
+                      />
+                    ))}
+                  </div>
 
-              {/* Absence Popover */}
-              <AnimatePresence>
-                {showAbsence && (
-                  <AbsencePopover
-                    records={absenceRecs}
-                    onClose={handleCloseAbsence}
-                    onExcuse={excuseAbsence}
-                  />
-                )}
-              </AnimatePresence>
+                  {leaveRecs.length > 0 && (
+                    <PayrollLeaveDaysCard
+                      leaveRecs={leaveRecs}
+                      paidLeaveCount={paidLeaveCount}
+                      unpaidLeaveCount={unpaidLeaveCount}
+                    />
+                  )}
+
+                  <AnimatePresence>
+                    {showCalendar && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <CalendarView
+                          records={records}
+                          settings={DEFAULT_SETTINGS}
+                          monthYear={selectedMonth}
+                          onExcuseAbsence={excuseAbsence}
+                          onExcuseShortfall={excuseShortfall}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Shortfall Popover */}
+                  <AnimatePresence>
+                    {showShortfall && (
+                      <ShortfallPopover
+                        records={shortfallRecs}
+                        targetHours={DEFAULT_SETTINGS.targetWorkingHoursPerDay}
+                        onClose={handleCloseShortfall}
+                        onExcuse={excuseShortfall}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  {/* Absence Popover */}
+                  <AnimatePresence>
+                    {showAbsence && (
+                      <AbsencePopover
+                        records={absenceRecs}
+                        onClose={handleCloseAbsence}
+                        onExcuse={excuseAbsence}
+                      />
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
             </div>
           </motion.div>
         </>

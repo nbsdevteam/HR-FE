@@ -21,7 +21,9 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
   const isAbsent = rec?.status === "absent" || rec?.status === "absent_due_to_late_threshold";
   const hasShortfall = Boolean(rec && !isAbsent && !isLeave && rec.workingHours < settings.targetWorkingHoursPerDay && rec.isScheduledWorkingDay);
   const hasOvertime = Boolean(rec && rec.overtimeHours > 0);
-  const hasData = Boolean(rec && !isAbsent && !isLeave && rec.checkInTime);
+  // The server no longer returns per-punch check-in/check-out times, only a
+  // day-level worked-hours total — render the hours block off `status`.
+  const hasData = Boolean(rec && !isAbsent && !isLeave && rec.status !== "holiday");
 
   const handleExcuseAbsence = useCallback(() => {
     if (rec && onExcuseAbsence) onExcuseAbsence(rec.id);
@@ -92,11 +94,13 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
       {/* Normal attendance — times + hours hero */}
       {hasData && rec && (
         <div className="flex-1 flex flex-col items-center text-center">
-          {/* Times — stacked, no dots */}
-          <div className="space-y-0.5">
-            <div className="text-emerald-500 font-mono" style={{ fontSize: 11 }} dir="ltr">{rec.formattedCheckIn}</div>
-            <div className="text-blue-500 font-mono" style={{ fontSize: 11 }} dir="ltr">{rec.formattedCheckOut || "—"}</div>
-          </div>
+          {/* Times — stacked, no dots. Only rendered when the source has per-punch times. */}
+          {rec.formattedCheckIn && (
+            <div className="space-y-0.5">
+              <div className="text-emerald-500 font-mono" style={{ fontSize: 11 }} dir="ltr">{rec.formattedCheckIn}</div>
+              <div className="text-blue-500 font-mono" style={{ fontSize: 11 }} dir="ltr">{rec.formattedCheckOut || "—"}</div>
+            </div>
+          )}
           {/* Hours — hero element at bottom */}
           <div className="mt-auto pt-1.5">
             <span className="text-foreground font-mono font-semibold" style={{ fontSize: 12 }}>

@@ -35,13 +35,13 @@ export const SHORTFALL_TABLE_HEADINGS = [
 ];
 
 export const sortByData = [
-  { label: arabicSource("common.employee"), key: "name" },
-  { label: arabicSource("common.section"), key: "department" },
-  { label: arabicSource("common.basic_salary"), key: "basicSalary" },
-  { label: arabicSource("common.working_days"), key: "daysWorked" },
-  { label: arabicSource("common.working_hours"), key: "totalHours" },
-  { label: arabicSource("common.overtime"), key: "overtime" },
-  { label: arabicSource("common.shortage"), key: "shortfall" },
-  { label: arabicSource("common.absence"), key: "absences" },
-  { label: arabicSource("common.net_salary"), key: "netSalary" },
+  { label: arabicSource("common.employee"), key: "employee_name" },
+  { label: arabicSource("common.section"), key: "department_name" },
+  { label: arabicSource("common.basic_salary"), key: "basic_salary" },
+  { label: arabicSource("common.working_days"), key: "days_worked" },
+  { label: arabicSource("common.working_hours"), key: "total_hours" },
+  { label: arabicSource("common.overtime"), key: "overtime_hours" },
+  { label: arabicSource("common.shortage"), key: "shortfall_hours" },
+  { label: arabicSource("common.absence"), key: "absence_days" },
+  { label: arabicSource("common.net_salary"), key: "net_salary" },
 ] as const;

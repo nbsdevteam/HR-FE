@@ -7,33 +7,23 @@ type PayrollDetailPanelContainerProps = {
 };
 
 const PayrollDetailPanelContainer = ({ page }: PayrollDetailPanelContainerProps) => {
-  const { refetchLedgers, setSelectedEmpId } = page;
+  const { refetchList, setSelectedEmpId } = page;
 
   const handleClose = useCallback(() => {
     setSelectedEmpId(null);
   }, [setSelectedEmpId]);
 
-  const handleLedgerUpdate = useCallback(async () => {
-    await refetchLedgers();
-  }, [refetchLedgers]);
+  const handleLedgerUpdate = useCallback((): void => {
+    refetchList();
+  }, [refetchList]);
 
   return (
     <PayrollDetailPanel
       empId={page.selectedEmpId}
       onClose={handleClose}
-      payrollData={page.payrollData}
       selectedMonth={page.selectedMonth}
-      employees={page.employees}
-      ledgers={page.ledgers}
+      metadata={page.metadata}
       onLedgerUpdate={handleLedgerUpdate}
-      dbShifts={page.dbShifts}
-      dbDepartments={page.dbDepartments}
-      holidayDates={page.holidayDates}
-      allowanceTypes={page.allowanceTypes}
-      allEmployeeAllowances={page.allEmployeeAllowances}
-      deductionTypes={page.deductionTypes}
-      allEmployeeDeductions={page.allEmployeeDeductions}
-      allLoans={page.allLoans}
       appSettings={page.appSettings}
     />
   );
