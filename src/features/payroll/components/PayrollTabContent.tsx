@@ -22,8 +22,15 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
           items={page.items}
           totals={page.totals}
           loading={page.listLoading}
+          error={page.listError}
           search={page.search}
           onSearchChange={page.handleSearchChange}
+          departments={page.metadata?.departments}
+          departmentId={page.departmentId}
+          onDepartmentChange={page.handleDepartmentChange}
+          statuses={page.metadata?.statuses}
+          status={page.status}
+          onStatusChange={page.handleStatusChange}
           page={page.page}
           perPage={page.perPage}
           totalPages={page.totalPages}

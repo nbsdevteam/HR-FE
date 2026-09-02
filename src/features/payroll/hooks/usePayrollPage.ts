@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useEmployees } from "@/shared/hooks";
 import { generatePayslipsServer } from "@/shared/api/payroll";
+import type { PayrollStatus } from "@/shared/api/payrollTypes";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -13,6 +14,8 @@ export const usePayrollPage = () => {
   const [activeTab, setActiveTab] = useState<PayrollTabId>("overview");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [search, setSearch] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
+  const [status, setStatus] = useState<PayrollStatus | "">("");
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
   const [savingPayslips, setSavingPayslips] = useState(false);
   const [payslipsSaved, setPayslipsSaved] = useState(false);
@@ -25,9 +28,9 @@ export const usePayrollPage = () => {
   const list = usePayrollListPaged({
     month: selectedMonth,
     search,
-    departmentId: null,
+    departmentId: departmentId || null,
     employeeId: null,
-    status: null,
+    status: status || null,
   });
 
   const availableMonths = metadata?.available_months ?? [];
@@ -40,6 +43,14 @@ export const usePayrollPage = () => {
 
   const handleSearchChange = useCallback((value: string): void => {
     setSearch(value);
+  }, []);
+
+  const handleDepartmentChange = useCallback((value: string): void => {
+    setDepartmentId(value);
+  }, []);
+
+  const handleStatusChange = useCallback((value: string): void => {
+    setStatus(value as PayrollStatus | "");
   }, []);
 
   const handleMonthChange = useCallback((month: string): void => {
@@ -73,11 +84,14 @@ export const usePayrollPage = () => {
       activeTab,
       appSettings,
       availableMonths,
+      departmentId,
       displayMonth,
       employees,
+      handleDepartmentChange,
       handleGeneratePayslips,
       handleMonthChange,
       handleSearchChange,
+      handleStatusChange,
       initialLoading,
       items: list.items,
       listError: list.listError,
@@ -95,15 +109,17 @@ export const usePayrollPage = () => {
       selectedMonth,
       setActiveTab,
       setSelectedEmpId,
+      status,
       total: list.total,
       totalPages: list.totalPages,
       totals: list.totals,
       totalsLoading: list.totalsLoading,
     }),
     [
-      activeTab, appSettings, availableMonths, displayMonth, employees,
-      handleGeneratePayslips, handleMonthChange, handleSearchChange, initialLoading,
-      list, metadata, payslipsSaved, savingPayslips, search, selectedEmpId, selectedMonth,
+      activeTab, appSettings, availableMonths, departmentId, displayMonth, employees,
+      handleDepartmentChange, handleGeneratePayslips, handleMonthChange, handleSearchChange,
+      handleStatusChange, initialLoading, list, metadata, payslipsSaved, savingPayslips,
+      search, selectedEmpId, selectedMonth, status,
     ],
   );
 };

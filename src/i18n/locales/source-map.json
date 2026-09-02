@@ -225,6 +225,8 @@
   "الثلاثاء": "common.tuesday",
   "الجمعة": "common.friday",
   "الحالة": "common.status",
+  "مسودة": "payroll.status_draft",
+  "تم الإصدار": "payroll.status_generated",
   "الخميس": "common.thursday",
   "السبت": "common.saturday",
   "الملف فارغ أو لا يحتوي على بيانات": "messages.the_file_is_empty_or_contains_no_data",

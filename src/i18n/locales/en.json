@@ -1155,6 +1155,8 @@
   "login.human_resources_management_system": "Human resources management system",
   "login.please_enter_your_email_and_password": "Please enter your email and password",
   "payroll.and": "...and",
+  "payroll.status_draft": "Draft",
+  "payroll.status_generated": "Generated",
   "payroll.total_deficiency": "Total deficiency:",
   "payroll.total": "Total:",
   "payroll.payroll_and_payroll_management": "Payroll and payroll management",

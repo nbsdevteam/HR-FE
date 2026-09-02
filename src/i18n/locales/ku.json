@@ -1155,6 +1155,8 @@
   "login.human_resources_management_system": "سیستەمی بەڕێوەبردنی سەرچاوە مرۆییەکان",
   "login.please_enter_your_email_and_password": "تکایە ئیمەیڵ و وشەی نهێنی خۆت دابنێ",
   "payroll.and": "...و",
+  "payroll.status_draft": "ڕەشنووس",
+  "payroll.status_generated": "دەرچووە",
   "payroll.total_deficiency": "کۆی کەمی:",
   "payroll.total": "کۆی گشتی:",
   "payroll.payroll_and_payroll_management": "بەڕێوەبردنی مووچە و مووچە",

@@ -4,11 +4,12 @@ import DataTable from "@/shared/components/DataTable";
 import StatCard from "@/shared/components/StatCard";
 import SearchInput from "@/shared/components/SearchInput";
 import Pagination from "@/shared/components/Pagination";
+import Select from "@/shared/components/Select";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import { arabicSource } from "@/i18n/source";
-import type { PayrollRow, PayrollTotals } from "@/shared/api/payrollTypes";
+import type { PayrollRow, PayrollStatus, PayrollTotals } from "@/shared/api/payrollTypes";
 import {
   payrollCardClass as cardCls,
   payrollInputClass as inputCls,
@@ -19,12 +20,24 @@ import { sortByData } from "../data";
 
 type PayrollSortKey = (typeof sortByData)[number]["key"];
 
+const STATUS_LABELS: Record<PayrollStatus, string> = {
+  draft: arabicSource("payroll.status_draft"),
+  generated: arabicSource("payroll.status_generated"),
+};
+
 type OverviewTabProps = {
   items: PayrollRow[];
   totals: PayrollTotals | null;
   loading: boolean;
+  error: string | null;
   search: string;
   onSearchChange: (value: string) => void;
+  departments?: Array<Record<string, unknown>>;
+  departmentId: string;
+  onDepartmentChange: (value: string) => void;
+  statuses?: PayrollStatus[];
+  status: PayrollStatus | "";
+  onStatusChange: (value: string) => void;
   page: number;
   perPage: number;
   totalPages: number;
@@ -38,8 +51,15 @@ const OverviewTab = ({
   items,
   totals,
   loading,
+  error,
   search,
   onSearchChange,
+  departments,
+  departmentId,
+  onDepartmentChange,
+  statuses,
+  status,
+  onStatusChange,
   page,
   perPage,
   totalPages,
@@ -100,6 +120,20 @@ const OverviewTab = ({
     [totals],
   );
 
+  const departmentOptions = useMemo(
+    () =>
+      (departments ?? []).map((d) => ({
+        value: String(d.id),
+        label: String(d.name ?? ""),
+      })),
+    [departments],
+  );
+
+  const statusOptions = useMemo(
+    () => (statuses ?? []).map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+    [statuses],
+  );
+
   const handleSort = useCallback(
     (key: PayrollSortKey): void => {
       toggleSort(key, paySortBy, paySortDir, setPaySortBy, setPaySortDir);
@@ -138,14 +172,39 @@ const OverviewTab = ({
         ))}
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-3">
+      {error && (
+        <p className="text-destructive" style={{ fontSize: 13 }} role="alert">
+          {error}
+        </p>
+      )}
+
+      {/* Search & filters */}
+      <div className="flex flex-wrap items-center gap-3">
         <SearchInput
           value={search}
           onChange={onSearchChange}
           placeholder={arabicSource("common.search_by_name_or_department")}
           wrapperClassName="relative flex-1 max-w-md"
           inputClassName={`${inputCls} ps-10`}
+        />
+        <Select
+          value={departmentId}
+          onChange={onDepartmentChange}
+          options={departmentOptions}
+          optionsAreData
+          blankLabel={arabicSource("common.all")}
+          placeholder={arabicSource("common.section")}
+          className={inputCls}
+          style={{ width: 180 }}
+        />
+        <Select
+          value={status}
+          onChange={onStatusChange}
+          options={statusOptions}
+          blankLabel={arabicSource("common.all")}
+          placeholder={arabicSource("common.status")}
+          className={inputCls}
+          style={{ width: 160 }}
         />
       </div>
 

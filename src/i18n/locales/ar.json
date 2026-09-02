@@ -1155,6 +1155,8 @@
   "login.human_resources_management_system": "نظام إدارة الموارد البشرية",
   "login.please_enter_your_email_and_password": "يرجى إدخال البريد الإلكتروني وكلمة المرور",
   "payroll.and": "... و",
+  "payroll.status_draft": "مسودة",
+  "payroll.status_generated": "تم الإصدار",
   "payroll.total_deficiency": "إجمالي النقص:",
   "payroll.total": "إجمالي:",
   "payroll.payroll_and_payroll_management": "إدارة الرواتب والكشوفات",
