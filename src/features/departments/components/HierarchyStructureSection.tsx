@@ -124,7 +124,7 @@ const HierarchyStructureSection = ({
 
       <div ref={containerRef} className={`overflow-auto p-8 ${panEnabled ? (isDragging ? "cursor-grabbing" : "cursor-grab") : ""}`}
         style={{ maxHeight: "75vh" }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
-        <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", paddingBottom: 40 }}>
+        <div style={{ width: "100%", paddingBottom: 40 }}>
           <div ref={chartContentRef} className="transition-transform duration-200"
             style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
             <StructureCardsView
