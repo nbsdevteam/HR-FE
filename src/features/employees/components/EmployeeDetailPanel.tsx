@@ -54,6 +54,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     handleLocationCountryChange,
     handleLocationStateChange,
     handleManagerChange,
+    handlePhotoChange,
     handlePositionSelect,
     handleSave,
     handleTermination,
@@ -74,6 +75,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     newAttachment,
     newCustody,
     newDeptName,
+    photoError,
     resolvedDepartmentId,
     resolvedPositionId,
     saveError,
@@ -149,7 +151,12 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
             onCancelEdit={handleCancelEdit}
             onClose={onClose}
           />
-          <EmployeeIdentityCard editData={editData} />
+          <EmployeeIdentityCard
+            editData={editData}
+            isEditing={isEditing}
+            photoError={photoError}
+            onPhotoChange={handlePhotoChange}
+          />
         </div>
 
         {saveError && (

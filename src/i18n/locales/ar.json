@@ -2641,5 +2641,9 @@
   "employees.force_delete_action": "أرشفة على أي حال",
   "employees.error_suspending_employee": "خطأ في تعليق الموظف:",
   "employees.error_restoring_employee": "خطأ في استعادة الموظف:",
-  "hierarchy.reporting_tree_flat_banner": "لم يتم تحديد خطوط تسلسل إداري بعد. تُعرض المناصب دون تسلسل هرمي."
+  "hierarchy.reporting_tree_flat_banner": "لم يتم تحديد خطوط تسلسل إداري بعد. تُعرض المناصب دون تسلسل هرمي.",
+  "employees.invalid_photo": "هذا الملف ليس صورة صالحة — جرّب PNG أو JPEG أو GIF أو WEBP أو BMP أو SVG",
+  "employees.photo_too_large": "حجم هذه الصورة كبير جداً — الحد الأقصى 10 ميجابايت",
+  "employees.change_photo": "تغيير الصورة",
+  "employees.remove_photo": "إزالة الصورة"
 }

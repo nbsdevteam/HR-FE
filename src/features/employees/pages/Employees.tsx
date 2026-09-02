@@ -79,6 +79,7 @@ const Employees = () => {
     onPerPageChange,
     openAddModal,
     pageError,
+    photoError,
     pageLoading,
     pageNumber,
     pageTotal,
@@ -201,6 +202,7 @@ const Employees = () => {
               addSaving={addSaving}
               addError={addError}
               birthDateError={birthDateError}
+              photoError={photoError}
               fieldErrors={fieldErrors}
               deviceSyncStatus={deviceSyncStatus}
               nextEmployeeId={nextEmployeeId}

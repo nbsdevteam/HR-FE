@@ -2641,5 +2641,9 @@
   "employees.force_delete_action": "Archive anyway",
   "employees.error_suspending_employee": "Error suspending employee:",
   "employees.error_restoring_employee": "Error restoring employee:",
-  "hierarchy.reporting_tree_flat_banner": "No reporting lines have been defined yet. Positions are shown without a hierarchy."
+  "hierarchy.reporting_tree_flat_banner": "No reporting lines have been defined yet. Positions are shown without a hierarchy.",
+  "employees.invalid_photo": "This file isn't a valid image — try a PNG, JPEG, GIF, WEBP, BMP or SVG",
+  "employees.photo_too_large": "This image is too large — max. 10 MB",
+  "employees.change_photo": "Change photo",
+  "employees.remove_photo": "Remove photo"
 }

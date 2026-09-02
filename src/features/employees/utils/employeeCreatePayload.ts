@@ -22,8 +22,13 @@ const buildAddressPayload = (form: EmployeeAddForm): Record<string, string | num
 export const buildEmployeeCreatePayload = (
   form: EmployeeAddForm,
   personId: number,
+  photo?: string | null,
 ): Record<string, unknown> => ({
   name: form.name,
+  // Optional: the data URL captured by the face-photo picker, if the user
+  // added one — accepted verbatim, the backend strips the `data:...;base64,`
+  // prefix itself.
+  ...(photo ? { photo } : {}),
   email: form.email || null,
   personal_phone: form.personalPhone || null,
   phone: form.personalPhone || form.companyPhone || null,

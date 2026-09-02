@@ -13,6 +13,8 @@ import type {
 import { birthDateFieldError } from "../utils/birthDate";
 import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { errorMessage } from "../utils/errorMessage";
+import { buildEmployeeUpdatePayload } from "../utils/employeeUpdatePayload";
+import { photoFieldError } from "../utils/photoFieldError";
 import { useEmployeeAddressForm } from "./useEmployeeAddressForm";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
 import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
@@ -29,6 +31,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [addingNewDept, setAddingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState("");
@@ -98,6 +101,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setEditData(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  // Picking or clearing a photo clears the rejection it caused, so a stale
+  // message never sits under an avatar the user has already corrected.
+  const handlePhotoChange = useCallback((photo: string) => {
+    setPhotoError(null);
+    setEditData(prev => ({ ...prev, photo }));
+  }, []);
+
   // Re-picking either foreign key clears the "no longer exists" rejection the
   // previous choice produced, so a stale message never sits under a select the
   // user has already corrected.
@@ -156,54 +166,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setSaving(true);
     setSaveError(null);
     setBirthDateError(null);
+    setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     try {
-      // The backend now patches `address` partially — untouched keys are left
-      // alone, so it's safe to just send the current structured values. Ids
-      // come from picking an item off the country/state/city dropdowns, so
-      // they're always present alongside a name; send the id — "the id wins"
-      // server-side.
-      const address: Record<string, string | number> = {};
-      if (editData.countryId) address.country_id = Number(editData.countryId);
-      else if (editData.country) address.country = editData.country;
-      if (editData.stateId) address.state_id = Number(editData.stateId);
-      else if (editData.state) address.state = editData.state;
-      if (editData.cityId) address.city_id = Number(editData.cityId);
-      else if (editData.city) address.city = editData.city;
-      if (editData.residence) address.residence = editData.residence;
-
-      // `/update` is a partial patch, and on it `null` means "not part of this
-      // patch" while `""` *erases* the stored date. So the key only goes out
-      // when the user actually touched the field, and only as `""` when they
-      // emptied a date that was there.
-      const birthDatePatch: Record<string, string> = editData.birthDate !== employee.birthDate
-        ? { birth_date: editData.birthDate || "" }
-        : {};
-
-      await odooData.updateEmployee(editData.dbId, {
-        name: editData.name,
-        email: editData.email,
-        personal_phone: editData.personalPhone,
-        company_phone: editData.companyPhone,
-        phone: editData.personalPhone || editData.companyPhone,
-        monthly_salary: editData.salary,
-        join_date: editData.startDate || null,
-        end_date: editData.endDate || null,
-        status: editData.status,
-        department_id: resolvedDepartmentId,
-        designation_id: resolvedPositionId,
-        address,
-        work_location: editData.workLocation || "",
-        // The read API returns this field as `identification_id`; send both
-        // names since it's unclear which one the update handler consumes.
-        national_id: editData.nationalId,
-        identification_id: editData.nationalId,
-        emergency_contact: editData.emergencyContact,
-        emergency_phone: editData.emergencyPhone,
-        blood_type: editData.bloodType || null,
-        manager_id: editData.managerId || null,
-        ...birthDatePatch,
-      });
+      await odooData.updateEmployee(
+        editData.dbId,
+        buildEmployeeUpdatePayload(editData, employee, resolvedDepartmentId, resolvedPositionId),
+      );
 
       setIsEditing(false);
       onSave?.(editData);
@@ -233,7 +202,11 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       // (backend §4) — usually a dropdown option deleted in another tab — so it
       // belongs on the select the user has to change, not in the form-level box.
       const rejectedFields = employeeFieldErrors(e);
+      // A rejected photo also writes nothing (backend photo spec), so it
+      // belongs under the avatar control rather than the form-level box.
+      const photoErr = photoFieldError(e);
       if (birthError) setBirthDateError(birthError);
+      else if (photoErr) setPhotoError(photoErr);
       else if (rejectedFields) setFieldErrors(rejectedFields);
       else setSaveError(errorMessage(e));
     } finally {
@@ -244,6 +217,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
     setBirthDateError(null);
+    setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setEditData({ ...employee });
     custodyForm.setShowAddCustody(false);
@@ -264,11 +238,13 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     handleDepartmentSelect,
     handleEditField,
     handleManagerChange,
+    handlePhotoChange,
     handlePositionSelect,
     handleSave,
     isEditing,
     modalTab,
     newDeptName,
+    photoError,
     resolvedDepartmentId,
     resolvedPositionId,
     saveError,

@@ -10,6 +10,7 @@ import { birthDateFieldError } from "../utils/birthDate";
 import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
 import { errorMessage } from "../utils/errorMessage";
+import { photoFieldError } from "../utils/photoFieldError";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
 
 const defaultAddForm: EmployeeAddForm = {
@@ -42,6 +43,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
   const [nextEmployeeId, setNextEmployeeId] = useState<number | null>(null);
@@ -83,6 +85,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setAddForm(defaultAddForm);
     setAddError(null);
     setBirthDateError(null);
+    setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setDeviceSyncStatus("idle");
     setNextEmployeeId(null);
@@ -170,9 +173,11 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const handleClearFacePhoto = useCallback(() => {
     setFacePhotoPreview(null);
     setFacePhotoBase64(null);
+    setPhotoError(null);
   }, []);
 
   const handleFacePhoto = useCallback((file: File) => {
+    setPhotoError(null);
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
@@ -198,12 +203,13 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setAddSaving(true);
     setAddError(null);
     setBirthDateError(null);
+    setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
 
     try {
       const newPersonId = nextEmployeeId;
 
-      await odooData.createEmployee(buildEmployeeCreatePayload(addForm, newPersonId));
+      await odooData.createEmployee(buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview));
 
       setDeviceSyncStatus("syncing");
       try {
@@ -231,12 +237,14 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     } catch (error: unknown) {
       const birthError = birthDateFieldError(error);
       const rejectedFields = employeeFieldErrors(error);
+      const photoErr = photoFieldError(error);
       if (birthError) setBirthDateError(birthError);
+      else if (photoErr) setPhotoError(photoErr);
       else if (rejectedFields) setFieldErrors(rejectedFields);
       else setAddError(errorMessage(error));
     }
     setAddSaving(false);
-  }, [addForm, facePhotoBase64, nextEmployeeId, refetch, resetAddForm]);
+  }, [addForm, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm]);
 
   useEffect(() => {
     return () => {
@@ -275,6 +283,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     loadingStates,
     nextEmployeeId,
     openAddModal,
+    photoError,
     showAddModal,
     states,
     updateAddForm,

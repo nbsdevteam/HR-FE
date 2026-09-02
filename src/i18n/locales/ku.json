@@ -2641,5 +2641,9 @@
   "employees.force_delete_action": "لەگەڵ ئەوەشدا ئەرشیف بکە",
   "employees.error_suspending_employee": "هەڵە لە ڕاگرتنی کارمەند:",
   "employees.error_restoring_employee": "هەڵە لە گەڕاندنەوەی کارمەند:",
-  "hierarchy.reporting_tree_flat_banner": "هێشتا هێڵی ڕاپۆرتدان دیاری نەکراوە. پۆستەکان بەبێ پلەبەندی نیشان دەدرێن."
+  "hierarchy.reporting_tree_flat_banner": "هێشتا هێڵی ڕاپۆرتدان دیاری نەکراوە. پۆستەکان بەبێ پلەبەندی نیشان دەدرێن.",
+  "employees.invalid_photo": "ئەم فایلە وێنەیەکی دروست نییە — تکایە PNG یان JPEG یان GIF یان WEBP یان BMP یان SVG هەوڵبدە",
+  "employees.photo_too_large": "قەبارەی ئەم وێنەیە زۆر گەورەیە — زۆرترین ڕێگەپێدراو 10 مێگابایت",
+  "employees.change_photo": "گۆڕینی وێنە",
+  "employees.remove_photo": "لابردنی وێنە"
 }

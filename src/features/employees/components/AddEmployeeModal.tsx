@@ -16,6 +16,8 @@ type AddEmployeeModalProps = {
   addSaving: boolean;
   addError: string | null;
   birthDateError: string | null;
+  /** Field-level `invalid_photo` / `photo_too_large` rejection for the face photo. */
+  photoError: string | null;
   /** Field-level `department_not_found` / `designation_not_found` rejections (backend §4). */
   fieldErrors: EmployeeFieldErrors;
   deviceSyncStatus: DeviceSyncStatus;
@@ -53,6 +55,7 @@ const AddEmployeeModal = ({
   addSaving,
   addError,
   birthDateError,
+  photoError,
   fieldErrors,
   deviceSyncStatus,
   nextEmployeeId,
@@ -107,6 +110,7 @@ const AddEmployeeModal = ({
           nextEmployeeId={nextEmployeeId}
           loadingNextId={loadingNextId}
           facePhotoPreview={facePhotoPreview}
+          photoError={photoError}
           onFormChange={onFormChange}
           onFacePhotoChange={onFacePhotoChange}
           onClearFacePhoto={onClearFacePhoto}

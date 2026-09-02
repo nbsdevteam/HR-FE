@@ -9,6 +9,7 @@ type EmployeeFingerprintSectionProps = {
   nextEmployeeId: number | null;
   loadingNextId: boolean;
   facePhotoPreview: string | null;
+  photoError?: string | null;
   onFormChange: (updates: Partial<EmployeeAddForm>) => void;
   onFacePhotoChange: (file: File) => void;
   onClearFacePhoto: () => void;
@@ -19,6 +20,7 @@ const EmployeeFingerprintSection = ({
   nextEmployeeId,
   loadingNextId,
   facePhotoPreview,
+  photoError = null,
   onFormChange,
   onFacePhotoChange,
   onClearFacePhoto,
@@ -110,6 +112,9 @@ const EmployeeFingerprintSection = ({
           {arabicSource("employees.jpg_or_png_max_200kb")}
         </span>
       </div>
+      {photoError && (
+        <p className="text-destructive mt-1.5" style={{ fontSize: 12 }}>{photoError}</p>
+      )}
     </div>
   </div>
   );
