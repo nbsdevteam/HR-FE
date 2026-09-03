@@ -93,8 +93,9 @@ const PositionsView = ({
         </div>
       </div>
 
-      {/* Both panes scroll inside this row; the page itself never does. */}
-      <div className="flex-1 min-h-0 flex gap-4">
+      {/* Both panes scroll inside this row once it has room; below its
+          minimum height the page scrolls instead of clipping the panes. */}
+      <div className="flex-1 min-h-[420px] flex gap-4">
         <UnassignedEmployeesSidebar
           totalCount={unassignedEmployees.length}
           empSearch={empSearch}

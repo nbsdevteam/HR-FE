@@ -122,13 +122,15 @@ const HierarchyChart = () => {
     );
   }
 
-  // The positions tab is locked to the screen — its two panes scroll on their
-  // own, so the page must not. The current-structure (level-wise graph) tab
-  // keeps the normal page flow.
+  // The positions tab prefers to fill the screen so its two panes can scroll
+  // on their own, but it is never locked below a usable size: once the
+  // panes' minimum height no longer fits, the page itself scrolls instead of
+  // clipping. The current-structure (level-wise graph) tab keeps the normal
+  // page flow.
   const isPositionsView = viewMode === "positions";
 
   return (
-    <div className={isPositionsView ? "h-full flex flex-col gap-6 min-h-0" : "space-y-6"}>
+    <div className={isPositionsView ? "min-h-full flex flex-col gap-6" : "space-y-6"}>
       <HierarchyHeader
         unlinkedCount={unlinkedEmps.length}
         searchInputRef={searchInputRef}
@@ -153,7 +155,7 @@ const HierarchyChart = () => {
         onViewModeChange={setViewMode}
       />
       {isPositionsView ? (
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-[560px]">
           <Suspense fallback={null}>
             <PositionsView
               dbEmployees={dbEmployees}
