@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import type { DeviceStatusDevice } from "@/shared/api/controlPanel";
 
@@ -58,43 +59,45 @@ const mapDevice = (device: DeviceStatusDevice): DbBiometricDevice => ({
   created_at: "",
 });
 
+const fetchDeviceStatus = async (): Promise<DeviceStatus> => {
+  const payload = await odooData.fetchDeviceStatus();
+  return {
+    devices: (payload.devices ?? []).map(mapDevice),
+    totalDevices: payload.total_devices ?? 0,
+    activeDevices: payload.active_devices ?? 0,
+    lastSyncAt: payload.last_sync_at ?? null,
+    syncAgeMinutes: payload.sync_age_minutes ?? 999,
+    todayDeviceEvents: payload.today_device_events ?? 0,
+    status: payload.status ?? "no_device",
+  };
+};
+
 /**
- * TopBar device health, from a single `/api/hr/devices/status` call.
- *
- * This used to fetch the device list *and* a full day of attendance rows every
- * 120 s just to count device punches and derive a freshness bucket. The server
- * computes `status`, `sync_age_minutes` and `today_device_events` now, so the
- * poll costs one small response. Still not `useAsyncList`: the result is a
- * derived object, not a list.
+ * TopBar device health, from a single `/api/hr/devices/status` call. Live
+ * data — the server derives `status`/`sync_age_minutes`/`today_device_events`
+ * from what happened today, so it always refetches (`staleTime: 0`) and polls
+ * every 2 minutes rather than being served from the shared query cache TTL.
  */
 export const useDeviceStatus = () => {
-  const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>(EMPTY_STATUS);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery<DeviceStatus, Error>({
+    queryKey: ["deviceStatus"],
+    queryFn: fetchDeviceStatus,
+    staleTime: 0,
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: true,
+  });
 
   const refresh = useCallback(async () => {
-    try {
-      const payload = await odooData.fetchDeviceStatus();
-      setDeviceStatus({
-        devices: (payload.devices ?? []).map(mapDevice),
-        totalDevices: payload.total_devices ?? 0,
-        activeDevices: payload.active_devices ?? 0,
-        lastSyncAt: payload.last_sync_at ?? null,
-        syncAgeMinutes: payload.sync_age_minutes ?? 999,
-        todayDeviceEvents: payload.today_device_events ?? 0,
-        status: payload.status ?? "no_device",
-      });
-    } catch {
-      setDeviceStatus((prev) => ({ ...prev, status: "no_device" }));
-    }
-    setLoading(false);
-  }, []);
+    await query.refetch();
+  }, [query.refetch]);
 
-  useEffect(() => {
-    refresh();
-    // Auto-refresh every 2 minutes
-    const interval = setInterval(refresh, 120000);
-    return () => clearInterval(interval);
-  }, [refresh]);
+  // On a failed poll, keep showing the last-known devices/counts but flip the
+  // status the same way the old handler did, instead of blanking the panel.
+  const deviceStatus: DeviceStatus = query.data
+    ? query.isError
+      ? { ...query.data, status: "no_device" }
+      : query.data
+    : EMPTY_STATUS;
 
-  return { deviceStatus, loading, refresh };
+  return { deviceStatus, loading: query.isLoading, refresh };
 };

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
 
@@ -160,37 +161,28 @@ export const useApplicants = () => {
 /**
  * Candidates for one job, ranked by their Initial Rating.
  *
- * While any candidate is still queued the hook polls, because screening runs
- * asynchronously on the backend cron and HR should watch scores land without
- * refreshing the page.
+ * While any candidate is still queued the query polls every 10s, because
+ * screening runs asynchronously on the backend cron and HR should watch
+ * scores land without refreshing the page. `loading` only reflects the first
+ * load (`isLoading`) so those background polls stay silent, same as before.
  */
 export const useJobRanking = (jobId: string | null) => {
-  const [items, setItems] = useState<DbApplicant[]>([]);
-  const [stats, setStats] = useState<JobRankingStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const query = useQuery<{ items: DbApplicant[]; stats: JobRankingStats }, Error>({
+    queryKey: ["jobRanking", jobId],
+    queryFn: () => odooData.fetchJobRanking(jobId as string),
+    enabled: Boolean(jobId),
+    staleTime: 0,
+    refetchInterval: (q) => (q.state.data?.stats?.pending ? 10_000 : false),
+  });
 
-  const fetchRanking = async (silent = false) => {
-    if (!jobId) { setItems([]); setStats(null); return; }
-    if (!silent) setLoading(true);
-    try {
-      const data = await odooData.fetchJobRanking(jobId);
-      setItems(data.items);
-      setStats(data.stats);
-    } catch (e) {
-      console.error(e);
-      setItems([]);
-      setStats(null);
-    }
-    if (!silent) setLoading(false);
+  const refetch = useCallback(async () => {
+    await query.refetch();
+  }, [query.refetch]);
+
+  return {
+    items: query.data?.items ?? [],
+    stats: query.data?.stats ?? null,
+    loading: query.isLoading,
+    refetch,
   };
-
-  useEffect(() => { fetchRanking(); }, [jobId]);
-
-  useEffect(() => {
-    if (!jobId || !stats?.pending) return;
-    const timer = setInterval(() => { fetchRanking(true); }, 10000);
-    return () => clearInterval(timer);
-  }, [jobId, stats?.pending]);
-
-  return { items, stats, loading, refetch: fetchRanking };
 }

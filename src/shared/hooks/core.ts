@@ -15,10 +15,12 @@ export const useCachedList = <T,>(
   errorFallback = "Failed to load data",
   deps: DependencyList = [],
   enabled = true,
+  queryOptions?: { ttlMs?: number; refetchOnWindowFocus?: boolean },
 ) => {
   const { data, loading, error, refetch } = useAsyncList(fetcher, deps, errorFallback, undefined, {
     cacheKey,
     enabled,
+    ...queryOptions,
   });
   return { data, loading, error, refetch };
 };

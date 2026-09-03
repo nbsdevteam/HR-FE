@@ -6,7 +6,7 @@ import {
   getStoredUser,
   type HrAuthUser,
 } from "@/shared/api/client";
-import { clearCache } from "@/shared/hooks/requestCache";
+import { queryClient } from "@/shared/api/queryClient";
 
 export interface AuthUser {
   id: string;
@@ -80,8 +80,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = useCallback(async () => {
     await odooLogout();
     // Drop every cached list so the next sign-in never renders the previous
-    // user's rows from `requestCache` before its own fetches land.
-    clearCache();
+    // user's rows from the query cache before its own fetches land.
+    queryClient.clear();
     setUser(null);
     setSession(null);
   }, []);

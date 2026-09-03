@@ -1,49 +1,40 @@
-import { useState, useRef, useCallback, useEffect, type DependencyList } from "react";
-import {
-  DEFAULT_CACHE_TTL_MS,
-  fetchThroughCache,
-  invalidateCache,
-  isCacheFresh,
-  readCache,
-  setCacheError,
-  subscribeToCache,
-} from "./requestCache";
+import { useId, useCallback, type DependencyList } from "react";
+import { useQuery, type QueryKey } from "@tanstack/react-query";
+import { DEFAULT_QUERY_STALE_TIME_MS } from "@/shared/api/queryClient";
 
 type AsyncListOptions = {
   /**
    * Cache identity for this list — a stable resource name such as `"employees"`.
-   * The effective key appends the serialized `deps`, so a filtered variant of a
-   * resource caches separately from the unfiltered one without the caller having
+   * The effective query key appends the serialized `deps`, so a filtered variant of
+   * a resource caches separately from the unfiltered one without the caller having
    * to spell that out. Two hooks resolving to the same key share one request:
    * concurrent mounts collapse onto a single fetch, and a mount within `ttlMs`
    * of the last one is served from cache instead of refetching.
    * Omit to keep the plain always-refetch-on-mount behaviour.
    */
   cacheKey?: string;
-  /** How long cached data stays fresh. Defaults to `DEFAULT_CACHE_TTL_MS`. */
+  /** How long cached data stays fresh. Defaults to `DEFAULT_QUERY_STALE_TIME_MS`. */
   ttlMs?: number;
   /** Skip fetching until true — e.g. a collapsed panel that only needs its data once expanded. Defaults to true. */
   enabled?: boolean;
-};
-
-/** Combine the resource name with its dep values into one cache identity. */
-const buildCacheKey = (base: string | undefined, deps: DependencyList): string | undefined => {
-  if (!base) return undefined;
-  if (deps.length === 0) return base;
-  try {
-    return `${base}:${JSON.stringify(deps)}`;
-  } catch {
-    // A non-serializable dep means we cannot prove two callers match — skip caching.
-    return undefined;
-  }
+  /**
+   * Refetch when the tab regains focus even within `ttlMs`. Used for
+   * "today" data (e.g. today's attendance) where staleness would mislead —
+   * pair with `ttlMs: 0` so every mount/focus is treated as stale.
+   */
+  refetchOnWindowFocus?: boolean;
 };
 
 /**
  * Shared fetch-a-list-on-mount shape used across the app's Odoo-backed hooks:
  * loads `fetcher()` on mount/dep-change, tracks loading/error, exposes `refetch`.
- * Pass `pollMs` to also refetch on an interval (cleared on unmount/dep change).
- * Pass `options.cacheKey` to share one request with every other hook using that
- * key — see `requestCache.ts` for why that matters on the dashboard.
+ * Pass `pollMs` to also refetch on an interval. Pass `options.cacheKey` to share
+ * one request (and its TanStack Query cache entry) with every other hook using
+ * that key — see `queryClient.ts` for the app-wide cache this reads through.
+ *
+ * `loading` mirrors `isFetching` (not `isLoading`), matching the original
+ * behaviour: it flips true on *every* fetch — including a forced `refetch()`
+ * and each poll tick — not just the very first load.
  */
 export const useAsyncList = <T,>(
   fetcher: () => Promise<T[]>,
@@ -52,85 +43,37 @@ export const useAsyncList = <T,>(
   pollMs?: number,
   options: AsyncListOptions = {}
 ) => {
-  const { cacheKey: cacheKeyBase, ttlMs = DEFAULT_CACHE_TTL_MS, enabled = true } = options;
-  const cacheKey = buildCacheKey(cacheKeyBase, deps);
-  const cached = cacheKey ? readCache<T>(cacheKey) : undefined;
-  const servedFromCache = Boolean(cacheKey && isCacheFresh(cacheKey, ttlMs));
+  const {
+    cacheKey,
+    ttlMs = DEFAULT_QUERY_STALE_TIME_MS,
+    enabled = true,
+    refetchOnWindowFocus = false,
+  } = options;
 
-  const [data, setData] = useState<T[]>(cached?.data ?? []);
-  const [loading, setLoading] = useState(enabled && !servedFromCache);
-  const [error, setError] = useState<string | null>(cached?.error ?? null);
+  // No cacheKey means "opt out of sharing" — give every hook instance its own
+  // identity so it never collides with another mount of the same hook.
+  const instanceId = useId();
+  const queryKey: QueryKey = cacheKey ? [cacheKey, ...deps] : [instanceId, ...deps];
 
-  // Keep the latest fetcher in a ref so `fetchData` stays referentially stable
-  // (it is handed to consumers as `refetch` and lands in their dep arrays).
-  const fetcherRef = useRef(fetcher);
-  const mountedRef = useRef(true);
+  const query = useQuery<T[], Error>({
+    queryKey,
+    queryFn: fetcher,
+    enabled,
+    staleTime: cacheKey ? ttlMs : 0,
+    gcTime: cacheKey ? undefined : 0,
+    refetchOnMount: cacheKey ? true : "always",
+    refetchOnWindowFocus,
+    refetchInterval: pollMs,
+  });
 
-  fetcherRef.current = fetcher;
+  const refetch = useCallback(async () => {
+    await query.refetch();
+  }, [query.refetch]);
 
-  const runFetch = useCallback(
-    async (force: boolean) => {
-      if (cacheKey && !force && isCacheFresh(cacheKey, ttlMs)) {
-        const hit = readCache<T>(cacheKey);
-        if (hit) {
-          setData(hit.data);
-          setError(hit.error);
-          setLoading(false);
-          return;
-        }
-      }
-      if (cacheKey && force) invalidateCache(cacheKey);
-
-      setLoading(true);
-      try {
-        const result = cacheKey
-          ? await fetchThroughCache<T>(cacheKey, () => fetcherRef.current())
-          : await fetcherRef.current();
-        if (!mountedRef.current) return;
-        setData(result);
-        setError(null);
-      } catch (e: any) {
-        console.error(e);
-        const message = e?.message || errorFallback;
-        if (cacheKey) setCacheError(cacheKey, message);
-        if (!mountedRef.current) return;
-        setError(message);
-        setData([]);
-      }
-      if (mountedRef.current) setLoading(false);
-    },
-    [cacheKey, ttlMs, errorFallback]
-  );
-
-  const refetch = useCallback(() => runFetch(true), [runFetch]);
-
-  // Re-render this consumer when another hook sharing the key refreshes the data.
-  useEffect(() => {
-    if (!cacheKey) return;
-    return subscribeToCache(cacheKey, () => {
-      const hit = readCache<T>(cacheKey);
-      if (!hit || !mountedRef.current) return;
-      setData(hit.data);
-      setError(hit.error);
-      setLoading(false);
-    });
-  }, [cacheKey]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    if (!enabled) {
-      setLoading(false);
-      return () => { mountedRef.current = false; };
-    }
-    runFetch(false);
-    if (!pollMs) return () => { mountedRef.current = false; };
-    const interval = setInterval(() => runFetch(true), pollMs);
-    return () => {
-      mountedRef.current = false;
-      clearInterval(interval);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, enabled]);
-
-  return { data, loading, error, refetch };
+  return {
+    data: query.data ?? ([] as T[]),
+    loading: query.isFetching,
+    error: query.error ? query.error.message || errorFallback : null,
+    refetch,
+  };
 };

@@ -1,5 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useCachedList } from "./core";
 
 export interface DbAttendanceRecord {
@@ -79,6 +80,11 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
       ? { date: dateOrFilter }
       : dateOrFilter;
 
+  // A single-date query for today drives "who's in/late/absent right now"
+  // views — that must never serve a stale cache entry, so it bypasses the
+  // usual TTL and refetches whenever the tab regains focus.
+  const isToday = filter.date === todayInBaghdad();
+
   const { data: records, loading, refetch } = useCachedList(
     "attendance",
     () => odooData.fetchAttendance({
@@ -89,6 +95,8 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
     }),
     "Failed to load attendance",
     [filter.date, filter.date_from, filter.date_to, filter.employeeId],
+    true,
+    isToday ? { ttlMs: 0, refetchOnWindowFocus: true } : undefined,
   );
 
   return { records, loading, refetch };
