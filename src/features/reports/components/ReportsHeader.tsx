@@ -16,7 +16,7 @@ const ReportsHeader = ({
   canManage = false,
   onOpenManagement,
 }: IReportsHeaderProps) => (
-  <div className="flex items-center justify-between">
+  <div className="flex flex-col min-[1000px]:flex-row items-start min-[1000px]:items-center justify-between gap-4">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.reports")}</h1>
       <p className="text-muted-foreground mt-1">
