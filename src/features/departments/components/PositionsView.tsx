@@ -93,8 +93,11 @@ const PositionsView = ({
         </div>
       </div>
 
-      {/* Both panes scroll inside this row once it has room; below its
-          minimum height the page scrolls instead of clipping the panes. */}
+      {/* The positions panel stretches and scrolls inside this row once it
+          has room; below its minimum height the page scrolls instead of
+          clipping. The sidebar opts out of that stretch (self-start on
+          UnassignedEmployeesSidebar) so it caps at its own height instead of
+          matching the taller panel. */}
       <div className="flex-1 min-h-[420px] flex gap-4">
         <UnassignedEmployeesSidebar
           totalCount={unassignedEmployees.length}

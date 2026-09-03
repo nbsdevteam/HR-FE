@@ -42,7 +42,7 @@ const UnassignedEmployeesSidebar = ({
   const isWindowed = startIndex > 0 || endIndex < filteredUnassigned.length;
 
   return (
-    <div className="w-72 shrink-0 bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col min-h-0">
+    <div className="w-72 shrink-0 self-start bg-card/30 border border-border/40 rounded-xl overflow-hidden flex flex-col">
       <div className="p-3 border-b border-border/30 shrink-0">
         <h3 className="text-foreground mb-2" style={{ fontSize: 14 }}>
           {arabicSource("hierarchy.employees_without_position")} {totalCount}
@@ -57,7 +57,7 @@ const UnassignedEmployeesSidebar = ({
           style={{ fontSize: 12 }}
         />
       </div>
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-2">
+      <div ref={scrollRef} className="max-h-[420px] overflow-y-auto p-2">
         {filteredUnassigned.length > 0 ? (
           <div ref={containerRef}>
             {isWindowed && topPadding > 0 && (
