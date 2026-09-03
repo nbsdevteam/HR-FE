@@ -3,7 +3,7 @@ import { Check, X } from "lucide-react";
 import { ModalHeader, ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import type { DbLeaveExcuseQueueItem, LeaveExcuseQueueScope } from "@/shared/hooks";
+import { useOdooMutation, type DbLeaveExcuseQueueItem, type LeaveExcuseQueueScope } from "@/shared/hooks";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
 import type { LeaveExcuseDecisionAction } from "../hooks/useLeaveExcuseReview";
 import LeaveFormError from "./LeaveFormError";
@@ -27,34 +27,32 @@ type LeaveExcuseDecisionModalProps = {
  */
 const LeaveExcuseDecisionModal = ({ item, action, scope, onClose, onDecided }: LeaveExcuseDecisionModalProps) => {
   const [comment, setComment] = useState("");
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const isApprove = action === "approve";
+
+  const decisionMutation = useOdooMutation<unknown, string | undefined>(
+    (trimmedComment) => {
+      if (scope === "hr") return odooData.overrideLeaveExcuse(item.id, isApprove, trimmedComment);
+      if (isApprove) return odooData.approveApprovalRequest(item.approval_request_id, trimmedComment);
+      return odooData.rejectApprovalRequest(item.approval_request_id, trimmedComment);
+    },
+    isApprove ? ["leaveExcuseQueue", "leaveRequests", "leaveBalances"] : ["leaveExcuseQueue", "leaveRequests"],
+  );
 
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setComment(e.target.value);
   }, []);
 
   const handleSubmit = useCallback(async (): Promise<void> => {
-    setSaving(true);
     setError("");
     try {
-      const trimmedComment = comment.trim() || undefined;
-      if (scope === "hr") {
-        await odooData.overrideLeaveExcuse(item.id, isApprove, trimmedComment);
-      } else if (isApprove) {
-        await odooData.approveApprovalRequest(item.approval_request_id, trimmedComment);
-      } else {
-        await odooData.rejectApprovalRequest(item.approval_request_id, trimmedComment);
-      }
-      setSaving(false);
+      await decisionMutation.mutateAsync(comment.trim() || undefined);
       await onDecided();
     } catch (e: unknown) {
       setError(leaveErrorMessage(e, arabicSource("leave.error_excuse_decision_failed")));
-      setSaving(false);
     }
-  }, [comment, isApprove, item.approval_request_id, item.id, onDecided, scope]);
+  }, [comment, decisionMutation, onDecided]);
 
   return (
     <ModalOverlay
@@ -89,7 +87,7 @@ const LeaveExcuseDecisionModal = ({ item, action, scope, onClose, onDecided }: L
 
         <LeaveModalActions
           submitLabel={isApprove ? arabicSource("common.accept") : arabicSource("common.rejected_2")}
-          saving={saving}
+          saving={decisionMutation.isPending}
           onSubmit={handleSubmit}
           onClose={onClose}
         />

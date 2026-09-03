@@ -6,6 +6,7 @@ import { Button, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,
+  useOdooMutation,
   type DbJobOpening,
   type DbApplicant,
 } from "@/shared/hooks";
@@ -35,8 +36,27 @@ const AiScreeningView = ({
   onUpdateStage,
 }: AIScreenViewProps) => {
   const [minIr, setMinIr] = useState(0);
-  const [busy, setBusy] = useState(false);
   const { items, stats, loading, refetch } = useJobRanking(jobId);
+  const bulkScreenMutation = useOdooMutation<
+    { queued: number; skipped: number },
+    void
+  >(
+    () =>
+      odooData.bulkScreenApplicants({
+        jobOpeningId: jobId as string,
+        force: false,
+      }),
+    "applicants",
+  );
+  const shortlistMutation = useOdooMutation<void, DbApplicant[]>(
+    async (targets) => {
+      for (const applicant of targets) {
+        await odooData.updateApplicant(applicant.id, { stage: "screening" });
+      }
+    },
+    "applicants",
+  );
+  const busy = bulkScreenMutation.isPending || shortlistMutation.isPending;
 
   const visible = useMemo(
     () => items.filter((a) => !hasIr(a) || (a.ir_score || 0) >= minIr),
@@ -54,12 +74,8 @@ const AiScreeningView = ({
 
   const screenAll = useCallback(async (): Promise<void> => {
     if (!jobId) return;
-    setBusy(true);
     try {
-      const result = await odooData.bulkScreenApplicants({
-        jobOpeningId: jobId,
-        force: false,
-      });
+      const result = await bulkScreenMutation.mutateAsync();
       const message = result.skipped
         ? `${arabicSource("recruitment.queued_for_screening")} (${result.queued}) — ${arabicSource("recruitment.skipped_for_screening")} (${result.skipped})`
         : `${arabicSource("recruitment.queued_for_screening")} (${result.queued})`;
@@ -70,8 +86,7 @@ const AiScreeningView = ({
         e?.message || arabicSource("recruitment.screening_unavailable"),
       );
     }
-    setBusy(false);
-  }, [jobId, refetch]);
+  }, [jobId, bulkScreenMutation, refetch]);
 
   const handleJobIdChange = useCallback(
     (value: string): void => {
@@ -92,13 +107,9 @@ const AiScreeningView = ({
         a.stage === arabicSource("common.introduction"),
     );
     if (targets.length === 0) return;
-    setBusy(true);
-    for (const applicant of targets) {
-      await odooData.updateApplicant(applicant.id, { stage: "screening" });
-    }
+    await shortlistMutation.mutateAsync(targets);
     await refetch();
-    setBusy(false);
-  }, [items, minIr, refetch]);
+  }, [items, minIr, shortlistMutation, refetch]);
 
   return (
     <div className="space-y-4">

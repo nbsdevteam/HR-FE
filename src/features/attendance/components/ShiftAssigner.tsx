@@ -3,7 +3,7 @@ import { AnimatePresence } from "motion/react";
 import { GripVertical, Loader2 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
-  useEmployees, useShifts, useEmployeeShiftAssignments, empDisplayName,
+  useEmployees, useShifts, useEmployeeShiftAssignments, useOdooMutation, empDisplayName,
   type DbEmployee,
 } from "@/shared/hooks";
 import { SearchInput, Toast } from "@/shared/components";
@@ -16,9 +16,15 @@ const ShiftAssigner = () => {
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const { employees, refetch: refetchEmployees } = useEmployees();
+  const { employees } = useEmployees();
   const { shifts, loading: shiftsLoading } = useShifts();
-  const { assignments, loading: assignLoading, refetch: refetchAssignments } = useEmployeeShiftAssignments();
+  const { assignments, loading: assignLoading } = useEmployeeShiftAssignments();
+
+  const createAssignmentMutation = useOdooMutation(odooData.createShiftAssignment, ["employees", "shiftAssignments"]);
+  const removeAssignmentMutation = useOdooMutation(
+    (empId: string) => odooData.updateEmployee(empId, { shift_id: false }),
+    ["employees", "shiftAssignments"],
+  );
 
   // Map employees to their shift (via shift_id on employee or via assignment table)
   const empShiftMap = useMemo(() => {
@@ -63,7 +69,7 @@ const ShiftAssigner = () => {
     if (existing === shiftId) { setSaving(false); return; } // Already there
 
     try {
-      await odooData.createShiftAssignment({
+      await createAssignmentMutation.mutateAsync({
         employee_id: empId,
         shift_id: shiftId,
         set_employee_default: true,
@@ -74,24 +80,20 @@ const ShiftAssigner = () => {
     } catch (e: any) {
       setToast(`${arabicSource("common.error_2")} ${e?.message || "فشل التعيين"}`);
     }
-    await refetchEmployees();
-    await refetchAssignments();
     setSaving(false);
-  }, [empShiftMap, employees, shifts, refetchEmployees, refetchAssignments]);
+  }, [empShiftMap, employees, shifts, createAssignmentMutation.mutateAsync]);
 
   // Remove employee from shift
   const handleRemove = useCallback(async (empId: string) => {
     setSaving(true);
     try {
-      await odooData.updateEmployee(empId, { shift_id: false });
+      await removeAssignmentMutation.mutateAsync(empId);
       setToast(arabicSource("shared.the_shift_assignment_has_been_cancelled"));
     } catch (e: any) {
       setToast(`${arabicSource("common.error_2")} ${e?.message || "فشل الإلغاء"}`);
     }
-    await refetchEmployees();
-    await refetchAssignments();
     setSaving(false);
-  }, [refetchEmployees, refetchAssignments]);
+  }, [removeAssignmentMutation.mutateAsync]);
 
   const handleSearchChange = useCallback((nextSearch: string) => {
     setSearch(nextSearch);

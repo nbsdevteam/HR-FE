@@ -3,7 +3,7 @@ import * as odooData from "@/shared/api/odooData";
 import { generateHrReport } from "@/shared/api/reporting";
 import { eid } from "@/shared/api/httpHelpers";
 import {
-  logAudit,
+  logAudit, useOdooMutation,
   type DbAttendanceRecord, type DbContractType, type DbDepartment, type DbDocumentType, type DbEmployee,
   type DbEmployeeContract, type DbEmployeeDocument, type DbLeaveBalance, type DbLeaveRequest,
   type DbLeaveType, type DbMonthlyRecord, type DbReportTemplate,
@@ -35,6 +35,10 @@ type UseReportGenerationArgs = {
   filterDept: string;
   selectedEmployeeIds: string[];
   selectedFieldKeys: string[];
+  // No longer called directly: the generate mutations below invalidate the
+  // "reportHistory" cache key themselves — kept in the type so the existing
+  // caller (ReportsWorkspace passes `useReportHistory().refetch`) can keep
+  // passing it unchanged.
   refetchHistory: () => void;
 };
 
@@ -42,12 +46,17 @@ export const useReportGeneration = ({
   attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
   employees, contracts, contractTypes, empDocuments, documentTypes,
   empMap, empDeptMap, departments, dateFrom, dateTo, filterDept,
-  selectedEmployeeIds, selectedFieldKeys, refetchHistory,
+  selectedEmployeeIds, selectedFieldKeys,
 }: UseReportGenerationArgs) => {
   const [generatedData, setGeneratedData] = useState<ReportRow[] | null>(null);
   const [generatedColumns, setGeneratedColumns] = useState<ReportColumn[] | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+
+  // Both produce a report + log a history row; nothing else visibly needs
+  // this beyond the report-history list, so that's the only invalidation.
+  const generateHrReportMutation = useOdooMutation(generateHrReport, "reportHistory");
+  const createReportHistoryMutation = useOdooMutation(odooData.createReportHistory, "reportHistory");
 
   const generateReport = useCallback(async (template: DbReportTemplate) => {
     setGenerating(true);
@@ -57,7 +66,7 @@ export const useReportGeneration = ({
 
     try {
       if (isBackendReportCode(template.code)) {
-        const result = await generateHrReport({
+        const result = await generateHrReportMutation.mutateAsync({
           code: resolveReportCode(template.code),
           filters: {
             date_from: dateFrom,
@@ -78,7 +87,6 @@ export const useReportGeneration = ({
           details: { rows: result.rows.length, filters: result.filters_used },
         });
 
-        refetchHistory();
         setGeneratedColumns(result.columns);
         setGeneratedData(result.rows);
       } else {
@@ -89,7 +97,7 @@ export const useReportGeneration = ({
           filters: { dateFrom, dateTo, filterDept },
         });
 
-        await odooData.createReportHistory({
+        await createReportHistoryMutation.mutateAsync({
           report_template_id: template.id,
           report_name: template.name_ar,
           filters_used: { dateFrom, dateTo, department: filterDept },
@@ -104,7 +112,6 @@ export const useReportGeneration = ({
           details: { rows: rows.length, filters: { dateFrom, dateTo, department: filterDept } },
         });
 
-        refetchHistory();
         setGeneratedColumns(template.columns);
         setGeneratedData(rows);
       }
@@ -117,7 +124,8 @@ export const useReportGeneration = ({
     attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
     employees, contracts, contractTypes, empDocuments, documentTypes,
     empMap, empDeptMap, departments, dateFrom, dateTo, filterDept,
-    selectedEmployeeIds, selectedFieldKeys, refetchHistory,
+    selectedEmployeeIds, selectedFieldKeys,
+    generateHrReportMutation.mutateAsync, createReportHistoryMutation.mutateAsync,
   ]);
 
   const exportCSV = useCallback((template: DbReportTemplate | null) => {

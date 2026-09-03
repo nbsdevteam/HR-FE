@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { todayInBaghdad } from "@/shared/utils/timezone";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type {
   DepartmentOption,
@@ -42,6 +43,15 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const leavesData = useEmployeeLeaves(employee.dbId);
   const termination = useEmployeeTermination(employee, onSave);
   const addressForm = useEmployeeAddressForm(isEditing, editData, setEditData);
+  const createDepartmentMutation = useOdooMutation(
+    (payload: { name: string }) => odooData.createDepartment(payload),
+    "departments",
+  );
+  const updateEmployeeMutation = useOdooMutation(
+    (variables: { id: string; payload: Record<string, unknown> }) =>
+      odooData.updateEmployee(variables.id, variables.payload),
+    ["employees", "departments"],
+  );
 
   // Some endpoints (list/search) may only carry the department name, not its
   // numeric id, on a given row. Resolve the id from the backend department list
@@ -135,7 +145,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setCreatingDept(true);
     setSaveError(null);
     try {
-      const created: any = await odooData.createDepartment({ name });
+      const created: any = await createDepartmentMutation.mutateAsync({ name });
       const id = String(created?.data?.id ?? "");
       setEditData(prev => ({ ...prev, departmentId: id || null, department: name }));
       setAddingNewDept(false);
@@ -145,7 +155,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     } finally {
       setCreatingDept(false);
     }
-  }, [newDeptName]);
+  }, [newDeptName, createDepartmentMutation.mutateAsync]);
 
   const handleCancelNewDept = useCallback(() => {
     setAddingNewDept(false);
@@ -169,10 +179,10 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     try {
-      await odooData.updateEmployee(
-        editData.dbId,
-        buildEmployeeUpdatePayload(editData, employee, resolvedDepartmentId, resolvedPositionId),
-      );
+      await updateEmployeeMutation.mutateAsync({
+        id: editData.dbId,
+        payload: buildEmployeeUpdatePayload(editData, employee, resolvedDepartmentId, resolvedPositionId),
+      });
 
       setIsEditing(false);
       onSave?.(editData);
@@ -212,7 +222,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     } finally {
       setSaving(false);
     }
-  }, [editData, employee, onSave, resolvedDepartmentId, resolvedPositionId, termination.setShowTerminationDialog]);
+  }, [editData, employee, onSave, resolvedDepartmentId, resolvedPositionId, termination.setShowTerminationDialog, updateEmployeeMutation.mutateAsync]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);

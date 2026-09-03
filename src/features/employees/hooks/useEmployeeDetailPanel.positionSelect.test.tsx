@@ -1,9 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import type { DbPosition } from "@/shared/hooks";
 import type { Employee } from "../types";
 import EmployeePositionField from "../components/EmployeePositionField";
 import { useEmployeeDetailPanel } from "./useEmployeeDetailPanel";
+
+const renderWithQueryClient = (ui: ReactNode) => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+};
 
 const baseEmployee: Employee = {
   id: 1,
@@ -85,7 +92,7 @@ const openDropdown = (): void => {
 
 describe("job title selection", () => {
   it("updates the displayed position when picking an option with an empty Arabic title", () => {
-    render(<Harness />);
+    renderWithQueryClient(<Harness />);
     openDropdown();
     fireEvent.mouseDown(screen.getByRole("option", { name: "Call Center Agent" }));
     expect(screen.getByTestId("display-position").textContent).toBe("Call Center Agent");
@@ -93,7 +100,7 @@ describe("job title selection", () => {
   });
 
   it("resolves the correct id when two positions share the same displayed name", () => {
-    render(<Harness />);
+    renderWithQueryClient(<Harness />);
     openDropdown();
     const options = screen.getAllByRole("option", { name: "محاسب" });
     expect(options).toHaveLength(2);
@@ -103,7 +110,7 @@ describe("job title selection", () => {
   });
 
   it("updates on a second, different selection right after the first", () => {
-    render(<Harness />);
+    renderWithQueryClient(<Harness />);
     openDropdown();
     fireEvent.mouseDown(screen.getByRole("option", { name: "Call Center Agent" }));
     expect(screen.getByTestId("display-position").textContent).toBe("Call Center Agent");

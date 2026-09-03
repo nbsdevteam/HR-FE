@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { MessageSquare, Search, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
-import { useDeviceStatus, useNotifications } from "@/shared/hooks";
+import { useDeviceStatus, useNotifications, useOdooMutation } from "@/shared/hooks";
 import { useClickOutside } from "@/shared/hooks/ui";
 import { Button } from "@/shared/components";
 import { LanguageSwitcher } from "@/app/providers";
@@ -44,12 +44,11 @@ const TopBar = () => {
 
   const { toggleMobileNav, isDesktop } = useNavShell();
   const { user, signOut } = useAuth();
-  const {
-    notifications,
-    unreadCount,
-    refetch: refetchNotifications,
-  } = useNotifications();
+  const { notifications, unreadCount } = useNotifications();
   const { deviceStatus, refresh: refreshDevice } = useDeviceStatus();
+
+  const markAllReadMutation = useOdooMutation(odooData.markAllNotificationsRead, "notifications");
+  const markReadMutation = useOdooMutation(odooData.markNotificationRead, "notifications");
 
   const bellRef = useRef<HTMLDivElement>(null);
   const deviceRef = useRef<HTMLDivElement>(null);
@@ -80,25 +79,23 @@ const TopBar = () => {
 
   const handleMarkAllRead = useCallback(async () => {
     try {
-      await odooData.markAllNotificationsRead();
-      await refetchNotifications();
+      await markAllReadMutation.mutateAsync();
     } catch {
       /* ignore */
     }
-  }, [refetchNotifications]);
+  }, [markAllReadMutation.mutateAsync]);
 
   const handleSelectNotification = useCallback(
     async (n: { id: string; is_read: boolean }) => {
       if (!n.is_read) {
         try {
-          await odooData.markNotificationRead(n.id);
-          await refetchNotifications();
+          await markReadMutation.mutateAsync(n.id);
         } catch {
           /* ignore */
         }
       }
     },
-    [refetchNotifications],
+    [markReadMutation.mutateAsync],
   );
 
   const triggerSync = useCallback(async () => {

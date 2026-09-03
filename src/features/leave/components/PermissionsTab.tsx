@@ -2,28 +2,32 @@ import { useCallback } from "react";
 import { Timer } from "lucide-react";
 import { DataTable, EmptyState, LoadingState, TableHeaderRow } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
-import type { DbLeavePermission } from "@/shared/hooks";
+import { useOdooMutation, type DbLeavePermission } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { leaveCardClass as cardCls } from "../styles";
 import PermissionTableRow from "./PermissionTableRow";
 
 const PermissionsTab = ({
-  permissions, empMap, loading, refetch,
+  permissions, empMap, loading,
 }: {
   permissions: DbLeavePermission[];
   empMap: Record<string, any>;
   loading: boolean;
   refetch: () => void;
 }) => {
+  const updatePermissionMutation = useOdooMutation(
+    ({ id, status }: { id: string; status: "approved" | "refused" }) =>
+      odooData.updateLeavePermission(id, status),
+    "leavePermissions",
+  );
+
   const handleApprove = useCallback(async (id: string) => {
-    await odooData.updateLeavePermission(id, "approved");
-    refetch();
-  }, [refetch]);
+    await updatePermissionMutation.mutateAsync({ id, status: "approved" });
+  }, [updatePermissionMutation]);
 
   const handleReject = useCallback(async (id: string) => {
-    await odooData.updateLeavePermission(id, "refused");
-    refetch();
-  }, [refetch]);
+    await updatePermissionMutation.mutateAsync({ id, status: "refused" });
+  }, [updatePermissionMutation]);
 
   if (loading) {
     return (

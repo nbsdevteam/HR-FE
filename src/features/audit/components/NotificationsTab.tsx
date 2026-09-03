@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Bell, Check } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { useNotifications } from "@/shared/hooks";
+import { useNotifications, useOdooMutation } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { Button, LoadingState, SearchInput, Select } from "@/shared/components";
 import { auditCardCls } from "../styles";
@@ -14,7 +14,11 @@ const NotificationsTab = () => {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { notifications, unreadCount, loading, refetch } = useNotifications();
+  const { notifications, unreadCount, loading } = useNotifications();
+
+  const markReadMutation = useOdooMutation(odooData.markNotificationRead, "notifications");
+  const markAllReadMutation = useOdooMutation(odooData.markAllNotificationsRead, "notifications");
+  const dismissMutation = useOdooMutation(odooData.dismissNotification, "notifications");
 
   const filtered = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -35,34 +39,31 @@ const NotificationsTab = () => {
   const markRead = useCallback(
     async (id: string) => {
       try {
-        await odooData.markNotificationRead(id);
-        refetch();
+        await markReadMutation.mutateAsync(id);
       } catch (error) {
         console.error("Failed to mark notification as read:", error);
       }
     },
-    [refetch],
+    [markReadMutation.mutateAsync],
   );
 
   const markAllRead = useCallback(async () => {
     try {
-      await odooData.markAllNotificationsRead();
-      refetch();
+      await markAllReadMutation.mutateAsync();
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
     }
-  }, [refetch]);
+  }, [markAllReadMutation.mutateAsync]);
 
   const dismiss = useCallback(
     async (id: string) => {
       try {
-        await odooData.dismissNotification(id);
-        refetch();
+        await dismissMutation.mutateAsync(id);
       } catch (error) {
         console.error("Failed to dismiss notification:", error);
       }
     },
-    [refetch],
+    [dismissMutation.mutateAsync],
   );
 
   const handleFilterTypeChange = useCallback((value: string): void => {

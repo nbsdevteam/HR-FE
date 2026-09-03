@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
-import type { DbReportTemplate, ReportTemplateMetadata } from "@/shared/hooks";
+import { useOdooMutation, type DbReportTemplate, type ReportTemplateMetadata } from "@/shared/hooks";
 import { reportConfigErrorMessage } from "../utils/reportConfigErrorMessage";
 import type { ReportConfigFormData } from "../types";
 
@@ -67,6 +67,13 @@ export const useReportConfigForm = ({ metadata, refetch, setToast }: UseReportCo
   const [editingTemplate, setEditingTemplate] = useState<DbReportTemplate | null>(null);
   const [codeConflict, setCodeConflict] = useState<CodeConflict | null>(null);
   const [confirmCodeChange, setConfirmCodeChange] = useState(false);
+
+  const updateTemplateMutation = useOdooMutation(
+    ({ id, payload }: { id: string; payload: Record<string, unknown> }) => odooData.updateReportTemplate(id, payload),
+    "reportTemplates",
+  );
+  const createTemplateMutation = useOdooMutation(odooData.createReportTemplate, "reportTemplates");
+  const restoreTemplateMutation = useOdooMutation(odooData.restoreReportTemplate, "reportTemplates");
 
   const codeChangeWarning = Boolean(
     editingTemplate &&
@@ -142,10 +149,10 @@ export const useReportConfigForm = ({ metadata, refetch, setToast }: UseReportCo
     try {
       const payload = buildPayload();
       if (editingTemplate) {
-        await odooData.updateReportTemplate(editingTemplate.id, payload);
+        await updateTemplateMutation.mutateAsync({ id: editingTemplate.id, payload });
         setToast(arabicSource("reports.update_success"));
       } else {
-        await odooData.createReportTemplate(payload);
+        await createTemplateMutation.mutateAsync(payload);
         setToast(arabicSource("reports.create_success"));
       }
       closeForm();
@@ -164,13 +171,16 @@ export const useReportConfigForm = ({ metadata, refetch, setToast }: UseReportCo
     } finally {
       setSaving(false);
     }
-  }, [formData, editingTemplate, codeChangeWarning, confirmCodeChange, buildPayload, closeForm, refetch, setToast]);
+  }, [
+    formData, editingTemplate, codeChangeWarning, confirmCodeChange, buildPayload, closeForm, refetch, setToast,
+    updateTemplateMutation.mutateAsync, createTemplateMutation.mutateAsync,
+  ]);
 
   const restoreConflicting = useCallback(async () => {
     if (!codeConflict) return;
     setSaving(true);
     try {
-      await odooData.restoreReportTemplate(codeConflict.existingTemplateId);
+      await restoreTemplateMutation.mutateAsync(codeConflict.existingTemplateId);
       setToast(arabicSource("reports.restore_success"));
       closeForm();
       await refetch();
@@ -179,7 +189,7 @@ export const useReportConfigForm = ({ metadata, refetch, setToast }: UseReportCo
     } finally {
       setSaving(false);
     }
-  }, [codeConflict, closeForm, refetch, setToast]);
+  }, [codeConflict, closeForm, refetch, setToast, restoreTemplateMutation.mutateAsync]);
 
   return {
     showForm, openNewForm, openEditForm, closeForm,

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
 import type { DbPosition } from "@/shared/hooks";
@@ -33,13 +34,32 @@ type UseDesignationFormArgs = {
   setToast: (message: string | null) => void;
 };
 
-/** Create/edit form state for the job-title admin screen (backend §4). */
+/**
+ * Create/edit form state for the job-title admin screen (backend §4).
+ *
+ * `refetch` refreshes the admin screen's own (non-cached) filtered list,
+ * which the shared `positions` cache invalidation below does not reach —
+ * it still has to be called explicitly after each mutation.
+ */
 export const useDesignationForm = ({ refetch, setToast }: UseDesignationFormArgs) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<DesignationFormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const [editingDesignation, setEditingDesignation] = useState<DbPosition | null>(null);
   const [nameConflict, setNameConflict] = useState<NameConflict | null>(null);
+
+  const createDesignationMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDesignation(payload),
+    "positions",
+  );
+  const updateDesignationMutation = useOdooMutation(
+    ({ id, payload }: { id: string; payload: Record<string, unknown> }) => odooData.updateDesignation(id, payload),
+    "positions",
+  );
+  const restoreDesignationMutation = useOdooMutation(
+    (id: number) => odooData.restoreDesignation(id),
+    "positions",
+  );
 
   const resetForm = useCallback(() => {
     setFormData({ ...EMPTY_FORM });
@@ -92,10 +112,10 @@ export const useDesignationForm = ({ refetch, setToast }: UseDesignationFormArgs
     try {
       const payload = buildPayload();
       if (editingDesignation) {
-        await odooData.updateDesignation(editingDesignation.id, payload);
+        await updateDesignationMutation.mutateAsync({ id: editingDesignation.id, payload });
         setToast(arabicSource("org_structure.designation_update_success"));
       } else {
-        await odooData.createDesignation(payload);
+        await createDesignationMutation.mutateAsync(payload);
         setToast(arabicSource("org_structure.designation_create_success"));
       }
       closeForm();
@@ -114,13 +134,13 @@ export const useDesignationForm = ({ refetch, setToast }: UseDesignationFormArgs
     } finally {
       setSaving(false);
     }
-  }, [formData, editingDesignation, buildPayload, closeForm, refetch, setToast]);
+  }, [formData, editingDesignation, buildPayload, closeForm, refetch, setToast, updateDesignationMutation.mutateAsync, createDesignationMutation.mutateAsync]);
 
   const restoreConflicting = useCallback(async () => {
     if (!nameConflict) return;
     setSaving(true);
     try {
-      await odooData.restoreDesignation(nameConflict.existingId);
+      await restoreDesignationMutation.mutateAsync(nameConflict.existingId);
       setToast(arabicSource("org_structure.restore_success"));
       closeForm();
       await refetch();
@@ -129,7 +149,7 @@ export const useDesignationForm = ({ refetch, setToast }: UseDesignationFormArgs
     } finally {
       setSaving(false);
     }
-  }, [nameConflict, closeForm, refetch, setToast]);
+  }, [nameConflict, closeForm, refetch, setToast, restoreDesignationMutation.mutateAsync]);
 
   return {
     showForm, openNewForm, openEditForm, closeForm,

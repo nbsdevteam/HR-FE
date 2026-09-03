@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
 import type { DbDepartment } from "@/shared/hooks";
@@ -11,15 +12,31 @@ type UseDepartmentDeleteRestoreArgs = {
   setToast: (message: string | null) => void;
 };
 
+type DeleteDepartmentVariables = { id: string; force: boolean };
+
 /**
  * Archive/restore for the department admin screen (backend §6). A first
  * archive attempt that's refused with `department_in_use` re-arms the same
  * pending state with the returned counts, so the confirm modal can re-prompt
  * for `force: true` instead of silently failing.
+ *
+ * `refetch` here refreshes the admin screen's own (non-cached) filtered
+ * list, which the shared `departments`/`departmentMetadata` cache
+ * invalidation below does not reach — it still has to be called explicitly
+ * after each mutation.
  */
 export const useDepartmentDeleteRestore = ({ refetch, setToast }: UseDepartmentDeleteRestoreArgs) => {
   const [pendingDelete, setPendingDelete] = useState<PendingDepartmentDelete | null>(null);
   const [working, setWorking] = useState(false);
+
+  const deleteDepartmentMutation = useOdooMutation(
+    ({ id, force }: DeleteDepartmentVariables) => odooData.deleteDepartment(id, { force }),
+    ["departments", "departmentMetadata"],
+  );
+  const restoreDepartmentMutation = useOdooMutation(
+    (id: string) => odooData.restoreDepartment(id),
+    ["departments", "departmentMetadata"],
+  );
 
   const requestDelete = useCallback((department: DbDepartment) => {
     setPendingDelete({ department, guard: null });
@@ -33,7 +50,7 @@ export const useDepartmentDeleteRestore = ({ refetch, setToast }: UseDepartmentD
     if (!pendingDelete) return;
     setWorking(true);
     try {
-      await odooData.deleteDepartment(pendingDelete.department.id, { force: Boolean(pendingDelete.guard) });
+      await deleteDepartmentMutation.mutateAsync({ id: pendingDelete.department.id, force: Boolean(pendingDelete.guard) });
       setToast(arabicSource("org_structure.archive_success"));
       setPendingDelete(null);
       await refetch();
@@ -53,12 +70,12 @@ export const useDepartmentDeleteRestore = ({ refetch, setToast }: UseDepartmentD
     } finally {
       setWorking(false);
     }
-  }, [pendingDelete, refetch, setToast]);
+  }, [pendingDelete, deleteDepartmentMutation.mutateAsync, refetch, setToast]);
 
   const restoreDepartment = useCallback(async (department: DbDepartment) => {
     setWorking(true);
     try {
-      await odooData.restoreDepartment(department.id);
+      await restoreDepartmentMutation.mutateAsync(department.id);
       setToast(arabicSource("org_structure.restore_success"));
       await refetch();
     } catch (err) {
@@ -66,7 +83,7 @@ export const useDepartmentDeleteRestore = ({ refetch, setToast }: UseDepartmentD
     } finally {
       setWorking(false);
     }
-  }, [refetch, setToast]);
+  }, [restoreDepartmentMutation.mutateAsync, refetch, setToast]);
 
   return {
     pendingDelete, requestDelete, cancelPendingDelete, confirmPendingDelete,

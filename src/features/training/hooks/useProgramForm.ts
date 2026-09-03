@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { useOdooMutation } from "@/shared/hooks";
 import type { DbTrainingProgram } from "@/shared/hooks";
 import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { TRAINING_STATUS_TO_ODOO } from "../constants/training";
@@ -11,6 +12,10 @@ type UseProgramFormArgs = {
   trainingCategories: string[];
   trainingStatuses: string[];
   defaultWeight: number;
+  // No longer called directly: the create/update/delete mutations below
+  // invalidate the "trainingPrograms"/"trainingParticipants" cache keys
+  // themselves — kept in the type so existing callers can keep passing them
+  // unchanged.
   refetchPrograms: () => void;
   refetchParticipants: () => void;
   showToast: (type: ToastType, message: string) => void;
@@ -30,12 +35,25 @@ const buildInitialCreateForm = (trainingCategories: string[], trainingStatuses: 
 });
 
 export const useProgramForm = ({
-  trainingCategories, trainingStatuses, defaultWeight, refetchPrograms, refetchParticipants, showToast,
+  trainingCategories, trainingStatuses, defaultWeight, showToast,
 }: UseProgramFormArgs) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProgram, setEditingProgram] = useState<DbTrainingProgram | null>(null);
   const [createForm, setCreateForm] = useState<CreateProgramForm>(
     buildInitialCreateForm(trainingCategories, trainingStatuses, defaultWeight),
+  );
+
+  const createProgramMutation = useOdooMutation<unknown, Record<string, unknown>>(
+    (payload) => odooData.createTrainingProgram(payload),
+    "trainingPrograms",
+  );
+  const updateProgramMutation = useOdooMutation<unknown, { id: string; payload: Record<string, unknown> }>(
+    ({ id, payload }) => odooData.updateTrainingProgram(id, payload),
+    "trainingPrograms",
+  );
+  const deleteProgramMutation = useOdooMutation<unknown, string>(
+    (id) => odooData.deleteTrainingProgram(id),
+    ["trainingPrograms", "trainingParticipants"],
   );
 
   const updateCreateForm = useCallback((patch: Partial<CreateProgramForm>) => {
@@ -75,50 +93,49 @@ export const useProgramForm = ({
         objectives: objectives.length > 0 ? objectives : null,
       };
 
-      await odooData.createTrainingProgram(payload);
+      await createProgramMutation.mutateAsync(payload);
 
       showToast("success", arabicSource("training.the_training_program_has_been_created_successfully"));
       setCreateForm(buildInitialCreateForm(trainingCategories, trainingStatuses, defaultWeight));
       setShowCreateModal(false);
-      refetchPrograms();
     }, {
       onError: () => showToast("error", arabicSource("training.error_creating_the_program")),
     });
-  }, [createForm, defaultWeight, refetchPrograms, showToast, trainingCategories, trainingStatuses]);
+  }, [createForm, createProgramMutation, defaultWeight, showToast, trainingCategories, trainingStatuses]);
 
   const handleUpdateProgram = useCallback(async () => {
     if (!editingProgram) return;
 
     await runAsyncAction(async () => {
       const status = TRAINING_STATUS_TO_ODOO[editingProgram.status] || editingProgram.status;
-      await odooData.updateTrainingProgram(editingProgram.id, {
-        status,
-        completion_rate: editingProgram.completion_rate,
-        instructor: editingProgram.instructor,
-        duration: editingProgram.duration,
+      await updateProgramMutation.mutateAsync({
+        id: editingProgram.id,
+        payload: {
+          status,
+          completion_rate: editingProgram.completion_rate,
+          instructor: editingProgram.instructor,
+          duration: editingProgram.duration,
+        },
       });
 
       showToast("success", arabicSource("training.the_software_has_been_updated_successfully"));
       setEditingProgram(null);
-      refetchPrograms();
     }, {
       onError: () => showToast("error", arabicSource("training.software_update_error")),
     });
-  }, [editingProgram, refetchPrograms, showToast]);
+  }, [editingProgram, showToast, updateProgramMutation]);
 
   const handleDeleteProgram = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_training_program"))) return;
 
     await runAsyncAction(async () => {
-      await odooData.deleteTrainingProgram(id);
+      await deleteProgramMutation.mutateAsync(id);
 
       showToast("success", arabicSource("training.the_program_was_deleted_successfully"));
-      refetchPrograms();
-      refetchParticipants();
     }, {
       onError: () => showToast("error", arabicSource("training.error_deleting_the_program")),
     });
-  }, [refetchParticipants, refetchPrograms, showToast]);
+  }, [deleteProgramMutation, showToast]);
 
   return {
     showCreateModal, openCreateModal, closeCreateModal,

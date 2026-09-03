@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Download, FileText, Loader2, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import type { DbLeaveAttachment } from "@/shared/hooks";
+import { useOdooMutation, type DbLeaveAttachment } from "@/shared/hooks";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
 
 type LeaveAttachmentRowProps = {
@@ -15,8 +15,12 @@ const formatKb = (bytes: number): string => `${Math.max(1, Math.round(bytes / 10
 
 const LeaveAttachmentRow = ({ leaveId, attachment, onDeleted }: LeaveAttachmentRowProps) => {
   const [downloading, setDownloading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+
+  const deleteAttachmentMutation = useOdooMutation(
+    () => odooData.deleteLeaveAttachment(leaveId, attachment.id),
+    "leaveRequests",
+  );
 
   const handleDownload = useCallback(async (): Promise<void> => {
     setDownloading(true);
@@ -34,16 +38,14 @@ const LeaveAttachmentRow = ({ leaveId, attachment, onDeleted }: LeaveAttachmentR
   }, [attachment.id, leaveId]);
 
   const handleDelete = useCallback(async (): Promise<void> => {
-    setDeleting(true);
     setError("");
     try {
-      await odooData.deleteLeaveAttachment(leaveId, attachment.id);
+      await deleteAttachmentMutation.mutateAsync();
       onDeleted(attachment.id);
     } catch (e) {
       setError(leaveErrorMessage(e, "Failed to delete attachment"));
-      setDeleting(false);
     }
-  }, [attachment.id, leaveId, onDeleted]);
+  }, [attachment.id, deleteAttachmentMutation, onDeleted]);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/10">
@@ -55,7 +57,7 @@ const LeaveAttachmentRow = ({ leaveId, attachment, onDeleted }: LeaveAttachmentR
       </div>
       <button
         onClick={handleDownload}
-        disabled={downloading || deleting}
+        disabled={downloading || deleteAttachmentMutation.isPending}
         className="p-2 rounded-lg hover:bg-primary/10 text-primary cursor-pointer disabled:opacity-50"
         title={arabicSource("leave.download")}
       >
@@ -63,11 +65,11 @@ const LeaveAttachmentRow = ({ leaveId, attachment, onDeleted }: LeaveAttachmentR
       </button>
       <button
         onClick={handleDelete}
-        disabled={downloading || deleting}
+        disabled={downloading || deleteAttachmentMutation.isPending}
         className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive cursor-pointer disabled:opacity-50"
         title={arabicSource("common.delete")}
       >
-        {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+        {deleteAttachmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
       </button>
     </div>
   );

@@ -2,13 +2,31 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import type { DbContractType } from "@/shared/hooks";
+import { type DbContractType, useOdooMutation } from "@/shared/hooks";
 import { INITIAL_NEW_CONTRACT_TYPE } from "../constants/settings";
 import type { NewContractTypeForm } from "../types";
 
+/**
+ * `refetchContractTypes` is `useSettingsBootstrap()`'s whole-bundle refetch,
+ * not the `"contractTypes"`-keyed query these mutations invalidate, so it stays.
+ */
 export const useContractTypeManagement = (refetchContractTypes: () => void, showToast: (message: string) => void) => {
   const [showNewContractTypeForm, setShowNewContractTypeForm] = useState(false);
   const [newContractType, setNewContractType] = useState<NewContractTypeForm>({ ...INITIAL_NEW_CONTRACT_TYPE });
+
+  const createContractTypeMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createContractType(payload),
+    "contractTypes",
+  );
+  const updateContractTypeMutation = useOdooMutation(
+    ({ contractTypeId, patch }: { contractTypeId: string; patch: Record<string, unknown> }) =>
+      odooData.updateContractType(contractTypeId, patch),
+    "contractTypes",
+  );
+  const deleteContractTypeMutation = useOdooMutation(
+    (contractTypeId: string) => odooData.deleteContractType(contractTypeId),
+    "contractTypes",
+  );
 
   const updateNewContractType = useCallback((patch: Partial<NewContractTypeForm>) => {
     setNewContractType((prev) => ({ ...prev, ...patch }));
@@ -27,24 +45,27 @@ export const useContractTypeManagement = (refetchContractTypes: () => void, show
       notice_period_days: newContractType.notice_period_days,
       sort_order: newContractType.sort_order,
     };
-    await odooData.createContractType(payload);
+    await createContractTypeMutation.mutateAsync(payload);
     showToast(arabicSource("settings.contract_type_added"));
     setShowNewContractTypeForm(false);
     setNewContractType({ ...INITIAL_NEW_CONTRACT_TYPE });
     refetchContractTypes();
-  }, [newContractType, refetchContractTypes, showToast]);
+  }, [createContractTypeMutation, newContractType, refetchContractTypes, showToast]);
 
   const toggleContractTypeActive = useCallback(async (contractType: DbContractType) => {
-    await odooData.updateContractType(contractType.id, { is_active: !contractType.is_active });
+    await updateContractTypeMutation.mutateAsync({
+      contractTypeId: contractType.id,
+      patch: { is_active: !contractType.is_active },
+    });
     refetchContractTypes();
-  }, [refetchContractTypes]);
+  }, [refetchContractTypes, updateContractTypeMutation]);
 
   const deleteContractTypeEntry = useCallback(async (contractTypeId: string) => {
     if (!localizedConfirm(arabicSource("settings.delete_contract_type"))) return;
-    await odooData.deleteContractType(contractTypeId);
+    await deleteContractTypeMutation.mutateAsync(contractTypeId);
     showToast(arabicSource("settings.contract_type_deleted"));
     refetchContractTypes();
-  }, [refetchContractTypes, showToast]);
+  }, [deleteContractTypeMutation, refetchContractTypes, showToast]);
 
   return {
     showNewContractTypeForm, setShowNewContractTypeForm,

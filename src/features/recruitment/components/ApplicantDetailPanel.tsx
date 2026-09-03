@@ -1,6 +1,6 @@
 import { useState, useCallback, memo } from "react";
 import { ModalOverlay } from "@/shared/components";
-import { type DbApplicant } from "@/shared/hooks";
+import { type DbApplicant, useOdooMutation } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
 import { ALL_STAGES } from "../constants/recruitment";
@@ -37,25 +37,25 @@ const ApplicantDetailPanel = ({
   onUpdateStage,
   onUpdateRating,
   onToggleBookmark,
-  onRefresh,
   onConvertToEmployee,
   onScreen,
 }: ApplicantDetailPanelProps) => {
   const [interviewNotes, setInterviewNotes] = useState(
     applicant.interview_notes || "",
   );
-  const [savingNotes, setSavingNotes] = useState(false);
+  const updateNotesMutation = useOdooMutation<unknown, void>(
+    () =>
+      odooData.updateApplicant(applicant.id, {
+        interview_notes: interviewNotes,
+      }),
+    "applicants",
+  );
   const score = effectiveScore(applicant);
   const rank = rankLabel(score, applicant.ir_band);
 
   const saveNotes = useCallback(async () => {
-    setSavingNotes(true);
-    await odooData.updateApplicant(applicant.id, {
-      interview_notes: interviewNotes,
-    });
-    setSavingNotes(false);
-    onRefresh();
-  }, [applicant.id, interviewNotes, onRefresh]);
+    await updateNotesMutation.mutateAsync();
+  }, [updateNotesMutation]);
 
   const handleRatingChange = useCallback(
     (r: number) => onUpdateRating(applicant.id, r),
@@ -135,7 +135,7 @@ const ApplicantDetailPanel = ({
 
         <ApplicantInterviewNotesSection
           interviewNotes={interviewNotes}
-          saving={savingNotes}
+          saving={updateNotesMutation.isPending}
           onNotesChange={setInterviewNotes}
           onSave={saveNotes}
         />

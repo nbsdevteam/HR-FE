@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
 import { localizedConfirm } from "@/i18n/native";
-import type { DbLeaveLink } from "@/shared/hooks";
+import { type DbLeaveLink, useOdooMutation } from "@/shared/hooks";
 import type { LeaveLinkFormState } from "../types";
 
 const EMPTY_FORM: LeaveLinkFormState = {
@@ -27,11 +27,32 @@ const linkToForm = (link: DbLeaveLink): LeaveLinkFormState => ({
   department_ids: link.department_ids,
 });
 
+/**
+ * `refetchLinks` is `useLeaveLinks()`'s own TanStack Query refetch — kept in
+ * the signature since `PublicLeaveLinksCard` still passes it, but no longer
+ * called after a mutation: `saveLinkMutation`/`deleteLinkMutation`/
+ * `rotateLinkMutation` invalidate the `"leaveLinks"` query key themselves,
+ * which refetches this same hook.
+ */
 export const useLeaveLinkManagement = (refetchLinks: () => void, showToast: (message: string) => void) => {
   const [editingLink, setEditingLink] = useState<DbLeaveLink | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<LeaveLinkFormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+
+  const saveLinkMutation = useOdooMutation(
+    (vars: { id?: string; payload: Record<string, unknown> }) =>
+      vars.id ? odooData.updateLeaveLink(vars.id, vars.payload) : odooData.createLeaveLink(vars.payload),
+    "leaveLinks",
+  );
+  const deleteLinkMutation = useOdooMutation(
+    (linkId: string) => odooData.deleteLeaveLink(linkId),
+    "leaveLinks",
+  );
+  const rotateLinkMutation = useOdooMutation(
+    (linkId: string) => odooData.rotateLeaveLink(linkId),
+    "leaveLinks",
+  );
 
   const updateForm = useCallback((patch: Partial<LeaveLinkFormState>) => {
     setForm((current) => ({ ...current, ...patch }));
@@ -66,37 +87,30 @@ export const useLeaveLinkManagement = (refetchLinks: () => void, showToast: (mes
         leave_type_ids: form.leave_type_ids.map(Number),
         department_ids: form.department_ids.map(Number),
       };
-      if (editingLink) {
-        await odooData.updateLeaveLink(editingLink.id, payload);
-      } else {
-        await odooData.createLeaveLink(payload);
-      }
+      await saveLinkMutation.mutateAsync({ id: editingLink?.id, payload });
       setShowForm(false);
-      refetchLinks();
     } catch (e: any) {
       showToast(e?.message || arabicSource("settings.leave_links_save_error"));
     }
     setSaving(false);
-  }, [editingLink, form, refetchLinks, showToast]);
+  }, [editingLink, form, saveLinkMutation, showToast]);
 
   const deleteLink = useCallback(async (link: DbLeaveLink) => {
     try {
-      await odooData.deleteLeaveLink(link.id);
-      refetchLinks();
+      await deleteLinkMutation.mutateAsync(link.id);
     } catch (e: any) {
       showToast(e?.message || arabicSource("settings.leave_links_delete_error"));
     }
-  }, [refetchLinks, showToast]);
+  }, [deleteLinkMutation, showToast]);
 
   const rotateLink = useCallback(async (link: DbLeaveLink) => {
     if (!localizedConfirm(arabicSource("settings.leave_links_rotate_confirm"))) return;
     try {
-      await odooData.rotateLeaveLink(link.id);
-      refetchLinks();
+      await rotateLinkMutation.mutateAsync(link.id);
     } catch (e: any) {
       showToast(e?.message || arabicSource("settings.leave_links_rotate_error"));
     }
-  }, [refetchLinks, showToast]);
+  }, [rotateLinkMutation, showToast]);
 
   return {
     closeForm,

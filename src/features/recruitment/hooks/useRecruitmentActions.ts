@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
+import { useOdooMutation } from "@/shared/hooks";
 import { localizedAlert, localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import {
@@ -15,30 +16,87 @@ export const useRecruitmentActions = (
   refetchApps: () => void,
   setSelectedApplicant: Dispatch<SetStateAction<DbApplicant | null>>,
 ) => {
+  const toggleBookmarkMutation = useOdooMutation<unknown, DbApplicant>(
+    (app) => odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked }),
+    "applicants",
+  );
+  const updateRatingMutation = useOdooMutation<
+    unknown,
+    { id: string; rating: number }
+  >(
+    (vars) => odooData.updateApplicant(vars.id, { rating: vars.rating }),
+    "applicants",
+  );
+  const updateStageMutation = useOdooMutation<
+    unknown,
+    { id: string; stage: string }
+  >(
+    (vars) =>
+      odooData.updateApplicant(vars.id, {
+        stage: STAGE_TO_ODOO[vars.stage] || vars.stage,
+      }),
+    ["applicants", "jobOpenings"],
+  );
+  const screenApplicantMutation = useOdooMutation<DbApplicant, DbApplicant>(
+    (app) => odooData.screenApplicant(app.id, { force: true }),
+    "applicants",
+  );
+  const jobStatusMutation = useOdooMutation<
+    unknown,
+    { job: DbJobOpening; nextStatus: string }
+  >(
+    (vars) =>
+      odooData.updateJobOpening(vars.job.id, {
+        status: JOB_STATUS_TO_ODOO[vars.nextStatus] || vars.nextStatus,
+      }),
+    "jobOpenings",
+  );
+  const deleteJobMutation = useOdooMutation<unknown, DbJobOpening>(
+    (job) => odooData.deleteJobOpening(job.id),
+    "jobOpenings",
+  );
+  const deleteApplicantMutation = useOdooMutation<unknown, string>(
+    (id) => odooData.deleteApplicant(id),
+    "applicants",
+  );
+  const convertToEmployeeMutation = useOdooMutation<void, DbApplicant>(
+    async (app) => {
+      const depts = await odooData.fetchDepartments();
+      const dept = depts.find((d) => d.name === app.job_department);
+      await odooData.createEmployee({
+        name: app.name,
+        email: app.email || undefined,
+        phone: app.phone || undefined,
+        department_id: dept?.id || undefined,
+        gender: app.gender ? GENDER_TO_ODOO[app.gender] || app.gender : undefined,
+        monthly_salary: app.expected_salary || undefined,
+        status: "active",
+      });
+      await odooData.updateApplicant(app.id, {
+        stage: "hired",
+        notes: (app.notes || "") + "\n[تم التحويل لموظف]",
+      });
+    },
+    ["employees", "applicants", "jobOpenings"],
+  );
+
   const handleToggleBookmark = useCallback(
     async (app: DbApplicant) => {
-      await odooData.updateApplicant(app.id, {
-        is_bookmarked: !app.is_bookmarked,
-      });
-      refetchApps();
+      await toggleBookmarkMutation.mutateAsync(app);
     },
-    [refetchApps],
+    [toggleBookmarkMutation],
   );
   const handleUpdateRating = useCallback(
     async (id: string, rating: number) => {
-      await odooData.updateApplicant(id, { rating });
-      refetchApps();
+      await updateRatingMutation.mutateAsync({ id, rating });
     },
-    [refetchApps],
+    [updateRatingMutation],
   );
   const handleUpdateStage = useCallback(
     async (id: string, stage: string) => {
-      await odooData.updateApplicant(id, {
-        stage: STAGE_TO_ODOO[stage] || stage,
-      });
-      refetchApps();
+      await updateStageMutation.mutateAsync({ id, stage });
     },
-    [refetchApps],
+    [updateStageMutation],
   );
   const handleScreenApplicant = useCallback(
     async (app: DbApplicant) => {
@@ -47,29 +105,25 @@ export const useRecruitmentActions = (
         return;
       }
       try {
-        await odooData.screenApplicant(app.id, { force: true });
-        refetchApps();
+        await screenApplicantMutation.mutateAsync(app);
       } catch (e: any) {
         localizedAlert(
           e?.message || arabicSource("recruitment.screening_unavailable"),
         );
       }
     },
-    [refetchApps],
+    [screenApplicantMutation],
   );
   const handleJobStatusChange = useCallback(
     async (job: DbJobOpening, nextStatus: string) => {
       if (nextStatus === job.status) return;
       try {
-        await odooData.updateJobOpening(job.id, {
-          status: JOB_STATUS_TO_ODOO[nextStatus] || nextStatus,
-        });
-        refetchJobs();
+        await jobStatusMutation.mutateAsync({ job, nextStatus });
       } catch (e: any) {
         localizedAlert(e?.message || arabicSource("common.error"));
       }
     },
-    [refetchJobs],
+    [jobStatusMutation],
   );
 
   const handleDeleteJob = useCallback(
@@ -83,13 +137,12 @@ export const useRecruitmentActions = (
       )
         return;
       try {
-        await odooData.deleteJobOpening(job.id);
-        refetchJobs();
+        await deleteJobMutation.mutateAsync(job);
       } catch (e: any) {
         localizedAlert(e?.message || arabicSource("common.error"));
       }
     },
-    [refetchJobs],
+    [deleteJobMutation],
   );
 
   const handleDeleteApplicant = useCallback(
@@ -102,11 +155,10 @@ export const useRecruitmentActions = (
         )
       )
         return;
-      await odooData.deleteApplicant(id);
+      await deleteApplicantMutation.mutateAsync(id);
       setSelectedApplicant(null);
-      refetchApps();
     },
-    [refetchApps],
+    [deleteApplicantMutation, setSelectedApplicant],
   );
 
   const handleConvertToEmployee = useCallback(
@@ -119,31 +171,14 @@ export const useRecruitmentActions = (
         return;
 
       try {
-        const depts = await odooData.fetchDepartments();
-        const dept = depts.find((d) => d.name === app.job_department);
-        await odooData.createEmployee({
-          name: app.name,
-          email: app.email || undefined,
-          phone: app.phone || undefined,
-          department_id: dept?.id || undefined,
-          gender: app.gender
-            ? GENDER_TO_ODOO[app.gender] || app.gender
-            : undefined,
-          monthly_salary: app.expected_salary || undefined,
-          status: "active",
-        });
-        await odooData.updateApplicant(app.id, {
-          stage: "hired",
-          notes: (app.notes || "") + "\n[تم التحويل لموظف]",
-        });
+        await convertToEmployeeMutation.mutateAsync(app);
         setSelectedApplicant(null);
-        refetchApps();
         localizedAlert(`تم إضافة "${app.name}" كموظف بنجاح!`);
       } catch (e: any) {
         localizedAlert("خطأ في تحويل المتقدم: " + e.message);
       }
     },
-    [refetchApps],
+    [convertToEmployeeMutation, setSelectedApplicant],
   );
 
   return {

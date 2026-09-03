@@ -5,6 +5,7 @@ import {
   type DbJobOpening,
   type DbDepartment,
   type JobSkillRequirement,
+  useOdooMutation,
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -46,54 +47,47 @@ const JobFormModal = ({
   const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(
     editingJob?.nice_to_have_skills || [],
   );
-  const [saving, setSaving] = useState(false);
   const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
+  const saveJobMutation = useOdooMutation<unknown, void>(
+    () => {
+      const reqs = form.requirements
+        .split("\n")
+        .map((r) => r.trim())
+        .filter(Boolean);
 
-  const handleSave = async () => {
+      const dept = odooDepartments.find((d) => d.name === form.department);
+      const payload = {
+        title: form.title,
+        department_id: dept?.id || undefined,
+        location: form.location,
+        job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
+        status: JOB_STATUS_TO_ODOO[form.status] || "open",
+        deadline: form.deadline || null,
+        description: form.description || null,
+        salary_range: form.salary_range || null,
+        requirements: reqs.length > 0 ? reqs : [],
+        required_skills: requiredSkills,
+        nice_to_have_skills: niceToHave,
+        min_experience_years: form.min_experience_years,
+        education_level: form.education_level,
+        ir_auto_shortlist: form.ir_auto_shortlist,
+      };
+      return editingJob
+        ? odooData.updateJobOpening(editingJob.id, payload)
+        : odooData.createJobOpening(payload);
+    },
+    "jobOpenings",
+  );
+
+  const handleSave = useCallback(async (): Promise<void> => {
     if (!form.title.trim()) return;
-    setSaving(true);
-    const reqs = form.requirements
-      .split("\n")
-      .map((r) => r.trim())
-      .filter(Boolean);
-
-    const dept = odooDepartments.find((d) => d.name === form.department);
-    const payload = {
-      title: form.title,
-      department_id: dept?.id || undefined,
-      location: form.location,
-      job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
-      status: JOB_STATUS_TO_ODOO[form.status] || "open",
-      deadline: form.deadline || null,
-      description: form.description || null,
-      salary_range: form.salary_range || null,
-      requirements: reqs.length > 0 ? reqs : [],
-      required_skills: requiredSkills,
-      nice_to_have_skills: niceToHave,
-      min_experience_years: form.min_experience_years,
-      education_level: form.education_level,
-      ir_auto_shortlist: form.ir_auto_shortlist,
-    };
     try {
-      if (editingJob) {
-        await odooData.updateJobOpening(editingJob.id, payload);
-      } else {
-        await odooData.createJobOpening(payload);
-      }
+      await saveJobMutation.mutateAsync();
       onSaved();
     } catch (e: any) {
       localizedAlert(e?.message || arabicSource("common.error"));
-    } finally {
-      setSaving(false);
     }
-  };
-
-  useEffect(() => {
-    odooData
-      .fetchDepartments()
-      .then(setOdooDepartments)
-      .catch(() => {});
-  }, []);
+  }, [form.title, saveJobMutation, onSaved]);
 
   const handleMinExperienceYearsChange = useCallback((value: number) => {
     setForm((prev) => ({ ...prev, min_experience_years: value }));
@@ -107,6 +101,13 @@ const JobFormModal = ({
 
   const handleFieldChange = useCallback((field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  useEffect(() => {
+    odooData
+      .fetchDepartments()
+      .then(setOdooDepartments)
+      .catch(() => {});
   }, []);
 
   return (
@@ -149,10 +150,10 @@ const JobFormModal = ({
         <div className="flex gap-3 pt-2">
           <Button
             onClick={handleSave}
-            disabled={saving || !form.title.trim()}
+            disabled={saveJobMutation.isPending || !form.title.trim()}
             className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
           >
-            {saving
+            {saveJobMutation.isPending
               ? arabicSource("common.saving")
               : isEdit
                 ? arabicSource("common.save")

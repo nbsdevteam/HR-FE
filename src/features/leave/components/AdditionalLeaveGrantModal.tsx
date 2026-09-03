@@ -3,7 +3,7 @@ import { Gift } from "lucide-react";
 import { InputField, ModalHeader, ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
-import type { DbLeaveType } from "@/shared/hooks";
+import { useOdooMutation, type DbLeaveType } from "@/shared/hooks";
 import { leaveInputClass as inputCls } from "../styles";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
 import LeaveFormError from "./LeaveFormError";
@@ -28,8 +28,18 @@ const AdditionalLeaveGrantModal = ({
   const [additionalDays, setAdditionalDays] = useState("");
   const [reason, setReason] = useState("");
   const [effectiveDate, setEffectiveDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const grantAdjustmentMutation = useOdooMutation(
+    (payload: {
+      employee_id: string;
+      leave_type_id: string;
+      additional_days: number;
+      reason: string;
+      effective_date: string | undefined;
+    }) => odooData.createLeaveEntitlementAdjustment(payload),
+    "leaveEntitlementAdjustments",
+  );
 
   const handleSelectLeaveType = useCallback((leaveType: DbLeaveType): void => {
     setLeaveTypeId(leaveType.id);
@@ -49,24 +59,21 @@ const AdditionalLeaveGrantModal = ({
       setError(arabicSource("leave.error_invalid_additional_days"));
       return;
     }
-    setSaving(true);
     setError("");
 
     try {
-      await odooData.createLeaveEntitlementAdjustment({
+      await grantAdjustmentMutation.mutateAsync({
         employee_id: employeeId,
         leave_type_id: leaveTypeId,
         additional_days: days,
         reason: reason.trim(),
         effective_date: effectiveDate || undefined,
       });
-      setSaving(false);
       await onCreated();
     } catch (e: unknown) {
       setError(leaveErrorMessage(e, arabicSource("leave.error_grant_additional_leave_failed")));
-      setSaving(false);
     }
-  }, [additionalDays, effectiveDate, employeeId, leaveTypeId, onCreated, reason]);
+  }, [additionalDays, effectiveDate, employeeId, grantAdjustmentMutation, leaveTypeId, onCreated, reason]);
 
   return (
     <ModalOverlay
@@ -131,7 +138,7 @@ const AdditionalLeaveGrantModal = ({
 
         <LeaveModalActions
           submitLabel={arabicSource("leave.grant_additional_leave")}
-          saving={saving}
+          saving={grantAdjustmentMutation.isPending}
           onSubmit={handleSubmit}
           onClose={onClose}
         />

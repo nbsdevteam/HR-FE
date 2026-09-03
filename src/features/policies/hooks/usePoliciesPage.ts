@@ -5,7 +5,7 @@ import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
 import { translateArabicSource } from "@/i18n/legacy";
-import { usePolicies } from "@/shared/hooks";
+import { useOdooMutation, usePolicies } from "@/shared/hooks";
 import { runAsyncAction } from "@/shared/utils/asyncAction";
 import { countBy } from "@/shared/utils/collections";
 import { stripHtmlTags } from "@/shared/utils/html";
@@ -38,7 +38,19 @@ export const usePoliciesPage = () => {
   });
 
   const { i18n } = useTranslation();
-  const { policies, loading, refetch } = usePolicies();
+  const { policies, loading } = usePolicies();
+  const createPolicyMutation = useOdooMutation<unknown, Record<string, unknown>>(
+    (payload) => odooData.createPolicy(payload),
+    "policies",
+  );
+  const updatePolicyMutation = useOdooMutation<unknown, { id: string; payload: Record<string, unknown> }>(
+    ({ id, payload }) => odooData.updatePolicy(id, payload),
+    "policies",
+  );
+  const deletePolicyMutation = useOdooMutation<unknown, string>(
+    (id) => odooData.deletePolicy(id),
+    "policies",
+  );
 
   const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
 
@@ -107,7 +119,7 @@ export const usePoliciesPage = () => {
     }
 
     await runAsyncAction(async () => {
-      await odooData.createPolicy({
+      await createPolicyMutation.mutateAsync({
         title: createForm.title,
         category: createForm.category,
         description: createForm.description,
@@ -119,49 +131,49 @@ export const usePoliciesPage = () => {
       showToast(arabicSource("policies.the_policy_was_created_successfully"));
       setCreateForm({ title: "", category: arabicSource("common.general"), description: "", content: "" });
       setShowCreateModal(false);
-      await refetch();
     }, {
       setLoading: setIsSubmitting,
       onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_creation_failed"))),
     });
-  }, [createForm, refetch, showToast]);
+  }, [createForm, createPolicyMutation, showToast]);
 
   const handleUpdatePolicy = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
     if (!editingPolicy) return;
 
     await runAsyncAction(async () => {
-      await odooData.updatePolicy(editingPolicy.id, {
-        title: editingPolicy.title,
-        category: editingPolicy.category,
-        description: editingPolicy.description,
-        content: editingPolicy.content,
-        status: POLICY_STATUS_TO_ODOO[editingPolicy.status] || editingPolicy.status,
-        version: editingPolicy.version + 1,
+      await updatePolicyMutation.mutateAsync({
+        id: editingPolicy.id,
+        payload: {
+          title: editingPolicy.title,
+          category: editingPolicy.category,
+          description: editingPolicy.description,
+          content: editingPolicy.content,
+          status: POLICY_STATUS_TO_ODOO[editingPolicy.status] || editingPolicy.status,
+          version: editingPolicy.version + 1,
+        },
       });
 
       showToast(arabicSource("policies.the_policy_was_updated_successfully"));
       setEditingPolicy(null);
       setShowEditModal(false);
-      await refetch();
     }, {
       setLoading: setIsSubmitting,
       onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_update_failed"))),
     });
-  }, [editingPolicy, refetch, showToast]);
+  }, [editingPolicy, showToast, updatePolicyMutation]);
 
   const handleDeletePolicy = useCallback(async (id: string) => {
     if (!localizedConfirm(arabicSource("policies.are_you_sure_you_want_to_delete_this_policy"))) return;
 
     await runAsyncAction(async () => {
-      await odooData.deletePolicy(id);
+      await deletePolicyMutation.mutateAsync(id);
       showToast(arabicSource("policies.the_policy_was_deleted_successfully"));
-      await refetch();
     }, {
       setLoading: setIsSubmitting,
       onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_deletion_failed"))),
     });
-  }, [refetch, showToast]);
+  }, [deletePolicyMutation, showToast]);
 
   const handleToggleStatus = useCallback(async (policy: DisplayPolicy) => {
     const statusMap: Record<string, string> = {
@@ -172,17 +184,17 @@ export const usePoliciesPage = () => {
     const newStatus = statusMap[policy.status] || arabicSource("common.is_active");
 
     await runAsyncAction(async () => {
-      await odooData.updatePolicy(policy.id, {
-        status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus,
+      await updatePolicyMutation.mutateAsync({
+        id: policy.id,
+        payload: { status: POLICY_STATUS_TO_ODOO[newStatus] || newStatus },
       });
 
       showToast(`${arabicSource("policies.status_changed_to")} ${newStatus}`);
-      await refetch();
     }, {
       setLoading: setIsSubmitting,
       onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.status_change_failed"))),
     });
-  }, [refetch, showToast]);
+  }, [showToast, updatePolicyMutation]);
 
   const openEditModal = useCallback((policy: DisplayPolicy) => {
     setEditingPolicy({

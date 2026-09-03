@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { localizedConfirm } from "@/i18n/native";
 import * as odooData from "@/shared/api/odooData";
-import { empDisplayName } from "@/shared/hooks";
+import { empDisplayName, useOdooMutation } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { Button, ModalOverlay, StatusBadge } from "@/shared/components";
 import CustomRadarChart from "@/shared/components/custom-radar-chart";
@@ -41,7 +41,15 @@ const EvalDetailModal = ({
   const [scores, setScores] = useState<Record<string, number>>({});
   const [comments, setComments] = useState(evaluation.comments || "");
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+
+  const updateEvaluationMutation = useOdooMutation<unknown, Record<string, unknown>>(
+    (payload) => odooData.updateEvaluation(evaluation.id, payload),
+    "evaluations",
+  );
+  const deleteEvaluationMutation = useOdooMutation<unknown, void>(
+    () => odooData.deleteEvaluation(evaluation.id),
+    "evaluations",
+  );
 
   useEffect(() => {
     const map: Record<string, number> = {};
@@ -77,7 +85,7 @@ const EvalDetailModal = ({
         criterion_name: name,
         score,
       }));
-      await odooData.updateEvaluation(evaluation.id, {
+      await updateEvaluationMutation.mutateAsync({
         overall_rating: overallRating,
         status: EVAL_STATUS_TO_ODOO[status] || "draft",
         comments: comments || null,
@@ -90,20 +98,18 @@ const EvalDetailModal = ({
     setEditing(false);
     onUpdate();
     if (status === arabicSource("common.complete")) onClose();
-  }, [scores, evaluation.id, overallRating, comments, onUpdate, onClose]);
+  }, [scores, updateEvaluationMutation, overallRating, comments, onUpdate, onClose]);
 
   const handleDelete = useCallback(async () => {
     if (!localizedConfirm(arabicSource("evaluation.are_you_sure_you_want_to_delete_this_review"))) return;
-    setDeleting(true);
     try {
-      await odooData.deleteEvaluation(evaluation.id);
+      await deleteEvaluationMutation.mutateAsync();
     } catch (e) {
       console.error(e);
     }
-    setDeleting(false);
     onUpdate();
     onClose();
-  }, [evaluation.id, onUpdate, onClose]);
+  }, [deleteEvaluationMutation, onUpdate, onClose]);
 
   const saveDraft = useCallback(() => handleSave(arabicSource("common.under_evaluation")), [handleSave]);
   const saveComplete = useCallback(() => handleSave(arabicSource("common.complete")), [handleSave]);
@@ -150,7 +156,7 @@ const EvalDetailModal = ({
             )}
             <Button
               onClick={handleDelete}
-              loading={deleting}
+              loading={deleteEvaluationMutation.isPending}
               variant="unstyled"
               size="icon"
               rounded="rounded-lg"

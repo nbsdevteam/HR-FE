@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks";
 import { formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
 import { getShortfallRecords, getAbsenceRecords, getLeaveRecords, DEFAULT_SETTINGS } from "@/features/payroll";
@@ -27,6 +28,11 @@ export const usePayrollDetailPanel = ({
   const [ledgerCurrency, setLedgerCurrency] = useState<"IQD" | "USD">("IQD");
 
   const { detail, detailLoading, refetchDetail } = usePayrollEmployeeDetail(empId, selectedMonth);
+
+  // `refetchDetail`/`onLedgerUpdate` refresh plain (non-cached) local state
+  // that these invalidations don't reach, so they stay explicit below.
+  const upsertLedgerMutation = useOdooMutation(odooData.upsertMonthlyLedger, "monthlyLedgers");
+  const excuseAttendanceMutation = useOdooMutation(odooData.excuseAttendance, "attendance");
 
   const calc = useMemo(() => (detail ? mapPayrollDetailToCalc(detail) : null), [detail]);
   const records = useMemo(() => (detail ? mapPayrollDetailToRecords(detail) : []), [detail]);
@@ -61,7 +67,7 @@ export const usePayrollDetailPanel = ({
       const existingLoan = currentLedger?.loan_by_currency || {};
       const existingTip = currentLedger?.tip_by_currency || {};
       const existingPenalty = currentLedger?.penalty_by_currency || {};
-      await odooData.upsertMonthlyLedger({
+      await upsertLedgerMutation.mutateAsync({
         employee_id: empId,
         month_year: selectedMonth,
         loan_by_currency: { ...existingLoan, [c]: ledgerLoan },
@@ -78,25 +84,25 @@ export const usePayrollDetailPanel = ({
     } finally {
       setLedgerSaving(false);
     }
-  }, [empId, ledgerCurrency, currentLedger, selectedMonth, ledgerLoan, ledgerTip, ledgerPenalty, onLedgerUpdate, refetchDetail]);
+  }, [empId, ledgerCurrency, currentLedger, selectedMonth, ledgerLoan, ledgerTip, ledgerPenalty, onLedgerUpdate, refetchDetail, upsertLedgerMutation.mutateAsync]);
 
   const excuseAbsence = useCallback((id: string): void => {
     const rec = records.find((r) => r.id === id);
     if (!rec || !empId) return;
-    odooData
-      .excuseAttendance({ employee_id: empId, date: rec.date, excused_absence: !rec.excusedAbsence })
+    excuseAttendanceMutation
+      .mutateAsync({ employee_id: empId, date: rec.date, excused_absence: !rec.excusedAbsence })
       .then(refetchDetail)
       .catch(() => {});
-  }, [records, empId, refetchDetail]);
+  }, [records, empId, refetchDetail, excuseAttendanceMutation.mutateAsync]);
 
   const excuseShortfall = useCallback((id: string): void => {
     const rec = records.find((r) => r.id === id);
     if (!rec || !empId) return;
-    odooData
-      .excuseAttendance({ employee_id: empId, date: rec.date, excused_shortfall: !rec.excusedShortfall })
+    excuseAttendanceMutation
+      .mutateAsync({ employee_id: empId, date: rec.date, excused_shortfall: !rec.excusedShortfall })
       .then(refetchDetail)
       .catch(() => {});
-  }, [records, empId, refetchDetail]);
+  }, [records, empId, refetchDetail, excuseAttendanceMutation.mutateAsync]);
 
   // Escape key to dismiss panel
   useEffect(() => {
