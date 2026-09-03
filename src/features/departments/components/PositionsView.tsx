@@ -75,7 +75,7 @@ const PositionsView = ({
   }
 
   return (
-    <div className="h-full flex flex-col gap-4 min-h-0">
+    <div className="flex flex-col gap-4">
       {/* Info banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3 shrink-0">
         <GripVertical className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -93,11 +93,12 @@ const PositionsView = ({
         </div>
       </div>
 
-      {/* Both panes stretch to match this row's height (so the sidebar is
-          always as tall as the positions panel) and scroll internally once
-          their own content outgrows it; below the row's minimum height the
-          page scrolls instead of clipping either pane. */}
-      <div className="flex-1 min-h-[420px] flex gap-4">
+      {/* The row's height is driven by its content: whichever pane is taller
+          (e.g. more PositionDepartmentSection groups expanded) sets the
+          height, and the shorter pane stretches to match it in parallel.
+          Each pane caps its own content and scrolls internally past that
+          shared height instead of growing forever. */}
+      <div className="flex gap-4">
         <UnassignedEmployeesSidebar
           totalCount={unassignedEmployees.length}
           empSearch={empSearch}

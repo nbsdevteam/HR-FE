@@ -57,7 +57,7 @@ const UnassignedEmployeesSidebar = ({
           style={{ fontSize: 12 }}
         />
       </div>
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-2">
+      <div ref={scrollRef} className="flex-auto min-h-0 max-h-[560px] overflow-y-auto p-2">
         {filteredUnassigned.length > 0 ? (
           <div ref={containerRef}>
             {isWindowed && topPadding > 0 && (

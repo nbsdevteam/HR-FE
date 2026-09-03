@@ -29,8 +29,9 @@ type PositionsPanelProps = {
 };
 
 /**
- * The position side: a scrollable, department-grouped grid of position cards,
- * scrolling inside its own fixed height. Only departments collapse.
+ * The position side: a department-grouped grid of position cards that grows
+ * with expanded departments (capped at max-h-[560px], past which it scrolls
+ * internally). Only departments collapse.
  */
 const PositionsPanel = ({
   groups,
@@ -81,7 +82,7 @@ const PositionsPanel = ({
         )}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-5">
+      <div className="flex-auto min-h-0 max-h-[560px] overflow-y-auto p-3 space-y-5">
         {!hasPositions ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Network className="w-12 h-12 mb-4 opacity-30" />
