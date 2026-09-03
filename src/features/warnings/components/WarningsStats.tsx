@@ -10,7 +10,7 @@ type TWarningsStatsProps = {
 };
 
 const WarningsStats = ({ stats, typeColors }: TWarningsStatsProps) => (
-  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+  <div className="grid grid-cols-2 min-[1000px]:grid-cols-5 gap-4">
     <StatCard
       label={arabicSource("common.total")}
       value={stats.total}

@@ -54,6 +54,7 @@ const EvaluationStats = ({
           decoration="glow"
           hoverLift
           valueMarginClassName="mt-2"
+          hideIconBetween="768-920"
         />
       ))}
     </div>

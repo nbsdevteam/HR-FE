@@ -120,7 +120,7 @@ const JobCard = ({
         <RequirementOverflowBadge hiddenCount={job.requirements.length - 2} />
       </div>
     )}
-    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/20">
+    <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-border/20">
       <button
         onClick={handleLinkClick}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors cursor-pointer"

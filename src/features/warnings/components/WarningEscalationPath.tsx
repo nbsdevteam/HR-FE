@@ -19,7 +19,7 @@ const WarningEscalationPath = ({
     <h3 className="text-foreground mb-4">
       {arabicSource("warnings.alarm_escalation_path")}
     </h3>
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between gap-4 overflow-x-auto pb-1">
       {warningTypes?.map((type, i) => (
         <WarningEscalationStep
           key={type}

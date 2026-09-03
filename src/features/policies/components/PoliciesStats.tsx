@@ -48,7 +48,7 @@ const PoliciesStats = ({ stats }: PoliciesStatsProps) => {
   );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 min-[1070px]:grid-cols-4 gap-4">
       {items.map((stat, index) => (
         <StatCard
           key={stat.label}

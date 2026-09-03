@@ -14,6 +14,14 @@ const ICON_HIDDEN_BELOW_CLASS: Record<StatCardIconBreakpoint, string> = {
   1220: "hidden min-[1220px]:block",
 };
 
+/** Icon hides only inside this width band (visible both below and above it) — for pages where the
+ * icon fits fine full-width on mobile but collides once the grid picks up extra narrow columns. */
+type StatCardIconBand = "768-920";
+
+const ICON_HIDDEN_BETWEEN_CLASS: Record<StatCardIconBand, string> = {
+  "768-920": "min-[768px]:hidden min-[920px]:block",
+};
+
 type StatCardProps = {
   label: string;
   value: ReactNode;
@@ -41,6 +49,7 @@ type StatCardProps = {
   dir?: "ltr";
   href?: string;
   hideIconBelow?: StatCardIconBreakpoint;
+  hideIconBetween?: StatCardIconBand;
 };
 
 const MotionLink = motion.create(Link);
@@ -73,8 +82,13 @@ const StatCard = ({
   dir,
   href,
   hideIconBelow,
+  hideIconBetween,
 }: StatCardProps) => {
-  const iconVisibilityClassName = hideIconBelow ? ICON_HIDDEN_BELOW_CLASS[hideIconBelow] : "";
+  const iconVisibilityClassName = hideIconBelow
+    ? ICON_HIDDEN_BELOW_CLASS[hideIconBelow]
+    : hideIconBetween
+      ? ICON_HIDDEN_BETWEEN_CLASS[hideIconBetween]
+      : "";
   const icon = iconBox ? (
     <div
       className={`rounded-lg flex-shrink-0 ${iconVisibilityClassName} ${iconBoxPadding ?? (layout === "center" ? "p-2" : "p-2.5")} ${iconBoxClassName}`}

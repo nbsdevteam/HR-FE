@@ -41,7 +41,7 @@ const StructureCardsSummary = ({ totals }: StructureCardsSummaryProps) => {
   );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 min-[550px]:grid-cols-2 min-[900px]:grid-cols-3 min-[1250px]:grid-cols-5 gap-4">
       {tiles.map((tile, index) => (
         <StatCard
           key={tile.label}

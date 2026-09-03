@@ -47,7 +47,7 @@ const TrainingStatsGrid = ({ stats }: ITrainingStatsGridProps) => {
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 min-[1150px]:grid-cols-5 gap-4 [&>*:last-child]:col-span-2 min-[1150px]:[&>*:last-child]:col-span-1">
       {items.map((stat, i) => (
         <StatCard
           key={stat.label}

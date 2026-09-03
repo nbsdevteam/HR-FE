@@ -16,7 +16,7 @@ const WarningsHeader = ({
   onViewModeChange,
   onNewWarning,
 }: TWarningsHeaderProps) => (
-  <div className="flex items-center justify-between">
+  <div className="flex flex-col min-[930px]:flex-row items-start min-[930px]:items-center justify-between gap-4">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.alarms")}</h1>
       <p className="text-muted-foreground mt-1">

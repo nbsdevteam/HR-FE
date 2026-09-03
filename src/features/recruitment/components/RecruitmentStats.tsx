@@ -23,7 +23,7 @@ const RecruitmentStats = ({ stats }: IRecruitmentStatsProps) => {
   );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 min-[800px]:grid-cols-3 min-[1020px]:grid-cols-5 gap-4 [&>*:last-child]:col-span-2 min-[800px]:[&>*:last-child]:col-span-1">
       {items.map((stat, index) => (
         <StatCard
           key={stat.label}

@@ -31,7 +31,7 @@ const TrainingFiltersBar = ({
         value={searchTerm}
         onChange={onSearchTermChange}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Filter className="w-4 h-4 text-muted-foreground" />
         {filters?.map((f) => (
           <FilterChip
