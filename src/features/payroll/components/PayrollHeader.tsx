@@ -28,7 +28,7 @@ const PayrollHeader = ({
       : arabicSource("payroll.save_statements");
 
   return (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div className="flex flex-col min-[1010px]:flex-row items-start min-[1010px]:items-center justify-between gap-4">
     <div>
       <h1 className="text-gradient-gold">
         {arabicSource("payroll.payroll_and_payroll_management")}

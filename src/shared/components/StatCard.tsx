@@ -5,6 +5,15 @@ import { Link } from "react-router";
 type StatCardLayout = "row" | "center";
 type StatCardDecoration = "none" | "blob" | "glow";
 
+/** Pixel width below which `hideIconBelow` hides the icon. Tailwind's JIT scanner needs each
+ * class literally in source, so this stays a fixed lookup rather than an interpolated string. */
+type StatCardIconBreakpoint = 1000 | 1220;
+
+const ICON_HIDDEN_BELOW_CLASS: Record<StatCardIconBreakpoint, string> = {
+  1000: "hidden min-[1000px]:block",
+  1220: "hidden min-[1220px]:block",
+};
+
 type StatCardProps = {
   label: string;
   value: ReactNode;
@@ -31,6 +40,7 @@ type StatCardProps = {
   trailing?: ReactNode;
   dir?: "ltr";
   href?: string;
+  hideIconBelow?: StatCardIconBreakpoint;
 };
 
 const MotionLink = motion.create(Link);
@@ -62,15 +72,17 @@ const StatCard = ({
   trailing,
   dir,
   href,
+  hideIconBelow,
 }: StatCardProps) => {
+  const iconVisibilityClassName = hideIconBelow ? ICON_HIDDEN_BELOW_CLASS[hideIconBelow] : "";
   const icon = iconBox ? (
     <div
-      className={`rounded-lg ${iconBoxPadding ?? (layout === "center" ? "p-2" : "p-2.5")} ${iconBoxClassName}`}
+      className={`rounded-lg flex-shrink-0 ${iconVisibilityClassName} ${iconBoxPadding ?? (layout === "center" ? "p-2" : "p-2.5")} ${iconBoxClassName}`}
     >
       <Icon className={iconClassName} />
     </div>
   ) : (
-    <Icon className={iconClassName} />
+    <Icon className={`${iconClassName} flex-shrink-0 ${iconVisibilityClassName}`} />
   );
 
   const decorationEl =
@@ -114,8 +126,8 @@ const StatCard = ({
           </span>
         </>
       ) : (
-        <div className="flex items-start justify-between relative z-10">
-          <div>
+        <div className="flex items-start justify-between gap-2 relative z-10">
+          <div className="min-w-0">
             <p
               className="text-muted-foreground"
               style={{ fontSize: labelSize }}

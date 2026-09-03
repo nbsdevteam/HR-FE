@@ -4,30 +4,16 @@ import { AlertTriangle, Users } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
 import EmptyState from "@/shared/components/EmptyState";
 import Pagination from "@/shared/components/Pagination";
-import SortableHeaderRow, { toggleSort } from "@/shared/components/SortableHeader";
+import SortableHeaderRow, {
+  toggleSort,
+} from "@/shared/components/SortableHeader";
 import { indexBy } from "@/shared/utils/collections";
 import type { Employee } from "@/features/employees";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
-
-const EMPLOYEE_COLUMNS: ReadonlyArray<{
-  label: string;
-  key: EmployeeSortKey | null;
-  center?: boolean;
-}> = [
-  { label: arabicSource("common.employee"), key: "name" },
-  { label: arabicSource("common.job_number"), key: "employeeNumber" },
-  { label: arabicSource("common.fingerprint_number"), key: "deviceNo", center: true },
-  { label: arabicSource("common.section"), key: "department" },
-  { label: arabicSource("common.position"), key: "position" },
-  { label: arabicSource("common.status"), key: "status" },
-  { label: arabicSource("common.footprint"), key: null },
-  { label: arabicSource("common.direct_date"), key: "joinDate" },
-  { label: arabicSource("common.salary"), key: "salary" },
-  { label: arabicSource("common.procedures"), key: null },
-];
+import { EMPLOYEE_COLUMNS } from "../data";
 
 type EmployeesListViewProps = {
   employees: Employee[];
@@ -122,7 +108,9 @@ const EmployeesListView = ({
           index={i}
           isPending={pendingEmployees.has(emp.id)}
           isDeviceSynced={deviceSyncedSet.has(emp.id)}
-          isSelf={Boolean(dbEmp && currentEmployeeId && dbEmp.id === currentEmployeeId)}
+          isSelf={Boolean(
+            dbEmp && currentEmployeeId && dbEmp.id === currentEmployeeId,
+          )}
           onSelectEmployee={onSelectEmployee}
           onEditEmployee={onEditEmployee}
           onDeleteTargetChange={onDeleteTargetChange}
@@ -132,8 +120,15 @@ const EmployeesListView = ({
       );
     },
     [
-      dbEmpByPersonId, pendingEmployees, deviceSyncedSet, currentEmployeeId,
-      onSelectEmployee, onEditEmployee, onDeleteTargetChange, onSuspendEmployee, onRestoreEmployee,
+      dbEmpByPersonId,
+      pendingEmployees,
+      deviceSyncedSet,
+      currentEmployeeId,
+      onSelectEmployee,
+      onEditEmployee,
+      onDeleteTargetChange,
+      onSuspendEmployee,
+      onRestoreEmployee,
     ],
   );
 
@@ -148,7 +143,12 @@ const EmployeesListView = ({
     >
       {/* Dimmed rather than swapped for a spinner, so the table does not
           collapse and re-expand on every page step. */}
-      <div className={loading ? "opacity-50 transition-opacity" : "transition-opacity"} aria-busy={loading}>
+      <div
+        className={
+          loading ? "opacity-50 transition-opacity" : "transition-opacity"
+        }
+        aria-busy={loading}
+      >
         <DataTable
           wrapperClassName={null}
           items={employees}

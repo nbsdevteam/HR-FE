@@ -168,6 +168,7 @@ const OverviewTab = ({
             labelSize={12}
             iconClassName={`w-5 h-5 ${stat.color}`}
             dir="ltr"
+            hideIconBelow={1220}
           />
         ))}
       </div>

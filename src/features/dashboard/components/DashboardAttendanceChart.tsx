@@ -52,7 +52,7 @@ const DashboardAttendanceChart = ({
       <div className="flex items-center justify-center" style={{ height: 240 }}>
         <DonutChart data={attendanceChartData} />
       </div>
-      <div className="grid grid-cols-4 gap-2 mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         {metrics.map((metric) => (
           <DashboardAttendanceMetricTile key={metric.label} {...metric} />
         ))}

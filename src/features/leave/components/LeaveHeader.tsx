@@ -21,7 +21,7 @@ const LeaveHeader = ({
   onShowLeaveForm,
   onShowPermissionForm,
 }: LeaveHeaderProps) => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div className="flex flex-col min-[970px]:flex-row items-start min-[970px]:items-center justify-between gap-4">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("leave.leave_management")}</h1>
       <p className="text-muted-foreground mt-1">{arabicSource("leave.follow_up_on_requests_for_leave_balances_and_authorizations")}</p>

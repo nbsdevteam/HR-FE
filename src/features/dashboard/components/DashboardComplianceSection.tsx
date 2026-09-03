@@ -113,7 +113,7 @@ const DashboardComplianceSection = ({
         <h3 className="text-foreground mb-4">
           {arabicSource("dashboard.summary_of_training_and_development")}
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {trainingTiles.map((tile) => (
             <ColorStatTile key={tile.label} {...tile} />
           ))}

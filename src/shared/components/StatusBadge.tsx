@@ -9,7 +9,7 @@ type StatusBadgeProps = {
 };
 
 const StatusBadge = ({ colorClassName, fontSize = 12, extraClassName = "", style, children }: StatusBadgeProps) => (
-  <span className={`px-2 py-0.5 rounded-md border ${colorClassName} ${extraClassName}`} style={{ fontSize, ...style }}>{children}</span>
+  <span className={`inline-block px-2 py-0.5 rounded-md border break-words leading-snug ${colorClassName} ${extraClassName}`} style={{ fontSize, ...style }}>{children}</span>
 );
 
 export default StatusBadge;

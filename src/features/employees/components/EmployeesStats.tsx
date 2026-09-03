@@ -25,7 +25,7 @@ const EmployeesStats = ({ employees, deviceSyncedCount }: EmployeesStatsProps) =
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((stat, i) => (
-        <StatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} index={i} decoration="glow" hoverLift />
+        <StatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} index={i} decoration="glow" hoverLift hideIconBelow={1000} />
       ))}
     </div>
   );

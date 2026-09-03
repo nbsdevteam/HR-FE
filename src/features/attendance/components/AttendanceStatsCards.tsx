@@ -31,6 +31,7 @@ const AttendanceStatsCards = ({ todayStats }: { todayStats: TodayAttendanceStats
           valueMarginClassName="mt-1.5"
           labelSize={12}
           iconClassName={`w-4.5 h-4.5 ${stat.color}`}
+          hideIconBelow={1000}
         />
       ))}
     </div>

@@ -138,7 +138,11 @@ export type PositionOption = {
   name: string;
 };
 
-export type EmployeeDetailModalTab = "info" | "custodies" | "leaves" | "attachments";
+export type EmployeeDetailModalTab =
+  | "info"
+  | "custodies"
+  | "leaves"
+  | "attachments";
 
 export type EmployeeDetailPanelProps = {
   employee: Employee;
@@ -149,3 +153,9 @@ export type EmployeeDetailPanelProps = {
   designations?: DbPosition[];
   startInEditMode?: boolean;
 };
+
+export interface ReadonlyArray {
+  label: string;
+  key: EmployeeSortKey | null;
+  center?: boolean;
+}
