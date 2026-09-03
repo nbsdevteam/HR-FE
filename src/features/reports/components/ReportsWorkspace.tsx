@@ -61,7 +61,10 @@ const ReportsWorkspace = () => {
   } = useReportHistory();
   const { employees } = useEmployees();
   const { departments } = useHierarchyData();
-  const { records: attendanceRecords } = useAttendanceRecords();
+  const { records: attendanceRecords } = useAttendanceRecords({
+    date_from: dateFrom,
+    date_to: dateTo,
+  });
   const { records: monthlyRecords } = useMonthlyRecords();
   const { requests: leaveRequests } = useLeaveRequests();
   const { types: leaveTypes } = useLeaveTypes();
