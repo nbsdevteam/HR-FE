@@ -14,6 +14,7 @@ import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { hasIr } from "../utils/recruitmentRanking";
 import { aiScreeningStatFields } from "../data";
+import { ODOO_TO_STAGE } from "../constants/recruitment";
 import AiScreeningStatTile from "./AiScreeningStatTile";
 import AiScreeningTableRow from "./AiScreeningTableRow";
 
@@ -58,9 +59,14 @@ const AiScreeningView = ({
   );
   const busy = bulkScreenMutation.isPending || shortlistMutation.isPending;
 
+  const translatedItems = useMemo(
+    () => items.map((a) => ({ ...a, stage: ODOO_TO_STAGE[a.stage] || a.stage })),
+    [items],
+  );
+
   const visible = useMemo(
-    () => items.filter((a) => !hasIr(a) || (a.ir_score || 0) >= minIr),
-    [items, minIr],
+    () => translatedItems.filter((a) => !hasIr(a) || (a.ir_score || 0) >= minIr),
+    [translatedItems, minIr],
   );
 
   const statTiles = useMemo(() => {
@@ -100,7 +106,7 @@ const AiScreeningView = ({
   }, []);
 
   const shortlistAbove = useCallback(async (): Promise<void> => {
-    const targets = items.filter(
+    const targets = translatedItems.filter(
       (a) =>
         hasIr(a) &&
         (a.ir_score || 0) >= minIr &&
@@ -109,7 +115,7 @@ const AiScreeningView = ({
     if (targets.length === 0) return;
     await shortlistMutation.mutateAsync(targets);
     await refetch();
-  }, [items, minIr, shortlistMutation, refetch]);
+  }, [translatedItems, minIr, shortlistMutation, refetch]);
 
   return (
     <div className="space-y-4">
