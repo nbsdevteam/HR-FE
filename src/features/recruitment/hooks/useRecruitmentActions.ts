@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import type { DbApplicant, DbJobOpening } from "@/shared/hooks";
 import { useOdooMutation } from "@/shared/hooks";
@@ -11,31 +12,71 @@ import {
   STAGE_TO_ODOO,
 } from "../constants/recruitment";
 
+type ApplicantRollbackContext = { previousApplicants?: DbApplicant[] };
+
 export const useRecruitmentActions = (
   refetchJobs: () => void,
   refetchApps: () => void,
   setSelectedApplicant: Dispatch<SetStateAction<DbApplicant | null>>,
 ) => {
+  const queryClient = useQueryClient();
+
+  const applyOptimisticApplicantPatch = useCallback(
+    (id: string, patch: Partial<DbApplicant>): ApplicantRollbackContext => {
+      const previousApplicants = queryClient.getQueryData<DbApplicant[]>(["applicants"]);
+      queryClient.setQueryData<DbApplicant[]>(["applicants"], (old) =>
+        old?.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+      );
+      return { previousApplicants };
+    },
+    [queryClient],
+  );
+
+  const rollbackApplicants = useCallback(
+    (context: ApplicantRollbackContext | undefined) => {
+      if (context?.previousApplicants) {
+        queryClient.setQueryData(["applicants"], context.previousApplicants);
+      }
+    },
+    [queryClient],
+  );
+
   const toggleBookmarkMutation = useOdooMutation<unknown, DbApplicant>(
     (app) => odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked }),
     "applicants",
   );
   const updateRatingMutation = useOdooMutation<
     unknown,
-    { id: string; rating: number }
+    { id: string; rating: number },
+    ApplicantRollbackContext
   >(
     (vars) => odooData.updateApplicant(vars.id, { rating: vars.rating }),
     "applicants",
+    {
+      onMutate: async (vars) => {
+        await queryClient.cancelQueries({ queryKey: ["applicants"] });
+        return applyOptimisticApplicantPatch(vars.id, { rating: vars.rating });
+      },
+      onError: (_err, _vars, context) => rollbackApplicants(context),
+    },
   );
   const updateStageMutation = useOdooMutation<
     unknown,
-    { id: string; stage: string }
+    { id: string; stage: string },
+    ApplicantRollbackContext
   >(
     (vars) =>
       odooData.updateApplicant(vars.id, {
         stage: STAGE_TO_ODOO[vars.stage] || vars.stage,
       }),
     ["applicants", "jobOpenings"],
+    {
+      onMutate: async (vars) => {
+        await queryClient.cancelQueries({ queryKey: ["applicants"] });
+        return applyOptimisticApplicantPatch(vars.id, { stage: vars.stage });
+      },
+      onError: (_err, _vars, context) => rollbackApplicants(context),
+    },
   );
   const screenApplicantMutation = useOdooMutation<DbApplicant, DbApplicant>(
     (app) => odooData.screenApplicant(app.id, { force: true }),

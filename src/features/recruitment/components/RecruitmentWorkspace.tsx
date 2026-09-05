@@ -55,7 +55,12 @@ const RecruitmentWorkspace = () => {
     loading: appsLoading,
     refetch: refetchApps,
   } = useApplicants();
-  const loading = jobsLoading || appsLoading;
+  // `jobsLoading`/`appsLoading` mirror `isFetching`, so they also flip true on
+  // background refetches (e.g. the applicants list re-fetching after a rating
+  // or stage mutation). Only gate the full-page loader on the very first load
+  // — once data has landed once, later refetches should update in place
+  // instead of unmounting the page back to the spinner.
+  const loading = (jobsLoading && rawJobs.length === 0) || (appsLoading && rawApplicants.length === 0);
 
   const { jobs, applicants, filteredApplicants, stats } =
     useRecruitmentWorkspaceData(

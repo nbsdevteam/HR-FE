@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient, type UseMutationOptions } from "@tanstack/react-query";
 
-type OdooMutationOptions<TData, TVariables> = Omit<
-  UseMutationOptions<TData, Error, TVariables>,
+type OdooMutationOptions<TData, TVariables, TContext = unknown> = Omit<
+  UseMutationOptions<TData, Error, TVariables, TContext>,
   "mutationFn" | "onSuccess"
 > & {
-  onSuccess?: (data: TData, variables: TVariables) => void;
+  onSuccess?: (data: TData, variables: TVariables, context: TContext) => void;
 };
 
 /**
@@ -16,22 +16,22 @@ type OdooMutationOptions<TData, TVariables> = Omit<
  * refetched by whichever hook is currently mounted, the same reach
  * `invalidateCachePrefix` used to have under the old cache.
  */
-export const useOdooMutation = <TData, TVariables = void>(
+export const useOdooMutation = <TData, TVariables = void, TContext = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
   invalidateKeys: string | string[] = [],
-  options?: OdooMutationOptions<TData, TVariables>,
+  options?: OdooMutationOptions<TData, TVariables, TContext>,
 ) => {
   const queryClient = useQueryClient();
   const keys = Array.isArray(invalidateKeys) ? invalidateKeys : [invalidateKeys];
 
-  return useMutation<TData, Error, TVariables>({
+  return useMutation<TData, Error, TVariables, TContext>({
     ...options,
     mutationFn,
-    onSuccess: (data, variables) => {
+    onSuccess: (data, variables, context) => {
       keys.forEach((key) => {
         void queryClient.invalidateQueries({ queryKey: [key] });
       });
-      options?.onSuccess?.(data, variables);
+      options?.onSuccess?.(data, variables, context);
     },
   });
 };
