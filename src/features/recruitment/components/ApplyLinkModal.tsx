@@ -9,7 +9,13 @@ import {
   MessageCircle,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { Button, InputField, ModalHeader, ModalOverlay } from "@/shared/components";
+import {
+  Button,
+  InputField,
+  ModalFooterActions,
+  ModalHeader,
+  ModalOverlay,
+} from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -26,6 +32,9 @@ const ApplyLinkModal = ({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [pendingExpiresOn, setPendingExpiresOn] = useState("");
+  const [pendingMaxSubmissions, setPendingMaxSubmissions] = useState(0);
 
   // The backend only returns an absolute URL when an SPA origin is configured
   // (candidates on a different host than HR staff). Otherwise it sends a
@@ -36,6 +45,14 @@ const ApplyLinkModal = ({
     if (link.base_url_configured) return link.url;
     return new URL(`/apply/${link.token}`, window.location.origin).toString();
   }, [link]);
+
+  const isDirty = useMemo(() => {
+    if (!link) return false;
+    return (
+      pendingExpiresOn !== (link.expires_on || "") ||
+      pendingMaxSubmissions !== link.max_submissions
+    );
+  }, [link, pendingExpiresOn, pendingMaxSubmissions]);
 
   const load = useCallback(
     async (rotate = false) => {
@@ -68,33 +85,43 @@ const ApplyLinkModal = ({
     await load(true);
   }, [load]);
 
-  const handleExpiresOnChange = useCallback(
-    async (value: string): Promise<void> => {
-      if (!link) return;
-      setLink(
-        await odooData.updateApplicationLink(link.id, {
-          expires_on: value || false,
-        }),
-      );
-    },
-    [link],
-  );
+  const handleExpiresOnChange = useCallback((value: string): void => {
+    setPendingExpiresOn(value);
+  }, []);
 
   const handleMaxSubmissionsChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      if (!link) return;
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      setPendingMaxSubmissions(Number(e.target.value) || 0);
+    },
+    [],
+  );
+
+  const handleSave = useCallback(async (): Promise<void> => {
+    if (!link) return;
+    setSaving(true);
+    setError("");
+    try {
       setLink(
         await odooData.updateApplicationLink(link.id, {
-          max_submissions: Number(e.target.value) || 0,
+          expires_on: pendingExpiresOn || false,
+          max_submissions: pendingMaxSubmissions,
         }),
       );
-    },
-    [link],
-  );
+    } catch (e: any) {
+      setError(e?.message || "");
+    }
+    setSaving(false);
+  }, [link, pendingExpiresOn, pendingMaxSubmissions]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!link) return;
+    setPendingExpiresOn(link.expires_on || "");
+    setPendingMaxSubmissions(link.max_submissions);
+  }, [link]);
 
   return (
     <ModalOverlay
@@ -174,7 +201,7 @@ const ApplyLinkModal = ({
               </label>
               <InputField
                 type="date"
-                value={link.expires_on || ""}
+                value={pendingExpiresOn}
                 dir="ltr"
                 className={inputCls}
                 onChange={handleExpiresOnChange}
@@ -187,7 +214,7 @@ const ApplyLinkModal = ({
               <input
                 type="number"
                 min={0}
-                value={link.max_submissions}
+                value={pendingMaxSubmissions}
                 dir="ltr"
                 className={inputCls}
                 onChange={handleMaxSubmissionsChange}
@@ -199,6 +226,16 @@ const ApplyLinkModal = ({
             {arabicSource("recruitment.link_submissions")}:{" "}
             {link.submission_count}
           </p>
+
+          <ModalFooterActions
+            onCancel={onClose}
+            onConfirm={handleSave}
+            confirmLabel={arabicSource("common.save")}
+            disabled={!isDirty || saving}
+            loading={saving}
+            cancelDisabled={saving}
+            wrapperClassName="flex items-center justify-end gap-3 pt-2"
+          />
         </div>
       )}
     </ModalOverlay>
