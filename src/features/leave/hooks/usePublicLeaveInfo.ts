@@ -1,27 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchPublicLeaveInfo, PublicLeaveApiError } from "../api/publicLeaveApi";
 import type { PublicLeaveInfo } from "../types/publicLeave";
 
 export const usePublicLeaveInfo = (token: string) => {
-  const [info, setInfo] = useState<PublicLeaveInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // No retry: a bad/expired token will never succeed on a second try, so
+  // retrying would only delay the error and add an extra request against a
+  // logged-out-reachable endpoint.
+  const query = useQuery<PublicLeaveInfo, Error>({
+    queryKey: ["publicLeaveInfo", token],
+    queryFn: () => fetchPublicLeaveInfo(token),
+    retry: false,
+  });
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const data = await fetchPublicLeaveInfo(token);
-      setInfo(data);
-    } catch (error) {
-      setLoadError(error instanceof PublicLeaveApiError ? error.code : "invalid_link");
-    }
-    setLoading(false);
-  }, [token]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  return { info, loading, loadError };
+  return {
+    info: query.data ?? null,
+    loading: query.isFetching,
+    loadError: query.error ? (query.error instanceof PublicLeaveApiError ? query.error.code : "invalid_link") : "",
+  };
 };

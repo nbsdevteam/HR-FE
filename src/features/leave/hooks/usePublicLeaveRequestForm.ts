@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { arabicSource } from "@/i18n/source";
 import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import { todayInBaghdad } from "@/shared/utils/timezone";
@@ -18,13 +19,42 @@ const initialForm: PublicLeaveRequestFormState = {
   hp: "",
 };
 
+interface SubmitVars {
+  employeeId: number;
+  verification: string | undefined;
+  leaveTypeId: number;
+}
+
 export const usePublicLeaveRequestForm = (token: string) => {
   const [form, setForm] = useState<PublicLeaveRequestFormState>(initialForm);
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [result, setResult] = useState<PublicLeaveSubmitResult | null>(null);
+
+  const submitMutation = useMutation<PublicLeaveSubmitResult, Error, SubmitVars>({
+    mutationFn: async ({ employeeId, verification, leaveTypeId }) => {
+      const attachment = file
+        ? { file_name: file.name, file_data: await fileToBase64(file) }
+        : undefined;
+      const isHourly = form.duration_unit === "hour";
+      return submitPublicLeaveRequest({
+        token,
+        employee_id: employeeId,
+        ...(verification !== undefined ? { verification } : {}),
+        leave_type_id: leaveTypeId,
+        date_from: form.date_from,
+        date_to: isHourly ? form.date_from : (form.date_to || form.date_from),
+        reason: form.reason.trim(),
+        half_day: form.half_day,
+        duration_unit: form.duration_unit,
+        hours: isHourly ? (Number(form.hours) || null) : null,
+        hour_from: isHourly && form.hour_from ? Number(form.hour_from) : null,
+        attachment,
+        hp: form.hp,
+      });
+    },
+    retry: false,
+  });
 
   const updateForm = useCallback((patch: Partial<PublicLeaveRequestFormState>) => {
     setForm((current) => ({ ...current, ...patch }));
@@ -53,45 +83,34 @@ export const usePublicLeaveRequestForm = (token: string) => {
     setFile(null);
     setFileError("");
     setSubmitError("");
-    setResult(null);
-  }, []);
+    submitMutation.reset();
+  }, [submitMutation.reset]);
 
   const submit = useCallback(async (
     employeeId: number,
     verification: string | undefined,
     leaveTypeId: number,
   ): Promise<boolean> => {
-    setSubmitting(true);
     setSubmitError("");
     try {
-      const attachment = file
-        ? { file_name: file.name, file_data: await fileToBase64(file) }
-        : undefined;
-      const isHourly = form.duration_unit === "hour";
-      const data = await submitPublicLeaveRequest({
-        token,
-        employee_id: employeeId,
-        ...(verification !== undefined ? { verification } : {}),
-        leave_type_id: leaveTypeId,
-        date_from: form.date_from,
-        date_to: isHourly ? form.date_from : (form.date_to || form.date_from),
-        reason: form.reason.trim(),
-        half_day: form.half_day,
-        duration_unit: form.duration_unit,
-        hours: isHourly ? (Number(form.hours) || null) : null,
-        hour_from: isHourly && form.hour_from ? Number(form.hour_from) : null,
-        attachment,
-        hp: form.hp,
-      });
-      setResult(data);
+      await submitMutation.mutateAsync({ employeeId, verification, leaveTypeId });
       return true;
     } catch (error) {
       setSubmitError(publicLeaveErrorMessage(error, arabicSource("public_leave.error_generic")));
       return false;
-    } finally {
-      setSubmitting(false);
     }
-  }, [file, form, token]);
+  }, [submitMutation.mutateAsync]);
 
-  return { acceptFile, file, fileError, form, reset, result, submit, submitError, submitting, updateForm };
+  return {
+    acceptFile,
+    file,
+    fileError,
+    form,
+    reset,
+    result: submitMutation.data ?? null,
+    submit,
+    submitError,
+    submitting: submitMutation.isPending,
+    updateForm,
+  };
 };

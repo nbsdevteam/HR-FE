@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { arabicSource } from "@/i18n/source";
+import { useDebouncedValue } from "@/shared/hooks";
 import { searchPublicLeaveEmployees } from "../api/publicLeaveApi";
 import { publicLeaveErrorMessage } from "../utils/publicLeaveErrorMessage";
-import type { PublicLeaveEmployeeSearchResult } from "../types/publicLeave";
+import type { PublicLeaveEmployeeSearchResponse, PublicLeaveEmployeeSearchResult } from "../types/publicLeave";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -13,45 +15,36 @@ const SEARCH_DEBOUNCE_MS = 300;
  */
 export const usePublicLeaveEmployeeSearch = (token: string, minSearchChars: number) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PublicLeaveEmployeeSearchResult[]>([]);
-  const [truncated, setTruncated] = useState(false);
-  const [tooShort, setTooShort] = useState(true);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState("");
   const [selected, setSelected] = useState<PublicLeaveEmployeeSearchResult | null>(null);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // `tooShort` (below) reflects the raw keystroke immediately, so the "type
+  // more characters" state never waits out the debounce. The query's `enabled`
+  // instead gates on the *debounced* value's own length — gating it on the
+  // immediate value would let a query queued for a since-abandoned short
+  // value fire the moment typing crosses the threshold, before the debounce
+  // has actually caught up to the latest keystrokes.
+  const trimmed = query.trim();
+  const tooShort = trimmed.length < minSearchChars;
+  const debouncedQuery = useDebouncedValue(trimmed, SEARCH_DEBOUNCE_MS);
+  const debouncedTooShort = debouncedQuery.length < minSearchChars;
 
-  const runSearch = useCallback(async (value: string) => {
-    setSearching(true);
-    setSearchError("");
-    try {
-      const data = await searchPublicLeaveEmployees(token, value);
-      setResults(data.items);
-      setTruncated(data.truncated);
-      setTooShort(data.too_short);
-    } catch (error) {
-      setSearchError(publicLeaveErrorMessage(error, arabicSource("public_leave.error_generic")));
-      setResults([]);
-    }
-    setSearching(false);
-  }, [token]);
+  const searchQuery = useQuery<PublicLeaveEmployeeSearchResponse, Error>({
+    queryKey: ["publicLeaveEmployeeSearch", token, debouncedQuery],
+    queryFn: () => searchPublicLeaveEmployees(token, debouncedQuery),
+    enabled: !debouncedTooShort,
+    retry: false,
+  });
+
+  const results = tooShort ? [] : searchQuery.data?.items ?? [];
+  const truncated = tooShort ? false : searchQuery.data?.truncated ?? false;
+  const searchError = searchQuery.error
+    ? publicLeaveErrorMessage(searchQuery.error, arabicSource("public_leave.error_generic"))
+    : "";
 
   const updateQuery = useCallback((value: string) => {
     setQuery(value);
     setSelected(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const trimmed = value.trim();
-    if (trimmed.length < minSearchChars) {
-      setResults([]);
-      setTooShort(true);
-      setTruncated(false);
-      return;
-    }
-    debounceRef.current = setTimeout(() => {
-      void runSearch(trimmed);
-    }, SEARCH_DEBOUNCE_MS);
-  }, [minSearchChars, runSearch]);
+  }, []);
 
   const selectEmployee = useCallback((employee: PublicLeaveEmployeeSearchResult) => {
     setSelected(employee);
@@ -62,19 +55,8 @@ export const usePublicLeaveEmployeeSearch = (token: string, minSearchChars: numb
   }, []);
 
   const reset = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
     setQuery("");
-    setResults([]);
-    setTooShort(true);
-    setTruncated(false);
     setSelected(null);
-    setSearchError("");
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
   }, []);
 
   return {
@@ -83,7 +65,7 @@ export const usePublicLeaveEmployeeSearch = (token: string, minSearchChars: numb
     reset,
     results,
     searchError,
-    searching,
+    searching: searchQuery.isFetching,
     selectEmployee,
     selected,
     tooShort,
