@@ -47,8 +47,8 @@ const ShiftListItem = ({
         onClick={onToggleExpand}
         className="px-3 py-2.5 cursor-pointer hover:bg-muted/20 transition-colors"
       >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 min-w-0 sm:flex-1">
             <h4 className="text-foreground shrink-0" style={{ fontSize: 13 }}>
               {shift.name}
             </h4>
@@ -67,7 +67,7 @@ const ShiftListItem = ({
               {shift.description}
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
             <div className="flex items-center gap-1 flex-wrap">
               {getWorkingDayLabels(shift).map((label) => (
                 <span
@@ -79,7 +79,7 @@ const ShiftListItem = ({
                 </span>
               ))}
             </div>
-            <span className="text-muted-foreground" style={{ fontSize: 10 }}>
+            <span className="text-muted-foreground whitespace-nowrap" style={{ fontSize: 10 }}>
               {shift.grace_minutes}
               {arabicSource("settings.d")} {shift.target_hours_per_day}
               {arabicSource("settings.s")}
