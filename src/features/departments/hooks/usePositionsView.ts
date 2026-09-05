@@ -4,7 +4,6 @@ import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import * as odooData from "@/shared/api/odooData";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode, QuickEditDeptDesignationPayload } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
@@ -41,6 +40,8 @@ export const usePositionsView = ({
   const [posForm, setPosForm] = useState<PositionFormState>(EMPTY_POSITION_FORM);
   const [quickEditEmployee, setQuickEditEmployee] = useState<DbEmployee | null>(null);
   const [quickEditSaving, setQuickEditSaving] = useState(false);
+  const [pendingDeletePosId, setPendingDeletePosId] = useState<string | null>(null);
+  const [deletingPosition, setDeletingPosition] = useState(false);
 
   const { positions, loading: posLoading, refetch: refetchPositions } = usePositions();
 
@@ -179,21 +180,28 @@ export const usePositionsView = ({
   }, [editingPosition, posForm, updateDesignationMutation.mutateAsync]);
 
   // Delete position
-  const handleDeletePosition = useCallback(
-    async (posId: string) => {
-      if (!localizedConfirm(arabicSource("hierarchy.do_you_want_to_delete_this_post"))) return;
-      setSaving(true);
-      try {
-        await deleteDesignationMutation.mutateAsync(posId);
-        setToast(arabicSource("hierarchy.position_deleted"));
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "";
-        setToast(`${arabicSource("common.error_2")} ${message}`);
-      }
-      setSaving(false);
-    },
-    [deleteDesignationMutation.mutateAsync],
-  );
+  const requestDeletePosition = useCallback((posId: string) => {
+    setPendingDeletePosId(posId);
+  }, []);
+
+  const cancelDeletePosition = useCallback(() => {
+    setPendingDeletePosId(null);
+  }, []);
+
+  const confirmDeletePosition = useCallback(async () => {
+    if (!pendingDeletePosId) return;
+    setDeletingPosition(true);
+    try {
+      await deleteDesignationMutation.mutateAsync(pendingDeletePosId);
+      setToast(arabicSource("hierarchy.position_deleted"));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message}`);
+    } finally {
+      setDeletingPosition(false);
+      setPendingDeletePosId(null);
+    }
+  }, [deleteDesignationMutation.mutateAsync, pendingDeletePosId]);
 
   const closeAddEditModal = useCallback(() => {
     setShowAddPositionModal(false);
@@ -273,7 +281,11 @@ export const usePositionsView = ({
     undoAssignment,
     handleAddPosition,
     handleEditPosition,
-    handleDeletePosition,
+    pendingDeletePosId,
+    deletingPosition,
+    requestDeletePosition,
+    cancelDeletePosition,
+    confirmDeletePosition,
     closeAddEditModal,
     openAddModal,
     openEditModal,

@@ -1,6 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { useOdooMutation } from "@/shared/hooks";
 import type { DbWarning } from "@/shared/hooks";
@@ -17,6 +16,9 @@ type UseWarningRecordActionsArgs = {
 };
 
 export const useWarningRecordActions = ({ warningStatuses, setToast }: UseWarningRecordActionsArgs) => {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const updateStatusMutation = useOdooMutation<DbWarning, { warningId: string; status: string }>(
     ({ warningId, status }) => odooData.updateWarning(warningId, { status }),
     "warnings",
@@ -35,16 +37,34 @@ export const useWarningRecordActions = ({ warningStatuses, setToast }: UseWarnin
     }
   }, [setToast, updateStatusMutation, warningStatuses]);
 
-  const handleDelete = useCallback(async (warningId: string) => {
-    if (!localizedConfirm(arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm"))) return;
+  const requestDelete = useCallback((warningId: string) => {
+    setPendingDeleteId(warningId);
+  }, []);
 
+  const cancelDelete = useCallback(() => {
+    setPendingDeleteId(null);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDeleteId) return;
+    setDeleting(true);
     try {
-      await deleteMutation.mutateAsync(warningId);
+      await deleteMutation.mutateAsync(pendingDeleteId);
       setToast(arabicSource("warnings.the_alarm_has_been_successfully_deleted"));
     } catch (err) {
       setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : arabicSource("warnings.delete_failed")}`);
+    } finally {
+      setDeleting(false);
+      setPendingDeleteId(null);
     }
-  }, [deleteMutation, setToast]);
+  }, [deleteMutation, pendingDeleteId, setToast]);
 
-  return { handleStatusChange, handleDelete };
+  return {
+    handleStatusChange,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    pendingDeleteId,
+    deleting,
+  };
 };

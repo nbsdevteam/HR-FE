@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { useOdooMutation } from "@/shared/hooks";
 import { runAsyncAction } from "@/shared/utils/asyncAction";
@@ -26,6 +25,8 @@ export const useParticipantEnrollment = ({ participantStatuses, showToast }: Use
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [selectedProgramForParticipants, setSelectedProgramForParticipants] = useState<string | null>(null);
   const [enrollForm, setEnrollForm] = useState<EnrollParticipantForm>(buildInitialEnrollForm(participantStatuses));
+  const [pendingDeleteParticipantId, setPendingDeleteParticipantId] = useState<string | null>(null);
+  const [deletingParticipant, setDeletingParticipant] = useState(false);
 
   const enrollMutation = useOdooMutation<unknown, Parameters<typeof odooData.createTrainingParticipant>[0]>(
     (payload) => odooData.createTrainingParticipant(payload),
@@ -83,22 +84,34 @@ export const useParticipantEnrollment = ({ participantStatuses, showToast }: Use
     });
   }, [markCompletedMutation, showToast]);
 
-  const handleDeleteParticipant = useCallback(async (participantId: string) => {
-    if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_participant_from_the_program"))) return;
+  const requestDeleteParticipant = useCallback((participantId: string) => {
+    setPendingDeleteParticipantId(participantId);
+  }, []);
+
+  const cancelDeleteParticipant = useCallback(() => {
+    setPendingDeleteParticipantId(null);
+  }, []);
+
+  const confirmDeleteParticipant = useCallback(async () => {
+    if (!pendingDeleteParticipantId) return;
 
     await runAsyncAction(async () => {
-      await deleteParticipantMutation.mutateAsync(participantId);
+      await deleteParticipantMutation.mutateAsync(pendingDeleteParticipantId);
 
       showToast("success", arabicSource("training.participant_has_been_successfully_deleted"));
     }, {
+      setLoading: setDeletingParticipant,
       onError: () => showToast("error", arabicSource("training.error_deleting_participant")),
     });
-  }, [deleteParticipantMutation, showToast]);
+    setPendingDeleteParticipantId(null);
+  }, [deleteParticipantMutation, pendingDeleteParticipantId, showToast]);
 
   return {
     showEnrollModal, openEnrollModal, closeEnrollModal,
     selectedProgramForParticipants,
     enrollForm, updateEnrollForm,
-    handleEnrollParticipant, handleMarkCompleted, handleDeleteParticipant,
+    handleEnrollParticipant, handleMarkCompleted,
+    pendingDeleteParticipantId, deletingParticipant,
+    requestDeleteParticipant, cancelDeleteParticipant, confirmDeleteParticipant,
   };
 };

@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { type DbContractType, useOdooMutation } from "@/shared/hooks";
 import { INITIAL_NEW_CONTRACT_TYPE } from "../constants/settings";
@@ -13,6 +12,8 @@ import type { NewContractTypeForm } from "../types";
 export const useContractTypeManagement = (refetchContractTypes: () => void, showToast: (message: string) => void) => {
   const [showNewContractTypeForm, setShowNewContractTypeForm] = useState(false);
   const [newContractType, setNewContractType] = useState<NewContractTypeForm>({ ...INITIAL_NEW_CONTRACT_TYPE });
+  const [pendingDeleteContractTypeId, setPendingDeleteContractTypeId] = useState<string | null>(null);
+  const [deletingContractType, setDeletingContractType] = useState(false);
 
   const createContractTypeMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createContractType(payload),
@@ -60,16 +61,32 @@ export const useContractTypeManagement = (refetchContractTypes: () => void, show
     refetchContractTypes();
   }, [refetchContractTypes, updateContractTypeMutation]);
 
-  const deleteContractTypeEntry = useCallback(async (contractTypeId: string) => {
-    if (!localizedConfirm(arabicSource("settings.delete_contract_type"))) return;
-    await deleteContractTypeMutation.mutateAsync(contractTypeId);
-    showToast(arabicSource("settings.contract_type_deleted"));
-    refetchContractTypes();
-  }, [deleteContractTypeMutation, refetchContractTypes, showToast]);
+  const requestDeleteContractType = useCallback((contractTypeId: string) => {
+    setPendingDeleteContractTypeId(contractTypeId);
+  }, []);
+
+  const cancelDeleteContractType = useCallback(() => {
+    setPendingDeleteContractTypeId(null);
+  }, []);
+
+  const confirmDeleteContractType = useCallback(async () => {
+    if (!pendingDeleteContractTypeId) return;
+    setDeletingContractType(true);
+    try {
+      await deleteContractTypeMutation.mutateAsync(pendingDeleteContractTypeId);
+      showToast(arabicSource("settings.contract_type_deleted"));
+      refetchContractTypes();
+    } finally {
+      setDeletingContractType(false);
+      setPendingDeleteContractTypeId(null);
+    }
+  }, [deleteContractTypeMutation, pendingDeleteContractTypeId, refetchContractTypes, showToast]);
 
   return {
     showNewContractTypeForm, setShowNewContractTypeForm,
     newContractType, updateNewContractType,
-    createContractTypeEntry, toggleContractTypeActive, deleteContractTypeEntry,
+    createContractTypeEntry, toggleContractTypeActive,
+    pendingDeleteContractTypeId, deletingContractType,
+    requestDeleteContractType, cancelDeleteContractType, confirmDeleteContractType,
   };
 };

@@ -1,6 +1,8 @@
 import { useCallback } from "react";
+import { AnimatePresence } from "motion/react";
 import { Briefcase, Plus, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import type { DbContractType } from "@/shared/hooks";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { useContractTypeManagement } from "../hooks/useContractTypeManagement";
@@ -34,7 +36,11 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
     updateNewContractType,
     createContractTypeEntry,
     toggleContractTypeActive,
-    deleteContractTypeEntry,
+    pendingDeleteContractTypeId,
+    deletingContractType,
+    requestDeleteContractType,
+    cancelDeleteContractType,
+    confirmDeleteContractType,
   } = useContractTypeManagement(refetchContractTypes, showToast);
 
   const handleToggleNewContractTypeForm = useCallback((): void => {
@@ -77,8 +83,20 @@ const ContractTypesCard = ({ showToast }: TContractTypesCardProps) => {
         loading={contractTypesLoading}
         descriptionLine={contractTypeDescriptionLine}
         onToggleActive={toggleContractTypeActive}
-        onDelete={deleteContractTypeEntry}
+        onDelete={requestDeleteContractType}
       />
+
+      <AnimatePresence>
+        {pendingDeleteContractTypeId && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteContractType}
+            onConfirm={confirmDeleteContractType}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("settings.delete_contract_type")}
+            loading={deletingContractType}
+          />
+        )}
+      </AnimatePresence>
     </SettingsSectionCard>
   );
 };

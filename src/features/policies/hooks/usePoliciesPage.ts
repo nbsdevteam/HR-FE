@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { normalizeLanguage } from "@/i18n";
 import { translateArabicSource } from "@/i18n/legacy";
@@ -30,6 +29,7 @@ export const usePoliciesPage = () => {
   const [viewingPolicy, setViewingPolicy] = useState<DisplayPolicy | null>(null);
   const [editingPolicy, setEditingPolicy] = useState<EditPolicyForm | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingDeletePolicyId, setPendingDeletePolicyId] = useState<string | null>(null);
   const [createForm, setCreateForm] = useState<CreatePolicyForm>({
     title: "",
     category: arabicSource("common.general"),
@@ -163,17 +163,26 @@ export const usePoliciesPage = () => {
     });
   }, [editingPolicy, showToast, updatePolicyMutation]);
 
-  const handleDeletePolicy = useCallback(async (id: string) => {
-    if (!localizedConfirm(arabicSource("policies.are_you_sure_you_want_to_delete_this_policy"))) return;
+  const requestDeletePolicy = useCallback((id: string) => {
+    setPendingDeletePolicyId(id);
+  }, []);
+
+  const cancelDeletePolicy = useCallback(() => {
+    setPendingDeletePolicyId(null);
+  }, []);
+
+  const confirmDeletePolicy = useCallback(async () => {
+    if (!pendingDeletePolicyId) return;
 
     await runAsyncAction(async () => {
-      await deletePolicyMutation.mutateAsync(id);
+      await deletePolicyMutation.mutateAsync(pendingDeletePolicyId);
       showToast(arabicSource("policies.the_policy_was_deleted_successfully"));
     }, {
       setLoading: setIsSubmitting,
       onError: (error: any) => showToast(arabicSource("common.error_2") + " " + (error.message || arabicSource("policies.policy_deletion_failed"))),
     });
-  }, [deletePolicyMutation, showToast]);
+    setPendingDeletePolicyId(null);
+  }, [deletePolicyMutation, pendingDeletePolicyId, showToast]);
 
   const handleToggleStatus = useCallback(async (policy: DisplayPolicy) => {
     const statusMap: Record<string, string> = {
@@ -237,7 +246,6 @@ export const usePoliciesPage = () => {
     filtered,
     handleCategoryChange,
     handleCreatePolicy,
-    handleDeletePolicy,
     handleSearchChange,
     handleStatusFilterChange,
     handleToggleStatus,
@@ -249,6 +257,10 @@ export const usePoliciesPage = () => {
     openViewModal,
     page,
     paged,
+    pendingDeletePolicyId,
+    requestDeletePolicy,
+    cancelDeletePolicy,
+    confirmDeletePolicy,
     search,
     selectedCategory,
     setCreateForm,

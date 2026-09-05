@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { type DbShift, useOdooMutation } from "@/shared/hooks";
 import { createDefaultShiftDays, shiftStateToPayload, shiftToEditState, updateShiftDay } from "../utils/shiftHelpers";
@@ -10,6 +9,8 @@ export const useShiftManagement = (refetchShifts: () => void, showToast: (messag
   const [expandedShift, setExpandedShift] = useState<string | null>(null);
   const [editingShift, setEditingShift] = useState<ShiftEditState | null>(null);
   const [showNewShiftForm, setShowNewShiftForm] = useState(false);
+  const [pendingDeleteShiftId, setPendingDeleteShiftId] = useState<string | null>(null);
+  const [deletingShift, setDeletingShift] = useState(false);
   const [newShiftForm, setNewShiftForm] = useState<ShiftEditState>({
     id: "",
     name: "",
@@ -95,16 +96,28 @@ export const useShiftManagement = (refetchShifts: () => void, showToast: (messag
     }
   }, [createShiftMutation, refetchShifts, showToast]);
 
-  const deleteShift = useCallback(async (shiftId: string) => {
-    if (!localizedConfirm(arabicSource("settings.do_you_really_want_to_delete_this_shift"))) return;
+  const requestDeleteShift = useCallback((shiftId: string) => {
+    setPendingDeleteShiftId(shiftId);
+  }, []);
+
+  const cancelDeleteShift = useCallback(() => {
+    setPendingDeleteShiftId(null);
+  }, []);
+
+  const confirmDeleteShift = useCallback(async () => {
+    if (!pendingDeleteShiftId) return;
+    setDeletingShift(true);
     try {
-      await deleteShiftMutation.mutateAsync(shiftId);
+      await deleteShiftMutation.mutateAsync(pendingDeleteShiftId);
       showToast(arabicSource("settings.the_shift_has_been_successfully_deleted"));
       refetchShifts();
     } catch {
       showToast(arabicSource("settings.error_deleting_shift"));
+    } finally {
+      setDeletingShift(false);
+      setPendingDeleteShiftId(null);
     }
-  }, [deleteShiftMutation, refetchShifts, showToast]);
+  }, [deleteShiftMutation, pendingDeleteShiftId, refetchShifts, showToast]);
 
   const setAsDefault = useCallback((_shiftId: string) => {
     // Odoo shifts have no is_default flag on model; mark via description is skipped — no-op toast
@@ -115,6 +128,7 @@ export const useShiftManagement = (refetchShifts: () => void, showToast: (messag
     expandedShift, toggleExpandedShift,
     editingShift, initEditShift, cancelEditShift, updateEditingShiftForm, updateEditingShiftDay,
     showNewShiftForm, setShowNewShiftForm, newShiftForm, updateNewShiftForm, updateNewShiftDay,
-    saveShift, createShift, deleteShift, setAsDefault,
+    saveShift, createShift, setAsDefault,
+    pendingDeleteShiftId, deletingShift, requestDeleteShift, cancelDeleteShift, confirmDeleteShift,
   };
 };

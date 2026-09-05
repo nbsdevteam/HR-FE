@@ -1,7 +1,9 @@
 import { useState, useCallback, memo, lazy, Suspense } from "react";
+import { AnimatePresence } from "motion/react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
 import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
@@ -79,9 +81,17 @@ const RecruitmentWorkspace = () => {
     handleUpdateStage,
     handleScreenApplicant,
     handleJobStatusChange,
-    handleDeleteJob,
-    handleDeleteApplicant,
     handleConvertToEmployee,
+    pendingDeleteJob,
+    deletingJob,
+    requestDeleteJob,
+    cancelDeleteJob,
+    confirmDeleteJob,
+    pendingDeleteApplicantId,
+    deletingApplicant,
+    requestDeleteApplicant,
+    cancelDeleteApplicant,
+    confirmDeleteApplicant,
   } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant);
 
   const handleApplicantFormOpen = useCallback(
@@ -157,7 +167,7 @@ const RecruitmentWorkspace = () => {
           <RecruitmentJobsView
             jobs={jobs}
             onAiScreeningOpen={handleAiScreeningOpen}
-            onDeleteJob={handleDeleteJob}
+            onDeleteJob={requestDeleteJob}
             onEditJob={setEditingJob}
             onJobStatusChange={handleJobStatusChange}
             onLinkJob={setLinkJob}
@@ -224,7 +234,7 @@ const RecruitmentWorkspace = () => {
         selectedApplicant={selectedApplicant}
         showApplicantForm={showApplicantForm}
         showJobForm={showJobForm}
-        onApplicantDelete={handleDeleteApplicant}
+        onApplicantDelete={requestDeleteApplicant}
         onApplicantEdit={handleApplicantEdit}
         onApplicantFormClose={handleApplicantFormClose}
         onApplicantSaved={handleApplicantSaved}
@@ -239,6 +249,30 @@ const RecruitmentWorkspace = () => {
         onJobSaved={handleJobSaved}
         onLinkJobClose={handleLinkJobClose}
       />
+
+      <AnimatePresence>
+        {pendingDeleteJob && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteJob}
+            onConfirm={confirmDeleteJob}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("recruitment.are_you_sure_you_want_to_delete_this_vacancy")}
+            loading={deletingJob}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pendingDeleteApplicantId && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteApplicant}
+            onConfirm={confirmDeleteApplicant}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("recruitment.are_you_sure_you_want_to_delete_this_applicant")}
+            loading={deletingApplicant}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

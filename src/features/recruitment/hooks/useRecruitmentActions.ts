@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
@@ -19,6 +19,11 @@ export const useRecruitmentActions = (
   refetchApps: () => void,
   setSelectedApplicant: Dispatch<SetStateAction<DbApplicant | null>>,
 ) => {
+  const [pendingDeleteJob, setPendingDeleteJob] = useState<DbJobOpening | null>(null);
+  const [deletingJob, setDeletingJob] = useState(false);
+  const [pendingDeleteApplicantId, setPendingDeleteApplicantId] = useState<string | null>(null);
+  const [deletingApplicant, setDeletingApplicant] = useState(false);
+
   const queryClient = useQueryClient();
 
   const applyOptimisticApplicantPatch = useCallback(
@@ -167,40 +172,46 @@ export const useRecruitmentActions = (
     [jobStatusMutation],
   );
 
-  const handleDeleteJob = useCallback(
-    async (job: DbJobOpening) => {
-      if (
-        !localizedConfirm(
-          arabicSource(
-            "recruitment.are_you_sure_you_want_to_delete_this_vacancy",
-          ),
-        )
-      )
-        return;
-      try {
-        await deleteJobMutation.mutateAsync(job);
-      } catch (e: any) {
-        localizedAlert(e?.message || arabicSource("common.error"));
-      }
-    },
-    [deleteJobMutation],
-  );
+  const requestDeleteJob = useCallback((job: DbJobOpening) => {
+    setPendingDeleteJob(job);
+  }, []);
 
-  const handleDeleteApplicant = useCallback(
-    async (id: string) => {
-      if (
-        !localizedConfirm(
-          arabicSource(
-            "recruitment.are_you_sure_you_want_to_delete_this_applicant",
-          ),
-        )
-      )
-        return;
-      await deleteApplicantMutation.mutateAsync(id);
+  const cancelDeleteJob = useCallback(() => {
+    setPendingDeleteJob(null);
+  }, []);
+
+  const confirmDeleteJob = useCallback(async () => {
+    if (!pendingDeleteJob) return;
+    setDeletingJob(true);
+    try {
+      await deleteJobMutation.mutateAsync(pendingDeleteJob);
+    } catch (e: any) {
+      localizedAlert(e?.message || arabicSource("common.error"));
+    } finally {
+      setDeletingJob(false);
+      setPendingDeleteJob(null);
+    }
+  }, [deleteJobMutation, pendingDeleteJob]);
+
+  const requestDeleteApplicant = useCallback((id: string) => {
+    setPendingDeleteApplicantId(id);
+  }, []);
+
+  const cancelDeleteApplicant = useCallback(() => {
+    setPendingDeleteApplicantId(null);
+  }, []);
+
+  const confirmDeleteApplicant = useCallback(async () => {
+    if (!pendingDeleteApplicantId) return;
+    setDeletingApplicant(true);
+    try {
+      await deleteApplicantMutation.mutateAsync(pendingDeleteApplicantId);
       setSelectedApplicant(null);
-    },
-    [deleteApplicantMutation, setSelectedApplicant],
-  );
+    } finally {
+      setDeletingApplicant(false);
+      setPendingDeleteApplicantId(null);
+    }
+  }, [deleteApplicantMutation, pendingDeleteApplicantId, setSelectedApplicant]);
 
   const handleConvertToEmployee = useCallback(
     async (app: DbApplicant) => {
@@ -228,8 +239,16 @@ export const useRecruitmentActions = (
     handleUpdateStage,
     handleScreenApplicant,
     handleJobStatusChange,
-    handleDeleteJob,
-    handleDeleteApplicant,
     handleConvertToEmployee,
+    pendingDeleteJob,
+    deletingJob,
+    requestDeleteJob,
+    cancelDeleteJob,
+    confirmDeleteJob,
+    pendingDeleteApplicantId,
+    deletingApplicant,
+    requestDeleteApplicant,
+    cancelDeleteApplicant,
+    confirmDeleteApplicant,
   };
 };

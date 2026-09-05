@@ -1,6 +1,6 @@
 import { AnimatePresence } from "motion/react";
 import { GripVertical, Loader2 } from "lucide-react";
-import { Toast } from "@/shared/components";
+import { ConfirmDeleteModal, Toast } from "@/shared/components";
 import type { DbEmployee, DbDepartment } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { usePositionsView } from "../hooks/usePositionsView";
@@ -56,7 +56,11 @@ const PositionsView = ({
     undoAssignment,
     handleAddPosition,
     handleEditPosition,
-    handleDeletePosition,
+    pendingDeletePosId,
+    deletingPosition,
+    requestDeletePosition,
+    cancelDeletePosition,
+    confirmDeletePosition,
     closeAddEditModal,
     openAddModal,
     openEditModal,
@@ -125,7 +129,7 @@ const PositionsView = ({
           onExpandDepartment={expandDepartment}
           onDrop={handleDrop}
           onAddPosition={openAddModal}
-          onDeletePosition={handleDeletePosition}
+          onDeletePosition={requestDeletePosition}
           onEditPosition={openEditModal}
           onEditEmployee={openQuickEditEmployee}
         />
@@ -182,6 +186,18 @@ const PositionsView = ({
               textSize={12}
             />
           )
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pendingDeletePosId && (
+          <ConfirmDeleteModal
+            onClose={cancelDeletePosition}
+            onConfirm={confirmDeletePosition}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("hierarchy.do_you_want_to_delete_this_post")}
+            loading={deletingPosition}
+          />
         )}
       </AnimatePresence>
     </div>

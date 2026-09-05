@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { useOdooMutation } from "@/shared/hooks";
 import type { DbTrainingProgram } from "@/shared/hooks";
@@ -42,6 +41,8 @@ export const useProgramForm = ({
   const [createForm, setCreateForm] = useState<CreateProgramForm>(
     buildInitialCreateForm(trainingCategories, trainingStatuses, defaultWeight),
   );
+  const [pendingDeleteProgramId, setPendingDeleteProgramId] = useState<string | null>(null);
+  const [deletingProgram, setDeletingProgram] = useState(false);
 
   const createProgramMutation = useOdooMutation<unknown, Record<string, unknown>>(
     (payload) => odooData.createTrainingProgram(payload),
@@ -125,22 +126,34 @@ export const useProgramForm = ({
     });
   }, [editingProgram, showToast, updateProgramMutation]);
 
-  const handleDeleteProgram = useCallback(async (id: string) => {
-    if (!localizedConfirm(arabicSource("training.do_you_want_to_delete_this_training_program"))) return;
+  const requestDeleteProgram = useCallback((id: string) => {
+    setPendingDeleteProgramId(id);
+  }, []);
+
+  const cancelDeleteProgram = useCallback(() => {
+    setPendingDeleteProgramId(null);
+  }, []);
+
+  const confirmDeleteProgram = useCallback(async () => {
+    if (!pendingDeleteProgramId) return;
 
     await runAsyncAction(async () => {
-      await deleteProgramMutation.mutateAsync(id);
+      await deleteProgramMutation.mutateAsync(pendingDeleteProgramId);
 
       showToast("success", arabicSource("training.the_program_was_deleted_successfully"));
     }, {
+      setLoading: setDeletingProgram,
       onError: () => showToast("error", arabicSource("training.error_deleting_the_program")),
     });
-  }, [deleteProgramMutation, showToast]);
+    setPendingDeleteProgramId(null);
+  }, [deleteProgramMutation, pendingDeleteProgramId, showToast]);
 
   return {
     showCreateModal, openCreateModal, closeCreateModal,
     editingProgram, setEditingProgram, updateEditingProgram, closeEditModal,
     createForm, updateCreateForm,
-    handleCreateProgram, handleUpdateProgram, handleDeleteProgram,
+    handleCreateProgram, handleUpdateProgram,
+    pendingDeleteProgramId, deletingProgram,
+    requestDeleteProgram, cancelDeleteProgram, confirmDeleteProgram,
   };
 };
