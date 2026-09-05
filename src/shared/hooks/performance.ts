@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
 
@@ -123,26 +122,12 @@ export const useWarnings = (filters?: { employeeId?: string; status?: string }) 
  * doesn't fit `useCachedList`'s `T[]` contract (mirrors `useLeaveSettings`).
  */
 export const useWarningAttachmentSettings = () => {
-  const [settings, setSettings] = useState<DbWarningAttachmentSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refetch = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      setSettings(await odooData.fetchWarningAttachmentSettings());
-    } catch (e: any) {
-      setError(e?.message || "Failed to load warning attachment settings");
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { settings, loading, error, refetch };
+  const { data, loading, error, refetch } = useCachedList<DbWarningAttachmentSettings>(
+    "warningAttachmentSettings",
+    async () => [await odooData.fetchWarningAttachmentSettings()],
+    "Failed to load warning attachment settings",
+  );
+  return { settings: data[0] ?? null, loading, error, refetch };
 }
 
 export const useTrainingPrograms = () => {
