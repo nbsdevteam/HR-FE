@@ -148,8 +148,19 @@ async function loadLastSyncTime() {
       .eq("ip_address", config.device.ip)
       .maybeSingle();
     if (data?.last_sync_at) {
-      lastSyncTime = data.last_sync_at;
-      log("📌", `Restored lastSyncTime from DB: ${lastSyncTime}`);
+      // Normalise before use. The column is a timestamptz, so it comes back as
+      // an absolute instant in UTC with milliseconds
+      // (e.g. "2026-09-05T09:55:01.285+00:00"). The device expects Baghdad wall
+      // clock, whole seconds, "+03:00" — anything else is rejected with
+      // 400 "startTime", and lastSyncTime is only reassigned after a
+      // *successful* poll, so an unnormalised value wedges polling permanently.
+      const parsed = new Date(data.last_sync_at);
+      if (Number.isNaN(parsed.getTime())) {
+        log("⚠️", `Ignoring unparseable lastSyncTime from DB: ${data.last_sync_at}`);
+      } else {
+        lastSyncTime = toIsoLocal(parsed);
+        log("📌", `Restored lastSyncTime from DB: ${data.last_sync_at} → ${lastSyncTime}`);
+      }
     }
   } catch (err) {
     log("⚠️", `Could not restore lastSyncTime: ${err.message}`);
@@ -169,10 +180,22 @@ function requireSupabase(res) {
 
 function toIsoLocal(date) {
   // Format: 2026-04-22T08:30:00+03:00
+  //
+  // Must shift by the Iraq offset and then read the components with getUTC*.
+  // Host-local getters (getHours() etc.) are NOT safe here: production runs on
+  // an Etc/UTC host, so they would emit a UTC wall clock under a hard-coded
+  // "+03:00" label. That polls the device for a window three hours in the past
+  // and the incremental poll silently returns nothing (or, when the string also
+  // carries milliseconds, ISAPI rejects it outright with 400 "startTime").
+  // Baghdad is UTC+3 year-round with no DST, so the fixed offset is correct.
   const d = date instanceof Date ? date : new Date(date);
-  const offset = "+03:00"; // Iraq is UTC+3
+  if (Number.isNaN(d.getTime())) throw new Error(`toIsoLocal: invalid date: ${date}`);
+  const iraqTime = new Date(d.getTime() + 3 * 60 * 60 * 1000); // shift to UTC+3
   const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${offset}`;
+  return (
+    `${iraqTime.getUTCFullYear()}-${pad(iraqTime.getUTCMonth() + 1)}-${pad(iraqTime.getUTCDate())}` +
+    `T${pad(iraqTime.getUTCHours())}:${pad(iraqTime.getUTCMinutes())}:${pad(iraqTime.getUTCSeconds())}+03:00`
+  );
 }
 
 // ── Retry with exponential backoff (for backend / device calls) ──
