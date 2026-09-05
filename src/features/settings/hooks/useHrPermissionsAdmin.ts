@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   fetchHrAdminUsers,
   fetchHrPermissionsSchema,
   type HrAdminUserListItem,
   type HrPermissionsSchema,
 } from "../api/permissionsAdmin";
+
+interface HrAdminUsersResult {
+  items: HrAdminUserListItem[];
+  total: number;
+}
 
 /**
  * Directory (search/filter/list) + schema state for the Roles & Permissions
@@ -13,63 +19,36 @@ import {
  * every Settings page load.
  */
 export const useHrPermissionsAdmin = (enabled: boolean) => {
-  const [schema, setSchema] = useState<HrPermissionsSchema | null>(null);
-  const [items, setItems] = useState<HrAdminUserListItem[]>([]);
-  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [forbidden, setForbidden] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const fetchSchema = useCallback(async (): Promise<void> => {
-    try {
-      const data = await fetchHrPermissionsSchema();
-      setSchema(data);
-    } catch {
-      setSchema(null);
-    }
-  }, []);
+  const schemaQuery = useQuery<HrPermissionsSchema, Error>({
+    queryKey: ["hrPermissionsSchema"],
+    queryFn: fetchHrPermissionsSchema,
+    enabled,
+  });
 
-  const fetchUsers = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const data = await fetchHrAdminUsers({ search, role, active: true, page: 1, per_page: 200 });
-      setItems(data.items);
-      setTotal(data.total);
-      setForbidden(false);
-      setErrorMessage("");
-    } catch (e: any) {
-      setItems([]);
-      setTotal(0);
-      setForbidden(true);
-      setErrorMessage(e?.message || "");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, role]);
+  const usersQuery = useQuery<HrAdminUsersResult, Error>({
+    queryKey: ["hrAdminUsers", search, role],
+    queryFn: () => fetchHrAdminUsers({ search, role, active: true, page: 1, per_page: 200 }),
+    enabled,
+  });
 
-  useEffect(() => {
-    if (!enabled) return;
-    fetchSchema();
-  }, [enabled, fetchSchema]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    fetchUsers();
-  }, [enabled, fetchUsers]);
+  const refetch = useCallback((): void => {
+    void usersQuery.refetch();
+  }, [usersQuery.refetch]);
 
   return {
-    schema,
-    items,
-    total,
+    schema: schemaQuery.data ?? null,
+    items: usersQuery.data?.items ?? [],
+    total: usersQuery.data?.total ?? 0,
     search,
     setSearch,
     role,
     setRole,
-    loading,
-    forbidden,
-    errorMessage,
-    refetch: fetchUsers,
+    loading: usersQuery.isFetching,
+    forbidden: usersQuery.isError,
+    errorMessage: usersQuery.error?.message ?? "",
+    refetch,
   };
 };
