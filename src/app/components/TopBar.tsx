@@ -26,13 +26,12 @@ const TopBar = () => {
   const [bellOpen, setBellOpen] = useState(false);
   const [deviceOpen, setDeviceOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const { toggleMobileNav, isDesktop } = useNavShell();
   const { user, signOut } = useAuth();
   const { notifications, unreadCount } = useNotifications();
-  const { deviceStatus, refresh: refreshDevice } = useDeviceStatus();
+  const { deviceStatus } = useDeviceStatus();
 
   const markAllReadMutation = useOdooMutation(
     odooData.markAllNotificationsRead,
@@ -41,6 +40,18 @@ const TopBar = () => {
   const markReadMutation = useOdooMutation(
     odooData.markNotificationRead,
     "notifications",
+  );
+  // Invalidates the deviceStatus query on success, so useDeviceStatus picks
+  // up the fresh sync state instead of needing a manual refresh call.
+  const triggerSyncMutation = useOdooMutation(
+    async () => {
+      const res = await fetch(`${SYNC_API}/sync`, {
+        method: "POST",
+        signal: AbortSignal.timeout(120000),
+      }).catch(() => null);
+      if (res?.ok) await new Promise((r) => setTimeout(r, 3000));
+    },
+    "deviceStatus",
   );
 
   const bellRef = useRef<HTMLDivElement>(null);
@@ -92,19 +103,12 @@ const TopBar = () => {
   );
 
   const triggerSync = useCallback(async () => {
-    setSyncing(true);
     try {
-      const res = await fetch(`${SYNC_API}/sync`, {
-        method: "POST",
-        signal: AbortSignal.timeout(120000),
-      }).catch(() => null);
-      if (res?.ok) await new Promise((r) => setTimeout(r, 3000));
+      await triggerSyncMutation.mutateAsync();
     } catch {
       /* sync service optional */
     }
-    await refreshDevice();
-    setSyncing(false);
-  }, [refreshDevice]);
+  }, [triggerSyncMutation]);
 
   const handleSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -190,7 +194,7 @@ const TopBar = () => {
             isOpen={deviceOpen}
             dropdownRef={deviceRef}
             onToggle={handleDeviceToggle}
-            syncing={syncing}
+            syncing={triggerSyncMutation.isPending}
             onSync={triggerSync}
           />
         )}

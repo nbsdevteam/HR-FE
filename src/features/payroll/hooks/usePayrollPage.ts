@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useEmployees } from "@/shared/hooks";
+import { useEmployees, useOdooMutation } from "@/shared/hooks";
 import { generatePayslipsServer } from "@/shared/api/payroll";
-import type { PayrollStatus } from "@/shared/api/payrollTypes";
+import type { PayrollStatus, PayslipGenerateRequest } from "@/shared/api/payrollTypes";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -17,7 +17,6 @@ export const usePayrollPage = () => {
   const [departmentId, setDepartmentId] = useState("");
   const [status, setStatus] = useState<PayrollStatus | "">("");
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
-  const [savingPayslips, setSavingPayslips] = useState(false);
   const [payslipsSaved, setPayslipsSaved] = useState(false);
 
   const { settings: appSettings } = useAppSettings();
@@ -25,6 +24,13 @@ export const usePayrollPage = () => {
   // Full roster kept only for the (out-of-scope) Upload tab — the Salary list
   // itself never holds more than one page of employees.
   const { employees } = useEmployees();
+  // Invalidates both payroll queries so a generated batch shows up without a
+  // manual refetch — usePayrollListPaged's totals query is keyed separately
+  // from its page query (see that hook), and both start with these prefixes.
+  const generatePayslipsMutation = useOdooMutation(
+    (payload: PayslipGenerateRequest) => generatePayslipsServer(payload),
+    ["payrollList", "payrollTotals"],
+  );
   const list = usePayrollListPaged({
     month: selectedMonth,
     search,
@@ -59,20 +65,16 @@ export const usePayrollPage = () => {
 
   const handleGeneratePayslips = useCallback(async (): Promise<void> => {
     if (!selectedMonth) return;
-    setSavingPayslips(true);
     try {
-      await generatePayslipsServer({ month: selectedMonth, replace_month: true });
+      await generatePayslipsMutation.mutateAsync({ month: selectedMonth, replace_month: true });
       setPayslipsSaved(true);
-      list.refetchList();
       setTimeout(() => setPayslipsSaved(false), 3000);
     } catch (e: unknown) {
       const message = errorMessage(e);
       console.error("Failed to generate payslips:", message);
       localizedAlert(`${arabicSource("payroll.error_saving_statements")} ${message}`);
     }
-    setSavingPayslips(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMonth, list.refetchList]);
+  }, [selectedMonth, generatePayslipsMutation]);
 
   useEffect(() => {
     if (selectedMonth || !metadata) return;
@@ -103,7 +105,7 @@ export const usePayrollPage = () => {
       payslipsSaved,
       perPage: list.perPage,
       refetchList: list.refetchList,
-      savingPayslips,
+      savingPayslips: generatePayslipsMutation.isPending,
       search,
       selectedEmpId,
       selectedMonth,
@@ -117,9 +119,9 @@ export const usePayrollPage = () => {
     }),
     [
       activeTab, appSettings, availableMonths, departmentId, displayMonth, employees,
-      handleDepartmentChange, handleGeneratePayslips, handleMonthChange, handleSearchChange,
-      handleStatusChange, initialLoading, list, metadata, payslipsSaved, savingPayslips,
-      search, selectedEmpId, selectedMonth, status,
+      generatePayslipsMutation.isPending, handleDepartmentChange, handleGeneratePayslips,
+      handleMonthChange, handleSearchChange, handleStatusChange, initialLoading, list,
+      metadata, payslipsSaved, search, selectedEmpId, selectedMonth, status,
     ],
   );
 };
