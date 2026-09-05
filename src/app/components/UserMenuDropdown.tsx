@@ -34,14 +34,23 @@ const UserMenuDropdown = ({
     </button>
     <DropdownPanel isOpen={isOpen} widthClassName="w-56">
       <div className="p-3 border-b border-border/40">
-        <p className="text-foreground truncate" style={{ fontSize: 13 }}>{displayName}</p>
+        <p className="text-foreground truncate" style={{ fontSize: 13 }}>
+          {displayName}
+        </p>
         {email && (
-          <p className="text-muted-foreground truncate" style={{ fontSize: 11 }}>{email}</p>
+          <p
+            className="text-muted-foreground truncate"
+            style={{ fontSize: 11 }}
+          >
+            {email}
+          </p>
         )}
       </div>
-      <div className="p-1.5 sm:hidden">
+
+      {/* <div className="p-1.5 sm:hidden">
         <ThemeSwitcher />
-      </div>
+      </div> */}
+
       <button
         type="button"
         onClick={onSignOut}
@@ -49,7 +58,11 @@ const UserMenuDropdown = ({
         className="w-full flex items-center gap-2 px-3 py-2.5 text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50"
         style={{ fontSize: 13 }}
       >
-        {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+        {signingOut ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <LogOut className="w-4 h-4" />
+        )}
         {arabicSource("common.log_out")}
       </button>
     </DropdownPanel>
