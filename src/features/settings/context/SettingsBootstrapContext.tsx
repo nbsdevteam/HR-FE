@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import {
   mapDepartment,
@@ -69,9 +70,14 @@ export const useSettingsBootstrap = (): SettingsBootstrapContextValue => useCont
 const itemsOf = <T,>(section: SettingsBootstrapSection<{ items: T[] }> | undefined): T[] =>
   section?.success && section.data ? section.data.items : [];
 
+const fetchBootstrap = (): Promise<SettingsBootstrap> => odooData.fetchSettingsBootstrap();
+
 const SettingsBootstrapProvider = ({ children }: { children: ReactNode }) => {
-  const [bundle, setBundle] = useState<SettingsBootstrap | null>(null);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery<SettingsBootstrap, Error>({
+    queryKey: ["settingsBootstrap"],
+    queryFn: fetchBootstrap,
+  });
+  const bundle = query.data ?? null;
 
   const departments = useMemo(
     () => dedupeBy(itemsOf(bundle?.departments).map(mapDepartment), (d) => d.id),
@@ -95,23 +101,15 @@ const SettingsBootstrapProvider = ({ children }: { children: ReactNode }) => {
     [bundle],
   );
 
-  const fetchBootstrap = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await odooData.fetchSettingsBootstrap();
-      setBundle(data);
-    } catch (e) {
-      console.error(e);
-      setBundle(null);
-    }
-    setLoading(false);
-  }, []);
+  const refetch = useCallback(async (): Promise<void> => {
+    await query.refetch();
+  }, [query.refetch]);
 
   // Declared after the useMemo/useCallback above (not before, per the usual
   // ordering) because it closes over them directly — mirrors `AuthProvider`.
   const value = useMemo<SettingsBootstrapContextValue>(
     () => ({
-      loading,
+      loading: query.isFetching,
       departments,
       modules,
       configs,
@@ -121,17 +119,13 @@ const SettingsBootstrapProvider = ({ children }: { children: ReactNode }) => {
       documentTypes,
       shifts,
       deviceSync,
-      refetch: fetchBootstrap,
+      refetch,
     }),
     [
-      loading, departments, modules, configs, holidays, leaveTypes,
-      contractTypes, documentTypes, shifts, deviceSync, fetchBootstrap,
+      query.isFetching, departments, modules, configs, holidays, leaveTypes,
+      contractTypes, documentTypes, shifts, deviceSync, refetch,
     ],
   );
-
-  useEffect(() => {
-    fetchBootstrap();
-  }, [fetchBootstrap]);
 
   return (
     <SettingsBootstrapContext.Provider value={value}>
