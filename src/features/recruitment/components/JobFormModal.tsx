@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { Button, Modal } from "@/shared/components";
 import {
   type DbJobOpening,
-  type DbDepartment,
   type JobSkillRequirement,
+  useDepartments,
   useOdooMutation,
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
@@ -47,7 +47,7 @@ const JobFormModal = ({
   const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(
     editingJob?.nice_to_have_skills || [],
   );
-  const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
+  const { departments: odooDepartments } = useDepartments();
   const saveJobMutation = useOdooMutation<unknown, void>(
     () => {
       const reqs = form.requirements
@@ -101,13 +101,6 @@ const JobFormModal = ({
 
   const handleFieldChange = useCallback((field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  useEffect(() => {
-    odooData
-      .fetchDepartments()
-      .then(setOdooDepartments)
-      .catch(() => {});
   }, []);
 
   return (
