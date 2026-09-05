@@ -1,5 +1,6 @@
 import { useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList, type DbDepartment } from "@/shared/hooks";
 
 interface DepartmentManagementListResult {
@@ -16,6 +17,8 @@ export const useDepartmentManagementList = () => {
     async () => [await odooData.fetchDepartmentsAdmin({ includeArchived })],
     "Failed to load departments",
     [includeArchived],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
 
   return {

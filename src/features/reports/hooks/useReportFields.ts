@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchReportFields } from "@/shared/api/reporting";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { isBackendReportCode, resolveReportCode } from "../constants/reports";
 import type { ReportField } from "../types";
 
@@ -21,6 +22,7 @@ export const useReportFields = (code: string | null) => {
       return { fields: result.fields || [], defaultFields: result.default_fields || [] };
     },
     enabled,
+    staleTime: STALE_TIME.LONG,
   });
 
   const fields = enabled ? query.data?.fields ?? [] : [];

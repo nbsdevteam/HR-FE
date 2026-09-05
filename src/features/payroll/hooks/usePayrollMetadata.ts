@@ -1,5 +1,6 @@
-import { useCachedList } from "@/shared/hooks/core";
 import { fetchPayrollMetadata } from "@/shared/api/payroll";
+import { STALE_TIME } from "@/shared/api/queryClient";
+import { useCachedList } from "@/shared/hooks/core";
 
 /**
  * Cached under the shared `QueryClient` — metadata is departments/shifts/
@@ -14,6 +15,9 @@ export const usePayrollMetadata = () => {
     "payrollMetadata",
     async () => [await fetchPayrollMetadata()],
     "Failed to load payroll metadata",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { metadata: data[0] ?? null, loading, error, refetch };
 };

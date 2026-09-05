@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 export interface DbAllowanceType {
@@ -75,7 +76,14 @@ export interface DbLoan {
 }
 
 export const useAllowanceTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("allowanceTypes", () => odooData.fetchAllowanceTypes(), "Failed to load allowance types");
+  const { data: types, loading, refetch } = useCachedList(
+    "allowanceTypes",
+    () => odooData.fetchAllowanceTypes(),
+    "Failed to load allowance types",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { types, loading, refetch };
 }
 
@@ -90,7 +98,14 @@ export const useEmployeeAllowances = (employeeId?: string) => {
 }
 
 export const useDeductionTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("deductionTypes", () => odooData.fetchDeductionTypes(), "Failed to load deduction types");
+  const { data: types, loading, refetch } = useCachedList(
+    "deductionTypes",
+    () => odooData.fetchDeductionTypes(),
+    "Failed to load deduction types",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { types, loading, refetch };
 }
 

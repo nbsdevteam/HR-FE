@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import {
   fetchHrAdminUsers,
   fetchHrPermissionsSchema,
@@ -26,6 +27,7 @@ export const useHrPermissionsAdmin = (enabled: boolean) => {
     queryKey: ["hrPermissionsSchema"],
     queryFn: fetchHrPermissionsSchema,
     enabled,
+    staleTime: STALE_TIME.LONG,
   });
 
   const usersQuery = useQuery<HrAdminUsersResult, Error>({

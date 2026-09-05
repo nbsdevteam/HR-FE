@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList, type DepartmentTreeNode } from "@/shared/hooks";
 
 interface OrgStructureTreeResult {
@@ -17,6 +18,8 @@ export const useOrgStructureTree = (includeArchived: boolean) => {
     async () => [await odooData.fetchDepartmentTree(includeArchived)],
     "Failed to load department tree",
     [includeArchived],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
 
   const toggleExpand = useCallback((id: string) => {

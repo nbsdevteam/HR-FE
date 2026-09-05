@@ -1,5 +1,6 @@
 import { useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList, type DbReportTemplate } from "@/shared/hooks";
 
 interface ReportConfigListResult {
@@ -24,6 +25,8 @@ export const useReportConfigList = () => {
     ],
     "Failed to load report templates",
     [search, category, includeArchived],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
 
   return {

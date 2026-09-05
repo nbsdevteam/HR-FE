@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 // ——— Evaluations, Warnings, Training, Policies Hooks ———
@@ -126,6 +127,9 @@ export const useWarningAttachmentSettings = () => {
     "warningAttachmentSettings",
     async () => [await odooData.fetchWarningAttachmentSettings()],
     "Failed to load warning attachment settings",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { settings: data[0] ?? null, loading, error, refetch };
 }
@@ -146,6 +150,13 @@ export const useTrainingParticipants = (programId?: string) => {
 }
 
 export const usePolicies = () => {
-  const { data: policies, loading, refetch } = useCachedList("policies", () => odooData.fetchPolicies(), "Failed to load policies");
+  const { data: policies, loading, refetch } = useCachedList(
+    "policies",
+    () => odooData.fetchPolicies(),
+    "Failed to load policies",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { policies, loading, refetch };
 }

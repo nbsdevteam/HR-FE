@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import {
   mapDepartment,
   mapModule,
@@ -76,6 +77,7 @@ const SettingsBootstrapProvider = ({ children }: { children: ReactNode }) => {
   const query = useQuery<SettingsBootstrap, Error>({
     queryKey: ["settingsBootstrap"],
     queryFn: fetchBootstrap,
+    staleTime: STALE_TIME.LONG,
   });
   const bundle = query.data ?? null;
 

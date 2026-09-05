@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 export type GradeCode = "E" | "1" | "2" | "3" | "4" | "5" | "S";
@@ -77,6 +78,9 @@ export const useGrades = () => {
     "grades",
     () => odooData.fetchGrades(),
     "Failed to load grades",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { grades, loading, error, refetch };
 };
