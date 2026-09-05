@@ -1,5 +1,6 @@
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useCachedList } from "./core";
 
@@ -80,10 +81,12 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
       ? { date: dateOrFilter }
       : dateOrFilter;
 
-  // A single-date query for today drives "who's in/late/absent right now"
-  // views — that must never serve a stale cache entry, so it bypasses the
-  // usual TTL and refetches whenever the tab regains focus.
-  const isToday = filter.date === todayInBaghdad();
+  // A single-date query for today, or a range that runs up through today
+  // (e.g. "this week so far"), drives "who's in/late/absent right now" views
+  // — that must never serve a stale cache entry, so it bypasses the usual
+  // TTL and refetches whenever the tab regains focus.
+  const today = todayInBaghdad();
+  const isToday = filter.date === today || filter.date_to === today;
 
   const { data: records, loading, refetch } = useCachedList(
     "attendance",
@@ -96,7 +99,7 @@ export const useAttendanceRecords = (dateOrFilter?: string | AttendanceRecordsFi
     "Failed to load attendance",
     [filter.date, filter.date_from, filter.date_to, filter.employeeId],
     true,
-    isToday ? { ttlMs: 0, refetchOnWindowFocus: true } : undefined,
+    isToday ? { ttlMs: STALE_TIME.REALTIME, refetchOnWindowFocus: true } : undefined,
   );
 
   return { records, loading, refetch };

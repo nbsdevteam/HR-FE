@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { resolveEmployeeShift, shiftToSchedule } from "@/shared/hooks";
 import type { DbAttendanceRecord, DbEmployee } from "@/shared/hooks";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
@@ -63,12 +64,16 @@ export const useEmployeeAttendanceDetail = ({
     () => odooData.fetchAttendance({ employee_id: employeeId, limit: 5000 }),
     [employeeId],
   );
+  // The pull is unbounded (up to 5000 records) and always includes today, so
+  // it stays short-lived and refetches on tab focus rather than the app
+  // default — otherwise a check-in made while this modal is open could hide
+  // behind a minute-old cache entry.
   const { data: allRecords, loading } = useAsyncList<DbAttendanceRecord>(
     fetchRecords,
     [employeeId],
     "Failed to load employee attendance",
     undefined,
-    { cacheKey: "employee-attendance" },
+    { cacheKey: "employee-attendance", ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );
 
   // Indexed once instead of re-scanning `employees` on every render — the

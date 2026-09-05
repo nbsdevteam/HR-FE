@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 import type { DbEmployee } from "./core";
 import type { DbLeaveExcuse } from "./leaveExcuseTypes";
@@ -193,21 +194,24 @@ export const useLeaveEmployeeScope = () => {
 }
 
 export const useLeaveTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("leaveTypes", () => odooData.fetchLeaveTypes(), "Failed to load leave types");
+  const { data: types, loading, refetch } = useCachedList("leaveTypes", () => odooData.fetchLeaveTypes(), "Failed to load leave types", [], true, { ttlMs: STALE_TIME.LONG });
   return { types, loading, refetch };
 }
 
 export const useLeavePolicies = () => {
-  const { data: policies, loading, refetch } = useCachedList("leavePolicies", () => odooData.fetchLeavePolicies(), "Failed to load leave policies");
+  const { data: policies, loading, refetch } = useCachedList("leavePolicies", () => odooData.fetchLeavePolicies(), "Failed to load leave policies", [], true, { ttlMs: STALE_TIME.LONG });
   return { policies, loading, refetch };
 }
 
+/** A new/updated request can land mid-session, so this stays short-lived and refetches on tab focus. */
 export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
   const { data: requests, loading, refetch } = useCachedList(
     "leaveRequests",
     () => odooData.fetchLeaveRequests(filters),
     "Failed to load leave requests",
     [filters?.employeeId, filters?.status, filters?.month],
+    true,
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );
   return { requests, loading, refetch };
 }
