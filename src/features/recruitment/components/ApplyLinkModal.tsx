@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Check,
   MessageCircle,
+  Linkedin,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
@@ -182,6 +183,16 @@ const ApplyLinkModal = ({
             >
               <MessageCircle className="w-4 h-4" />
               {arabicSource("recruitment.share_whatsapp")}
+            </a>
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(applyUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-sky-500/40 text-sky-400 hover:bg-sky-500/10 transition-colors"
+              style={{ fontSize: 13 }}
+            >
+              <Linkedin className="w-4 h-4" />
+              {arabicSource("recruitment.share_linkedin")}
             </a>
             <Button
               variant="ghost"

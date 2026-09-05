@@ -2084,6 +2084,7 @@
   "تغيير الرابط": "recruitment.rotate_token",
   "سيتوقف الرابط القديم عن العمل. هل تريد المتابعة؟": "recruitment.rotate_token_confirm",
   "مشاركة عبر واتساب": "recruitment.share_whatsapp",
+  "مشاركة عبر لينكدإن": "recruitment.share_linkedin",
   "تاريخ انتهاء الرابط": "recruitment.link_expires",
   "أقصى عدد طلبات": "recruitment.link_max_submissions",
   "الطلبات المستلمة": "recruitment.link_submissions",

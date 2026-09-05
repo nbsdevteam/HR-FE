@@ -2185,6 +2185,7 @@
   "recruitment.rotate_token": "Rotate link",
   "recruitment.rotate_token_confirm": "The old link will stop working. Continue?",
   "recruitment.share_whatsapp": "Share on WhatsApp",
+  "recruitment.share_linkedin": "Share on LinkedIn",
   "recruitment.link_expires": "Link expiry date",
   "recruitment.link_max_submissions": "Maximum applications",
   "recruitment.link_submissions": "Applications received",
