@@ -25,6 +25,12 @@ type AsyncListOptions = {
   refetchOnWindowFocus?: boolean;
 };
 
+// Stable reference for the "no data yet" case — a fresh `[]` on every render
+// would give callers a new array identity each time, which trips effects
+// keyed on the returned `data` (e.g. `useEffect(() => sync(data), [data])`)
+// into an infinite render loop while the query is still loading.
+const EMPTY_LIST: unknown[] = [];
+
 /**
  * Shared fetch-a-list-on-mount shape used across the app's Odoo-backed hooks:
  * loads `fetcher()` on mount/dep-change, tracks loading/error, exposes `refetch`.
@@ -71,7 +77,7 @@ export const useAsyncList = <T,>(
   }, [query.refetch]);
 
   return {
-    data: query.data ?? ([] as T[]),
+    data: query.data ?? (EMPTY_LIST as T[]),
     loading: query.isFetching,
     error: query.error ? query.error.message || errorFallback : null,
     refetch,
