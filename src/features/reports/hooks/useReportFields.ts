@@ -1,13 +1,29 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchReportFields } from "@/shared/api/reporting";
 import { isBackendReportCode, resolveReportCode } from "../constants/reports";
 import type { ReportField } from "../types";
 
+interface ReportFieldCatalog {
+  fields: ReportField[];
+  defaultFields: string[];
+}
+
 /** Fetches + caches the selectable field catalog for a report code (null/FE-local code = no catalog). */
 export const useReportFields = (code: string | null) => {
-  const [fields, setFields] = useState<ReportField[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const enabled = !!code && isBackendReportCode(code);
+
+  const query = useQuery<ReportFieldCatalog, Error>({
+    queryKey: ["reportFields", code],
+    queryFn: async () => {
+      const result = await fetchReportFields(resolveReportCode(code as string));
+      return { fields: result.fields || [], defaultFields: result.default_fields || [] };
+    },
+    enabled,
+  });
+
+  const fields = enabled ? query.data?.fields ?? [] : [];
 
   const toggle = useCallback((key: string): void => {
     setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
@@ -19,33 +35,17 @@ export const useReportFields = (code: string | null) => {
 
   const clearAll = useCallback((): void => setSelected([]), []);
 
+  // Reset the selection to the catalog's defaults whenever the report code
+  // changes (or its catalog resolves) — mirrors the previous effect-per-code
+  // behavior, but also fires on a cache hit since `query.data` is available
+  // immediately instead of only on a fresh fetch.
   useEffect(() => {
-    if (!code || !isBackendReportCode(code)) {
-      setFields([]);
+    if (!enabled) {
       setSelected([]);
       return;
     }
-    let cancelled = false;
-    setLoading(true);
-    fetchReportFields(resolveReportCode(code))
-      .then((result) => {
-        if (cancelled) return;
-        setFields(result.fields || []);
-        setSelected(result.default_fields || []);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setFields([]);
-          setSelected([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [code]);
+    if (query.data) setSelected(query.data.defaultFields);
+  }, [enabled, query.data]);
 
-  return { fields, selected, toggle, selectAll, clearAll, loading };
+  return { fields, selected, toggle, selectAll, clearAll, loading: enabled && query.isFetching };
 };
