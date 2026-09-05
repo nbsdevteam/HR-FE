@@ -209,6 +209,7 @@ const RecruitmentWorkspace = () => {
           <RecruitmentPipelineView
             applicants={applicants}
             onSelectApplicant={setSelectedApplicant}
+            onUpdateStage={handleUpdateStage}
           />
         </Suspense>
       )}
