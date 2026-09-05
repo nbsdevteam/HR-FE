@@ -1,30 +1,29 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import type { DbDepartment } from "@/shared/hooks";
+import { useCachedList, type DbDepartment } from "@/shared/hooks";
+
+interface DepartmentManagementListResult {
+  items: DbDepartment[];
+  total: number;
+}
 
 /** `include_archived`-filtered department list for the org-structure admin screen (backend §1). */
 export const useDepartmentManagementList = () => {
-  const [items, setItems] = useState<DbDepartment[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [includeArchived, setIncludeArchived] = useState(false);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await odooData.fetchDepartmentsAdmin({ includeArchived });
-      setItems(result.items);
-      setTotal(result.total);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [includeArchived]);
+  const { data, loading, refetch } = useCachedList<DepartmentManagementListResult>(
+    "departmentManagementList",
+    async () => [await odooData.fetchDepartmentsAdmin({ includeArchived })],
+    "Failed to load departments",
+    [includeArchived],
+  );
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { items, total, loading, includeArchived, setIncludeArchived, refetch };
+  return {
+    items: data[0]?.items ?? [],
+    total: data[0]?.total ?? 0,
+    loading,
+    includeArchived,
+    setIncludeArchived,
+    refetch,
+  };
 };

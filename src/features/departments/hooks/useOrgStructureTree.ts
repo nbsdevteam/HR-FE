@@ -1,32 +1,23 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import type { DepartmentTreeNode } from "@/shared/hooks";
+import { useCachedList, type DepartmentTreeNode } from "@/shared/hooks";
+
+interface OrgStructureTreeResult {
+  items: DepartmentTreeNode[];
+  total: number;
+  unassignedEmployeeCount: number;
+}
 
 /** Nested department chart with rolled-up counts, for the org-structure tree tab (backend §3). */
 export const useOrgStructureTree = (includeArchived: boolean) => {
-  const [items, setItems] = useState<DepartmentTreeNode[]>([]);
-  const [total, setTotal] = useState(0);
-  const [unassignedEmployeeCount, setUnassignedEmployeeCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await odooData.fetchDepartmentTree(includeArchived);
-      setItems(result.items);
-      setTotal(result.total);
-      setUnassignedEmployeeCount(result.unassignedEmployeeCount);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [includeArchived]);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  const { data, loading, refetch } = useCachedList<OrgStructureTreeResult>(
+    "orgStructureTree",
+    async () => [await odooData.fetchDepartmentTree(includeArchived)],
+    "Failed to load department tree",
+    [includeArchived],
+  );
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -37,5 +28,13 @@ export const useOrgStructureTree = (includeArchived: boolean) => {
     });
   }, []);
 
-  return { items, total, unassignedEmployeeCount, loading, refetch, expandedIds, toggleExpand };
+  return {
+    items: data[0]?.items ?? [],
+    total: data[0]?.total ?? 0,
+    unassignedEmployeeCount: data[0]?.unassignedEmployeeCount ?? 0,
+    loading,
+    refetch,
+    expandedIds,
+    toggleExpand,
+  };
 };
