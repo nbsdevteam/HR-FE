@@ -49,10 +49,7 @@ const Login = () => {
   }, []);
 
   return (
-    <div
-      className="min-h-screen bg-background flex items-center justify-center p-4"
-      dir="rtl"
-    >
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -start-32 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
