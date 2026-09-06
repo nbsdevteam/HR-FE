@@ -42,7 +42,24 @@ const TreeConnectors = ({ parentRef, childRefs, color }: {
     const c = containerRef.current;
     let ro: ResizeObserver | null = null;
     if (c) { ro = new ResizeObserver(() => requestAnimationFrame(measure)); ro.observe(c); }
-    return () => { cancelAnimationFrame(raf); ro?.disconnect(); };
+
+    // The chart is zoomed via a CSS `transform: scale()` transition on an
+    // ancestor (see StructureCardsView) — `getBoundingClientRect` reflects that
+    // scale, but a pure transform never changes any element's layout size, so
+    // the ResizeObserver above never fires for it and these lines go stale the
+    // moment zoom changes. `transitionend` bubbles up from wherever the
+    // transform actually animates, so a document-level listener catches it
+    // regardless of how deep this connector is nested.
+    const handleTransitionEnd = (event: TransitionEvent): void => {
+      if (event.propertyName === "transform") requestAnimationFrame(measure);
+    };
+    document.addEventListener("transitionend", handleTransitionEnd);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      document.removeEventListener("transitionend", handleTransitionEnd);
+    };
   }, [measure]);
 
   return (
