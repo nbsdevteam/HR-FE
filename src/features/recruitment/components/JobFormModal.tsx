@@ -38,6 +38,7 @@ const JobFormModal = ({
     requirements: (editingJob?.requirements || []).join("\n"),
     // AI screening spec — what the Initial Rating is computed against
     min_experience_years: editingJob?.min_experience_years ?? 0,
+    max_experience_years: editingJob?.max_experience_years ?? 0,
     education_level: editingJob?.education_level || "none",
     ir_auto_shortlist: editingJob?.ir_auto_shortlist ?? 0,
   });
@@ -69,6 +70,7 @@ const JobFormModal = ({
         required_skills: requiredSkills,
         nice_to_have_skills: niceToHave,
         min_experience_years: form.min_experience_years,
+        max_experience_years: form.max_experience_years,
         education_level: form.education_level,
         ir_auto_shortlist: form.ir_auto_shortlist,
       };
@@ -81,16 +83,32 @@ const JobFormModal = ({
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!form.title.trim()) return;
+    if (
+      form.max_experience_years > 0 &&
+      form.max_experience_years < form.min_experience_years
+    ) {
+      localizedAlert(arabicSource("recruitment.max_experience_below_min"));
+      return;
+    }
     try {
       await saveJobMutation.mutateAsync();
       onSaved();
     } catch (e: any) {
       localizedAlert(e?.message || arabicSource("common.error"));
     }
-  }, [form.title, saveJobMutation, onSaved]);
+  }, [
+    form.title,
+    form.max_experience_years,
+    form.min_experience_years,
+    saveJobMutation,
+    onSaved,
+  ]);
 
   const handleMinExperienceYearsChange = useCallback((value: number) => {
     setForm((prev) => ({ ...prev, min_experience_years: value }));
+  }, []);
+  const handleMaxExperienceYearsChange = useCallback((value: number) => {
+    setForm((prev) => ({ ...prev, max_experience_years: value }));
   }, []);
   const handleEducationLevelChange = useCallback((value: string) => {
     setForm((prev) => ({ ...prev, education_level: value }));
@@ -131,11 +149,13 @@ const JobFormModal = ({
           requiredSkills={requiredSkills}
           niceToHave={niceToHave}
           minExperienceYears={form.min_experience_years}
+          maxExperienceYears={form.max_experience_years}
           educationLevel={form.education_level}
           irAutoShortlist={form.ir_auto_shortlist}
           onRequiredSkillsChange={setRequiredSkills}
           onNiceToHaveChange={setNiceToHave}
           onMinExperienceYearsChange={handleMinExperienceYearsChange}
+          onMaxExperienceYearsChange={handleMaxExperienceYearsChange}
           onEducationLevelChange={handleEducationLevelChange}
           onIrAutoShortlistChange={handleIrAutoShortlistChange}
         />
