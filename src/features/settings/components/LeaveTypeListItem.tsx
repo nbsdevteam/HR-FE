@@ -2,8 +2,9 @@ import { useState, memo, useCallback } from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
-import type { DbLeaveType } from "@/shared/hooks";
+import type { DbLeaveType, LeaveBalanceResetPolicy } from "@/shared/hooks";
 import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
+import LeaveTypeResetPolicyControl from "./LeaveTypeResetPolicyControl";
 import SettingsToggle from "./SettingsToggle";
 
 type TLeaveTypeListItemProps = {
@@ -11,6 +12,7 @@ type TLeaveTypeListItemProps = {
   onToggleActive: (leaveType: DbLeaveType) => void;
   onDelete: (leaveTypeId: string) => void;
   onUpdateDays: (leaveTypeId: string, defaultDaysPerYear: number) => void;
+  onUpdateResetPolicy: (leaveTypeId: string, policy: LeaveBalanceResetPolicy) => void;
 };
 
 const LeaveTypeListItem = ({
@@ -18,6 +20,7 @@ const LeaveTypeListItem = ({
   onToggleActive,
   onDelete,
   onUpdateDays,
+  onUpdateResetPolicy,
 }: TLeaveTypeListItemProps) => {
   const [editingDays, setEditingDays] = useState(false);
   const [daysValue, setDaysValue] = useState(String(leaveType.default_days_per_year));
@@ -158,6 +161,16 @@ const LeaveTypeListItem = ({
                   ? arabicSource("common.annual")
                   : "—"}
             </span>
+          </div>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-muted-foreground text-xs">
+              {arabicSource("settings.balance_at_year_end_label")}
+            </span>
+            <LeaveTypeResetPolicyControl
+              leaveType={leaveType}
+              canManage={canManage}
+              onChange={onUpdateResetPolicy}
+            />
           </div>
         </div>
       </div>

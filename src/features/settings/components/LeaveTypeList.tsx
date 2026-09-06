@@ -1,5 +1,5 @@
 import { arabicSource } from "@/i18n/source";
-import type { DbLeaveType } from "@/shared/hooks";
+import type { DbLeaveType, LeaveBalanceResetPolicy } from "@/shared/hooks";
 import LeaveTypeListItem from "./LeaveTypeListItem";
 
 type TLeaveTypeListProps = {
@@ -8,6 +8,7 @@ type TLeaveTypeListProps = {
   onToggleActive: (leaveType: DbLeaveType) => void;
   onDelete: (leaveTypeId: string) => void;
   onUpdateDays: (leaveTypeId: string, defaultDaysPerYear: number) => void;
+  onUpdateResetPolicy: (leaveTypeId: string, policy: LeaveBalanceResetPolicy) => void;
 };
 
 const LeaveTypeList = ({
@@ -16,6 +17,7 @@ const LeaveTypeList = ({
   onToggleActive,
   onDelete,
   onUpdateDays,
+  onUpdateResetPolicy,
 }: TLeaveTypeListProps) => {
   if (loading) {
     return (
@@ -40,6 +42,7 @@ const LeaveTypeList = ({
           onToggleActive={onToggleActive}
           onDelete={onDelete}
           onUpdateDays={onUpdateDays}
+          onUpdateResetPolicy={onUpdateResetPolicy}
         />
       ))}
     </div>

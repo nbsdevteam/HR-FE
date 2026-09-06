@@ -7,6 +7,9 @@ import type { DbLeaveExcuse } from "./leaveExcuseTypes";
 
 // ——— Phase 3: Leave Management Types ———
 
+/** The two year-end balance behaviours `/api/hr/leave/types/*` accepts (backend v1.21.0). */
+export type LeaveBalanceResetPolicy = "accumulate" | "reset_yearly";
+
 export interface DbLeaveType {
   id: string;
   name_ar: string;
@@ -23,6 +26,13 @@ export interface DbLeaveType {
   min_service_months: number;
   /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
   excuse_on_insufficient_balance: boolean;
+  /**
+   * What happens to an unused balance when the leave year ends (backend
+   * v1.21.0): `"accumulate"` carries it forward, `"reset_yearly"` starts the
+   * balance again each leave year. Defaults to `"accumulate"` — the behaviour
+   * every leave type had before the setting existed.
+   */
+  balance_reset_policy: LeaveBalanceResetPolicy;
   is_carryover_allowed: boolean;
   max_carryover_days: number;
   is_encashable: boolean;

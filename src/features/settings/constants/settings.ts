@@ -1,6 +1,7 @@
 import { formatMonthYear, type MonthFormat } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import type {
+  LeaveBalanceResetPolicy,
   NewContractTypeForm,
   NewDocTypeForm,
   NewHolidayForm,
@@ -103,6 +104,9 @@ export const INITIAL_NEW_LEAVE_TYPE: NewLeaveTypeForm = {
   max_days_per_request: 0,
   excuse_on_insufficient_balance: false,
 
+  // The backend's own default. Every leave type has always carried its
+  // balance forward, so a new type keeps doing that unless HR says otherwise.
+  balance_reset_policy: "accumulate",
   is_carryover_allowed: false,
   max_carryover_days: 0,
   is_encashable: false,
@@ -184,4 +188,17 @@ export const GENDER_RESTRICTION_OPTIONS = [
   { value: "", label: arabicSource("settings.no_gender_restriction") },
   { value: "male", label: arabicSource("common.male") },
   { value: "female", label: arabicSource("common.female") },
+];
+
+/**
+ * What happens to an unused leave balance at the end of a leave year. The
+ * values are the two the backend's `balance_reset_policy` accepts; the labels
+ * say what an admin gets, not how it is implemented.
+ */
+export const BALANCE_RESET_POLICY_OPTIONS: {
+  value: LeaveBalanceResetPolicy;
+  label: string;
+}[] = [
+  { value: "accumulate", label: arabicSource("settings.balance_accumulate_across_years") },
+  { value: "reset_yearly", label: arabicSource("settings.balance_reset_every_year") },
 ];

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { type DbLeaveType, useOdooMutation } from "@/shared/hooks";
+import { type DbLeaveType, type LeaveBalanceResetPolicy, useOdooMutation } from "@/shared/hooks";
 import { INITIAL_NEW_LEAVE_TYPE } from "../constants/settings";
 import type { NewLeaveTypeForm } from "../types";
 
@@ -70,6 +70,23 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     }
   }, [refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
 
+  // The year-end balance policy has to stay changeable AFTER a type exists —
+  // it is the setting the client is expected to flip when their leave policy
+  // changes, so it cannot be create-time only. The backend re-stamps the
+  // affected allocations on write, hence the refetch: the balances the rest of
+  // Settings shows have already moved by the time this resolves.
+  const updateLeaveTypeResetPolicy = useCallback(async (leaveTypeId: string, policy: LeaveBalanceResetPolicy) => {
+    try {
+      await updateLeaveTypeMutation.mutateAsync({
+        leaveTypeId,
+        patch: { balance_reset_policy: policy },
+      });
+      await refetchLeaveTypes();
+    } catch (e: any) {
+      showToast(e?.message || "Failed to update leave type");
+    }
+  }, [refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
+
   const deleteLeaveTypeEntry = useCallback(async (leaveTypeId: string) => {
     try {
       await deleteLeaveTypeMutation.mutateAsync(leaveTypeId);
@@ -83,5 +100,6 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     showNewLeaveTypeForm, setShowNewLeaveTypeForm,
     newLeaveType, updateNewLeaveType,
     createLeaveType, toggleLeaveTypeActive, deleteLeaveTypeEntry, updateLeaveTypeDays,
+    updateLeaveTypeResetPolicy,
   };
 };

@@ -5,6 +5,7 @@
  */
 import * as odooData from "@/shared/api/odooData";
 import { useCachedList } from "./core";
+import type { LeaveBalanceResetPolicy } from "./leave";
 
 /** Probation envelope shared by `/leave/balances` and `/leave/accruals` (backend §3). */
 export interface DbLeaveProbationInfo {
@@ -46,6 +47,14 @@ export interface DbLeaveBalanceItem {
   used: number;
   blocked_by_probation: boolean;
   can_apply: boolean;
+  /** Year-end balance policy of this leave type (backend v1.21.0). */
+  balance_reset_policy: LeaveBalanceResetPolicy;
+  /** `true` when this balance starts again at the next leave year. */
+  balance_resets_yearly: boolean;
+  /** First day of the current leave year, `YYYY-MM-DD`. `null` on an older backend. */
+  leave_year_start: string | null;
+  /** Last day of the current leave year — the day the balance resets on when `balance_resets_yearly`. */
+  leave_year_end: string | null;
 }
 
 export interface DbLeaveBalanceSummary extends DbLeaveProbationInfo {

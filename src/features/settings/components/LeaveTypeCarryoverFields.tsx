@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { InputField } from "@/shared/components";
+import { InputField, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { inputCls } from "../styles";
-import type { NewLeaveTypeForm } from "../types";
+import { BALANCE_RESET_POLICY_OPTIONS } from "../constants/settings";
+import type { LeaveBalanceResetPolicy, NewLeaveTypeForm } from "../types";
 import type { LeaveTypeFormErrors } from "../hooks/useLeaveTypeFormValidation";
 
 type TLeaveTypeCarryoverFieldsProps = {
@@ -12,6 +13,13 @@ type TLeaveTypeCarryoverFieldsProps = {
 };
 
 const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCarryoverFieldsProps) => {
+  const handleBalanceResetPolicyChange = useCallback(
+    (value: string): void => {
+      onFieldChange({ balance_reset_policy: value as LeaveBalanceResetPolicy });
+    },
+    [onFieldChange],
+  );
+
   const handleCarryoverAllowedChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
       onFieldChange({ is_carryover_allowed: e.target.checked });
@@ -43,6 +51,20 @@ const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCar
   return (
     <div className="p-3 rounded-lg bg-muted/10 border border-border/20 space-y-3">
       <h4 className="text-muted-foreground text-xs">{arabicSource("settings.advanced_section_carryover_encashment")}</h4>
+
+      <div>
+        <Select
+          label={arabicSource("settings.balance_at_year_end_label")}
+          labelClassName="text-foreground text-xs block mb-1.5"
+          value={form.balance_reset_policy}
+          onChange={handleBalanceResetPolicyChange}
+          options={BALANCE_RESET_POLICY_OPTIONS}
+          className="h-9 px-3 w-full sm:w-80"
+        />
+        <p className="text-muted-foreground/70 text-xs mt-1">
+          {arabicSource("settings.balance_at_year_end_hint")}
+        </p>
+      </div>
 
       <div className="flex flex-wrap items-center gap-4">
         <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">

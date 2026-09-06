@@ -1,3 +1,7 @@
+import type { LeaveBalanceResetPolicy } from "@/shared/hooks";
+
+export type { LeaveBalanceResetPolicy };
+
 export interface ShiftDaySchedule {
   is_working: boolean;
   start: string;
@@ -51,6 +55,11 @@ export interface NewLeaveTypeForm {
   excuse_on_insufficient_balance: boolean;
 
   // advanced: Carryover / Encashment
+  /**
+   * What happens to an unused balance when the leave year ends:
+   * `"accumulate"` carries it forward, `"reset_yearly"` starts it again.
+   */
+  balance_reset_policy: LeaveBalanceResetPolicy;
   is_carryover_allowed: boolean;
   max_carryover_days: number;
   is_encashable: boolean;
