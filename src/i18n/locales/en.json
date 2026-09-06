@@ -1150,6 +1150,7 @@
   "login.log_in_to_your_account": "Log in to your account",
   "login.account_created_successfully_you_can_now_log_in": "Account created successfully! You can now log in.",
   "login.password": "Password",
+  "login.username": "Username",
   "login.already_have_an_account_login": "Already have an account? Login",
   "login.don_t_have_an_account_create_a_new_account": "Don't have an account? Create a new account",
   "login.human_resources_management_system": "Human resources management system",

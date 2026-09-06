@@ -1150,6 +1150,7 @@
   "login.log_in_to_your_account": "چوونە ژوورەوە بۆ ئەکاونتەکەت",
   "login.account_created_successfully_you_can_now_log_in": "ئەکاونت بە سەرکەوتوویی دروستکرا! ئێستا دەتوانیت بچیتە ژوورەوە.",
   "login.password": "وشەی نهێنی",
+  "login.username": "ناوی بەکارهێنەر",
   "login.already_have_an_account_login": "پێشتر ئەکاونتت هەیە؟ چوونەژوورەوە",
   "login.don_t_have_an_account_create_a_new_account": "ئەکاونتت نییە؟ ئەکاونتێکی نوێ دروست بکە",
   "login.human_resources_management_system": "سیستەمی بەڕێوەبردنی سەرچاوە مرۆییەکان",

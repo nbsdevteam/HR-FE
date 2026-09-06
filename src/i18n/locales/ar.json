@@ -1150,6 +1150,7 @@
   "login.log_in_to_your_account": "تسجيل الدخول إلى حسابك",
   "login.account_created_successfully_you_can_now_log_in": "تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.",
   "login.password": "كلمة المرور",
+  "login.username": "اسم المستخدم",
   "login.already_have_an_account_login": "لديك حساب بالفعل؟ تسجيل الدخول",
   "login.don_t_have_an_account_create_a_new_account": "ليس لديك حساب؟ إنشاء حساب جديد",
   "login.human_resources_management_system": "نظام إدارة الموارد البشرية",

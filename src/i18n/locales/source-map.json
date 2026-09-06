@@ -14,6 +14,7 @@
   "إزالة الموظف نهائياً من جهاز البصمة": "shared.permanently_remove_the_employee_from_the_fingerprint_device",
   "إزالة صورة الوجه": "shared.remove_face_image",
   "اسم الغرض *": "shared.purpose_name",
+  "اسم المستخدم": "login.username",
   "اسم المستند *": "shared.document_name",
   "إضافة": "common.addition",
   "إضافة ذمة جديدة": "shared.add_a_new_liability",
