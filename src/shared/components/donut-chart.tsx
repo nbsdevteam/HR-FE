@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { arabicSource } from "@/i18n/source";
+import { isolateLtr } from "@/shared/utils/bidi";
 import ChartDonutCenterLabel from "./charts/ChartDonutCenterLabel";
 import ChartDonutSegment from "./charts/ChartDonutSegment";
 import ChartLegendItem from "./charts/ChartLegendItem";
@@ -98,7 +99,7 @@ const DonutChart = ({ data, size = 200, innerRadius = 60, outerRadius = 95 }: Do
           <ChartLegendItem
             key={item.name}
             color={item.color}
-            label={`${item.name} (${item.value})`}
+            label={`${item.name} ${isolateLtr(`(${item.value})`)}`}
             swatchClassName="w-2.5 h-2.5 rounded-sm shrink-0"
             fontSize={12}
           />

@@ -12,6 +12,7 @@ import {
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { isolateLtr } from "@/shared/utils/bidi";
 import { hasIr } from "../utils/recruitmentRanking";
 import { aiScreeningStatFields } from "../data";
 import { ODOO_TO_STAGE } from "../constants/recruitment";
@@ -83,8 +84,8 @@ const AiScreeningView = ({
     try {
       const result = await bulkScreenMutation.mutateAsync();
       const message = result.skipped
-        ? `${arabicSource("recruitment.queued_for_screening")} (${result.queued}) — ${arabicSource("recruitment.skipped_for_screening")} (${result.skipped})`
-        : `${arabicSource("recruitment.queued_for_screening")} (${result.queued})`;
+        ? `${arabicSource("recruitment.queued_for_screening")} ${isolateLtr(`(${result.queued})`)} — ${arabicSource("recruitment.skipped_for_screening")} ${isolateLtr(`(${result.skipped})`)}`
+        : `${arabicSource("recruitment.queued_for_screening")} ${isolateLtr(`(${result.queued})`)}`;
       localizedAlert(message);
       await refetch();
     } catch (e: any) {
