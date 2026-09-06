@@ -213,7 +213,12 @@ export const useLeavePolicies = () => {
   return { policies, loading, refetch };
 }
 
-/** A new/updated request can land mid-session, so this stays short-lived and refetches on tab focus. */
+/**
+ * A new/updated request can land mid-session, so this stays short-lived and
+ * refetches on tab focus. `preserveOnRefetch` keeps the previous results on
+ * screen while a search/filter change is in flight, instead of clearing the
+ * list to empty on every keystroke.
+ */
 export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string; search?: string }) => {
   const { data: requests, loading, refetch } = useCachedList(
     "leaveRequests",
@@ -221,7 +226,7 @@ export const useLeaveRequests = (filters?: { employeeId?: string; status?: strin
     "Failed to load leave requests",
     [filters?.employeeId, filters?.status, filters?.month, filters?.search],
     true,
-    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true, preserveOnRefetch: true },
   );
   return { requests, loading, refetch };
 }

@@ -1,5 +1,5 @@
 import { useId, useCallback, type DependencyList } from "react";
-import { useQuery, type QueryKey } from "@tanstack/react-query";
+import { useQuery, keepPreviousData, type QueryKey } from "@tanstack/react-query";
 import { DEFAULT_QUERY_STALE_TIME_MS } from "@/shared/api/queryClient";
 
 type AsyncListOptions = {
@@ -23,6 +23,14 @@ type AsyncListOptions = {
    * pair with `ttlMs: 0` so every mount/focus is treated as stale.
    */
   refetchOnWindowFocus?: boolean;
+  /**
+   * Keep rendering the previous deps' data (and treat the list as not
+   * "loading") while a new `deps` key is in flight, instead of clearing to
+   * empty and flashing a full loading state. Use for lists whose deps change
+   * from live user input — a search box or filter chip — where every
+   * keystroke would otherwise look like a fresh page load.
+   */
+  preserveOnRefetch?: boolean;
 };
 
 // Stable reference for the "no data yet" case — a fresh `[]` on every render
@@ -54,6 +62,7 @@ export const useAsyncList = <T,>(
     ttlMs = DEFAULT_QUERY_STALE_TIME_MS,
     enabled = true,
     refetchOnWindowFocus = false,
+    preserveOnRefetch = false,
   } = options;
 
   // No cacheKey means "opt out of sharing" — give every hook instance its own
@@ -70,6 +79,7 @@ export const useAsyncList = <T,>(
     refetchOnMount: cacheKey ? true : "always",
     refetchOnWindowFocus,
     refetchInterval: pollMs,
+    placeholderData: preserveOnRefetch ? keepPreviousData : undefined,
   });
 
   const refetch = useCallback(async () => {
@@ -78,7 +88,10 @@ export const useAsyncList = <T,>(
 
   return {
     data: query.data ?? (EMPTY_LIST as T[]),
-    loading: query.isFetching,
+    // With `preserveOnRefetch`, a new deps key keeps the previous data as a
+    // placeholder, so `isPending` (and therefore `isLoading`) stays false —
+    // only a genuine first load (no data for any key yet) reports loading.
+    loading: preserveOnRefetch ? query.isLoading : query.isFetching,
     error: query.error ? query.error.message || errorFallback : null,
     refetch,
   };

@@ -16,7 +16,7 @@ export const useCachedList = <T,>(
   errorFallback = "Failed to load data",
   deps: DependencyList = [],
   enabled = true,
-  queryOptions?: { ttlMs?: number; refetchOnWindowFocus?: boolean },
+  queryOptions?: { ttlMs?: number; refetchOnWindowFocus?: boolean; preserveOnRefetch?: boolean },
 ) => {
   const { data, loading, error, refetch } = useAsyncList(fetcher, deps, errorFallback, undefined, {
     cacheKey,
