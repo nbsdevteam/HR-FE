@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { Button, Modal } from "@/shared/components";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { DEPARTMENTS } from "@/shared/constants";
 import { JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO } from "../constants/recruitment";
 import JobFormFieldsSection from "./JobFormFieldsSection";
 import JobScreeningSpecFields from "./JobScreeningSpecFields";
@@ -49,37 +50,46 @@ const JobFormModal = ({
     editingJob?.nice_to_have_skills || [],
   );
   const { departments: odooDepartments } = useDepartments();
-  const saveJobMutation = useOdooMutation<unknown, void>(
-    () => {
-      const reqs = form.requirements
-        .split("\n")
-        .map((r) => r.trim())
-        .filter(Boolean);
+  const saveJobMutation = useOdooMutation<unknown, void>(() => {
+    const reqs = form.requirements
+      .split("\n")
+      .map((r) => r.trim())
+      .filter(Boolean);
 
-      const dept = odooDepartments.find((d) => d.name === form.department);
-      const payload = {
-        title: form.title,
-        department_id: dept?.id || undefined,
-        location: form.location,
-        job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
-        status: JOB_STATUS_TO_ODOO[form.status] || "open",
-        deadline: form.deadline || null,
-        description: form.description || null,
-        salary_range: form.salary_range || null,
-        requirements: reqs.length > 0 ? reqs : [],
-        required_skills: requiredSkills,
-        nice_to_have_skills: niceToHave,
-        min_experience_years: form.min_experience_years,
-        max_experience_years: form.max_experience_years,
-        education_level: form.education_level,
-        ir_auto_shortlist: form.ir_auto_shortlist,
-      };
-      return editingJob
-        ? odooData.updateJobOpening(editingJob.id, payload)
-        : odooData.createJobOpening(payload);
-    },
-    "jobOpenings",
-  );
+    const dept = odooDepartments.find((d) => d.name === form.department);
+    const payload = {
+      title: form.title,
+      department_id: dept?.id || undefined,
+      location: form.location,
+      job_type: JOB_TYPE_TO_ODOO[form.type] || "full_time",
+      status: JOB_STATUS_TO_ODOO[form.status] || "open",
+      deadline: form.deadline || null,
+      description: form.description || null,
+      salary_range: form.salary_range || null,
+      requirements: reqs.length > 0 ? reqs : [],
+      required_skills: requiredSkills,
+      nice_to_have_skills: niceToHave,
+      min_experience_years: form.min_experience_years,
+      max_experience_years: form.max_experience_years,
+      education_level: form.education_level,
+      ir_auto_shortlist: form.ir_auto_shortlist,
+    };
+    return editingJob
+      ? odooData.updateJobOpening(editingJob.id, payload)
+      : odooData.createJobOpening(payload);
+  }, "jobOpenings");
+
+  // Odoo department names aren't guaranteed to match the static translated
+  // list (some departments have no Arabic name set), so the Select's options
+  // must include whatever the backend actually returns for this job.
+  const departmentOptions = useMemo(() => {
+    const names = new Set<string>([
+      ...DEPARTMENTS,
+      ...odooDepartments.map((d) => d.name),
+    ]);
+    if (form.department) names.add(form.department);
+    return Array.from(names);
+  }, [odooDepartments, form.department]);
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!form.title.trim()) return;
@@ -132,54 +142,55 @@ const JobFormModal = ({
       }
       bodyClassName="space-y-4"
     >
-        <JobFormFieldsSection
-          title={form.title}
-          department={form.department}
-          location={form.location}
-          type={form.type}
-          deadline={form.deadline}
-          status={form.status}
-          salaryRange={form.salary_range}
-          requirements={form.requirements}
-          description={form.description}
-          onFieldChange={handleFieldChange}
-        />
+      <JobFormFieldsSection
+        title={form.title}
+        department={form.department}
+        departmentOptions={departmentOptions}
+        location={form.location}
+        type={form.type}
+        deadline={form.deadline}
+        status={form.status}
+        salaryRange={form.salary_range}
+        requirements={form.requirements}
+        description={form.description}
+        onFieldChange={handleFieldChange}
+      />
 
-        <JobScreeningSpecFields
-          requiredSkills={requiredSkills}
-          niceToHave={niceToHave}
-          minExperienceYears={form.min_experience_years}
-          maxExperienceYears={form.max_experience_years}
-          educationLevel={form.education_level}
-          irAutoShortlist={form.ir_auto_shortlist}
-          onRequiredSkillsChange={setRequiredSkills}
-          onNiceToHaveChange={setNiceToHave}
-          onMinExperienceYearsChange={handleMinExperienceYearsChange}
-          onMaxExperienceYearsChange={handleMaxExperienceYearsChange}
-          onEducationLevelChange={handleEducationLevelChange}
-          onIrAutoShortlistChange={handleIrAutoShortlistChange}
-        />
+      <JobScreeningSpecFields
+        requiredSkills={requiredSkills}
+        niceToHave={niceToHave}
+        minExperienceYears={form.min_experience_years}
+        maxExperienceYears={form.max_experience_years}
+        educationLevel={form.education_level}
+        irAutoShortlist={form.ir_auto_shortlist}
+        onRequiredSkillsChange={setRequiredSkills}
+        onNiceToHaveChange={setNiceToHave}
+        onMinExperienceYearsChange={handleMinExperienceYearsChange}
+        onMaxExperienceYearsChange={handleMaxExperienceYearsChange}
+        onEducationLevelChange={handleEducationLevelChange}
+        onIrAutoShortlistChange={handleIrAutoShortlistChange}
+      />
 
-        <div className="flex gap-3 pt-2">
-          <Button
-            onClick={handleSave}
-            disabled={saveJobMutation.isPending || !form.title.trim()}
-            className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
-          >
-            {saveJobMutation.isPending
-              ? arabicSource("common.saving")
-              : isEdit
-                ? arabicSource("common.save")
-                : arabicSource("recruitment.job_posting")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-11 cursor-pointer"
-          >
-            {arabicSource("common.cancel")}
-          </Button>
-        </div>
+      <div className="flex gap-3 pt-2">
+        <Button
+          onClick={handleSave}
+          disabled={saveJobMutation.isPending || !form.title.trim()}
+          className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
+        >
+          {saveJobMutation.isPending
+            ? arabicSource("common.saving")
+            : isEdit
+              ? arabicSource("common.save")
+              : arabicSource("recruitment.job_posting")}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="flex-1 h-11 cursor-pointer"
+        >
+          {arabicSource("common.cancel")}
+        </Button>
+      </div>
     </Modal>
   );
 };
