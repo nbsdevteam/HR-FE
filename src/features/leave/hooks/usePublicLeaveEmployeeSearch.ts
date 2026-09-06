@@ -6,8 +6,6 @@ import { searchPublicLeaveEmployees } from "../api/publicLeaveApi";
 import { publicLeaveErrorMessage } from "../utils/publicLeaveErrorMessage";
 import type { PublicLeaveEmployeeSearchResponse, PublicLeaveEmployeeSearchResult } from "../types/publicLeave";
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 /**
  * Search-as-you-type + selection, shared by the "file a request" flow and the
  * "track my request" flow (backend hand-off §3) — each screen owns its own
@@ -25,7 +23,7 @@ export const usePublicLeaveEmployeeSearch = (token: string, minSearchChars: numb
   // has actually caught up to the latest keystrokes.
   const trimmed = query.trim();
   const tooShort = trimmed.length < minSearchChars;
-  const debouncedQuery = useDebouncedValue(trimmed, SEARCH_DEBOUNCE_MS);
+  const debouncedQuery = useDebouncedValue(trimmed);
   const debouncedTooShort = debouncedQuery.length < minSearchChars;
 
   const searchQuery = useQuery<PublicLeaveEmployeeSearchResponse, Error>({

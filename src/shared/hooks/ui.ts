@@ -134,7 +134,7 @@ export const usePopupPosition = (
  * character. The first value is returned immediately, so an initial render
  * never waits out the delay before it can fetch.
  */
-export const useDebouncedValue = <T,>(value: T, delayMs = 300): T => {
+export const useDebouncedValue = <T,>(value: T, delayMs = 500): T => {
   const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
