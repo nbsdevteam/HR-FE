@@ -60,10 +60,10 @@ const EmployeesFilters = ({
           style={{ height: 38 }}
         />
       </div>
-      <label className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer">
+      {/* <label className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer">
         <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} />
         {arabicSource("employees.include_archived_label")}
-      </label>
+      </label> */}
     </div>
   );
 };
