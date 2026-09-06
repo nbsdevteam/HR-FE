@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import type { DbDepartment } from "@/shared/hooks";
+import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { PositionFilter, PositionNode } from "../types";
 import {
   countPositionRows,
@@ -24,6 +25,7 @@ export const usePositionFilters = ({ positionTree, departmentsById, deptColors }
   const [posSearch, setPosSearch] = useState("");
   const [filter, setFilter] = useState<PositionFilter>("all");
   const [collapsedDepartments, setCollapsedDepartments] = useState<Record<string, boolean>>({});
+  const isArabic = useIsArabicLanguage();
 
   const allRows = useMemo(() => flattenPositionRows(positionTree), [positionTree]);
 
@@ -40,8 +42,9 @@ export const usePositionFilters = ({ positionTree, departmentsById, deptColors }
         searchedRows.filter((row) => matchesPositionFilter(row, filter)),
         departmentsById,
         deptColors,
+        isArabic,
       ),
-    [searchedRows, filter, departmentsById, deptColors],
+    [searchedRows, filter, departmentsById, deptColors, isArabic],
   );
 
   const toggleDepartment = useCallback((departmentId: string): void => {

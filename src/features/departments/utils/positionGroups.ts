@@ -1,6 +1,7 @@
 import type { DbDepartment } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { localizedName } from "@/i18n/useLocalizedName";
 import type {
   PositionDepartmentGroup,
   PositionFillState,
@@ -98,6 +99,7 @@ export const groupPositionRows = (
   rows: PositionRow[],
   departmentsById: Map<string, DbDepartment>,
   deptColors: Record<string, string>,
+  isArabic: boolean,
 ): PositionDepartmentGroup[] => {
   const groups = new Map<string, PositionDepartmentGroup>();
 
@@ -111,7 +113,9 @@ export const groupPositionRows = (
     if (!group) {
       group = {
         id,
-        name: department?.name || arabicSource("common.no_section"),
+        name: department
+          ? localizedName(department.name_ar || department.name, department.name_en, isArabic)
+          : arabicSource("common.no_section"),
         color: department
           ? deptColors[department.name] || department.color || FALLBACK_DEPT_COLOR
           : FALLBACK_DEPT_COLOR,
