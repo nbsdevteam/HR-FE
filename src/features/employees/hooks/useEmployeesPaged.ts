@@ -35,8 +35,24 @@ type UseEmployeesPagedParams = {
 export const useEmployeesPaged = ({ search, departmentId, includeArchived = false, enabled = true }: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
+  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived });
 
   const debouncedSearch = useDebouncedValue(search);
+
+  // Reset to page 1 the moment a filter actually changes — computed inline
+  // during render rather than in a `useEffect`. An effect runs after the query
+  // key already picked up the new filters at the *old* page number, firing one
+  // fetch, then corrects the page and fires a second; adjusting state during
+  // render (React's documented pattern for this) lands both changes in the
+  // same pass, so the query key only ever transitions once per filter change.
+  if (
+    appliedFilters.search !== debouncedSearch ||
+    appliedFilters.departmentId !== departmentId ||
+    appliedFilters.includeArchived !== includeArchived
+  ) {
+    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived });
+    if (page !== 1) setPage(1);
+  }
 
   // `keepPreviousData` shows the last page's rows while the next one loads
   // instead of flashing empty, and the query key alone (rather than a manual
@@ -65,12 +81,6 @@ export const useEmployeesPaged = ({ search, departmentId, includeArchived = fals
   const refetch = useCallback((): void => {
     void query.refetch();
   }, [query.refetch]);
-
-  // Any filter change invalidates the current page number — page 7 of the old
-  // result set is usually past the end of the new one.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, departmentId, includeArchived]);
 
   // A deletion can empty the last page; step back rather than stranding the
   // user on a page that will always render zero rows.
