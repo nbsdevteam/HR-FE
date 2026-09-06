@@ -1392,6 +1392,8 @@
   "recruitment.are_you_sure_you_want_to_delete_this_applicant": "هل أنت متأكد من حذف هذا المتقدم؟",
   "recruitment.are_you_sure_you_want_to_delete_this_vacancy": "هل أنت متأكد من حذف هذه الوظيفة؟",
   "recruitment.do_you_want_to_convert": "هل تريد تحويل \"",
+  "recruitment.applicant_moved_toast_prefix": "تم نقل",
+  "recruitment.applicant_moved_toast_to_stage": "إلى مرحلة",
   "recruitment.job_description": "وصف الوظيفة...",
   "recruitment.vacancies_2": "وظائف شاغرة",
   "common.new_vacancy": "وظيفة شاغرة جديدة",

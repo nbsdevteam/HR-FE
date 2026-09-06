@@ -3,9 +3,10 @@ import { AnimatePresence } from "motion/react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ConfirmDeleteModal } from "@/shared/components";
+import { ConfirmDeleteModal, Toast } from "@/shared/components";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
+import { useToast } from "../hooks/useToast";
 import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
 import RecruitmentHeader from "./RecruitmentHeader";
 import LoadingState from "@/shared/components/LoadingState";
@@ -94,6 +95,8 @@ const RecruitmentWorkspace = () => {
     confirmDeleteApplicant,
   } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant);
 
+  const { toastMessage, showToast } = useToast();
+
   const handleApplicantFormOpen = useCallback(
     () => setShowApplicantForm(true),
     [],
@@ -151,6 +154,19 @@ const RecruitmentWorkspace = () => {
 
   return (
     <div className="space-y-6">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          shape="banner"
+          position="top-full"
+          toneClassName="bg-toast-success border border-toast-success-border shadow-lg"
+          textClassName="text-toast-success-fg font-medium"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+        />
+      )}
+
       <RecruitmentHeader
         viewMode={viewMode}
         onApplicantFormOpen={handleApplicantFormOpen}
@@ -210,6 +226,7 @@ const RecruitmentWorkspace = () => {
             applicants={applicants}
             onSelectApplicant={setSelectedApplicant}
             onUpdateStage={handleUpdateStage}
+            showToast={showToast}
           />
         </Suspense>
       )}

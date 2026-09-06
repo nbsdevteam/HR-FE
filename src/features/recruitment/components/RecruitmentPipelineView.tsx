@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, memo } from "react";
 import type { DbApplicant } from "@/shared/hooks";
 import { groupBy } from "@/shared/utils/collections";
+import { arabicSource } from "@/i18n/source";
 import { STAGES } from "../constants/recruitment";
 import PipelineColumn from "./PipelineColumn";
 
@@ -9,10 +10,16 @@ const EMPTY_APPLICANTS: DbApplicant[] = [];
 type RecruitmentPipelineViewProps = {
   applicants: DbApplicant[];
   onSelectApplicant: (applicant: DbApplicant) => void;
-  onUpdateStage: (id: string, stage: string) => void;
+  onUpdateStage: (id: string, stage: string) => Promise<void>;
+  showToast: (message: string) => void;
 };
 
-const RecruitmentPipelineView = ({ applicants, onSelectApplicant, onUpdateStage }: RecruitmentPipelineViewProps) => {
+const RecruitmentPipelineView = ({
+  applicants,
+  onSelectApplicant,
+  onUpdateStage,
+  showToast,
+}: RecruitmentPipelineViewProps) => {
   const [draggingApplicantId, setDraggingApplicantId] = useState<string | null>(null);
 
   const applicantsByStage = useMemo(
@@ -25,10 +32,18 @@ const RecruitmentPipelineView = ({ applicants, onSelectApplicant, onUpdateStage 
   }, []);
 
   const handleDropApplicant = useCallback(
-    (applicantId: string, stage: string): void => {
-      onUpdateStage(applicantId, stage);
+    async (applicantId: string, stage: string): Promise<void> => {
+      const applicant = applicants.find((a) => a.id === applicantId);
+      try {
+        await onUpdateStage(applicantId, stage);
+        showToast(
+          `${arabicSource("recruitment.applicant_moved_toast_prefix")} ${applicant?.name || ""} ${arabicSource("recruitment.applicant_moved_toast_to_stage")} ${stage}`,
+        );
+      } catch {
+        showToast(arabicSource("common.error"));
+      }
     },
-    [onUpdateStage],
+    [applicants, onUpdateStage, showToast],
   );
 
   return (
