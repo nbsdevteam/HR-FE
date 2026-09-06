@@ -22,7 +22,11 @@ export const useHierarchyPage = () => {
   const treeData = useHierarchyTreeData();
   const panZoom = useHierarchyPanZoom();
   const view = useHierarchyView();
-  const structureView = useStructureView({ containerRef: panZoom.containerRef });
+  const { chartContentRef, handlePrint, handleExportPNG } = useHierarchyExport();
+  // `chartContentRef` spans the whole structure section (summary tiles, diagram,
+  // orphans), unlike `panZoom.containerRef` which is scoped to just the pan/zoom
+  // diagram viewport — search results can land outside that narrower scope.
+  const structureView = useStructureView({ containerRef: chartContentRef });
   const modals = useHierarchyModals();
   const positionForm = useAddPositionForm({
     refetchPositions: treeData.refetchPositions,
@@ -49,8 +53,6 @@ export const useHierarchyPage = () => {
     modals.setShowSetupModal,
     modals.setShowCleanupModal,
   );
-  const { chartContentRef, handlePrint, handleExportPNG } =
-    useHierarchyExport();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 

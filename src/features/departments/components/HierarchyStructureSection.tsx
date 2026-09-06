@@ -122,22 +122,23 @@ const HierarchyStructureSection = ({
         )}
       </AnimatePresence>
 
-      <div ref={containerRef} className={`overflow-auto p-8 ${panEnabled ? (isDragging ? "cursor-grabbing" : "cursor-grab") : ""}`}
-        style={{ maxHeight: "75vh" }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
-        <div style={{ width: "100%", paddingBottom: 40 }}>
-          <div ref={chartContentRef} className="transition-transform duration-200"
-            style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
-            <StructureCardsView
-              tree={tree}
-              loading={loading}
-              error={error}
-              matchedIds={matchedIds}
-              hasActiveFilter={hasActiveFilter}
-              onSelectPosition={onSelectPosition}
-              onSelectEmployee={onSelectEmployee}
-            />
-          </div>
-        </div>
+      <div ref={chartContentRef} className="p-5">
+        <StructureCardsView
+          tree={tree}
+          loading={loading}
+          error={error}
+          matchedIds={matchedIds}
+          hasActiveFilter={hasActiveFilter}
+          onSelectPosition={onSelectPosition}
+          onSelectEmployee={onSelectEmployee}
+          panEnabled={panEnabled}
+          isDragging={isDragging}
+          zoom={zoom}
+          containerRef={containerRef}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+        />
       </div>
     </motion.div>
 
