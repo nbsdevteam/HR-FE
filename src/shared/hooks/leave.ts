@@ -214,12 +214,12 @@ export const useLeavePolicies = () => {
 }
 
 /** A new/updated request can land mid-session, so this stays short-lived and refetches on tab focus. */
-export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
+export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string; search?: string }) => {
   const { data: requests, loading, refetch } = useCachedList(
     "leaveRequests",
     () => odooData.fetchLeaveRequests(filters),
     "Failed to load leave requests",
-    [filters?.employeeId, filters?.status, filters?.month],
+    [filters?.employeeId, filters?.status, filters?.month, filters?.search],
     true,
     { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );

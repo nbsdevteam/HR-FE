@@ -5,6 +5,7 @@ import { isLeavePending, normalizeLeaveStatus } from "@/i18n/status";
 import * as odooData from "@/shared/api/odooData";
 import {
   empDisplayName,
+  useDebouncedValue,
   useLeaveBalances,
   useLeaveEmployeeScope,
   useLeavePermissions,
@@ -37,7 +38,12 @@ export const useLeavePage = () => {
   } = useLeaveEmployeeScope();
   const { types: leaveTypes, loading: typesLoading } = useLeaveTypes();
   const { policies } = useLeavePolicies();
-  const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests();
+  // Debounced so the search box still filters per keystroke without firing a
+  // request for every one of them.
+  const debouncedSearch = useDebouncedValue(search);
+  const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests({
+    search: debouncedSearch,
+  });
   const currentYear = new Date().getFullYear();
   const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(
     currentYear,
@@ -87,18 +93,6 @@ export const useLeavePage = () => {
     if (filter !== arabicSource("common.all")) {
       list = list.filter((request) => normalizeLeaveStatus(request.status) === filter);
     }
-    const normalizedSearch = search.trim().toLowerCase();
-    if (normalizedSearch) {
-      list = list.filter((request) => {
-        const employee = empMap[request.employee_id];
-        const name = employee ? empDisplayName(employee) : "";
-        return (
-          name.toLowerCase().includes(normalizedSearch) ||
-          request.leave_type.toLowerCase().includes(normalizedSearch) ||
-          (request.reason || "").toLowerCase().includes(normalizedSearch)
-        );
-      });
-    }
 
     const dir = leaveSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
@@ -115,7 +109,7 @@ export const useLeavePage = () => {
       return 0;
     });
     return list;
-  }, [empMap, filter, leaveSortBy, leaveSortDir, requests, search]);
+  }, [empMap, filter, leaveSortBy, leaveSortDir, requests]);
 
   // One pass over the request list instead of three full scans.
   const { pendingCount, approvedCount, rejectedCount } = useMemo(() => {
