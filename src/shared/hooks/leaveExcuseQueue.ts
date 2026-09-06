@@ -4,6 +4,7 @@
  * the 300-line limit.
  */
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 import type { DbLeaveExcuse } from "./leaveExcuseTypes";
 
@@ -32,6 +33,9 @@ export interface DbLeaveExcuseQueueItem {
 /**
  * `scope: "team"` — the caller's direct reports only (`hr.leave.team_approve`).
  * `scope: "hr"` — every pending excuse company-wide (`hr.leave.hr_approve`).
+ *
+ * This is a live approval queue — a new excuse can land while a reviewer is
+ * on this screen — so it stays short-lived and refetches on tab focus.
  */
 export const useLeaveExcuseQueue = (scope: LeaveExcuseQueueScope) => {
   const { data: items, loading, refetch } = useCachedList(
@@ -39,6 +43,8 @@ export const useLeaveExcuseQueue = (scope: LeaveExcuseQueueScope) => {
     () => odooData.fetchLeaveExcuseQueue({ scope }),
     "Failed to load excuse requests",
     [scope],
+    true,
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );
   return { items, loading, refetch };
 };

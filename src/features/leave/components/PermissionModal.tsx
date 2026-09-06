@@ -7,6 +7,7 @@ import {
 } from "@/shared/utils/employeeTypeAhead";
 import { InputField, ModalHeader, ModalOverlay, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { localizedEmployeeName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import { leaveInputClass as inputCls } from "../styles";
@@ -25,10 +26,20 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [reason, setReason] = useState("");
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const isArabic = useIsArabicLanguage();
+  const createPermissionMutation = useOdooMutation(
+    (payload: {
+      employee_id: string;
+      date: string;
+      start_time: string;
+      end_time: string;
+      hours: number;
+      reason: string | null;
+    }) => odooData.createLeavePermission(payload),
+    "leavePermissions",
+  );
 
   const hours = useMemo(() => {
     if (!startTime || !endTime) return 0;
@@ -62,11 +73,10 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
       setError(arabicSource("common.please_fill_out_all_required_fields"));
       return;
     }
-    setSaving(true);
     setError("");
 
     try {
-      await odooData.createLeavePermission({
+      await createPermissionMutation.mutateAsync({
         employee_id: employeeId,
         date,
         start_time: startTime,
@@ -74,13 +84,11 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
         hours,
         reason: reason || null,
       });
-      setSaving(false);
       await onSubmit();
     } catch (e: any) {
       setError(e?.message || "فشل إنشاء الإذن");
-      setSaving(false);
     }
-  }, [date, employeeId, endTime, hours, onSubmit, reason, startTime]);
+  }, [createPermissionMutation, date, employeeId, endTime, hours, onSubmit, reason, startTime]);
 
   return (
     <ModalOverlay
@@ -142,7 +150,7 @@ const PermissionModal = ({ employees, onClose, onSubmit }: PermissionModalProps)
 
           <LeaveModalActions
             submitLabel={arabicSource("leave.send")}
-            saving={saving}
+            saving={createPermissionMutation.isPending}
             onSubmit={handleSubmit}
             onClose={onClose}
           />

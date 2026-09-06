@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { ModalHeader, ModalOverlay } from "@/shared/components";
-import { empDisplayName } from "@/shared/hooks";
+import { empDisplayName, useOdooMutation } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { employeeStatusKeys } from "@/i18n/status";
@@ -51,6 +51,11 @@ const NewEvalPanel = ({
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(1); // 1=select employee, 2=score criteria
 
+  const createEvaluationMutation = useOdooMutation<unknown, Record<string, unknown>>(
+    (payload) => odooData.createEvaluation(payload),
+    "evaluations",
+  );
+
   const activeEmployees = useMemo(
     () => employees.filter(e => isActiveEmployeeStatus(e.status)),
     [employees],
@@ -80,7 +85,7 @@ const NewEvalPanel = ({
     if (!selectedEmpId || !period) return;
     setSaving(true);
     try {
-      await odooData.createEvaluation({
+      await createEvaluationMutation.mutateAsync({
         employee_id: selectedEmpId,
         evaluator_id: evaluatorId || null,
         period,
@@ -97,7 +102,7 @@ const NewEvalPanel = ({
     }
     setSaving(false);
     onCreated();
-  }, [selectedEmpId, period, evaluatorId, overallRating, comments, scores, onCreated]);
+  }, [selectedEmpId, period, evaluatorId, overallRating, comments, scores, onCreated, createEvaluationMutation]);
 
   const handleCycleChange = useCallback((next: EvalCycleType) => {
     setCycle(next);

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { reportConfigErrorMessage } from "../utils/reportConfigErrorMessage";
@@ -11,10 +12,26 @@ type UseReportConfigDeleteRestoreArgs = {
   setToast: (message: string | null) => void;
 };
 
-/** Archive/hard-delete/restore actions for the report-configuration admin screen (backend §2.6/§2.7). */
+type DeleteTemplateVariables = { id: string; hard: boolean };
+
+/**
+ * Archive/hard-delete/restore actions for the report-configuration admin
+ * screen (backend §2.6/§2.7).
+ *
+ * `refetch` here refreshes the admin screen's own (non-cached) filtered
+ * list (`useReportConfigList`), which the shared `reportTemplates` cache
+ * invalidation below does not reach — it still has to be called explicitly
+ * after each mutation.
+ */
 export const useReportConfigDeleteRestore = ({ refetch, setToast }: UseReportConfigDeleteRestoreArgs) => {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [working, setWorking] = useState(false);
+
+  const deleteTemplateMutation = useOdooMutation(
+    ({ id, hard }: DeleteTemplateVariables) => odooData.deleteReportTemplate(id, { hard }),
+    "reportTemplates",
+  );
+  const restoreTemplateMutation = useOdooMutation(odooData.restoreReportTemplate, "reportTemplates");
 
   const requestArchive = useCallback((template: DbReportTemplate) => {
     setPendingAction({ template, mode: "archive" });
@@ -32,7 +49,8 @@ export const useReportConfigDeleteRestore = ({ refetch, setToast }: UseReportCon
     if (!pendingAction) return;
     setWorking(true);
     try {
-      const result = await odooData.deleteReportTemplate(pendingAction.template.id, {
+      const result = await deleteTemplateMutation.mutateAsync({
+        id: pendingAction.template.id,
         hard: pendingAction.mode === "hardDelete",
       });
       if (pendingAction.mode === "hardDelete") {
@@ -47,12 +65,12 @@ export const useReportConfigDeleteRestore = ({ refetch, setToast }: UseReportCon
     } finally {
       setWorking(false);
     }
-  }, [pendingAction, refetch, setToast]);
+  }, [pendingAction, deleteTemplateMutation.mutateAsync, refetch, setToast]);
 
   const restoreTemplate = useCallback(async (template: DbReportTemplate) => {
     setWorking(true);
     try {
-      await odooData.restoreReportTemplate(template.id);
+      await restoreTemplateMutation.mutateAsync(template.id);
       setToast(arabicSource("reports.restore_success"));
       await refetch();
     } catch (err) {
@@ -60,7 +78,7 @@ export const useReportConfigDeleteRestore = ({ refetch, setToast }: UseReportCon
     } finally {
       setWorking(false);
     }
-  }, [refetch, setToast]);
+  }, [restoreTemplateMutation.mutateAsync, refetch, setToast]);
 
   return {
     pendingAction, requestArchive, requestHardDelete, cancelPendingAction, confirmPendingAction,

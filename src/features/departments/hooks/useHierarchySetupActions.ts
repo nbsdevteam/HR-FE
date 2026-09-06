@@ -1,9 +1,12 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import type { DbDepartment, DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { CLEVEL_COLOR, OWNER_COLOR } from "../styles";
+
+type UpdateEmployeeVariables = { id: string; updates: Record<string, unknown> };
 
 // ── Owner/CEO/COO setup + duplicate cleanup — now with Supabase ──
 export const useHierarchySetupActions = (
@@ -15,6 +18,19 @@ export const useHierarchySetupActions = (
   setShowSetupModal: Dispatch<SetStateAction<boolean>>,
   setShowCleanupModal: Dispatch<SetStateAction<boolean>>,
 ) => {
+  const createDepartmentMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDepartment(payload),
+    "departments",
+  );
+  const createEmployeeMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createEmployee(payload),
+    "employees",
+  );
+  const updateEmployeeMutation = useOdooMutation(
+    ({ id, updates }: UpdateEmployeeVariables) => odooData.updateEmployee(id, updates),
+    "employees",
+  );
+
   // Setup Owner → CEO + COO hierarchy
   const handleSetupHierarchy = useCallback(async () => {
     setSaving(true);
@@ -34,16 +50,16 @@ export const useHierarchySetupActions = (
       const ownerDeptExisting = dbDepartments.find(d => d.name === arabicSource("common.owner"));
       const ownerDeptId = ownerDeptExisting
         ? ownerDeptExisting.id
-        : (await odooData.createDepartment({ name: arabicSource("common.owner"), color: OWNER_COLOR }) as any)?.data?.id;
+        : (await createDepartmentMutation.mutateAsync({ name: arabicSource("common.owner"), color: OWNER_COLOR }) as any)?.data?.id;
       const clevelDeptExisting = dbDepartments.find(d => d.name === arabicSource("common.senior_management"));
       const clevelDeptId = clevelDeptExisting
         ? clevelDeptExisting.id
-        : (await odooData.createDepartment({ name: arabicSource("common.senior_management"), color: CLEVEL_COLOR }) as any)?.data?.id;
+        : (await createDepartmentMutation.mutateAsync({ name: arabicSource("common.senior_management"), color: CLEVEL_COLOR }) as any)?.data?.id;
 
       // 1. Insert Owner
       let ownerId: string;
       try {
-        const r1: any = await odooData.createEmployee({
+        const r1: any = await createEmployeeMutation.mutateAsync({
           person_id: maxPid + 1, name: arabicSource("common.owner"), arabic_name: arabicSource("common.owner"),
           department_id: ownerDeptId || null,
           manager_id: null, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
@@ -54,7 +70,7 @@ export const useHierarchySetupActions = (
       // 2. Insert CEO under Owner
       let ceoId: string;
       try {
-        const r2: any = await odooData.createEmployee({
+        const r2: any = await createEmployeeMutation.mutateAsync({
           person_id: maxPid + 2, name: arabicSource("common.executive_director"), arabic_name: arabicSource("common.executive_director"),
           department_id: clevelDeptId || null,
           manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
@@ -65,7 +81,7 @@ export const useHierarchySetupActions = (
       // 3. Insert COO under Owner
       let cooId: string;
       try {
-        const r3: any = await odooData.createEmployee({
+        const r3: any = await createEmployeeMutation.mutateAsync({
           person_id: maxPid + 3, name: arabicSource("common.chief_operating_officer"), arabic_name: arabicSource("common.chief_operating_officer"),
           department_id: clevelDeptId || null,
           manager_id: ownerId, status: arabicSource("common.is_active"), monthly_salary: 0, currency: "IQD",
@@ -81,20 +97,19 @@ export const useHierarchySetupActions = (
 
       if (rootEmpIds.length > 0) {
         try {
-          await Promise.all(rootEmpIds.map(id => odooData.updateEmployee(id, { manager_id: ceoId })));
+          await Promise.all(rootEmpIds.map(id => updateEmployeeMutation.mutateAsync({ id, updates: { manager_id: ceoId } })));
         } catch (e4: unknown) { console.error("Move root employees error:", e4); }
       }
 
       setToast(arabicSource("hierarchy.structure_configured_owner_ceo_coo_edit_data_from_the_edit_butto"));
       setShowSetupModal(false);
-      await refetch();
     } catch (err: unknown) {
       console.error("Setup hierarchy error:", err);
       const message = err instanceof Error ? err.message : "";
       setToast(`${arabicSource("common.error_2")} ${message || arabicSource("hierarchy.failed_to_initialize_the_organizational_structure")}`);
     }
     setSaving(false);
-  }, [dbEmployees, dbDepartments, refetch]);
+  }, [dbEmployees, dbDepartments, createDepartmentMutation.mutateAsync, createEmployeeMutation.mutateAsync, updateEmployeeMutation.mutateAsync]);
 
   // ── Cleanup duplicate Owner/CEO/COO entries ──
   const handleCleanupDuplicates = useCallback(async () => {
@@ -157,7 +172,7 @@ export const useHierarchySetupActions = (
         }
 
         if (newManagerId) {
-          await odooData.updateEmployee(emp.id, { manager_id: newManagerId });
+          await updateEmployeeMutation.mutateAsync({ id: emp.id, updates: { manager_id: newManagerId } });
         }
       }
 
@@ -166,33 +181,32 @@ export const useHierarchySetupActions = (
       // duplicates are unlinked, not removed — they'll still show up in flat employee lists.
       if (allDuplicateIds.size > 0) {
         const dupArr = Array.from(allDuplicateIds);
-        await Promise.all(dupArr.map(id => odooData.updateEmployee(id, { manager_id: null })));
+        await Promise.all(dupArr.map(id => updateEmployeeMutation.mutateAsync({ id, updates: { manager_id: null } })));
       }
 
       // Ensure kept Owner has no manager (is the true root)
       if (keepOwner) {
-        await odooData.updateEmployee(keepOwner.id, { manager_id: null });
+        await updateEmployeeMutation.mutateAsync({ id: keepOwner.id, updates: { manager_id: null } });
       }
       // Ensure kept CEO reports to kept Owner
       if (keepCeo && keepOwner) {
-        await odooData.updateEmployee(keepCeo.id, { manager_id: keepOwner.id });
+        await updateEmployeeMutation.mutateAsync({ id: keepCeo.id, updates: { manager_id: keepOwner.id } });
       }
       // Ensure kept COO reports to kept Owner
       if (keepCoo && keepOwner) {
-        await odooData.updateEmployee(keepCoo.id, { manager_id: keepOwner.id });
+        await updateEmployeeMutation.mutateAsync({ id: keepCoo.id, updates: { manager_id: keepOwner.id } });
       }
 
       const removedCount = allDuplicateIds.size;
       setToast(`${arabicSource("hierarchy.the_structure_was_cleaned_deleted")} ${removedCount} ${arabicSource("hierarchy.duplicate_entry_and_employees_were_successfully_reconnected")}`);
       setShowCleanupModal(false);
-      await refetch();
     } catch (err: unknown) {
       console.error("Cleanup error:", err);
       const message = err instanceof Error ? err.message : "";
       setToast(`${arabicSource("common.error_2")} ${message || arabicSource("hierarchy.chassis_cleaning_failed")}`);
     }
     setSaving(false);
-  }, [dbEmployees, refetch]);
+  }, [dbEmployees, updateEmployeeMutation.mutateAsync]);
 
   return {
     handleSetupHierarchy,

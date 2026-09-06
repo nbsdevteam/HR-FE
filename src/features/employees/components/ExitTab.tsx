@@ -7,6 +7,7 @@ import {
   useExitChecklist,
   type DbEmployee, type DbExitProcess, type DbExitChecklistItem, type DbCustody,
 } from "@/shared/hooks";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert } from "@/i18n/native";
@@ -43,7 +44,34 @@ const ExitTab = ({
   const [saving, setSaving] = useState(false);
 
   // Fetch checklist for selected process
-  const { checklist, refetch: refetchChecklist } = useExitChecklist(selectedProcess || undefined);
+  const { checklist } = useExitChecklist(selectedProcess || undefined);
+
+  const createExitProcessMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createExitProcess(payload),
+    "exitProcesses",
+  );
+  const updateExitChecklistLineMutation = useOdooMutation(
+    (variables: { id: string; payload: Record<string, unknown> }) =>
+      odooData.updateExitChecklistLine(variables.id, variables.payload),
+    "exitChecklist",
+  );
+  const updateExitProcessMutation = useOdooMutation(
+    (variables: { id: string; payload: Record<string, unknown> }) =>
+      odooData.updateExitProcess(variables.id, variables.payload),
+    "exitProcesses",
+  );
+  const setEmployeeStatusMutation = useOdooMutation(
+    (variables: { id: string; status: string }) => odooData.setEmployeeStatus(variables.id, variables.status),
+    "employees",
+  );
+  // Custody rows aren't backed by a TanStack Query read hook (ExitTab only
+  // fetches them ad hoc here to clear them out on exit), so there's no cache
+  // key to invalidate.
+  const updateCustodyMutation = useOdooMutation(
+    (variables: { id: string; payload: Record<string, unknown> }) =>
+      odooData.updateCustody(variables.id, variables.payload),
+    [],
+  );
 
   const handleCreate = useCallback(async () => {
     if (!formData.employee_id || !formData.exit_date) return;
@@ -64,7 +92,7 @@ const ExitTab = ({
 
     try {
       // Backend auto-creates checklist lines from active checklist items.
-      await odooData.createExitProcess({
+      await createExitProcessMutation.mutateAsync({
         employee_id: formData.employee_id,
         exit_type: formData.exit_type,
         exit_date: formData.exit_date,
@@ -74,7 +102,6 @@ const ExitTab = ({
         eos_amount: eosAmount,
         status: "in_progress",
       });
-      refetch();
       setShowForm(false);
       setFormData(EMPTY_EXIT_FORM);
     } catch (e) {
@@ -82,25 +109,24 @@ const ExitTab = ({
       localizedAlert("خطأ في إنشاء إجراء إنهاء الخدمة " + errorMessage(e));
     }
     setSaving(false);
-  }, [formData, empMap, refetch]);
+  }, [formData, empMap, createExitProcessMutation.mutateAsync]);
 
   const handleChecklistToggle = useCallback(async (checklistId: string, completed: boolean) => {
     try {
-      await odooData.updateExitChecklistLine(checklistId, { is_completed: completed });
-      refetchChecklist();
+      await updateExitChecklistLineMutation.mutateAsync({ id: checklistId, payload: { is_completed: completed } });
     } catch (e) {
       console.error(e);
       localizedAlert("خطأ في تحديث قائمة إخلاء الطرف " + errorMessage(e));
     }
-  }, [refetchChecklist]);
+  }, [updateExitChecklistLineMutation.mutateAsync]);
 
   const handleStatusUpdate = useCallback(async (processId: string, status: string) => {
     try {
-      await odooData.updateExitProcess(processId, { status });
+      await updateExitProcessMutation.mutateAsync({ id: processId, payload: { status } });
       if (status === "completed") {
         const proc = processes.find(p => p.id === processId);
         if (proc) {
-          await odooData.setEmployeeStatus(proc.employee_id, "exited");
+          await setEmployeeStatusMutation.mutateAsync({ id: proc.employee_id, status: "exited" });
           // Return open custodies so exit clears outstanding assets. The
           // backend stamps return_date to the Baghdad business day itself
           // when status flips to "returned" and no date is sent — see
@@ -110,19 +136,18 @@ const ExitTab = ({
             await Promise.all(
               (open || [])
                 .filter(c => !c.return_date && c.status !== "returned")
-                .map(c => odooData.updateCustody(c.id, { status: "returned" })),
+                .map(c => updateCustodyMutation.mutateAsync({ id: c.id, payload: { status: "returned" } })),
             );
           } catch (custodyErr) {
             console.error(custodyErr);
           }
         }
       }
-      refetch();
     } catch (e) {
       console.error(e);
       localizedAlert("خطأ في تحديث حالة إجراء الإنهاء " + errorMessage(e));
     }
-  }, [processes, refetch]);
+  }, [processes, setEmployeeStatusMutation.mutateAsync, updateCustodyMutation.mutateAsync, updateExitProcessMutation.mutateAsync]);
 
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);
   const closeForm = useCallback(() => setShowForm(false), []);

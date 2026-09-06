@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
-import type { DbLeaveSettings } from "@/shared/hooks";
+import { useOdooMutation, type DbLeaveSettings } from "@/shared/hooks";
 import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import { arabicSource } from "@/i18n/source";
 import { leaveErrorMessage } from "../utils/leaveErrorMessage";
@@ -16,8 +16,12 @@ type UseLeaveAttachmentUploadArgs = {
 
 /** Uploads a document onto an already-created leave request (backend §3.4) — immediate, not staged for a form submit. */
 export const useLeaveAttachmentUpload = ({ leaveId, settings, onUploaded }: UseLeaveAttachmentUploadArgs) => {
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  const uploadAttachmentMutation = useOdooMutation(
+    (payload: { file_name: string; file_data: string }) => odooData.uploadLeaveAttachment(leaveId, payload),
+    "leaveRequests",
+  );
 
   const acceptedFormats = settings?.attachment_accepted_formats ?? DEFAULT_ACCEPTED_FORMATS;
   const maxBytes = settings?.attachment_max_bytes ?? DEFAULT_MAX_BYTES;
@@ -34,16 +38,14 @@ export const useLeaveAttachmentUpload = ({ leaveId, settings, onUploaded }: UseL
     }
 
     setError("");
-    setUploading(true);
     try {
       const file_data = await fileToBase64(file);
-      await odooData.uploadLeaveAttachment(leaveId, { file_name: file.name, file_data });
+      await uploadAttachmentMutation.mutateAsync({ file_name: file.name, file_data });
       onUploaded();
     } catch (e) {
       setError(leaveErrorMessage(e, "Failed to upload attachment"));
     }
-    setUploading(false);
-  }, [acceptedFormats, leaveId, maxBytes, onUploaded]);
+  }, [acceptedFormats, maxBytes, onUploaded, uploadAttachmentMutation]);
 
-  return { acceptedFormats, error, handleFileSelected, maxBytes, uploading };
+  return { acceptedFormats, error, handleFileSelected, maxBytes, uploading: uploadAttachmentMutation.isPending };
 };

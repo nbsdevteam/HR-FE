@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchPayrollList } from "@/shared/api/payroll";
 import type { PayrollListResponse, PayrollStatus, PayrollTotals } from "@/shared/api/payrollTypes";
 import { useDebouncedValue } from "@/shared/hooks";
@@ -30,27 +31,62 @@ type UsePayrollListPagedParams = {
   status: PayrollStatus | null;
 };
 
+const toIdOrNull = (value: string | number | null): number | null =>
+  value != null && value !== "" ? Number(value) : null;
+
 /**
  * Server-paginated, month-scoped payroll rows (backend §4/§10/§11).
  *
- * `include_totals` is sent only when the month or a filter changes — a page
- * change re-requests just the 25 rows and keeps the previous totals in state
- * (backend §4.3: totals cost O(matching employees), not O(page size)).
+ * Split into two queries so a page turn never re-triggers the expensive
+ * totals computation: `listQuery` is keyed on page/perPage and always
+ * requests `include_totals: false`, while `totalsQuery` is keyed only on the
+ * month/filters (backend §4.3: totals cost O(matching employees), not O(page
+ * size)) and is cached independently of which page is on screen.
  */
 export const usePayrollListPaged = ({ month, search, departmentId, employeeId, status }: UsePayrollListPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_PAYROLL_PAGE_SIZE);
-  const [result, setResult] = useState<PayrollListResponse>(EMPTY_RESULT);
-  const [totals, setTotals] = useState<PayrollTotals | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [totalsLoading, setTotalsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
   const debouncedSearch = useDebouncedValue(search);
+  const enabled = !!month;
+  const departmentIdNum = toIdOrNull(departmentId);
+  const employeeIdNum = toIdOrNull(employeeId);
 
-  const requestRef = useRef(0);
-  const lastFilterKeyRef = useRef<string | null>(null);
+  const listQuery = useQuery<PayrollListResponse, Error>({
+    queryKey: ["payrollList", month, debouncedSearch, departmentIdNum, employeeIdNum, status, page, perPage],
+    queryFn: () => fetchPayrollList({
+      month,
+      page,
+      limit: perPage,
+      search: debouncedSearch || undefined,
+      department_id: departmentIdNum,
+      employee_id: employeeIdNum,
+      status,
+      include_totals: false,
+    }),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+
+  const totalsQuery = useQuery<PayrollTotals | null, Error>({
+    queryKey: ["payrollTotals", month, debouncedSearch, departmentIdNum, employeeIdNum, status],
+    queryFn: async () => {
+      const data = await fetchPayrollList({
+        month,
+        page: 1,
+        limit: 1,
+        search: debouncedSearch || undefined,
+        department_id: departmentIdNum,
+        employee_id: employeeIdNum,
+        status,
+        include_totals: true,
+      });
+      return data.totals ?? null;
+    },
+    enabled,
+  });
+
+  const result = listQuery.data ?? EMPTY_RESULT;
 
   const handlePageChange = useCallback((next: number): void => {
     setPage(next);
@@ -62,69 +98,30 @@ export const usePayrollListPaged = ({ month, search, departmentId, employeeId, s
   }, []);
 
   const refetch = useCallback((): void => {
-    setReloadToken((token) => token + 1);
-  }, []);
+    void listQuery.refetch();
+    void totalsQuery.refetch();
+  }, [listQuery.refetch, totalsQuery.refetch]);
 
   // A filter/month change invalidates the current page number.
   useEffect(() => {
     setPage(1);
-  }, [month, debouncedSearch, departmentId, employeeId, status]);
-
-  useEffect(() => {
-    if (!month) return;
-
-    const filterKey = JSON.stringify({ month, debouncedSearch, departmentId, employeeId, status });
-    const includeTotals = filterKey !== lastFilterKeyRef.current;
-    lastFilterKeyRef.current = filterKey;
-
-    const requestId = requestRef.current + 1;
-    requestRef.current = requestId;
-    setLoading(true);
-    if (includeTotals) setTotalsLoading(true);
-
-    fetchPayrollList({
-      month,
-      page,
-      limit: perPage,
-      search: debouncedSearch || undefined,
-      department_id: departmentId != null && departmentId !== "" ? Number(departmentId) : null,
-      employee_id: employeeId != null && employeeId !== "" ? Number(employeeId) : null,
-      status,
-      include_totals: includeTotals,
-    })
-      .then((data) => {
-        if (requestRef.current !== requestId) return;
-        setResult(data);
-        setError(null);
-        if (data.totals) setTotals(data.totals);
-      })
-      .catch((e: unknown) => {
-        if (requestRef.current !== requestId) return;
-        setResult(EMPTY_RESULT);
-        setError(errorMessage(e));
-      })
-      .finally(() => {
-        if (requestRef.current !== requestId) return;
-        setLoading(false);
-        if (includeTotals) setTotalsLoading(false);
-      });
-  }, [month, page, perPage, debouncedSearch, departmentId, employeeId, status, reloadToken]);
+  }, [month, debouncedSearch, departmentIdNum, employeeIdNum, status]);
 
   // A ledger save or excuse toggle can empty the last page; step back rather
   // than stranding the user on a page that will always render zero rows.
   useEffect(() => {
-    if (!loading && page > result.pagination.total_pages && result.pagination.total_pages > 0) {
+    if (!listQuery.isFetching && page > result.pagination.total_pages && result.pagination.total_pages > 0) {
       setPage(result.pagination.total_pages);
     }
-  }, [loading, page, result.pagination.total_pages]);
+  }, [listQuery.isFetching, page, result.pagination.total_pages]);
 
   return {
     items: result.items,
     pagination: result.pagination,
-    totals,
-    totalsLoading,
-    listError: error,
-    listLoading: loading,
+    totals: totalsQuery.data ?? null,
+    totalsLoading: totalsQuery.isFetching,
+    listError: listQuery.error ? errorMessage(listQuery.error) : null,
+    listLoading: listQuery.isFetching,
     page: result.pagination.page || page,
     perPage: result.pagination.per_page || perPage,
     totalPages: result.pagination.total_pages,

@@ -13,31 +13,43 @@ const Login = () => {
 
   const { signIn } = useAuth();
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    if (!email || !password) { setError("يرجى إدخال البريد الإلكتروني وكلمة المرور"); return; }
-    setLoading(true);
-    setError("");
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+      e.preventDefault();
+      if (!email || !password) {
+        setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+        return;
+      }
+      setLoading(true);
+      setError("");
 
-    const { error: err } = await signIn(email, password);
-    if (err) setError(err);
-    setLoading(false);
-  }, [email, password, signIn]);
+      const { error: err } = await signIn(email, password);
+      if (err) setError(err);
+      setLoading(false);
+    },
+    [email, password, signIn],
+  );
 
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setEmail(e.target.value);
-  }, []);
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      setEmail(e.target.value);
+    },
+    [],
+  );
 
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setPassword(e.target.value);
-  }, []);
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      setPassword(e.target.value);
+    },
+    [],
+  );
 
   const handleTogglePasswordVisibility = useCallback((): void => {
     setShowPassword((visible) => !visible);
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -start-32 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
@@ -60,7 +72,9 @@ const Login = () => {
           >
             <Lock className="w-10 h-10 text-primary" />
           </motion.div>
-          <h1 className="text-gradient-gold text-2xl font-bold mb-1">نظام إدارة الموارد البشرية</h1>
+          <h1 className="text-gradient-gold text-2xl font-bold mb-1">
+            نظام إدارة الموارد البشرية
+          </h1>
           <p className="text-muted-foreground" style={{ fontSize: 14 }}>
             تسجيل الدخول إلى حسابك
           </p>
@@ -73,16 +87,19 @@ const Login = () => {
         >
           {/* Username */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
+            <label
+              className="text-foreground block mb-1.5"
+              style={{ fontSize: 13 }}
+            >
               اسم المستخدم
             </label>
-            <div className="relative">
+            <div className="relative" dir="ltr">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={email}
                 onChange={handleEmailChange}
-                className="w-full ps-10 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+                className="w-full ps-8 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
                 placeholder="admin"
                 dir="ltr"
                 autoComplete="username"
@@ -92,14 +109,19 @@ const Login = () => {
 
           {/* Password */}
           <div>
-            <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>كلمة المرور</label>
-            <div className="relative">
+            <label
+              className="text-foreground block mb-1.5"
+              style={{ fontSize: 13 }}
+            >
+              كلمة المرور
+            </label>
+            <div className="relative" dir="ltr">
               <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={handlePasswordChange}
-                className="w-full ps-10 pe-10 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+                className="w-full ps-8 pe-10 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
                 placeholder="••••••••"
                 dir="ltr"
                 autoComplete="current-password"
@@ -107,9 +129,12 @@ const Login = () => {
               <Button
                 type="button"
                 variant="ghost"
+                size="unstyled"
                 onClick={handleTogglePasswordVisibility}
                 icon={showPassword ? EyeOff : Eye}
-                aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                aria-label={
+                  showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
+                }
                 className="absolute end-3 top-1/2 -translate-y-1/2 p-0 hover:bg-transparent cursor-pointer"
               />
             </div>
@@ -117,9 +142,12 @@ const Login = () => {
 
           {/* Error */}
           {error && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               className="text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2"
-              style={{ fontSize: 13 }}>
+              style={{ fontSize: 13 }}
+            >
               {error}
             </motion.p>
           )}

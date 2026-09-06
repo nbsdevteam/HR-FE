@@ -1,7 +1,10 @@
 import { useCallback } from "react";
+import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import { lazy, Suspense } from "react";
 import Toast from "@/shared/components/Toast";
+import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import PoliciesFilters from "../components/PoliciesFilters";
 import PoliciesHeader from "../components/PoliciesHeader";
 import PoliciesList from "../components/PoliciesList";
@@ -77,7 +80,7 @@ const Policies = () => {
         localizePolicyText={page?.localizePolicyText}
         paged={page?.paged}
         totalPages={page?.totalPages}
-        onDeletePolicy={page?.handleDeletePolicy}
+        onDeletePolicy={page?.requestDeletePolicy}
         onEditPolicy={page?.openEditModal}
         onExpandPolicy={page?.setExpandedPolicy}
         onPageChange={setPage}
@@ -119,6 +122,18 @@ const Policies = () => {
           exit={{ opacity: 0, y: -20 }}
         />
       )}
+
+      <AnimatePresence>
+        {page.pendingDeletePolicyId && (
+          <ConfirmDeleteModal
+            onClose={page.cancelDeletePolicy}
+            onConfirm={page.confirmDeletePolicy}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("policies.are_you_sure_you_want_to_delete_this_policy")}
+            loading={page.isSubmitting}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

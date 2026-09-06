@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { PendingAssignmentUndo, PositionAssignmentSnapshot } from "../types";
@@ -45,6 +46,10 @@ export const usePositionAssignment = ({
   const [undoEntry, setUndoEntry] = useState<PendingAssignmentUndo | null>(null);
 
   const isArabic = useIsArabicLanguage();
+  const updateEmployeeMutation = useOdooMutation(
+    ({ id, updates }: { id: string; updates: Record<string, unknown> }) => odooData.updateEmployee(id, updates),
+    ["employees", "positions"],
+  );
 
   /** Employee list with the not-yet-reconciled drops applied, so the UI never waits. */
   const effectiveEmployees = useMemo(() => {
@@ -60,15 +65,17 @@ export const usePositionAssignment = ({
       setOverrides((current) => ({ ...current, [employeeId]: next }));
       setInFlight((count) => count + 1);
       try {
-        await odooData.updateEmployee(employeeId, {
-          designation_id: next.position_id,
-          department_id: next.department_id,
-          manager_id: next.manager_id,
+        await updateEmployeeMutation.mutateAsync({
+          id: employeeId,
+          updates: {
+            designation_id: next.position_id,
+            department_id: next.department_id,
+            manager_id: next.manager_id,
+          },
         });
-        // The refetches don't resolve back to here, so the override is held
-        // until the reconciliation effect below sees the server agree.
-        refetch();
-        refetchPositions();
+        // The `employees`/`positions` cache invalidation triggered above
+        // doesn't resolve back to here, so the override is held until the
+        // reconciliation effect below sees the server agree.
         return true;
       } catch (err: unknown) {
         // Dropping the override hands the row straight back to the untouched
@@ -84,7 +91,7 @@ export const usePositionAssignment = ({
         setInFlight((count) => Math.max(0, count - 1));
       }
     },
-    [refetch, refetchPositions, onToast],
+    [updateEmployeeMutation.mutateAsync, onToast],
   );
 
   const assignEmployee = useCallback(

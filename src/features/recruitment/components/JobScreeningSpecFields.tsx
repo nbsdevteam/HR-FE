@@ -10,11 +10,13 @@ type JobScreeningSpecFieldsProps = {
   requiredSkills: JobSkillRequirement[];
   niceToHave: JobSkillRequirement[];
   minExperienceYears: number;
+  maxExperienceYears: number;
   educationLevel: string;
   irAutoShortlist: number;
   onRequiredSkillsChange: (skills: JobSkillRequirement[]) => void;
   onNiceToHaveChange: (skills: JobSkillRequirement[]) => void;
   onMinExperienceYearsChange: (value: number) => void;
+  onMaxExperienceYearsChange: (value: number) => void;
   onEducationLevelChange: (value: string) => void;
   onIrAutoShortlistChange: (value: number) => void;
 };
@@ -24,11 +26,13 @@ const JobScreeningSpecFields = ({
   requiredSkills,
   niceToHave,
   minExperienceYears,
+  maxExperienceYears,
   educationLevel,
   irAutoShortlist,
   onRequiredSkillsChange,
   onNiceToHaveChange,
   onMinExperienceYearsChange,
+  onMaxExperienceYearsChange,
   onEducationLevelChange,
   onIrAutoShortlistChange,
 }: JobScreeningSpecFieldsProps) => {
@@ -36,6 +40,11 @@ const JobScreeningSpecFields = ({
     e: React.ChangeEvent<HTMLInputElement>,
   ): void => {
     onMinExperienceYearsChange(Number(e.target.value) || 0);
+  };
+  const handleMaxExperienceYearsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    onMaxExperienceYearsChange(Number(e.target.value) || 0);
   };
   const handleEducationLevelChange = (value: string): void => {
     onEducationLevelChange(value);
@@ -83,15 +92,37 @@ const JobScreeningSpecFields = ({
       </div>
       <div>
         <label className={labelCls} style={{ fontSize: 12 }}>
-          {arabicSource("recruitment.education_level")}
+          {arabicSource("recruitment.max_experience")}
         </label>
-        <Select
-          value={educationLevel}
-          onChange={handleEducationLevelChange}
-          options={EDUCATION_LEVELS}
-          className={selectCls}
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={maxExperienceYears}
+          onChange={handleMaxExperienceYearsChange}
+          className={inputCls}
+          dir="ltr"
         />
+        {maxExperienceYears === 0 && (
+          <div
+            className="text-muted-foreground"
+            style={{ fontSize: 11, marginTop: 4 }}
+          >
+            {arabicSource("recruitment.max_experience_hint")}
+          </div>
+        )}
       </div>
+    </div>
+    <div>
+      <label className={labelCls} style={{ fontSize: 12 }}>
+        {arabicSource("recruitment.education_level")}
+      </label>
+      <Select
+        value={educationLevel}
+        onChange={handleEducationLevelChange}
+        options={EDUCATION_LEVELS}
+        className={selectCls}
+      />
     </div>
     <div>
       <label className={labelCls} style={{ fontSize: 12 }}>

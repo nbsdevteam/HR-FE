@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
 import type { DbDepartment } from "@/shared/hooks";
@@ -33,13 +34,33 @@ type UseDepartmentFormArgs = {
   setToast: (message: string | null) => void;
 };
 
-/** Create/edit form state for the department admin screen (backend §4). */
+/**
+ * Create/edit form state for the department admin screen (backend §4).
+ *
+ * `refetch` refreshes the admin screen's own (non-cached) filtered list,
+ * which the shared `departments`/`departmentMetadata` cache invalidation
+ * below does not reach — it still has to be called explicitly after each
+ * mutation.
+ */
 export const useDepartmentForm = ({ refetch, setToast }: UseDepartmentFormArgs) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<DepartmentFormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<DbDepartment | null>(null);
   const [nameConflict, setNameConflict] = useState<NameConflict | null>(null);
+
+  const createDepartmentMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDepartment(payload),
+    ["departments", "departmentMetadata"],
+  );
+  const updateDepartmentMutation = useOdooMutation(
+    ({ id, payload }: { id: string; payload: Record<string, unknown> }) => odooData.updateDepartment(id, payload),
+    ["departments", "departmentMetadata"],
+  );
+  const restoreDepartmentMutation = useOdooMutation(
+    (id: number) => odooData.restoreDepartment(id),
+    ["departments", "departmentMetadata"],
+  );
 
   const resetForm = useCallback(() => {
     setFormData({ ...EMPTY_FORM });
@@ -92,10 +113,10 @@ export const useDepartmentForm = ({ refetch, setToast }: UseDepartmentFormArgs) 
     try {
       const payload = buildPayload();
       if (editingDepartment) {
-        await odooData.updateDepartment(editingDepartment.id, payload);
+        await updateDepartmentMutation.mutateAsync({ id: editingDepartment.id, payload });
         setToast(arabicSource("org_structure.department_update_success"));
       } else {
-        await odooData.createDepartment(payload);
+        await createDepartmentMutation.mutateAsync(payload);
         setToast(arabicSource("org_structure.department_create_success"));
       }
       closeForm();
@@ -114,13 +135,13 @@ export const useDepartmentForm = ({ refetch, setToast }: UseDepartmentFormArgs) 
     } finally {
       setSaving(false);
     }
-  }, [formData, editingDepartment, buildPayload, closeForm, refetch, setToast]);
+  }, [formData, editingDepartment, buildPayload, closeForm, refetch, setToast, updateDepartmentMutation.mutateAsync, createDepartmentMutation.mutateAsync]);
 
   const restoreConflicting = useCallback(async () => {
     if (!nameConflict) return;
     setSaving(true);
     try {
-      await odooData.restoreDepartment(nameConflict.existingId);
+      await restoreDepartmentMutation.mutateAsync(nameConflict.existingId);
       setToast(arabicSource("org_structure.restore_success"));
       closeForm();
       await refetch();
@@ -129,7 +150,7 @@ export const useDepartmentForm = ({ refetch, setToast }: UseDepartmentFormArgs) 
     } finally {
       setSaving(false);
     }
-  }, [nameConflict, closeForm, refetch, setToast]);
+  }, [nameConflict, closeForm, refetch, setToast, restoreDepartmentMutation.mutateAsync]);
 
   return {
     showForm, openNewForm, openEditForm, closeForm,

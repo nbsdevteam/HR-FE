@@ -9,6 +9,7 @@ import {
   type DbEmployee,
   type DbEmployeeContract,
 } from "@/shared/hooks";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert } from "@/i18n/native";
 import { errorMessage } from "../utils/errorMessage";
@@ -70,6 +71,16 @@ const ContractsTab = ({
     useState<ContractFormData>(EMPTY_CONTRACT_FORM);
   const [saving, setSaving] = useState(false);
 
+  const createContractMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createContract(payload),
+    "contracts",
+  );
+  const updateContractMutation = useOdooMutation(
+    (variables: { id: string; payload: Record<string, unknown> }) =>
+      odooData.updateContract(variables.id, variables.payload),
+    "contracts",
+  );
+
   const contractTypeById = useMemo(
     () => new Map(contractTypes.map((t) => [t.id, t])),
     [contractTypes],
@@ -105,7 +116,7 @@ const ContractsTab = ({
     })();
 
     try {
-      await odooData.createContract({
+      await createContractMutation.mutateAsync({
         ...formData,
         salary_amount: formData.salary_amount || null,
         end_date: formData.end_date || null,
@@ -113,7 +124,6 @@ const ContractsTab = ({
         probation_status: probEnd ? "pending" : "waived",
         status: "active",
       });
-      refetch();
       setShowForm(false);
       setFormData(EMPTY_CONTRACT_FORM);
     } catch (e) {
@@ -121,32 +131,30 @@ const ContractsTab = ({
       localizedAlert("خطأ في حفظ العقد " + errorMessage(e));
     }
     setSaving(false);
-  }, [formData, contractTypeById, refetch]);
+  }, [formData, contractTypeById, createContractMutation.mutateAsync]);
 
   const handleProbation = useCallback(
     async (contractId: string, status: "passed" | "failed") => {
       try {
-        await odooData.updateContract(contractId, { probation_status: status });
-        refetch();
+        await updateContractMutation.mutateAsync({ id: contractId, payload: { probation_status: status } });
       } catch (e) {
         console.error(e);
         localizedAlert("خطأ في تحديث حالة التجربة " + errorMessage(e));
       }
     },
-    [refetch],
+    [updateContractMutation.mutateAsync],
   );
 
   const handleTerminate = useCallback(
     async (contractId: string) => {
       try {
-        await odooData.updateContract(contractId, { status: "terminated" });
-        refetch();
+        await updateContractMutation.mutateAsync({ id: contractId, payload: { status: "terminated" } });
       } catch (e) {
         console.error(e);
         localizedAlert("خطأ في إنهاء العقد " + errorMessage(e));
       }
     },
-    [refetch],
+    [updateContractMutation.mutateAsync],
   );
 
   const closeForm = useCallback(() => setShowForm(false), []);

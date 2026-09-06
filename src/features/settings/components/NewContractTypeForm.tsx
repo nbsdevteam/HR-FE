@@ -16,7 +16,7 @@ type TNewContractTypeFormProps = {
 const ROWS: TypeFormRowConfig<NewContractTypeFormState>[] = [
   {
     id: "names",
-    gridClassName: "grid grid-cols-2 gap-3",
+    gridClassName: "grid grid-cols-1 sm:grid-cols-2 gap-3",
     fields: [
       { key: "name_ar", placeholder: arabicSource("settings.species_name_arabic") },
       { key: "name_en", placeholder: arabicSource("settings.name_english") },
@@ -24,7 +24,7 @@ const ROWS: TypeFormRowConfig<NewContractTypeFormState>[] = [
   },
   {
     id: "durations",
-    gridClassName: "grid grid-cols-3 gap-3",
+    gridClassName: "grid grid-cols-1 sm:grid-cols-3 gap-3",
     fields: [
       { key: "code", placeholder: arabicSource("common.code") },
       { key: "default_duration_months", type: "number", placeholder: arabicSource("settings.duration_months") },
@@ -33,7 +33,7 @@ const ROWS: TypeFormRowConfig<NewContractTypeFormState>[] = [
   },
   {
     id: "notice",
-    gridClassName: "grid grid-cols-2 gap-3",
+    gridClassName: "grid grid-cols-1 sm:grid-cols-2 gap-3",
     fields: [
       { key: "notice_period_days", type: "number", placeholder: arabicSource("settings.notice_period_days") },
       { key: "description", placeholder: arabicSource("common.description") },

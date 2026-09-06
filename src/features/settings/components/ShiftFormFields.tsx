@@ -78,7 +78,7 @@ const ShiftFormFields = ({
         placeholder={arabicSource("settings.description_of_the_shift")}
       />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <InputField
           label={arabicSource("common.leniency_minutes")}
           type="number"

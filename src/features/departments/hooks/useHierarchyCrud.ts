@@ -1,11 +1,14 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import type { DbDepartment, DbEmployee, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { findParentOf } from "../utils/hierarchyTree";
 import { useHierarchySetupActions } from "./useHierarchySetupActions";
+
+type IdUpdatesVariables = { id: string; updates: Record<string, unknown> };
 
 // ── CRUD handlers — now with Supabase ──
 export const useHierarchyCrud = (
@@ -26,6 +29,19 @@ export const useHierarchyCrud = (
     dbEmployees, dbDepartments, refetch, setSaving, setToast, setShowSetupModal, setShowCleanupModal,
   );
 
+  const updateEmployeeMutation = useOdooMutation(
+    ({ id, updates }: IdUpdatesVariables) => odooData.updateEmployee(id, updates),
+    "employees",
+  );
+  const createDepartmentMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDepartment(payload),
+    "departments",
+  );
+  const updateDepartmentMutation = useOdooMutation(
+    ({ id, updates }: IdUpdatesVariables) => odooData.updateDepartment(id, updates),
+    "departments",
+  );
+
   const handleDeleteEmployee = useCallback(async (node: OrgNode, reparent: boolean) => {
     if (node.dbId === "__root__") return;
     setSaving(true);
@@ -36,21 +52,20 @@ export const useHierarchyCrud = (
 
     if (reparent && node.children.length > 0) {
       // Move children's manager_id to this node's parent
-      await Promise.all(node.children.map(c => odooData.updateEmployee(c.dbId, { manager_id: parentDbId })));
+      await Promise.all(node.children.map(c => updateEmployeeMutation.mutateAsync({ id: c.dbId, updates: { manager_id: parentDbId } })));
     } else if (!reparent && node.children.length > 0) {
       // Remove manager_id from all children (they become unlinked)
-      await Promise.all(node.children.map(c => odooData.updateEmployee(c.dbId, { manager_id: null })));
+      await Promise.all(node.children.map(c => updateEmployeeMutation.mutateAsync({ id: c.dbId, updates: { manager_id: null } })));
     }
 
     // Remove this employee's manager_id (unlink from hierarchy)
-    await odooData.updateEmployee(node.dbId, { manager_id: null });
+    await updateEmployeeMutation.mutateAsync({ id: node.dbId, updates: { manager_id: null } });
 
     setDeleteTarget(null);
     setSelectedNode(null);
     setToast(arabicSource("hierarchy.the_employee_was_dismissed_from_the_organizational_structure"));
-    await refetch();
     setSaving(false);
-  }, [orgTree, refetch]);
+  }, [orgTree, updateEmployeeMutation.mutateAsync, setSaving, setDeleteTarget, setSelectedNode, setToast]);
 
   const handleEditEmployee = useCallback(async (dbId: string, updates: { name?: string; position?: string; department?: string; manager_id?: string | null }) => {
     if (dbId === "__root__") return;
@@ -70,45 +85,42 @@ export const useHierarchyCrud = (
     }
     if (updates.manager_id !== undefined) odooUpdates.manager_id = updates.manager_id;
     try {
-      await odooData.updateEmployee(dbId, odooUpdates);
+      await updateEmployeeMutation.mutateAsync({ id: dbId, updates: odooUpdates });
       setToast(arabicSource("hierarchy.employee_data_has_been_updated_successfully"));
       setEditTarget(null);
       setSelectedNode(null);
-      await refetch();
     } catch (err: unknown) {
       setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
-  }, [refetch, dbDepartments, dbPositions]);
+  }, [updateEmployeeMutation.mutateAsync, dbDepartments, dbPositions, setSaving, setToast, setEditTarget, setSelectedNode]);
 
   const handleLinkEmployee = useCallback(async (empDbId: string, managerDbId: string) => {
     setSaving(true);
     try {
-      await odooData.updateEmployee(empDbId, { manager_id: managerDbId });
+      await updateEmployeeMutation.mutateAsync({ id: empDbId, updates: { manager_id: managerDbId } });
       setToast(arabicSource("hierarchy.the_employee_has_been_successfully_linked_to_his_manager"));
-      await refetch();
     } catch (err: unknown) {
       setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
-  }, [refetch]);
+  }, [updateEmployeeMutation.mutateAsync, setSaving, setToast]);
 
   const handleAddDepartment = useCallback(async (name: string, color: string) => {
     setSaving(true);
     try {
       const existing = dbDepartments.find(d => d.name === name);
       if (existing) {
-        await odooData.updateDepartment(existing.id, { color });
+        await updateDepartmentMutation.mutateAsync({ id: existing.id, updates: { color } });
       } else {
-        await odooData.createDepartment({ name, color });
+        await createDepartmentMutation.mutateAsync({ name, color });
       }
       setToast(arabicSource("hierarchy.the_department_was_added_successfully"));
-      await refetch();
     } catch (err: unknown) {
       setToast(`${arabicSource("common.error_2")} ${err instanceof Error ? err.message : ""}`);
     }
     setSaving(false);
-  }, [dbDepartments, refetch]);
+  }, [dbDepartments, updateDepartmentMutation.mutateAsync, createDepartmentMutation.mutateAsync, setSaving, setToast]);
 
   return {
     handleDeleteEmployee,

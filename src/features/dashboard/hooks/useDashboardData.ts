@@ -9,10 +9,11 @@ import { buildDashboardSectionData } from "../utils/mapControlPanel";
 /**
  * The whole Control Panel, from two requests on mount instead of nineteen.
  *
- * `/api/hr/control-panel/overview` carries every number the overview tab shows;
+ * `/api/hr/control-panel/overview` carries every number the overview tab shows
+ * (including today's stats, so it always refetches — see `useControlPanelOverview`);
  * `/api/hr/control-panel/section` carries one KPI tab's extras and is fetched
- * only when that tab is opened. Both go through `requestCache`, so re-opening a
- * tab inside the 60 s TTL costs nothing.
+ * only when that tab is opened, cached through TanStack Query so re-opening a
+ * tab inside the TTL costs nothing.
  *
  * The one wrinkle: the overview's Quick Indicators card shows three numbers
  * that live in the compliance and recruitment sections (reviews awaited,

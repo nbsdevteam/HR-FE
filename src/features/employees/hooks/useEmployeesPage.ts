@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Employee } from "@/features/employees";
-import { useEmployees, usePositions } from "@/shared/hooks";
-import type { DbDepartment } from "@/shared/hooks";
+import { useDepartments, useEmployees, usePositions } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { toEmployees } from "../utils/employeeMapper";
 import { sortEmployees } from "../utils/employeeSort";
@@ -32,11 +31,11 @@ const pickLeanListGapFields = (employee: Employee): LeanListGapFields => ({
 export const useEmployeesPage = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [detailStartsInEditMode, setDetailStartsInEditMode] = useState(false);
-  const [dbDepartmentOptions, setDbDepartmentOptions] = useState<DbDepartment[]>([]);
   const [recentEdits, setRecentEdits] = useState<Record<string, LeanListGapFields>>({});
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
 
   const { employees: dbEmployees, loading: dbLoading, refetch } = useEmployees();
+  const { departments: dbDepartmentOptions } = useDepartments();
   const { positions: designations } = usePositions();
 
   const listFilters = useEmployeeListFilters(dbEmployees, dbDepartmentOptions);
@@ -97,12 +96,6 @@ export const useEmployeesPage = () => {
     setSelectedEmployee(null);
     setDetailStartsInEditMode(false);
   }, [refetchAll]);
-
-  useEffect(() => {
-    odooData.fetchDepartments().then(setDbDepartmentOptions).catch((e: unknown) => {
-      console.error("Failed to load departments", e);
-    });
-  }, []);
 
   // Used to withhold the delete/suspend row actions for the signed-in user's
   // own employee record (backend §3.2, `employee_self_delete`).

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Loader2,
   AlertCircle,
@@ -7,10 +8,17 @@ import {
   RefreshCw,
   Check,
   MessageCircle,
+  Linkedin,
 } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { Button, InputField, ModalHeader, ModalOverlay } from "@/shared/components";
-import { type DbJobOpening, type ApplicationLink } from "@/shared/hooks";
+import {
+  Button,
+  InputField,
+  ModalFooterActions,
+  ModalHeader,
+  ModalOverlay,
+} from "@/shared/components";
+import { type DbJobOpening, type ApplicationLink, useOdooMutation } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import { inputCls, labelCls } from "../styles";
@@ -22,10 +30,36 @@ const ApplyLinkModal = ({
   job: DbJobOpening;
   onClose: () => void;
 }) => {
-  const [link, setLink] = useState<ApplicationLink | null>(null);
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [pendingExpiresOn, setPendingExpiresOn] = useState("");
+  const [pendingMaxSubmissions, setPendingMaxSubmissions] = useState(0);
+
+  const linkQuery = useQuery<ApplicationLink, Error>({
+    queryKey: ["jobApplyLink", job.id],
+    queryFn: () => odooData.getJobApplyLink(job.id, { rotate: false }),
+  });
+  const link = linkQuery.data ?? null;
+
+  // Rotating generates a new token as a side effect of this "read" endpoint —
+  // treated as a mutation (rather than a plain refetch) so it invalidates the
+  // shared cache the same way updateApplicationLink's save does.
+  const rotateMutation = useOdooMutation(
+    () => odooData.getJobApplyLink(job.id, { rotate: true }),
+    "jobApplyLink",
+  );
+
+  const saveMutation = useOdooMutation(
+    (payload: { linkId: number; expires_on: string | false; max_submissions: number }) =>
+      odooData.updateApplicationLink(payload.linkId, {
+        expires_on: payload.expires_on,
+        max_submissions: payload.max_submissions,
+      }),
+    "jobApplyLink",
+  );
+
+  const loading = linkQuery.isFetching || rotateMutation.isPending;
+  const displayError = error || (linkQuery.error ? linkQuery.error.message || "" : "");
 
   // The backend only returns an absolute URL when an SPA origin is configured
   // (candidates on a different host than HR staff). Otherwise it sends a
@@ -37,19 +71,13 @@ const ApplyLinkModal = ({
     return new URL(`/apply/${link.token}`, window.location.origin).toString();
   }, [link]);
 
-  const load = useCallback(
-    async (rotate = false) => {
-      setLoading(true);
-      setError("");
-      try {
-        setLink(await odooData.getJobApplyLink(job.id, { rotate }));
-      } catch (e: any) {
-        setError(e?.message || "");
-      }
-      setLoading(false);
-    },
-    [job.id],
-  );
+  const isDirty = useMemo(() => {
+    if (!link) return false;
+    return (
+      pendingExpiresOn !== (link.expires_on || "") ||
+      pendingMaxSubmissions !== link.max_submissions
+    );
+  }, [link, pendingExpiresOn, pendingMaxSubmissions]);
 
   const copy = useCallback(async () => {
     if (!applyUrl) return;
@@ -65,36 +93,44 @@ const ApplyLinkModal = ({
   const rotate = useCallback(async () => {
     if (!localizedConfirm(arabicSource("recruitment.rotate_token_confirm")))
       return;
-    await load(true);
-  }, [load]);
+    setError("");
+    try {
+      await rotateMutation.mutateAsync();
+    } catch (e: any) {
+      setError(e?.message || "");
+    }
+  }, [rotateMutation]);
 
-  const handleExpiresOnChange = useCallback(
-    async (value: string): Promise<void> => {
-      if (!link) return;
-      setLink(
-        await odooData.updateApplicationLink(link.id, {
-          expires_on: value || false,
-        }),
-      );
-    },
-    [link],
-  );
+  const handleExpiresOnChange = useCallback((value: string): void => {
+    setPendingExpiresOn(value);
+  }, []);
 
   const handleMaxSubmissionsChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-      if (!link) return;
-      setLink(
-        await odooData.updateApplicationLink(link.id, {
-          max_submissions: Number(e.target.value) || 0,
-        }),
-      );
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      setPendingMaxSubmissions(Number(e.target.value) || 0);
     },
-    [link],
+    [],
   );
 
+  const handleSave = useCallback(async (): Promise<void> => {
+    if (!link) return;
+    setError("");
+    try {
+      await saveMutation.mutateAsync({
+        linkId: link.id,
+        expires_on: pendingExpiresOn || false,
+        max_submissions: pendingMaxSubmissions,
+      });
+    } catch (e: any) {
+      setError(e?.message || "");
+    }
+  }, [link, pendingExpiresOn, pendingMaxSubmissions, saveMutation]);
+
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!link) return;
+    setPendingExpiresOn(link.expires_on || "");
+    setPendingMaxSubmissions(link.max_submissions);
+  }, [link]);
 
   return (
     <ModalOverlay
@@ -120,10 +156,10 @@ const ApplyLinkModal = ({
         <div className="flex items-center justify-center py-10">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
-      ) : error || !link ? (
+      ) : displayError || !link ? (
         <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <span style={{ fontSize: 12.5 }}>{error}</span>
+          <span style={{ fontSize: 12.5 }}>{displayError}</span>
         </div>
       ) : (
         <div className="space-y-4">
@@ -156,6 +192,16 @@ const ApplyLinkModal = ({
               <MessageCircle className="w-4 h-4" />
               {arabicSource("recruitment.share_whatsapp")}
             </a>
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(applyUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-sky-500/40 text-sky-400 hover:bg-sky-500/10 transition-colors"
+              style={{ fontSize: 13 }}
+            >
+              <Linkedin className="w-4 h-4" />
+              {arabicSource("recruitment.share_linkedin")}
+            </a>
             <Button
               variant="ghost"
               onClick={rotate}
@@ -174,7 +220,7 @@ const ApplyLinkModal = ({
               </label>
               <InputField
                 type="date"
-                value={link.expires_on || ""}
+                value={pendingExpiresOn}
                 dir="ltr"
                 className={inputCls}
                 onChange={handleExpiresOnChange}
@@ -187,7 +233,7 @@ const ApplyLinkModal = ({
               <input
                 type="number"
                 min={0}
-                value={link.max_submissions}
+                value={pendingMaxSubmissions}
                 dir="ltr"
                 className={inputCls}
                 onChange={handleMaxSubmissionsChange}
@@ -199,6 +245,16 @@ const ApplyLinkModal = ({
             {arabicSource("recruitment.link_submissions")}:{" "}
             {link.submission_count}
           </p>
+
+          <ModalFooterActions
+            onCancel={onClose}
+            onConfirm={handleSave}
+            confirmLabel={arabicSource("common.save")}
+            disabled={!isDirty || saveMutation.isPending}
+            loading={saveMutation.isPending}
+            cancelDisabled={saveMutation.isPending}
+            wrapperClassName="flex items-center justify-end gap-3 pt-2"
+          />
         </div>
       )}
     </ModalOverlay>

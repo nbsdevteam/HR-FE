@@ -7,6 +7,7 @@ import {
   pageWindow,
   type PageWindowItem,
 } from "@/shared/utils/pagination";
+import { scrollContentToTop } from "@/shared/utils/scrollToTop";
 import Button from "./Button";
 import Select from "./Select";
 import PaginationPageButton from "./PaginationPageButton";
@@ -46,13 +47,21 @@ const Pagination = ({
     [page, perPage, total],
   );
 
+  const handlePageChange = useCallback(
+    (nextPage: number): void => {
+      onPageChange(nextPage);
+      scrollContentToTop();
+    },
+    [onPageChange],
+  );
+
   const handlePrevious = useCallback((): void => {
-    if (page > 1) onPageChange(page - 1);
-  }, [onPageChange, page]);
+    if (page > 1) handlePageChange(page - 1);
+  }, [handlePageChange, page]);
 
   const handleNext = useCallback((): void => {
-    if (page < totalPages) onPageChange(page + 1);
-  }, [onPageChange, page, totalPages]);
+    if (page < totalPages) handlePageChange(page + 1);
+  }, [handlePageChange, page, totalPages]);
 
   const handlePerPageChange = useCallback(
     (value: string): void => {
@@ -84,7 +93,7 @@ const Pagination = ({
       </div>
 
       {showNav && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
           <Button
             variant="ghost"
             size="sm"
@@ -93,7 +102,7 @@ const Pagination = ({
             onClick={handlePrevious}
             aria-label={arabicSource("common.go_to_previous_page")}
           >
-            {arabicSource("common.previous")}
+            <span className="hidden sm:inline">{arabicSource("common.previous")}</span>
           </Button>
 
           {pages.map((item, index) =>
@@ -112,7 +121,7 @@ const Pagination = ({
                 page={item}
                 isCurrent={item === page}
                 disabled={loading}
-                onSelect={onPageChange}
+                onSelect={handlePageChange}
               />
             ),
           )}
@@ -126,7 +135,7 @@ const Pagination = ({
             onClick={handleNext}
             aria-label={arabicSource("common.go_to_next_page")}
           >
-            {arabicSource("common.next")}
+            <span className="hidden sm:inline">{arabicSource("common.next")}</span>
           </Button>
         </div>
       )}

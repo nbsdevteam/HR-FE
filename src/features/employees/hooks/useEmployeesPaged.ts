@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { DEFAULT_EMPLOYEE_PAGE_SIZE, type EmployeeListPage } from "@/shared/api/core";
 import { useDebouncedValue } from "@/shared/hooks";
@@ -34,16 +35,37 @@ type UseEmployeesPagedParams = {
 export const useEmployeesPaged = ({ search, departmentId, includeArchived = false, enabled = true }: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
-  const [result, setResult] = useState<EmployeeListPage>(EMPTY_PAGE);
-  const [loading, setLoading] = useState(enabled);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived });
 
   const debouncedSearch = useDebouncedValue(search);
 
-  // Monotonic request id: a slow page-2 response must never overwrite the
-  // page-3 rows the user has already moved on to.
-  const requestRef = useRef(0);
+  // Reset to page 1 the moment a filter actually changes — computed inline
+  // during render rather than in a `useEffect`. An effect runs after the query
+  // key already picked up the new filters at the *old* page number, firing one
+  // fetch, then corrects the page and fires a second; adjusting state during
+  // render (React's documented pattern for this) lands both changes in the
+  // same pass, so the query key only ever transitions once per filter change.
+  if (
+    appliedFilters.search !== debouncedSearch ||
+    appliedFilters.departmentId !== departmentId ||
+    appliedFilters.includeArchived !== includeArchived
+  ) {
+    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived });
+    if (page !== 1) setPage(1);
+  }
+
+  // `keepPreviousData` shows the last page's rows while the next one loads
+  // instead of flashing empty, and the query key alone (rather than a manual
+  // monotonic request id) guarantees a slow page-2 response can never
+  // overwrite the page-3 rows the user has already moved on to.
+  const query = useQuery<EmployeeListPage, Error>({
+    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived],
+    queryFn: () => odooData.fetchEmployeesPage({ page, limit: perPage, search: debouncedSearch, departmentId, includeArchived }),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+
+  const result = query.data ?? EMPTY_PAGE;
 
   const handlePageChange = useCallback((next: number): void => {
     setPage(next);
@@ -57,48 +79,19 @@ export const useEmployeesPaged = ({ search, departmentId, includeArchived = fals
   }, []);
 
   const refetch = useCallback((): void => {
-    setReloadToken(token => token + 1);
-  }, []);
-
-  // Any filter change invalidates the current page number — page 7 of the old
-  // result set is usually past the end of the new one.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, departmentId, includeArchived]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const requestId = requestRef.current + 1;
-    requestRef.current = requestId;
-    setLoading(true);
-
-    odooData
-      .fetchEmployeesPage({ page, limit: perPage, search: debouncedSearch, departmentId, includeArchived })
-      .then(next => {
-        if (requestRef.current !== requestId) return;
-        setResult(next);
-        setError(null);
-      })
-      .catch((e: unknown) => {
-        if (requestRef.current !== requestId) return;
-        setResult(EMPTY_PAGE);
-        setError(errorMessage(e));
-      })
-      .finally(() => {
-        if (requestRef.current === requestId) setLoading(false);
-      });
-  }, [enabled, page, perPage, debouncedSearch, departmentId, includeArchived, reloadToken]);
+    void query.refetch();
+  }, [query.refetch]);
 
   // A deletion can empty the last page; step back rather than stranding the
   // user on a page that will always render zero rows.
   useEffect(() => {
-    if (!loading && page > result.totalPages) setPage(result.totalPages);
-  }, [loading, page, result.totalPages]);
+    if (!query.isFetching && page > result.totalPages) setPage(result.totalPages);
+  }, [query.isFetching, page, result.totalPages]);
 
   return {
     pageEmployees: result.items,
-    pageError: error,
-    pageLoading: loading,
+    pageError: query.error ? errorMessage(query.error) : null,
+    pageLoading: query.isFetching,
     pageNumber: result.page,
     pageTotal: result.total,
     perPage: result.perPage,

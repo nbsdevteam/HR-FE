@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback, memo } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
-import type { DbEmployee } from "@/shared/hooks";
+import { useOdooMutation, type DbEmployee } from "@/shared/hooks";
 import { parseAttendanceFile } from "@/features/payroll/services/payslip-parsing";
 import type { RawAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
@@ -24,6 +24,8 @@ const UploadTab = ({
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const importAttendanceMutation = useOdooMutation(odooData.importAttendance, "attendance");
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -190,7 +192,7 @@ const UploadTab = ({
             status: r.status,
             source: "manual",
           }));
-          await odooData.importAttendance(batch);
+          await importAttendanceMutation.mutateAsync(batch);
         }
       }
 
@@ -199,7 +201,7 @@ const UploadTab = ({
       console.error("Error saving:", err);
     }
     setSaving(false);
-  }, [parseResult, employees]);
+  }, [parseResult, employees, importAttendanceMutation.mutateAsync]);
 
   return (
     <div className="space-y-6">

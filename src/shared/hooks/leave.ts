@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 import type { DbEmployee } from "./core";
 import type { DbLeaveExcuse } from "./leaveExcuseTypes";
 
 // ——— Phase 3: Leave Management Types ———
+
+/** The two year-end balance behaviours `/api/hr/leave/types/*` accepts (backend v1.21.0). */
+export type LeaveBalanceResetPolicy = "accumulate" | "reset_yearly";
 
 export interface DbLeaveType {
   id: string;
@@ -22,6 +26,13 @@ export interface DbLeaveType {
   min_service_months: number;
   /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
   excuse_on_insufficient_balance: boolean;
+  /**
+   * What happens to an unused balance when the leave year ends (backend
+   * v1.21.0): `"accumulate"` carries it forward, `"reset_yearly"` starts the
+   * balance again each leave year. Defaults to `"accumulate"` — the behaviour
+   * every leave type had before the setting existed.
+   */
+  balance_reset_policy: LeaveBalanceResetPolicy;
   is_carryover_allowed: boolean;
   max_carryover_days: number;
   is_encashable: boolean;
@@ -193,21 +204,29 @@ export const useLeaveEmployeeScope = () => {
 }
 
 export const useLeaveTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("leaveTypes", () => odooData.fetchLeaveTypes(), "Failed to load leave types");
+  const { data: types, loading, refetch } = useCachedList("leaveTypes", () => odooData.fetchLeaveTypes(), "Failed to load leave types", [], true, { ttlMs: STALE_TIME.LONG });
   return { types, loading, refetch };
 }
 
 export const useLeavePolicies = () => {
-  const { data: policies, loading, refetch } = useCachedList("leavePolicies", () => odooData.fetchLeavePolicies(), "Failed to load leave policies");
+  const { data: policies, loading, refetch } = useCachedList("leavePolicies", () => odooData.fetchLeavePolicies(), "Failed to load leave policies", [], true, { ttlMs: STALE_TIME.LONG });
   return { policies, loading, refetch };
 }
 
-export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string }) => {
+/**
+ * A new/updated request can land mid-session, so this stays short-lived and
+ * refetches on tab focus. `preserveOnRefetch` keeps the previous results on
+ * screen while a search/filter change is in flight, instead of clearing the
+ * list to empty on every keystroke.
+ */
+export const useLeaveRequests = (filters?: { employeeId?: string; status?: string; month?: string; search?: string }) => {
   const { data: requests, loading, refetch } = useCachedList(
     "leaveRequests",
     () => odooData.fetchLeaveRequests(filters),
     "Failed to load leave requests",
-    [filters?.employeeId, filters?.status, filters?.month],
+    [filters?.employeeId, filters?.status, filters?.month, filters?.search],
+    true,
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true, preserveOnRefetch: true },
   );
   return { requests, loading, refetch };
 }

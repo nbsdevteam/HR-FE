@@ -147,14 +147,16 @@ const Attendance = () => {
         setExcuseModal={setExcuseModal}
       />
 
-      <ExcuseModal
-        excuseModal={excuseModal}
-        excuseForm={excuseForm}
-        excuseSaving={excuseSaving}
-        onClose={handleCloseExcuseModal}
-        onExcuseFormChange={setExcuseForm}
-        onSave={handleSaveExcuse}
-      />
+      <Suspense fallback={null}>
+        <ExcuseModal
+          excuseModal={excuseModal}
+          excuseForm={excuseForm}
+          excuseSaving={excuseSaving}
+          onClose={handleCloseExcuseModal}
+          onExcuseFormChange={setExcuseForm}
+          onSave={handleSaveExcuse}
+        />
+      </Suspense>
     </div>
   );
 };

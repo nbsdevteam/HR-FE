@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { PositionFormState } from "../components/PositionFormModal";
 import { EMPTY_POSITION_FORM } from "./usePositionsView";
@@ -15,13 +16,18 @@ type UseAddPositionFormArgs = {
  * state, its own saving flag, and the create call.
  */
 export const useAddPositionForm = ({
-  refetchPositions,
+  refetchPositions: _refetchPositions,
   setToast,
 }: UseAddPositionFormArgs) => {
   const [showAddPositionModal, setShowAddPositionModal] = useState(false);
   const [positionSaving, setPositionSaving] = useState(false);
   const [posForm, setPosForm] = useState<PositionFormState>(
     EMPTY_POSITION_FORM,
+  );
+
+  const createDesignationMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDesignation(payload),
+    "positions",
   );
 
   const openAddPositionModal = useCallback(() => {
@@ -37,7 +43,7 @@ export const useAddPositionForm = ({
     if (!posForm.title_ar.trim()) return;
     setPositionSaving(true);
     try {
-      await odooData.createDesignation({
+      await createDesignationMutation.mutateAsync({
         title_ar: posForm.title_ar.trim(),
         name: posForm.title_en.trim() || posForm.title_ar.trim(),
         department_id: posForm.department_id || null,
@@ -49,13 +55,12 @@ export const useAddPositionForm = ({
       setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
       setShowAddPositionModal(false);
       setPosForm(EMPTY_POSITION_FORM);
-      await refetchPositions();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
       setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setPositionSaving(false);
-  }, [posForm, refetchPositions, setToast]);
+  }, [posForm, createDesignationMutation.mutateAsync, setToast]);
 
   return {
     showAddPositionModal,

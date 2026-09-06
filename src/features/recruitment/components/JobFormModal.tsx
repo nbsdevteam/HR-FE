@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, type SelectOption } from "@/shared/components";
 import {
   type DbJobOpening,
-  type DbDepartment,
   type JobSkillRequirement,
+  useDepartments,
+  useOdooMutation,
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import { JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO } from "../constants/recruitment";
 import JobFormFieldsSection from "./JobFormFieldsSection";
 import JobScreeningSpecFields from "./JobScreeningSpecFields";
@@ -37,6 +39,7 @@ const JobFormModal = ({
     requirements: (editingJob?.requirements || []).join("\n"),
     // AI screening spec — what the Initial Rating is computed against
     min_experience_years: editingJob?.min_experience_years ?? 0,
+    max_experience_years: editingJob?.max_experience_years ?? 0,
     education_level: editingJob?.education_level || "none",
     ir_auto_shortlist: editingJob?.ir_auto_shortlist ?? 0,
   });
@@ -46,12 +49,9 @@ const JobFormModal = ({
   const [niceToHave, setNiceToHave] = useState<JobSkillRequirement[]>(
     editingJob?.nice_to_have_skills || [],
   );
-  const [saving, setSaving] = useState(false);
-  const [odooDepartments, setOdooDepartments] = useState<DbDepartment[]>([]);
-
-  const handleSave = async () => {
-    if (!form.title.trim()) return;
-    setSaving(true);
+  const { departments: odooDepartments } = useDepartments();
+  const isArabic = useIsArabicLanguage();
+  const saveJobMutation = useOdooMutation<unknown, void>(() => {
     const reqs = form.requirements
       .split("\n")
       .map((r) => r.trim())
@@ -71,32 +71,58 @@ const JobFormModal = ({
       required_skills: requiredSkills,
       nice_to_have_skills: niceToHave,
       min_experience_years: form.min_experience_years,
+      max_experience_years: form.max_experience_years,
       education_level: form.education_level,
       ir_auto_shortlist: form.ir_auto_shortlist,
     };
+    return editingJob
+      ? odooData.updateJobOpening(editingJob.id, payload)
+      : odooData.createJobOpening(payload);
+  }, "jobOpenings");
+
+  // `DbDepartment.name` always prefers Arabic, so it can't be used as a
+  // display label directly — pick the column matching the active language,
+  // but keep the canonical `name` as the option's value since that's what
+  // `form.department` stores and what the save lookup above matches on.
+  const departmentOptions = useMemo(() => {
+    const options: SelectOption[] = odooDepartments.map((d) => ({
+      value: d.name,
+      label: localizedName(d.name_ar || d.name, d.name_en, isArabic),
+    }));
+    if (form.department && !odooDepartments.some((d) => d.name === form.department)) {
+      options.push({ value: form.department, label: form.department });
+    }
+    return options;
+  }, [odooDepartments, form.department, isArabic]);
+
+  const handleSave = useCallback(async (): Promise<void> => {
+    if (!form.title.trim()) return;
+    if (
+      form.max_experience_years > 0 &&
+      form.max_experience_years < form.min_experience_years
+    ) {
+      localizedAlert(arabicSource("recruitment.max_experience_below_min"));
+      return;
+    }
     try {
-      if (editingJob) {
-        await odooData.updateJobOpening(editingJob.id, payload);
-      } else {
-        await odooData.createJobOpening(payload);
-      }
+      await saveJobMutation.mutateAsync();
       onSaved();
     } catch (e: any) {
       localizedAlert(e?.message || arabicSource("common.error"));
-    } finally {
-      setSaving(false);
     }
-  };
-
-  useEffect(() => {
-    odooData
-      .fetchDepartments()
-      .then(setOdooDepartments)
-      .catch(() => {});
-  }, []);
+  }, [
+    form.title,
+    form.max_experience_years,
+    form.min_experience_years,
+    saveJobMutation,
+    onSaved,
+  ]);
 
   const handleMinExperienceYearsChange = useCallback((value: number) => {
     setForm((prev) => ({ ...prev, min_experience_years: value }));
+  }, []);
+  const handleMaxExperienceYearsChange = useCallback((value: number) => {
+    setForm((prev) => ({ ...prev, max_experience_years: value }));
   }, []);
   const handleEducationLevelChange = useCallback((value: string) => {
     setForm((prev) => ({ ...prev, education_level: value }));
@@ -120,52 +146,55 @@ const JobFormModal = ({
       }
       bodyClassName="space-y-4"
     >
-        <JobFormFieldsSection
-          title={form.title}
-          department={form.department}
-          location={form.location}
-          type={form.type}
-          deadline={form.deadline}
-          status={form.status}
-          salaryRange={form.salary_range}
-          requirements={form.requirements}
-          description={form.description}
-          onFieldChange={handleFieldChange}
-        />
+      <JobFormFieldsSection
+        title={form.title}
+        department={form.department}
+        departmentOptions={departmentOptions}
+        location={form.location}
+        type={form.type}
+        deadline={form.deadline}
+        status={form.status}
+        salaryRange={form.salary_range}
+        requirements={form.requirements}
+        description={form.description}
+        onFieldChange={handleFieldChange}
+      />
 
-        <JobScreeningSpecFields
-          requiredSkills={requiredSkills}
-          niceToHave={niceToHave}
-          minExperienceYears={form.min_experience_years}
-          educationLevel={form.education_level}
-          irAutoShortlist={form.ir_auto_shortlist}
-          onRequiredSkillsChange={setRequiredSkills}
-          onNiceToHaveChange={setNiceToHave}
-          onMinExperienceYearsChange={handleMinExperienceYearsChange}
-          onEducationLevelChange={handleEducationLevelChange}
-          onIrAutoShortlistChange={handleIrAutoShortlistChange}
-        />
+      <JobScreeningSpecFields
+        requiredSkills={requiredSkills}
+        niceToHave={niceToHave}
+        minExperienceYears={form.min_experience_years}
+        maxExperienceYears={form.max_experience_years}
+        educationLevel={form.education_level}
+        irAutoShortlist={form.ir_auto_shortlist}
+        onRequiredSkillsChange={setRequiredSkills}
+        onNiceToHaveChange={setNiceToHave}
+        onMinExperienceYearsChange={handleMinExperienceYearsChange}
+        onMaxExperienceYearsChange={handleMaxExperienceYearsChange}
+        onEducationLevelChange={handleEducationLevelChange}
+        onIrAutoShortlistChange={handleIrAutoShortlistChange}
+      />
 
-        <div className="flex gap-3 pt-2">
-          <Button
-            onClick={handleSave}
-            disabled={saving || !form.title.trim()}
-            className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
-          >
-            {saving
-              ? arabicSource("common.saving")
-              : isEdit
-                ? arabicSource("common.save")
-                : arabicSource("recruitment.job_posting")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-11 cursor-pointer"
-          >
-            {arabicSource("common.cancel")}
-          </Button>
-        </div>
+      <div className="flex gap-3 pt-2">
+        <Button
+          onClick={handleSave}
+          disabled={saveJobMutation.isPending || !form.title.trim()}
+          className="flex-1 h-11 shadow-lg shadow-primary/20 cursor-pointer"
+        >
+          {saveJobMutation.isPending
+            ? arabicSource("common.saving")
+            : isEdit
+              ? arabicSource("common.save")
+              : arabicSource("recruitment.job_posting")}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="flex-1 h-11 cursor-pointer"
+        >
+          {arabicSource("common.cancel")}
+        </Button>
+      </div>
     </Modal>
   );
 };

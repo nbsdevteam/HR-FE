@@ -3,6 +3,7 @@ import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import {
   useEmployees,
   useTrainingParticipants,
@@ -156,10 +157,10 @@ const TrainingWorkspace = () => {
         participantStatusColors={config.participantStatusColors}
         getEmployeeName={getEmployeeNameCb}
         onEditProgram={programForm.setEditingProgram}
-        onDeleteProgram={programForm.handleDeleteProgram}
+        onDeleteProgram={programForm.requestDeleteProgram}
         onEnrollProgram={enrollment.openEnrollModal}
         onMarkParticipantCompleted={enrollment.handleMarkCompleted}
-        onDeleteParticipant={enrollment.handleDeleteParticipant}
+        onDeleteParticipant={enrollment.requestDeleteParticipant}
       />
 
       <AnimatePresence>
@@ -209,6 +210,30 @@ const TrainingWorkspace = () => {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {programForm.pendingDeleteProgramId && (
+          <ConfirmDeleteModal
+            onClose={programForm.cancelDeleteProgram}
+            onConfirm={programForm.confirmDeleteProgram}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("training.do_you_want_to_delete_this_training_program")}
+            loading={programForm.deletingProgram}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {enrollment.pendingDeleteParticipantId && (
+          <ConfirmDeleteModal
+            onClose={enrollment.cancelDeleteParticipant}
+            onConfirm={enrollment.confirmDeleteParticipant}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("training.do_you_want_to_delete_this_participant_from_the_program")}
+            loading={enrollment.deletingParticipant}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

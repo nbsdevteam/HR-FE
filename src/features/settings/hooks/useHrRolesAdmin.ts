@@ -1,45 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchHrRoles, type HrRoleListItem } from "../api/permissionsAdmin";
+
+interface HrRolesResult {
+  items: HrRoleListItem[];
+  total: number;
+}
 
 /**
  * Directory (search/list) state for the Job Roles tab. `enabled` defers the
  * fetch until that tab is actually selected, mirroring `useHrPermissionsAdmin`.
  */
 export const useHrRolesAdmin = (enabled: boolean) => {
-  const [items, setItems] = useState<HrRoleListItem[]>([]);
-  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [forbidden, setForbidden] = useState(false);
 
-  const fetchRoles = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const data = await fetchHrRoles({ search, active: true });
-      setItems(data.items);
-      setTotal(data.total);
-      setForbidden(false);
-    } catch {
-      setItems([]);
-      setTotal(0);
-      setForbidden(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [search]);
+  const rolesQuery = useQuery<HrRolesResult, Error>({
+    queryKey: ["hrRoles", search],
+    queryFn: () => fetchHrRoles({ search, active: true }),
+    enabled,
+  });
 
-  useEffect(() => {
-    if (!enabled) return;
-    fetchRoles();
-  }, [enabled, fetchRoles]);
+  const refetch = useCallback((): void => {
+    void rolesQuery.refetch();
+  }, [rolesQuery.refetch]);
 
   return {
-    items,
-    total,
+    items: rolesQuery.data?.items ?? [],
+    total: rolesQuery.data?.total ?? 0,
     search,
     setSearch,
-    loading,
-    forbidden,
-    refetch: fetchRoles,
+    loading: rolesQuery.isFetching,
+    forbidden: rolesQuery.isError,
+    refetch,
   };
 };

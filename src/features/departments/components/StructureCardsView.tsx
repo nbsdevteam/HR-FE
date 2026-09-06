@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
+import type { MouseEventHandler, Ref } from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { OrgStructureDepartment, OrgStructurePosition, OrgStructureTree } from "@/shared/hooks";
 import { EmptyState, LoadingState } from "@/shared/components";
+import { useContentNaturalSize } from "../hooks/useContentNaturalSize";
 import { useStructureTreeExpansion } from "../hooks/useStructureTreeExpansion";
 import ReportingTreeBanner from "./ReportingTreeBanner";
 import ReportingTreeView from "./ReportingTreeView";
@@ -25,6 +27,15 @@ type StructureCardsViewProps = {
     position: OrgStructurePosition,
     department?: OrgStructureDepartment,
   ) => void;
+  /** Pan/zoom state, scoped to just the diagram viewport below — the summary
+   * tiles, view-mode toggle and orphans list stay outside it. */
+  panEnabled: boolean;
+  isDragging: boolean;
+  zoom: number;
+  containerRef: Ref<HTMLDivElement>;
+  onMouseDown: MouseEventHandler<HTMLDivElement>;
+  onMouseMove: MouseEventHandler<HTMLDivElement>;
+  onMouseUp: MouseEventHandler<HTMLDivElement>;
 };
 
 /**
@@ -45,10 +56,18 @@ const StructureCardsView = ({
   hasActiveFilter,
   onSelectPosition,
   onSelectEmployee,
+  panEnabled,
+  isDragging,
+  zoom,
+  containerRef,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
 }: StructureCardsViewProps) => {
   const [viewMode, setViewMode] = useState<StructureViewMode>("tree");
   const { t } = useTranslation();
   const { collapsedDepartments, toggleDepartment } = useStructureTreeExpansion();
+  const { contentRef, naturalSize } = useContentNaturalSize<HTMLDivElement>();
 
   const handleViewModeChange = useCallback((next: StructureViewMode): void => {
     setViewMode(next);
@@ -97,39 +116,67 @@ const StructureCardsView = ({
       )}
 
       {/*
-        Only this container scrolls horizontally — the page body never does.
-        `min-w-max` makes the inner box as wide as its widest row, so centred
-        content overflows to the right only. Centring inside a box narrower
-        than its content pushes the left-hand cards past the scroll origin,
-        where they cannot be reached.
+        Only this viewport pans/zooms/scrolls horizontally — the page body and
+        the summary/toggle/orphans sections around it never do. The outer div
+        reserves the natural content footprint scaled by `zoom` (so the
+        scrollbar actually shrinks as the user zooms out); the inner div keeps
+        its natural, unscaled layout size and is visually scaled with
+        `transform`, which `useContentNaturalSize` measures around.
       */}
-      <div className="overflow-x-auto">
-        <div className="min-w-max mx-auto py-4">
-          {showReportingTree && <ReportingTreeView roots={tree.reporting_tree} />}
+      <div
+        ref={containerRef}
+        className={`overflow-auto rounded-xl border border-border/30 bg-background/40 ${panEnabled ? (isDragging ? "cursor-grabbing" : "cursor-grab") : ""}`}
+        style={{ maxHeight: "75vh" }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+      >
+        <div
+          className="mx-auto"
+          style={{
+            width: naturalSize.width ? naturalSize.width * zoom : undefined,
+            height: naturalSize.height ? naturalSize.height * zoom : undefined,
+          }}
+        >
+          <div
+            ref={contentRef}
+            // `w-max` (not `min-w-max`) pins this div's own width to its
+            // intrinsic content size. `min-w-max` only sets a floor, so once
+            // the wrapper above grows past that (zoom > 1, since it's sized
+            // to naturalSize * zoom), this div's `width: auto` would stretch
+            // to fill it — which useContentNaturalSize's ResizeObserver then
+            // reports as a bigger "natural" size, growing the wrapper again,
+            // in a runaway feedback loop.
+            className="w-max py-4 transition-transform duration-200"
+            style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}
+          >
+            {showReportingTree && <ReportingTreeView roots={tree.reporting_tree} />}
 
-          {!showReportingTree && viewMode === "tree" && (
-            <StructureTreeView
-              departments={tree.departments}
-              collapsedDepartments={collapsedDepartments}
-              onToggleDepartment={toggleDepartment}
-              matchedIds={matchedIds}
-              hasActiveFilter={hasActiveFilter}
-              onSelectPosition={onSelectPosition}
-              onSelectEmployee={onSelectEmployee}
-            />
-          )}
+            {!showReportingTree && viewMode === "tree" && (
+              <StructureTreeView
+                departments={tree.departments}
+                collapsedDepartments={collapsedDepartments}
+                onToggleDepartment={toggleDepartment}
+                matchedIds={matchedIds}
+                hasActiveFilter={hasActiveFilter}
+                onSelectPosition={onSelectPosition}
+                onSelectEmployee={onSelectEmployee}
+              />
+            )}
 
-          {!showReportingTree && viewMode === "cards" && (
-            <StructureCardsForest
-              departments={tree.departments}
-              collapsedDepartments={collapsedDepartments}
-              onToggleDepartment={toggleDepartment}
-              matchedIds={matchedIds}
-              hasActiveFilter={hasActiveFilter}
-              onSelectPosition={onSelectPosition}
-              onSelectEmployee={onSelectEmployee}
-            />
-          )}
+            {!showReportingTree && viewMode === "cards" && (
+              <StructureCardsForest
+                departments={tree.departments}
+                collapsedDepartments={collapsedDepartments}
+                onToggleDepartment={toggleDepartment}
+                matchedIds={matchedIds}
+                hasActiveFilter={hasActiveFilter}
+                onSelectPosition={onSelectPosition}
+                onSelectEmployee={onSelectEmployee}
+              />
+            )}
+          </div>
         </div>
       </div>
 

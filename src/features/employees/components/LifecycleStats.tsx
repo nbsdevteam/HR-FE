@@ -23,7 +23,7 @@ const LifecycleStats = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 min-[768px]:grid-cols-2 min-[1000px]:grid-cols-4 gap-4">
       {stats.map((stat, i) => (
         <StatCard
           key={stat.label}

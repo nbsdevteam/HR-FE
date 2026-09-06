@@ -43,17 +43,17 @@ const TypeListItemInner = <T extends NamedTypeRecord,>({
   }, [onDelete, item.id]);
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
+    <div className="flex items-center flex-wrap gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary shrink-0">
           {item.code}
         </span>
-        <div>
-          <p className="text-sm text-foreground" data-i18n-ignore>{primary}</p>
-          <p className="text-xs text-muted-foreground">{descriptionLine(item)}</p>
+        <div className="min-w-0">
+          <p className="text-sm text-foreground truncate" data-i18n-ignore>{primary}</p>
+          <p className="text-xs text-muted-foreground truncate">{descriptionLine(item)}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <SettingsToggle on={item.is_active} onClick={handleToggleActive} />
         <button
           onClick={handleDelete}

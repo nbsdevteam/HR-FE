@@ -1,9 +1,12 @@
 import { useState, useCallback, memo, lazy, Suspense } from "react";
+import { AnimatePresence } from "motion/react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal, Toast } from "@/shared/components";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
+import { useToast } from "../hooks/useToast";
 import RecruitmentApplicantsView from "./RecruitmentApplicantsView";
 import RecruitmentHeader from "./RecruitmentHeader";
 import LoadingState from "@/shared/components/LoadingState";
@@ -55,7 +58,12 @@ const RecruitmentWorkspace = () => {
     loading: appsLoading,
     refetch: refetchApps,
   } = useApplicants();
-  const loading = jobsLoading || appsLoading;
+  // `jobsLoading`/`appsLoading` mirror `isFetching`, so they also flip true on
+  // background refetches (e.g. the applicants list re-fetching after a rating
+  // or stage mutation). Only gate the full-page loader on the very first load
+  // — once data has landed once, later refetches should update in place
+  // instead of unmounting the page back to the spinner.
+  const loading = (jobsLoading && rawJobs.length === 0) || (appsLoading && rawApplicants.length === 0);
 
   const { jobs, applicants, filteredApplicants, stats } =
     useRecruitmentWorkspaceData(
@@ -74,10 +82,20 @@ const RecruitmentWorkspace = () => {
     handleUpdateStage,
     handleScreenApplicant,
     handleJobStatusChange,
-    handleDeleteJob,
-    handleDeleteApplicant,
     handleConvertToEmployee,
+    pendingDeleteJob,
+    deletingJob,
+    requestDeleteJob,
+    cancelDeleteJob,
+    confirmDeleteJob,
+    pendingDeleteApplicantId,
+    deletingApplicant,
+    requestDeleteApplicant,
+    cancelDeleteApplicant,
+    confirmDeleteApplicant,
   } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant);
+
+  const { toastMessage, showToast } = useToast();
 
   const handleApplicantFormOpen = useCallback(
     () => setShowApplicantForm(true),
@@ -136,6 +154,19 @@ const RecruitmentWorkspace = () => {
 
   return (
     <div className="space-y-6">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          shape="banner"
+          position="top-full"
+          toneClassName="bg-toast-success border border-toast-success-border shadow-lg text-center"
+          textClassName="text-toast-success-fg font-medium"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+        />
+      )}
+
       <RecruitmentHeader
         viewMode={viewMode}
         onApplicantFormOpen={handleApplicantFormOpen}
@@ -152,7 +183,7 @@ const RecruitmentWorkspace = () => {
           <RecruitmentJobsView
             jobs={jobs}
             onAiScreeningOpen={handleAiScreeningOpen}
-            onDeleteJob={handleDeleteJob}
+            onDeleteJob={requestDeleteJob}
             onEditJob={setEditingJob}
             onJobStatusChange={handleJobStatusChange}
             onLinkJob={setLinkJob}
@@ -194,6 +225,8 @@ const RecruitmentWorkspace = () => {
           <RecruitmentPipelineView
             applicants={applicants}
             onSelectApplicant={setSelectedApplicant}
+            onUpdateStage={handleUpdateStage}
+            showToast={showToast}
           />
         </Suspense>
       )}
@@ -219,7 +252,7 @@ const RecruitmentWorkspace = () => {
         selectedApplicant={selectedApplicant}
         showApplicantForm={showApplicantForm}
         showJobForm={showJobForm}
-        onApplicantDelete={handleDeleteApplicant}
+        onApplicantDelete={requestDeleteApplicant}
         onApplicantEdit={handleApplicantEdit}
         onApplicantFormClose={handleApplicantFormClose}
         onApplicantSaved={handleApplicantSaved}
@@ -234,6 +267,30 @@ const RecruitmentWorkspace = () => {
         onJobSaved={handleJobSaved}
         onLinkJobClose={handleLinkJobClose}
       />
+
+      <AnimatePresence>
+        {pendingDeleteJob && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteJob}
+            onConfirm={confirmDeleteJob}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("recruitment.are_you_sure_you_want_to_delete_this_vacancy")}
+            loading={deletingJob}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pendingDeleteApplicantId && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteApplicant}
+            onConfirm={confirmDeleteApplicant}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("recruitment.are_you_sure_you_want_to_delete_this_applicant")}
+            loading={deletingApplicant}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

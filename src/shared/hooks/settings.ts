@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { indexBy } from "@/shared/utils/collections";
 import { useAsyncList } from "./useAsyncList";
 
@@ -97,7 +98,7 @@ export const useEmployeeShiftAssignments = () => {
  */
 
 export const useSystemModules = () => {
-  const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules(), [], "Failed to load modules", undefined, { cacheKey: "systemModules" });
+  const { data: modules, loading, refetch } = useAsyncList(() => odooData.fetchModules(), [], "Failed to load modules", undefined, { cacheKey: "systemModules", ttlMs: STALE_TIME.LONG });
 
   const moduleIndex = useMemo(() => indexBy(modules, (m) => m.module_key), [modules]);
 
@@ -110,7 +111,7 @@ export const useSystemModules = () => {
 }
 
 export const useConfigurations = () => {
-  const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs(), [], "Failed to load configurations", undefined, { cacheKey: "configurations" });
+  const { data: configs, loading, refetch } = useAsyncList(() => odooData.fetchConfigs(), [], "Failed to load configurations", undefined, { cacheKey: "configurations", ttlMs: STALE_TIME.LONG });
 
   const configIndex = useMemo(() => indexBy(configs, (c) => c.config_key), [configs]);
 
@@ -145,7 +146,7 @@ export const usePublicHolidays = (year?: number) => {
     [year],
     "Failed to load holidays",
     undefined,
-    { cacheKey: "holidays" }
+    { cacheKey: "holidays", ttlMs: STALE_TIME.LONG }
   );
 
   const holidayIndex = useMemo(() => indexBy(holidays, (h) => h.date), [holidays]);

@@ -19,6 +19,9 @@ export const mapLeaveType = (r: any): DbLeaveType => {
     gender_restriction: r.gender_restriction || null,
     min_service_months: num(r.min_service_months),
     excuse_on_insufficient_balance: bool(r.excuse_on_insufficient_balance),
+    // Absent on a backend that predates v1.21.0 → "accumulate", which is
+    // exactly what those backends did.
+    balance_reset_policy: r.balance_reset_policy === "reset_yearly" ? "reset_yearly" : "accumulate",
     is_carryover_allowed: bool(r.is_carryover_allowed),
     max_carryover_days: num(r.max_carryover_days),
     is_encashable: bool(r.is_encashable),
@@ -163,6 +166,13 @@ export const mapLeaveBalanceItem = (r: any): DbLeaveBalanceItem => {
     blocked_by_probation: bool(r.blocked_by_probation),
     // Absent on a backend that predates v1.12.9 → treat the type as appliable.
     can_apply: r.can_apply !== false,
+    // Year-end balance policy (backend v1.21.0). Absent → "accumulate", the
+    // behaviour those backends had. `leave_year_end` is the day the balance
+    // resets on when `balance_resets_yearly` is true.
+    balance_reset_policy: r.balance_reset_policy === "reset_yearly" ? "reset_yearly" : "accumulate",
+    balance_resets_yearly: bool(r.balance_resets_yearly),
+    leave_year_start: r.leave_year_start || null,
+    leave_year_end: r.leave_year_end || null,
   };
 }
 

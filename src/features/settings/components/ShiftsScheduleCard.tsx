@@ -1,6 +1,8 @@
 import { useCallback } from "react";
+import { AnimatePresence } from "motion/react";
 import { Clock, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
 import { useDepartmentShiftAssignments } from "../hooks/useDepartmentShiftAssignments";
 import { useShiftManagement } from "../hooks/useShiftManagement";
@@ -38,8 +40,12 @@ const ShiftsScheduleCard = ({ showToast }: TShiftsScheduleCardProps) => {
     updateNewShiftDay,
     saveShift,
     createShift,
-    deleteShift,
     setAsDefault,
+    pendingDeleteShiftId,
+    deletingShift,
+    requestDeleteShift,
+    cancelDeleteShift,
+    confirmDeleteShift,
   } = useShiftManagement(refetchShifts, showToast);
   const {
     deptShiftAssignments,
@@ -98,7 +104,7 @@ const ShiftsScheduleCard = ({ showToast }: TShiftsScheduleCardProps) => {
           editingForm={editingShift}
           onToggleExpand={toggleExpandedShift}
           onInitEdit={initEditShift}
-          onDelete={deleteShift}
+          onDelete={requestDeleteShift}
           onSetDefault={setAsDefault}
           onCancelEdit={cancelEditShift}
           onSaveEdit={saveShift}
@@ -118,6 +124,18 @@ const ShiftsScheduleCard = ({ showToast }: TShiftsScheduleCardProps) => {
       />
 
       <ShiftAssignerSection />
+
+      <AnimatePresence>
+        {pendingDeleteShiftId && (
+          <ConfirmDeleteModal
+            onClose={cancelDeleteShift}
+            onConfirm={confirmDeleteShift}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("settings.do_you_really_want_to_delete_this_shift")}
+            loading={deletingShift}
+          />
+        )}
+      </AnimatePresence>
     </SettingsSectionCard>
   );
 };

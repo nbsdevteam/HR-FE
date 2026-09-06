@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { useLeaveBalanceSummary } from "@/shared/hooks";
+import { useLeaveBalanceSummary, useOdooMutation } from "@/shared/hooks";
 import type { DbLeaveType, DbLeaveBalance, DbLeaveSettings } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -46,7 +46,6 @@ export const useLeaveRequestForm = ({
   const [endDate, setEndDate] = useState("");
   const [isHalfDay, setIsHalfDay] = useState(false);
   const [reason, setReason] = useState("");
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const selectedType = leaveTypes.find((leaveType) => leaveType.id === leaveTypeId) ?? null;
@@ -59,6 +58,13 @@ export const useLeaveRequestForm = ({
   const { summary: balanceSummary } = useLeaveBalanceSummary(
     selfOnly ? null : employeeId || null,
     { enabled: selfOnly || Boolean(employeeId) },
+  );
+
+  // Balance/accrual figures shift for whoever the request lands on, so both
+  // caches need invalidating alongside the leave-requests list itself.
+  const requestLeaveMutation = useOdooMutation(
+    (payload: Parameters<typeof odooData.requestLeave>[0]) => odooData.requestLeave(payload),
+    ["leaveRequests", "leaveBalanceSummary", "leaveAccruals"],
   );
 
   // Working days between the two dates, excluding the weekend.
@@ -185,7 +191,6 @@ export const useLeaveRequestForm = ({
       return;
     }
 
-    setSaving(true);
     setError("");
 
     try {
@@ -202,8 +207,7 @@ export const useLeaveRequestForm = ({
         ...odooData.leaveRequestEmployeeIdField(selfOnly, employeeId),
         ...(await hourly.buildRequestFields()),
       };
-      const created = await odooData.requestLeave(payload);
-      setSaving(false);
+      const created = await requestLeaveMutation.mutateAsync(payload);
       hourly.reset();
       if (created.excuse.active && created.excuse.state === "pending") {
         localizedAlert(arabicSource("leave.excuse_pending_notice"));
@@ -211,12 +215,11 @@ export const useLeaveRequestForm = ({
       await onSubmit();
     } catch (e: any) {
       setError(leaveErrorMessage(e, "فشل إنشاء طلب الإجازة"));
-      setSaving(false);
     }
   }, [
     employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId, linkError,
-    minStartDate, onSubmit, reason, selectedType, selfEmployee,
-    selfOnly, startDate,
+    minStartDate, onSubmit, reason, requestLeaveMutation, selectedType,
+    selfEmployee, selfOnly, startDate,
   ]);
 
   useEffect(() => {
@@ -254,7 +257,7 @@ export const useLeaveRequestForm = ({
     leaveTypeId,
     reason,
     remainingBalance,
-    saving,
+    saving: requestLeaveMutation.isPending,
     selectedType,
     selfEmployee,
     startDate,

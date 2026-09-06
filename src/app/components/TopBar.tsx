@@ -2,7 +2,11 @@ import { useState, useRef, useCallback } from "react";
 import { MessageSquare, Search, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
-import { useDeviceStatus, useNotifications } from "@/shared/hooks";
+import {
+  useDeviceStatus,
+  useNotifications,
+  useOdooMutation,
+} from "@/shared/hooks";
 import { useClickOutside } from "@/shared/hooks/ui";
 import { Button } from "@/shared/components";
 import { LanguageSwitcher } from "@/app/providers";
@@ -14,24 +18,7 @@ import * as odooData from "@/shared/api/odooData";
 import DeviceStatusDropdown from "./DeviceStatusDropdown";
 import NotificationsDropdown from "./NotificationsDropdown";
 import UserMenuDropdown from "./UserMenuDropdown";
-
-const quotes = [
-  arabicSource(
-    "shared.success_is_the_result_of_preparation_hard_work_and_learning_from",
-  ),
-  arabicSource(
-    "shared.investing_in_employees_is_the_best_investment_for_an_organizatio",
-  ),
-  arabicSource(
-    "shared.leadership_is_the_art_of_making_others_achieve_their_goals_by_th",
-  ),
-  arabicSource(
-    "shared.building_a_strong_team_starts_from_a_healthy_corporate_culture",
-  ),
-  arabicSource(
-    "shared.continuous_development_is_the_key_to_institutional_excellence",
-  ),
-];
+import { quotes } from "../data";
 
 const TopBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,17 +26,33 @@ const TopBar = () => {
   const [bellOpen, setBellOpen] = useState(false);
   const [deviceOpen, setDeviceOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const { toggleMobileNav, isDesktop } = useNavShell();
   const { user, signOut } = useAuth();
-  const {
-    notifications,
-    unreadCount,
-    refetch: refetchNotifications,
-  } = useNotifications();
-  const { deviceStatus, refresh: refreshDevice } = useDeviceStatus();
+  const { notifications, unreadCount } = useNotifications();
+  const { deviceStatus } = useDeviceStatus();
+
+  const markAllReadMutation = useOdooMutation(
+    odooData.markAllNotificationsRead,
+    "notifications",
+  );
+  const markReadMutation = useOdooMutation(
+    odooData.markNotificationRead,
+    "notifications",
+  );
+  // Invalidates the deviceStatus query on success, so useDeviceStatus picks
+  // up the fresh sync state instead of needing a manual refresh call.
+  const triggerSyncMutation = useOdooMutation(
+    async () => {
+      const res = await fetch(`${SYNC_API}/sync`, {
+        method: "POST",
+        signal: AbortSignal.timeout(120000),
+      }).catch(() => null);
+      if (res?.ok) await new Promise((r) => setTimeout(r, 3000));
+    },
+    "deviceStatus",
+  );
 
   const bellRef = useRef<HTMLDivElement>(null);
   const deviceRef = useRef<HTMLDivElement>(null);
@@ -80,41 +83,32 @@ const TopBar = () => {
 
   const handleMarkAllRead = useCallback(async () => {
     try {
-      await odooData.markAllNotificationsRead();
-      await refetchNotifications();
+      await markAllReadMutation.mutateAsync();
     } catch {
       /* ignore */
     }
-  }, [refetchNotifications]);
+  }, [markAllReadMutation.mutateAsync]);
 
   const handleSelectNotification = useCallback(
     async (n: { id: string; is_read: boolean }) => {
       if (!n.is_read) {
         try {
-          await odooData.markNotificationRead(n.id);
-          await refetchNotifications();
+          await markReadMutation.mutateAsync(n.id);
         } catch {
           /* ignore */
         }
       }
     },
-    [refetchNotifications],
+    [markReadMutation.mutateAsync],
   );
 
   const triggerSync = useCallback(async () => {
-    setSyncing(true);
     try {
-      const res = await fetch(`${SYNC_API}/sync`, {
-        method: "POST",
-        signal: AbortSignal.timeout(120000),
-      }).catch(() => null);
-      if (res?.ok) await new Promise((r) => setTimeout(r, 3000));
+      await triggerSyncMutation.mutateAsync();
     } catch {
       /* sync service optional */
     }
-    await refreshDevice();
-    setSyncing(false);
-  }, [refreshDevice]);
+  }, [triggerSyncMutation]);
 
   const handleSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -150,13 +144,17 @@ const TopBar = () => {
         <div className="min-w-0">
           <p className="text-foreground truncate" style={{ fontSize: 14 }}>
             <span className="md:hidden">{displayName}</span>
-            <span className="hidden md:inline">
+            <span
+              className="hidden md:inline"
+              title="Hello, Human Resources Manager"
+            >
               {arabicSource("shared.hello_human_resources_manager")}
             </span>
           </p>
           <p
             className="text-muted-foreground hidden lg:block truncate"
             style={{ fontSize: 12 }}
+            title="Success is the result of preparation, hard work, and learning from failure"
           >
             {quote}
           </p>
@@ -196,7 +194,7 @@ const TopBar = () => {
             isOpen={deviceOpen}
             dropdownRef={deviceRef}
             onToggle={handleDeviceToggle}
-            syncing={syncing}
+            syncing={triggerSyncMutation.isPending}
             onSync={triggerSync}
           />
         )}
@@ -210,7 +208,8 @@ const TopBar = () => {
           <MessageSquare className="w-5 h-5 text-muted-foreground" />
         </motion.button>
 
-        <div className="hidden sm:block">
+        {/* Theme Switcher */}
+        <div>
           <ThemeSwitcher />
         </div>
 

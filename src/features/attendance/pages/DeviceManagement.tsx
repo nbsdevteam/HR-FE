@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import * as odooData from "@/shared/api/odooData";
+import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import type {
   BiometricDevice,
   DeviceManagementTab,
@@ -17,10 +18,23 @@ const DeviceOverviewTab = lazy(() => import("../components/DeviceOverviewTab"));
 const DeviceEventsTab = lazy(() => import("../components/DeviceEventsTab"));
 const DeviceFaceTab = lazy(() => import("../components/DeviceFaceTab"));
 
+const loadDevices = async (): Promise<BiometricDevice[]> => {
+  const rows = await odooData.fetchDevices().catch(() => []);
+  if (rows && rows.length > 0) return mapBiometricDevices(rows);
+  return [getDefaultBiometricDevice()];
+};
+
 const DeviceManagement = () => {
   const [tab, setTab] = useState<DeviceManagementTab>("overview");
-  const [devices, setDevices] = useState<BiometricDevice[]>([]);
   const [selectedDevice, setSelectedDevice] = useState("");
+
+  const { data: devices } = useAsyncList<BiometricDevice>(
+    loadDevices,
+    [],
+    "Failed to load devices",
+    undefined,
+    { cacheKey: "biometricDevices" },
+  );
 
   const handleTabChange = useCallback((nextTab: DeviceManagementTab) => {
     setTab(nextTab);
@@ -31,23 +45,10 @@ const DeviceManagement = () => {
   }, []);
 
   useEffect(() => {
-    const loadDevices = async () => {
-      const rows = await odooData.fetchDevices().catch(() => []);
-
-      if (rows && rows.length > 0) {
-        const mapped = mapBiometricDevices(rows);
-        setDevices(mapped);
-        setSelectedDevice(mapped[0].id);
-        return;
-      }
-
-      const defaultDevice = getDefaultBiometricDevice();
-      setDevices([defaultDevice]);
-      setSelectedDevice(defaultDevice.id);
-    };
-
-    loadDevices();
-  }, []);
+    if (!selectedDevice && devices.length > 0) {
+      setSelectedDevice(devices[0].id);
+    }
+  }, [devices, selectedDevice]);
 
   return (
     <div className="space-y-6">

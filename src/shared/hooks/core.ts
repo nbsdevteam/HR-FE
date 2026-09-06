@@ -1,5 +1,6 @@
 import { useCallback, type DependencyList } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useAsyncList } from "./useAsyncList";
 
 /**
@@ -15,10 +16,12 @@ export const useCachedList = <T,>(
   errorFallback = "Failed to load data",
   deps: DependencyList = [],
   enabled = true,
+  queryOptions?: { ttlMs?: number; refetchOnWindowFocus?: boolean; preserveOnRefetch?: boolean },
 ) => {
   const { data, loading, error, refetch } = useAsyncList(fetcher, deps, errorFallback, undefined, {
     cacheKey,
     enabled,
+    ...queryOptions,
   });
   return { data, loading, error, refetch };
 };
@@ -143,23 +146,27 @@ export const useEmployees = () => {
   return { employees, loading, error, refetch };
 }
 
+/** Reference list — edited only via the org-structure admin screen, which invalidates this key on save. */
 export const useDepartments = () => {
   const { data: departments, loading, error, refetch } = useAsyncList(
     () => odooData.fetchDepartments(),
     [],
     "Failed to load departments",
     undefined,
-    { cacheKey: "departments" }
+    { cacheKey: "departments", ttlMs: STALE_TIME.LONG }
   );
   return { departments, loading, error, refetch };
 }
 
-/** Form choices + `can_manage` for the org-structure admin screen (backend §7). */
+/** Form choices + `can_manage` for the org-structure admin screen (backend §7) — reference data, rarely changes. */
 export const useDepartmentMetadata = () => {
   const { data, loading, refetch } = useCachedList(
     "departmentMetadata",
     async () => [await odooData.fetchDepartmentMetadata()],
     "Failed to load department metadata",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { metadata: data[0] ?? null, loading, refetch };
 }

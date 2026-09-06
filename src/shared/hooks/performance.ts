@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 // ——— Evaluations, Warnings, Training, Policies Hooks ———
@@ -123,26 +123,15 @@ export const useWarnings = (filters?: { employeeId?: string; status?: string }) 
  * doesn't fit `useCachedList`'s `T[]` contract (mirrors `useLeaveSettings`).
  */
 export const useWarningAttachmentSettings = () => {
-  const [settings, setSettings] = useState<DbWarningAttachmentSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refetch = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      setSettings(await odooData.fetchWarningAttachmentSettings());
-    } catch (e: any) {
-      setError(e?.message || "Failed to load warning attachment settings");
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { settings, loading, error, refetch };
+  const { data, loading, error, refetch } = useCachedList<DbWarningAttachmentSettings>(
+    "warningAttachmentSettings",
+    async () => [await odooData.fetchWarningAttachmentSettings()],
+    "Failed to load warning attachment settings",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
+  return { settings: data[0] ?? null, loading, error, refetch };
 }
 
 export const useTrainingPrograms = () => {
@@ -161,6 +150,13 @@ export const useTrainingParticipants = (programId?: string) => {
 }
 
 export const usePolicies = () => {
-  const { data: policies, loading, refetch } = useCachedList("policies", () => odooData.fetchPolicies(), "Failed to load policies");
+  const { data: policies, loading, refetch } = useCachedList(
+    "policies",
+    () => odooData.fetchPolicies(),
+    "Failed to load policies",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { policies, loading, refetch };
 }

@@ -4,7 +4,9 @@ const RankBar = ({ label, value, weight }: { label: string; value: number; weigh
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-muted-foreground" style={{ fontSize: 11 }}>{label} ({weight})</span>
+        <span className="text-muted-foreground" style={{ fontSize: 11 }}>
+          {label} <span dir="ltr">({weight})</span>
+        </span>
         <span className="text-foreground" style={{ fontSize: 11 }}>{Math.round(value)}%</span>
       </div>
       <div className="w-full h-2 rounded-full bg-muted/30 overflow-hidden">

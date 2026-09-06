@@ -14,8 +14,15 @@ const TreeConnectors = ({ parentRef, childRefs, color }: {
     if (!container || !parent) return;
     const cRect = container.getBoundingClientRect();
     const pRect = parent.getBoundingClientRect();
-    const px = pRect.left + pRect.width / 2 - cRect.left;
-    const py = pRect.bottom - cRect.top;
+    // `cRect`/`pRect` are post-transform screen pixels (they reflect the
+    // ancestor's `scale(zoom)` from StructureCardsView), but this SVG has no
+    // `viewBox` so its own path coordinates are interpreted in pre-transform
+    // (unscaled) pixels — it gets scaled again by that same ancestor when it
+    // paints. Dividing out the container's rendered/layout ratio here undoes
+    // the first scale so the two don't compound and drift apart at zoom != 1.
+    const scale = container.offsetWidth ? cRect.width / container.offsetWidth : 1;
+    const px = (pRect.left + pRect.width / 2 - cRect.left) / scale;
+    const py = (pRect.bottom - cRect.top) / scale;
     const radius = 8, stemLen = 20;
     const jY = py + stemLen;
     const newPaths: string[] = [];
@@ -23,8 +30,8 @@ const TreeConnectors = ({ parentRef, childRefs, color }: {
     childRefs.current.forEach((el) => {
       if (!el) return;
       const cr = el.getBoundingClientRect();
-      const cx = cr.left + cr.width / 2 - cRect.left;
-      const cy = cr.top - cRect.top;
+      const cx = (cr.left + cr.width / 2 - cRect.left) / scale;
+      const cy = (cr.top - cRect.top) / scale;
       const dx = cx - px;
       if (Math.abs(dx) < 2) {
         newPaths.push(`M ${px} ${py} L ${px} ${cy}`);
@@ -42,7 +49,24 @@ const TreeConnectors = ({ parentRef, childRefs, color }: {
     const c = containerRef.current;
     let ro: ResizeObserver | null = null;
     if (c) { ro = new ResizeObserver(() => requestAnimationFrame(measure)); ro.observe(c); }
-    return () => { cancelAnimationFrame(raf); ro?.disconnect(); };
+
+    // The chart is zoomed via a CSS `transform: scale()` transition on an
+    // ancestor (see StructureCardsView) — `getBoundingClientRect` reflects that
+    // scale, but a pure transform never changes any element's layout size, so
+    // the ResizeObserver above never fires for it and these lines go stale the
+    // moment zoom changes. `transitionend` bubbles up from wherever the
+    // transform actually animates, so a document-level listener catches it
+    // regardless of how deep this connector is nested.
+    const handleTransitionEnd = (event: TransitionEvent): void => {
+      if (event.propertyName === "transform") requestAnimationFrame(measure);
+    };
+    document.addEventListener("transitionend", handleTransitionEnd);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      document.removeEventListener("transitionend", handleTransitionEnd);
+    };
   }, [measure]);
 
   return (

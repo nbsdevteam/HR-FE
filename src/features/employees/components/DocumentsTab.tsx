@@ -12,6 +12,7 @@ import {
   empDisplayName,
   type DbDocumentType, type DbEmployee, type DbEmployeeDocument,
 } from "@/shared/hooks";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert } from "@/i18n/native";
 import { errorMessage } from "../utils/errorMessage";
@@ -52,6 +53,15 @@ const DocumentsTab = ({
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState("all");
 
+  const createDocumentMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDocument(payload),
+    "documents",
+  );
+  const deleteDocumentMutation = useOdooMutation(
+    (id: string) => odooData.deleteDocument(id),
+    "documents",
+  );
+
   const docTypeById = useMemo(
     () => new Map(docTypes.map((t) => [t.id, t])),
     [docTypes],
@@ -86,14 +96,13 @@ const DocumentsTab = ({
     if (!formData.employee_id || !formData.document_type_id) return;
     setSaving(true);
     try {
-      await odooData.createDocument({
+      await createDocumentMutation.mutateAsync({
         employee_id: formData.employee_id,
         document_type_id: formData.document_type_id,
         name: formData.document_number || "Document",
         issue_date: formData.issue_date || false,
         expiry_date: formData.expiry_date || false,
       });
-      refetch();
       setShowForm(false);
       setFormData(EMPTY_DOCUMENT_FORM);
     } catch (e) {
@@ -101,17 +110,16 @@ const DocumentsTab = ({
       localizedAlert("خطأ في حفظ الوثيقة " + errorMessage(e));
     }
     setSaving(false);
-  }, [formData, refetch]);
+  }, [formData, createDocumentMutation.mutateAsync]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await odooData.deleteDocument(id);
-      refetch();
+      await deleteDocumentMutation.mutateAsync(id);
     } catch (e) {
       console.error(e);
       localizedAlert("خطأ في حذف الوثيقة " + errorMessage(e));
     }
-  }, [refetch]);
+  }, [deleteDocumentMutation.mutateAsync]);
 
   const closeForm = useCallback(() => setShowForm(false), []);
   const toggleForm = useCallback(() => setShowForm((v) => !v), []);

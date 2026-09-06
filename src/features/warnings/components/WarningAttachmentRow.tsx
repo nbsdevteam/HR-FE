@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Download, FileText, Loader2, Trash2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks";
 import type { DbWarningAttachment } from "@/shared/hooks";
 import { warningErrorMessage } from "../utils/warningErrorMessage";
 
@@ -21,8 +22,12 @@ const formatKb = (bytes: number): string => `${Math.max(1, Math.round(bytes / 10
  */
 const WarningAttachmentRow = ({ warningId, attachment, canEdit, onDeleted }: TWarningAttachmentRowProps) => {
   const [downloading, setDownloading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+
+  const deleteAttachmentMutation = useOdooMutation<unknown, void>(
+    () => odooData.deleteWarningAttachment(warningId, attachment.id),
+    "warnings",
+  );
 
   const handleDownload = useCallback(async (): Promise<void> => {
     setDownloading(true);
@@ -46,16 +51,14 @@ const WarningAttachmentRow = ({ warningId, attachment, canEdit, onDeleted }: TWa
   }, [attachment.id, warningId]);
 
   const handleDelete = useCallback(async (): Promise<void> => {
-    setDeleting(true);
     setError("");
     try {
-      await odooData.deleteWarningAttachment(warningId, attachment.id);
+      await deleteAttachmentMutation.mutateAsync();
       onDeleted();
     } catch (e) {
       setError(warningErrorMessage(e, arabicSource("warnings.attachment_delete_failed")));
-      setDeleting(false);
     }
-  }, [attachment.id, onDeleted, warningId]);
+  }, [deleteAttachmentMutation, onDeleted]);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/10">
@@ -68,7 +71,7 @@ const WarningAttachmentRow = ({ warningId, attachment, canEdit, onDeleted }: TWa
       <button
         type="button"
         onClick={handleDownload}
-        disabled={downloading || deleting}
+        disabled={downloading || deleteAttachmentMutation.isPending}
         className="p-2 rounded-lg hover:bg-primary/10 text-primary cursor-pointer disabled:opacity-50"
         title={arabicSource("leave.download")}
       >
@@ -78,11 +81,11 @@ const WarningAttachmentRow = ({ warningId, attachment, canEdit, onDeleted }: TWa
         <button
           type="button"
           onClick={handleDelete}
-          disabled={downloading || deleting}
+          disabled={downloading || deleteAttachmentMutation.isPending}
           className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive cursor-pointer disabled:opacity-50"
           title={arabicSource("common.delete")}
         >
-          {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          {deleteAttachmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
         </button>
       )}
     </div>

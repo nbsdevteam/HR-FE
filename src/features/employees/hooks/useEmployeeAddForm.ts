@@ -3,6 +3,7 @@ import type { DbEmployee, DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { todayInBaghdad } from "@/shared/utils/timezone";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
@@ -71,6 +72,10 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     resetLocationOptions,
   } = useEmployeeLocationOptions();
   const isArabic = useIsArabicLanguage();
+  const createEmployeeMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createEmployee(payload),
+    "employees",
+  );
 
   const closeAddTimeoutRef = useRef<number | null>(null);
 
@@ -209,7 +214,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     try {
       const newPersonId = nextEmployeeId;
 
-      await odooData.createEmployee(buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview));
+      await createEmployeeMutation.mutateAsync(buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview));
 
       setDeviceSyncStatus("syncing");
       try {
@@ -244,7 +249,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
       else setAddError(errorMessage(error));
     }
     setAddSaving(false);
-  }, [addForm, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm]);
+  }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm]);
 
   useEffect(() => {
     return () => {

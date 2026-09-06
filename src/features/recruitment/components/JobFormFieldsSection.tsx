@@ -1,5 +1,4 @@
-import { InputField, Select } from "@/shared/components";
-import { DEPARTMENTS } from "@/shared/constants";
+import { InputField, Select, type SelectOption } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { JOB_STATUSES } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
@@ -7,6 +6,7 @@ import { inputCls, labelCls, selectCls } from "../styles";
 type JobFormFieldsSectionProps = {
   title: string;
   department: string;
+  departmentOptions: readonly SelectOption[];
   location: string;
   type: string;
   deadline: string;
@@ -20,6 +20,7 @@ type JobFormFieldsSectionProps = {
 const JobFormFieldsSection = ({
   title,
   department,
+  departmentOptions,
   location,
   type,
   deadline,
@@ -82,7 +83,8 @@ const JobFormFieldsSection = ({
           <Select
             value={department}
             onChange={handleDepartmentChange}
-            options={DEPARTMENTS}
+            options={departmentOptions}
+            optionsAreData
             className={selectCls}
           />
         </div>

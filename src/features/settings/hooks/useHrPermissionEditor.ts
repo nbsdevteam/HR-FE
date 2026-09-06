@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { arabicSource } from "@/i18n/source";
+import { useOdooMutation } from "@/shared/hooks";
 import {
   fetchHrUserPermissions,
   resetHrUserPermissions,
   setHrUserPermissions,
   type HrAdminUserPermissions,
+  type HrAdminSetPermissionsResponse,
   type HrPermissionsSchema,
   type HrPermissionTree,
 } from "../api/permissionsAdmin";
@@ -22,35 +25,32 @@ export const useHrPermissionEditor = (
   showToast: (message: string) => void,
   onSaved: () => void,
 ) => {
-  const [detail, setDetail] = useState<HrAdminUserPermissions | null>(null);
   const [tree, setTree] = useState<HrPermissionTree>({});
   const [initialTree, setInitialTree] = useState<HrPermissionTree>({});
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [resetting, setResetting] = useState(false);
+
+  const detailQuery = useQuery<HrAdminUserPermissions, Error>({
+    queryKey: ["hrUserPermissions", userId],
+    queryFn: () => fetchHrUserPermissions(userId as number),
+    enabled: userId !== null && !!schema,
+  });
+  const detail = detailQuery.data ?? null;
+
+  const saveMutation = useOdooMutation(
+    (payload: { userId: number; tree: HrPermissionTree; notes: string }) =>
+      setHrUserPermissions(payload.userId, payload.tree, payload.notes),
+    ["hrUserPermissions", "hrAdminUsers"],
+  );
+
+  const resetMutation = useOdooMutation(
+    (targetUserId: number) => resetHrUserPermissions(targetUserId),
+    ["hrUserPermissions", "hrAdminUsers"],
+  );
 
   const isDirty = useMemo(
     () => JSON.stringify(tree) !== JSON.stringify(initialTree),
     [tree, initialTree],
   );
-
-  const loadDetail = useCallback(async (): Promise<void> => {
-    if (userId === null || !schema) return;
-    setLoading(true);
-    try {
-      const data = await fetchHrUserPermissions(userId);
-      const merged = buildPermissionTree(schema.hr_permission_tree, data.effective_permissions);
-      setDetail(data);
-      setTree(merged);
-      setInitialTree(merged);
-      setNotes(data.admin_notes ?? "");
-    } catch (e: any) {
-      showToast(e?.message || arabicSource("settings.roles_permissions_load_error"));
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, schema, showToast]);
 
   const togglePermission = useCallback((section: string, action: string): void => {
     setTree((prev) => ({
@@ -59,57 +59,65 @@ export const useHrPermissionEditor = (
     }));
   }, []);
 
-  const handleSave = useCallback(async (): Promise<void> => {
-    if (userId === null) return;
-    setSaving(true);
-    try {
-      const result = await setHrUserPermissions(userId, tree, notes);
-      const merged = schema
-        ? buildPermissionTree(schema.hr_permission_tree, result.effective_permissions)
-        : tree;
-      setTree(merged);
-      setInitialTree(merged);
-      showToast(arabicSource("settings.roles_permissions_save_success"));
-      onSaved();
-    } catch (e: any) {
-      showToast(e?.message || arabicSource("settings.roles_permissions_save_error"));
-    } finally {
-      setSaving(false);
-    }
-  }, [userId, tree, notes, schema, showToast, onSaved]);
-
-  const handleReset = useCallback(async (): Promise<void> => {
-    if (userId === null) return;
-    setResetting(true);
-    try {
-      const result = await resetHrUserPermissions(userId);
+  const applyEffectivePermissions = useCallback(
+    (result: HrAdminSetPermissionsResponse): void => {
       const merged = schema
         ? buildPermissionTree(schema.hr_permission_tree, result.effective_permissions)
         : {};
       setTree(merged);
       setInitialTree(merged);
+    },
+    [schema],
+  );
+
+  const handleSave = useCallback(async (): Promise<void> => {
+    if (userId === null) return;
+    try {
+      const result = await saveMutation.mutateAsync({ userId, tree, notes });
+      applyEffectivePermissions(result);
+      showToast(arabicSource("settings.roles_permissions_save_success"));
+      onSaved();
+    } catch (e: any) {
+      showToast(e?.message || arabicSource("settings.roles_permissions_save_error"));
+    }
+  }, [userId, tree, notes, saveMutation, applyEffectivePermissions, showToast, onSaved]);
+
+  const handleReset = useCallback(async (): Promise<void> => {
+    if (userId === null) return;
+    try {
+      const result = await resetMutation.mutateAsync(userId);
+      applyEffectivePermissions(result);
       setNotes("");
       showToast(arabicSource("settings.roles_permissions_reset_success"));
       onSaved();
     } catch (e: any) {
       showToast(e?.message || arabicSource("settings.roles_permissions_reset_error"));
-    } finally {
-      setResetting(false);
     }
-  }, [userId, schema, showToast, onSaved]);
+  }, [userId, resetMutation, applyEffectivePermissions, showToast, onSaved]);
 
   useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
+    if (!detail || !schema) return;
+    const merged = buildPermissionTree(schema.hr_permission_tree, detail.effective_permissions);
+    setTree(merged);
+    setInitialTree(merged);
+    setNotes(detail.admin_notes ?? "");
+  }, [detail, schema]);
+
+  useEffect(() => {
+    if (detailQuery.error) {
+      showToast(detailQuery.error.message || arabicSource("settings.roles_permissions_load_error"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailQuery.error]);
 
   return {
     detail,
     tree,
     notes,
     setNotes,
-    loading,
-    saving,
-    resetting,
+    loading: detailQuery.isFetching,
+    saving: saveMutation.isPending,
+    resetting: resetMutation.isPending,
     isDirty,
     togglePermission,
     handleSave,

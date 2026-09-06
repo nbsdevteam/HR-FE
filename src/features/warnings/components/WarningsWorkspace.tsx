@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, useState, lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { ConfirmDeleteModal } from "@/shared/components";
 import { useEmployees, useWarningAttachmentSettings, useWarnings } from "@/shared/hooks";
 import { useWarningConfig } from "../hooks/useWarningConfig";
 import { useWarningForm } from "../hooks/useWarningForm";
@@ -117,7 +118,7 @@ const WarningsWorkspace = () => {
   }, [recordActions, selectedWarning]);
   const handleDeleteFromDetail = useCallback(() => {
     if (!selectedWarning) return;
-    recordActions.handleDelete(selectedWarning.id);
+    recordActions.requestDelete(selectedWarning.id);
     setSelectedWarningId(null);
   }, [recordActions, selectedWarning]);
 
@@ -218,6 +219,18 @@ const WarningsWorkspace = () => {
               onClose={form.closeForm}
             />
           </Suspense>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {recordActions.pendingDeleteId && (
+          <ConfirmDeleteModal
+            onClose={recordActions.cancelDelete}
+            onConfirm={recordActions.confirmDelete}
+            title={arabicSource("employees.confirm_deletion")}
+            message={arabicSource("warnings.are_you_sure_you_want_to_delete_this_alarm")}
+            loading={recordActions.deleting}
+          />
         )}
       </AnimatePresence>
 

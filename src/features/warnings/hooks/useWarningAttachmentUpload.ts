@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
-import type { DbWarningAttachmentSettings } from "@/shared/hooks";
+import { useOdooMutation } from "@/shared/hooks";
+import type { DbWarningAttachment, DbWarningAttachmentSettings } from "@/shared/hooks";
 import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import {
   DEFAULT_WARNING_ATTACHMENT_FORMATS,
@@ -21,8 +22,12 @@ export const useWarningAttachmentUpload = ({
   settings,
   onUploaded,
 }: UseWarningAttachmentUploadArgs) => {
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  const uploadMutation = useOdooMutation<DbWarningAttachment, { file_name: string; file_data: string }>(
+    (file) => odooData.uploadWarningAttachment(warningId, file),
+    "warnings",
+  );
 
   const acceptedFormats = settings?.attachment_accepted_formats ?? DEFAULT_WARNING_ATTACHMENT_FORMATS;
   const maxBytes = settings?.attachment_max_bytes ?? DEFAULT_WARNING_ATTACHMENT_MAX_BYTES;
@@ -39,16 +44,14 @@ export const useWarningAttachmentUpload = ({
     }
 
     setError("");
-    setUploading(true);
     try {
       const file_data = await fileToBase64(file);
-      await odooData.uploadWarningAttachment(warningId, { file_name: file.name, file_data });
+      await uploadMutation.mutateAsync({ file_name: file.name, file_data });
       onUploaded();
     } catch (e) {
       setError(warningErrorMessage(e, arabicSource("warnings.attachment_upload_failed")));
     }
-    setUploading(false);
-  }, [acceptedFormats, maxBytes, onUploaded, warningId]);
+  }, [acceptedFormats, maxBytes, onUploaded, uploadMutation]);
 
-  return { acceptedFormats, error, handleFileSelected, maxBytes, uploading };
+  return { acceptedFormats, error, handleFileSelected, maxBytes, uploading: uploadMutation.isPending };
 };

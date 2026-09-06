@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { arabicSource } from "@/i18n/source";
+import { useOdooMutation } from "@/shared/hooks";
 import {
   deleteHrRole,
   upsertHrRole,
   type HrPermissionsSchema,
   type HrPermissionTree,
   type HrRoleListItem,
+  type HrRoleUpsertPayload,
 } from "../api/permissionsAdmin";
 import { buildPermissionTree } from "../utils/permissionTree";
 import { roleErrorMessage } from "../utils/roleErrorMessage";
@@ -28,8 +30,15 @@ export const useHrRoleEditor = (
   const [tree, setTree] = useState<HrPermissionTree>({});
   const [initialTree, setInitialTree] = useState<HrPermissionTree>({});
   const [applyToAllUsers, setApplyToAllUsers] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+
+  const saveMutation = useOdooMutation(
+    (payload: HrRoleUpsertPayload) => upsertHrRole(payload),
+    ["hrRoles", "hrAdminUsers"],
+  );
+  const deleteMutation = useOdooMutation(
+    (jobTitle: string) => deleteHrRole(jobTitle),
+    ["hrRoles", "hrAdminUsers"],
+  );
 
   const isNew = role === null;
   const isHrOnly = role?.is_hr_only ?? true;
@@ -63,9 +72,8 @@ export const useHrRoleEditor = (
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!jobTitle.trim()) return;
-    setSaving(true);
     try {
-      await upsertHrRole({
+      await saveMutation.mutateAsync({
         job_title: jobTitle.trim(),
         permissions: tree,
         label: label.trim() || jobTitle.trim(),
@@ -76,24 +84,19 @@ export const useHrRoleEditor = (
       onSaved();
     } catch (e) {
       showToast(roleErrorMessage(e, arabicSource("settings.roles_permissions_save_error")));
-    } finally {
-      setSaving(false);
     }
-  }, [jobTitle, tree, label, notes, applyToAllUsers, showToast, onSaved]);
+  }, [jobTitle, tree, label, notes, applyToAllUsers, saveMutation, showToast, onSaved]);
 
   const handleDelete = useCallback(async (): Promise<void> => {
     if (isNew) return;
-    setDeleting(true);
     try {
-      await deleteHrRole(jobTitle);
+      await deleteMutation.mutateAsync(jobTitle);
       showToast(arabicSource("settings.roles_permissions_delete_success"));
       onSaved();
     } catch (e) {
       showToast(roleErrorMessage(e, arabicSource("settings.roles_permissions_save_error")));
-    } finally {
-      setDeleting(false);
     }
-  }, [isNew, jobTitle, showToast, onSaved]);
+  }, [isNew, jobTitle, deleteMutation, showToast, onSaved]);
 
   useEffect(() => {
     loadRole();
@@ -111,8 +114,8 @@ export const useHrRoleEditor = (
     tree,
     applyToAllUsers,
     setApplyToAllUsers,
-    saving,
-    deleting,
+    saving: saveMutation.isPending,
+    deleting: deleteMutation.isPending,
     isDirty,
     togglePermission,
     handleSave,

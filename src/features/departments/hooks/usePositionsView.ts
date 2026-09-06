@@ -3,7 +3,7 @@ import { empDisplayName, usePositions } from "@/shared/hooks";
 import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import * as odooData from "@/shared/api/odooData";
-import { localizedConfirm } from "@/i18n/native";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { PositionNode, QuickEditDeptDesignationPayload } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
@@ -40,6 +40,8 @@ export const usePositionsView = ({
   const [posForm, setPosForm] = useState<PositionFormState>(EMPTY_POSITION_FORM);
   const [quickEditEmployee, setQuickEditEmployee] = useState<DbEmployee | null>(null);
   const [quickEditSaving, setQuickEditSaving] = useState(false);
+  const [pendingDeletePosId, setPendingDeletePosId] = useState<string | null>(null);
+  const [deletingPosition, setDeletingPosition] = useState(false);
 
   const { positions, loading: posLoading, refetch: refetchPositions } = usePositions();
 
@@ -59,6 +61,23 @@ export const usePositionsView = ({
     refetchPositions,
     onToast: showToast,
   });
+
+  const createDesignationMutation = useOdooMutation(
+    (payload: Record<string, unknown>) => odooData.createDesignation(payload),
+    "positions",
+  );
+  const updateDesignationMutation = useOdooMutation(
+    ({ id, payload }: { id: string; payload: Record<string, unknown> }) => odooData.updateDesignation(id, payload),
+    "positions",
+  );
+  const deleteDesignationMutation = useOdooMutation(
+    (id: string) => odooData.deleteDesignation(id),
+    "positions",
+  );
+  const updateEmployeeMutation = useOdooMutation(
+    ({ id, payload }: { id: string; payload: QuickEditDeptDesignationPayload }) => odooData.updateEmployee(id, payload),
+    ["employees", "positions"],
+  );
 
   // Built once here instead of `.find()`-ing the department list inside every row.
   const departmentsById = useMemo(
@@ -116,7 +135,7 @@ export const usePositionsView = ({
     }
 
     try {
-      await odooData.createDesignation({
+      await createDesignationMutation.mutateAsync({
         title_ar: posForm.title_ar.trim(),
         name: posForm.title_en.trim() || posForm.title_ar.trim(),
         department_id: posForm.department_id || null,
@@ -128,54 +147,61 @@ export const usePositionsView = ({
       setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
       setShowAddPositionModal(false);
       setPosForm(EMPTY_POSITION_FORM);
-      await refetchPositions();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
       setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setSaving(false);
-  }, [posForm, addParentId, positions, refetchPositions]);
+  }, [posForm, addParentId, positions, createDesignationMutation.mutateAsync]);
 
   // Edit position
   const handleEditPosition = useCallback(async () => {
     if (!editingPosition || !posForm.title_ar.trim()) return;
     setSaving(true);
     try {
-      await odooData.updateDesignation(editingPosition.id, {
-        title_ar: posForm.title_ar.trim(),
-        name: posForm.title_en.trim() || posForm.title_ar.trim(),
-        department_id: posForm.department_id || null,
-        max_headcount: parseInt(posForm.max_headcount) || 1,
-        description: posForm.description.trim() || null,
+      await updateDesignationMutation.mutateAsync({
+        id: editingPosition.id,
+        payload: {
+          title_ar: posForm.title_ar.trim(),
+          name: posForm.title_en.trim() || posForm.title_ar.trim(),
+          department_id: posForm.department_id || null,
+          max_headcount: parseInt(posForm.max_headcount) || 1,
+          description: posForm.description.trim() || null,
+        },
       });
       setToast(arabicSource("hierarchy.position_updated_successfully"));
       setEditingPosition(null);
       setPosForm(EMPTY_POSITION_FORM);
-      await refetchPositions();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
       setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setSaving(false);
-  }, [editingPosition, posForm, refetchPositions]);
+  }, [editingPosition, posForm, updateDesignationMutation.mutateAsync]);
 
   // Delete position
-  const handleDeletePosition = useCallback(
-    async (posId: string) => {
-      if (!localizedConfirm(arabicSource("hierarchy.do_you_want_to_delete_this_post"))) return;
-      setSaving(true);
-      try {
-        await odooData.deleteDesignation(posId);
-        setToast(arabicSource("hierarchy.position_deleted"));
-        await refetchPositions();
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "";
-        setToast(`${arabicSource("common.error_2")} ${message}`);
-      }
-      setSaving(false);
-    },
-    [refetchPositions],
-  );
+  const requestDeletePosition = useCallback((posId: string) => {
+    setPendingDeletePosId(posId);
+  }, []);
+
+  const cancelDeletePosition = useCallback(() => {
+    setPendingDeletePosId(null);
+  }, []);
+
+  const confirmDeletePosition = useCallback(async () => {
+    if (!pendingDeletePosId) return;
+    setDeletingPosition(true);
+    try {
+      await deleteDesignationMutation.mutateAsync(pendingDeletePosId);
+      setToast(arabicSource("hierarchy.position_deleted"));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      setToast(`${arabicSource("common.error_2")} ${message}`);
+    } finally {
+      setDeletingPosition(false);
+      setPendingDeletePosId(null);
+    }
+  }, [deleteDesignationMutation.mutateAsync, pendingDeletePosId]);
 
   const closeAddEditModal = useCallback(() => {
     setShowAddPositionModal(false);
@@ -212,18 +238,16 @@ export const usePositionsView = ({
       if (!quickEditEmployee) return;
       setQuickEditSaving(true);
       try {
-        await odooData.updateEmployee(quickEditEmployee.id, payload);
+        await updateEmployeeMutation.mutateAsync({ id: quickEditEmployee.id, payload });
         setToast(arabicSource("hierarchy.employee_data_has_been_updated_successfully"));
         setQuickEditEmployee(null);
-        refetch();
-        refetchPositions();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "";
         setToast(`${arabicSource("common.error_2")} ${message}`);
       }
       setQuickEditSaving(false);
     },
-    [quickEditEmployee, refetch, refetchPositions],
+    [quickEditEmployee, updateEmployeeMutation.mutateAsync],
   );
 
   useEffect(() => {
@@ -257,7 +281,11 @@ export const usePositionsView = ({
     undoAssignment,
     handleAddPosition,
     handleEditPosition,
-    handleDeletePosition,
+    pendingDeletePosId,
+    deletingPosition,
+    requestDeletePosition,
+    cancelDeletePosition,
+    confirmDeletePosition,
     closeAddEditModal,
     openAddModal,
     openEditModal,

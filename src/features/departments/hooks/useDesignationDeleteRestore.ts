@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
 import type { DbPosition } from "@/shared/hooks";
@@ -11,15 +12,30 @@ type UseDesignationDeleteRestoreArgs = {
   setToast: (message: string | null) => void;
 };
 
+type DeleteDesignationVariables = { id: string; force: boolean };
+
 /**
  * Archive/restore for the job-title admin screen (backend §6). A first
  * archive attempt that's refused with `designation_in_use` re-arms the same
  * pending state with the returned counts, so the confirm modal can re-prompt
  * for `force: true` instead of silently failing.
+ *
+ * `refetch` here refreshes the admin screen's own (non-cached) filtered
+ * list, which the shared `positions` cache invalidation below does not
+ * reach — it still has to be called explicitly after each mutation.
  */
 export const useDesignationDeleteRestore = ({ refetch, setToast }: UseDesignationDeleteRestoreArgs) => {
   const [pendingDelete, setPendingDelete] = useState<PendingDesignationDelete | null>(null);
   const [working, setWorking] = useState(false);
+
+  const deleteDesignationMutation = useOdooMutation(
+    ({ id, force }: DeleteDesignationVariables) => odooData.deleteDesignation(id, { force }),
+    "positions",
+  );
+  const restoreDesignationMutation = useOdooMutation(
+    (id: string) => odooData.restoreDesignation(id),
+    "positions",
+  );
 
   const requestDelete = useCallback((designation: DbPosition) => {
     setPendingDelete({ designation, guard: null });
@@ -33,7 +49,7 @@ export const useDesignationDeleteRestore = ({ refetch, setToast }: UseDesignatio
     if (!pendingDelete) return;
     setWorking(true);
     try {
-      await odooData.deleteDesignation(pendingDelete.designation.id, { force: Boolean(pendingDelete.guard) });
+      await deleteDesignationMutation.mutateAsync({ id: pendingDelete.designation.id, force: Boolean(pendingDelete.guard) });
       setToast(arabicSource("org_structure.archive_success"));
       setPendingDelete(null);
       await refetch();
@@ -53,12 +69,12 @@ export const useDesignationDeleteRestore = ({ refetch, setToast }: UseDesignatio
     } finally {
       setWorking(false);
     }
-  }, [pendingDelete, refetch, setToast]);
+  }, [pendingDelete, deleteDesignationMutation.mutateAsync, refetch, setToast]);
 
   const restoreDesignation = useCallback(async (designation: DbPosition) => {
     setWorking(true);
     try {
-      await odooData.restoreDesignation(designation.id);
+      await restoreDesignationMutation.mutateAsync(designation.id);
       setToast(arabicSource("org_structure.restore_success"));
       await refetch();
     } catch (err) {
@@ -66,7 +82,7 @@ export const useDesignationDeleteRestore = ({ refetch, setToast }: UseDesignatio
     } finally {
       setWorking(false);
     }
-  }, [refetch, setToast]);
+  }, [restoreDesignationMutation.mutateAsync, refetch, setToast]);
 
   return {
     pendingDelete, requestDelete, cancelPendingDelete, confirmPendingDelete,

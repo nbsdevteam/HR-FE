@@ -19,12 +19,14 @@ const ShiftDepartmentAssignmentRow = ({
   onChange,
 }: TShiftDepartmentAssignmentRowProps) => {
   return (
-    <div className="flex items-center gap-3 p-3 bg-muted/10 rounded-lg">
+    <div className="flex items-center flex-wrap gap-3 p-3 bg-muted/10 rounded-lg">
       <div
-        className="w-3 h-3 rounded-full"
+        className="w-3 h-3 rounded-full shrink-0"
         style={{ backgroundColor: department.color }}
       />
-      <span className="text-foreground flex-1">{department.name}</span>
+      <span className="text-foreground flex-1 min-w-[80px] truncate">
+        {department.name}
+      </span>
       <TypeAhead
         items={shifts || []}
         getId={getShiftId}
@@ -32,6 +34,7 @@ const ShiftDepartmentAssignmentRow = ({
         value={value}
         onChange={onChange}
         blankLabel={arabicSource("settings.virtual_shift")}
+        className="w-full sm:w-auto sm:min-w-[180px]"
       />
     </div>
   );

@@ -11,7 +11,7 @@ type EmployeesHeaderProps = {
 };
 
 const EmployeesHeader = ({ viewMode, onViewModeChange, onAddEmployee }: EmployeesHeaderProps) => (
-  <div className="flex items-center justify-between">
+  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h1 className="text-gradient-gold">{arabicSource("common.employees")}</h1>
       <p className="text-muted-foreground mt-1">{arabicSource("employees.employee_data_management")}</p>
@@ -24,7 +24,7 @@ const EmployeesHeader = ({ viewMode, onViewModeChange, onAddEmployee }: Employee
         rounded="rounded-lg"
         motionProps={{ whileHover: { scale: 1.05 }, whileTap: { scale: 0.95 } }}
         onClick={onAddEmployee}
-        className="flex items-center gap-2 px-6 py-3 shadow-lg shadow-primary/20"
+        className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-6 py-3 shadow-lg shadow-primary/20 sm:flex-none"
         icon={Plus}
         iconClassName="w-5 h-5"
       >

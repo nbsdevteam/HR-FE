@@ -6,13 +6,16 @@ import { Button, TypeAhead } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import {
   useJobRanking,
+  useOdooMutation,
   type DbJobOpening,
   type DbApplicant,
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
+import { isolateLtr } from "@/shared/utils/bidi";
 import { hasIr } from "../utils/recruitmentRanking";
 import { aiScreeningStatFields } from "../data";
+import { ODOO_TO_STAGE } from "../constants/recruitment";
 import AiScreeningStatTile from "./AiScreeningStatTile";
 import AiScreeningTableRow from "./AiScreeningTableRow";
 
@@ -35,12 +38,36 @@ const AiScreeningView = ({
   onUpdateStage,
 }: AIScreenViewProps) => {
   const [minIr, setMinIr] = useState(0);
-  const [busy, setBusy] = useState(false);
   const { items, stats, loading, refetch } = useJobRanking(jobId);
+  const bulkScreenMutation = useOdooMutation<
+    { queued: number; skipped: number },
+    void
+  >(
+    () =>
+      odooData.bulkScreenApplicants({
+        jobOpeningId: jobId as string,
+        force: false,
+      }),
+    "applicants",
+  );
+  const shortlistMutation = useOdooMutation<void, DbApplicant[]>(
+    async (targets) => {
+      for (const applicant of targets) {
+        await odooData.updateApplicant(applicant.id, { stage: "screening" });
+      }
+    },
+    "applicants",
+  );
+  const busy = bulkScreenMutation.isPending || shortlistMutation.isPending;
+
+  const translatedItems = useMemo(
+    () => items.map((a) => ({ ...a, stage: ODOO_TO_STAGE[a.stage] || a.stage })),
+    [items],
+  );
 
   const visible = useMemo(
-    () => items.filter((a) => !hasIr(a) || (a.ir_score || 0) >= minIr),
-    [items, minIr],
+    () => translatedItems.filter((a) => !hasIr(a) || (a.ir_score || 0) >= minIr),
+    [translatedItems, minIr],
   );
 
   const statTiles = useMemo(() => {
@@ -54,15 +81,11 @@ const AiScreeningView = ({
 
   const screenAll = useCallback(async (): Promise<void> => {
     if (!jobId) return;
-    setBusy(true);
     try {
-      const result = await odooData.bulkScreenApplicants({
-        jobOpeningId: jobId,
-        force: false,
-      });
+      const result = await bulkScreenMutation.mutateAsync();
       const message = result.skipped
-        ? `${arabicSource("recruitment.queued_for_screening")} (${result.queued}) — ${arabicSource("recruitment.skipped_for_screening")} (${result.skipped})`
-        : `${arabicSource("recruitment.queued_for_screening")} (${result.queued})`;
+        ? `${arabicSource("recruitment.queued_for_screening")} ${isolateLtr(`(${result.queued})`)} — ${arabicSource("recruitment.skipped_for_screening")} ${isolateLtr(`(${result.skipped})`)}`
+        : `${arabicSource("recruitment.queued_for_screening")} ${isolateLtr(`(${result.queued})`)}`;
       localizedAlert(message);
       await refetch();
     } catch (e: any) {
@@ -70,8 +93,7 @@ const AiScreeningView = ({
         e?.message || arabicSource("recruitment.screening_unavailable"),
       );
     }
-    setBusy(false);
-  }, [jobId, refetch]);
+  }, [jobId, bulkScreenMutation, refetch]);
 
   const handleJobIdChange = useCallback(
     (value: string): void => {
@@ -85,20 +107,16 @@ const AiScreeningView = ({
   }, []);
 
   const shortlistAbove = useCallback(async (): Promise<void> => {
-    const targets = items.filter(
+    const targets = translatedItems.filter(
       (a) =>
         hasIr(a) &&
         (a.ir_score || 0) >= minIr &&
         a.stage === arabicSource("common.introduction"),
     );
     if (targets.length === 0) return;
-    setBusy(true);
-    for (const applicant of targets) {
-      await odooData.updateApplicant(applicant.id, { stage: "screening" });
-    }
+    await shortlistMutation.mutateAsync(targets);
     await refetch();
-    setBusy(false);
-  }, [items, minIr, refetch]);
+  }, [translatedItems, minIr, shortlistMutation, refetch]);
 
   return (
     <div className="space-y-4">

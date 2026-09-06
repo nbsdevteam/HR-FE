@@ -117,6 +117,8 @@ export const fetchLeaveRequests = async (filters?: {
   employeeId?: string;
   status?: string;
   month?: string;
+  /** OR-ilike across employee name (incl. Arabic), leave type and reason. */
+  search?: string;
 }): Promise<DbLeaveRequest[]> => {
   const params: Record<string, unknown> = { limit: 200 };
   if (filters?.employeeId)
@@ -125,6 +127,10 @@ export const fetchLeaveRequests = async (filters?: {
     params.date_from = `${filters.month}-01`;
     params.date_to = `${filters.month}-31`;
   }
+  // Sent to the backend rather than applied to the fetched array: only one
+  // page is ever held here, so a local filter can't see the rows it excluded.
+  const search = filters?.search?.trim();
+  if (search) params.search = search;
   // FE may pass Arabic status; leave raw and filter client-side if needed
   const mapped = await fetchList("/api/hr/leave/list", mapLeaveRequest, params);
   if (filters?.status) {

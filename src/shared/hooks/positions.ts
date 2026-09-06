@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 import type { GradeCode } from "./grades";
 
@@ -32,6 +33,9 @@ export const usePositions = () => {
     "positions",
     () => odooData.fetchPositions(),
     "Failed to load positions",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { positions, loading, error, refetch };
 }

@@ -26,7 +26,7 @@ const ReportsStats = ({
   }, [templateCount, historyCount, departmentCount, employeeCount]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 min-[768px]:grid-cols-2 min-[1000px]:grid-cols-4 gap-4">
       {items.map((stat, i) => (
         <StatCard
           key={stat.label}

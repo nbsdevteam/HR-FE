@@ -28,6 +28,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     toggleLeaveTypeActive,
     deleteLeaveTypeEntry,
     updateLeaveTypeDays,
+    updateLeaveTypeResetPolicy,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
   const handleToggleNewLeaveTypeForm = useCallback((): void => {
@@ -71,6 +72,7 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
         onToggleActive={toggleLeaveTypeActive}
         onDelete={deleteLeaveTypeEntry}
         onUpdateDays={updateLeaveTypeDays}
+        onUpdateResetPolicy={updateLeaveTypeResetPolicy}
       />
     </SettingsSectionCard>
   );

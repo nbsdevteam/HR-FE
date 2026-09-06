@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { arabicSource } from "@/i18n/source";
+import { useOdooMutation } from "@/shared/hooks";
 import type { DbWarning, DbWarningAttachmentSettings } from "@/shared/hooks";
 import { WARNING_EXPIRY_CUSTOM } from "../constants/warnings";
 import { typeLabelToKey } from "../utils/warningKeyMapping";
@@ -20,6 +21,9 @@ const EMPTY_FORM: FormData = {
 type UseWarningFormArgs = {
   warningTypes: string[];
   attachmentSettings: DbWarningAttachmentSettings | null;
+  // No longer called directly: the create/update mutations below invalidate
+  // the "warnings" cache key themselves — kept in the type so existing
+  // callers can keep passing it unchanged.
   refetch: () => void;
   setToast: (message: string | null) => void;
 };
@@ -43,7 +47,7 @@ const savedMessage = (saved: DbWarning, baseKey: "warnings.alarm_issued_successf
   return `${base} — ${arabicSource("warnings.completion_date")} ${saved.expiry_date}`;
 };
 
-export const useWarningForm = ({ warningTypes, attachmentSettings, refetch, setToast }: UseWarningFormArgs) => {
+export const useWarningForm = ({ warningTypes, attachmentSettings, setToast }: UseWarningFormArgs) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<FormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
@@ -51,6 +55,15 @@ export const useWarningForm = ({ warningTypes, attachmentSettings, refetch, setT
 
   const attachments = useWarningAttachmentPicker({ settings: attachmentSettings });
   const { buildAttachmentFields, reset: resetAttachments } = attachments;
+
+  const updateWarningMutation = useOdooMutation<DbWarning, { id: string; payload: Record<string, unknown> }>(
+    ({ id, payload }) => odooData.updateWarning(id, payload),
+    "warnings",
+  );
+  const createWarningMutation = useOdooMutation<DbWarning, Record<string, unknown>>(
+    (payload) => odooData.createWarning(payload),
+    "warnings",
+  );
 
   const resetForm = useCallback(() => {
     setFormData({ ...EMPTY_FORM });
@@ -108,12 +121,12 @@ export const useWarningForm = ({ warningTypes, attachmentSettings, refetch, setT
       };
 
       if (editingId) {
-        const saved = await odooData.updateWarning(editingId, base);
+        const saved = await updateWarningMutation.mutateAsync({ id: editingId, payload: base });
         setToast(savedMessage(saved, "warnings.alarm_updated_successfully"));
       } else {
         // Files ride along with the create call, so a rejected attachment
         // fails the whole request and leaves nothing to clean up (backend §5).
-        const saved = await odooData.createWarning({
+        const saved = await createWarningMutation.mutateAsync({
           ...base,
           date: new Date().toISOString().split("T")[0],
           ...(await buildAttachmentFields()),
@@ -123,14 +136,13 @@ export const useWarningForm = ({ warningTypes, attachmentSettings, refetch, setT
 
       resetForm();
       setShowForm(false);
-      refetch();
     } catch (err) {
       // The form stays open with the user's input intact on failure (backend §5).
       setToast(`${arabicSource("common.error_2")} ${warningErrorMessage(err, arabicSource("warnings.the_operation_failed"))}`);
     } finally {
       setSaving(false);
     }
-  }, [buildAttachmentFields, editingId, formData, refetch, resetForm, setToast, warningTypes]);
+  }, [buildAttachmentFields, createWarningMutation, editingId, formData, resetForm, setToast, updateWarningMutation, warningTypes]);
 
   return {
     showForm, openNewForm, closeForm,

@@ -3,8 +3,9 @@
  * `/leave/balances` envelope and the `/leave/accruals` audit trail. Split out
  * of `leave.ts` so neither file outgrows the 300-line limit.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { useCachedList } from "./core";
+import type { LeaveBalanceResetPolicy } from "./leave";
 
 /** Probation envelope shared by `/leave/balances` and `/leave/accruals` (backend §3). */
 export interface DbLeaveProbationInfo {
@@ -46,6 +47,14 @@ export interface DbLeaveBalanceItem {
   used: number;
   blocked_by_probation: boolean;
   can_apply: boolean;
+  /** Year-end balance policy of this leave type (backend v1.21.0). */
+  balance_reset_policy: LeaveBalanceResetPolicy;
+  /** `true` when this balance starts again at the next leave year. */
+  balance_resets_yearly: boolean;
+  /** First day of the current leave year, `YYYY-MM-DD`. `null` on an older backend. */
+  leave_year_start: string | null;
+  /** Last day of the current leave year — the day the balance resets on when `balance_resets_yearly`. */
+  leave_year_end: string | null;
 }
 
 export interface DbLeaveBalanceSummary extends DbLeaveProbationInfo {
@@ -104,44 +113,20 @@ export const useLeaveBalanceSummary = (
   employeeId?: string | null,
   options?: { enabled?: boolean },
 ) => {
-  const [summary, setSummary] = useState<DbLeaveBalanceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Guards against an earlier, slower response for a previously selected
-  // employee landing after the current one and overwriting it.
-  const requestRef = useRef(0);
-
   const enabled = options?.enabled !== false;
 
-  const fetch = useCallback(async () => {
-    const requestId = requestRef.current + 1;
-    requestRef.current = requestId;
-    if (!enabled) {
-      setSummary(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await odooData.fetchLeaveBalanceSummary(employeeId ?? undefined);
-      if (requestRef.current !== requestId) return;
-      setSummary(data);
-    } catch (e: any) {
-      if (requestRef.current !== requestId) return;
-      setError(e?.message || "Failed to load leave balances");
-      setSummary(null);
-    }
-    if (requestRef.current === requestId) setLoading(false);
-  }, [employeeId, enabled]);
+  // Cache-key/query-key identity (rather than a manual request-id guard)
+  // handles an earlier, slower response for a previously selected employee
+  // landing after the current one — react-query discards it on its own.
+  const { data, loading, error, refetch } = useCachedList<DbLeaveBalanceSummary>(
+    "leaveBalanceSummary",
+    async () => [await odooData.fetchLeaveBalanceSummary(employeeId ?? undefined)],
+    "Failed to load leave balances",
+    [employeeId ?? null],
+    enabled,
+  );
 
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
-
-  return { summary, loading, error, refetch: fetch };
+  return { summary: data[0] ?? null, loading, error, refetch };
 }
 
 /** Monthly accrual history (`/api/hr/leave/accruals`) for one employee. */
@@ -149,38 +134,21 @@ export const useLeaveAccruals = (
   employeeId?: string | null,
   options?: { leaveTypeId?: string | null; limit?: number },
 ) => {
-  const [history, setHistory] = useState<DbLeaveAccrualHistory | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const requestRef = useRef(0);
   const leaveTypeId = options?.leaveTypeId ?? null;
   const limit = options?.limit;
 
-  const fetch = useCallback(async () => {
-    const requestId = requestRef.current + 1;
-    requestRef.current = requestId;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await odooData.fetchLeaveAccruals({
+  const { data, loading, error, refetch } = useCachedList<DbLeaveAccrualHistory>(
+    "leaveAccruals",
+    async () => [
+      await odooData.fetchLeaveAccruals({
         employeeId: employeeId ?? undefined,
         leaveTypeId: leaveTypeId ?? undefined,
         limit,
-      });
-      if (requestRef.current !== requestId) return;
-      setHistory(data);
-    } catch (e: any) {
-      if (requestRef.current !== requestId) return;
-      setError(e?.message || "Failed to load accrual history");
-      setHistory(null);
-    }
-    if (requestRef.current === requestId) setLoading(false);
-  }, [employeeId, leaveTypeId, limit]);
+      }),
+    ],
+    "Failed to load accrual history",
+    [employeeId ?? null, leaveTypeId, limit],
+  );
 
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
-
-  return { history, loading, error, refetch: fetch };
+  return { history: data[0] ?? null, loading, error, refetch };
 }

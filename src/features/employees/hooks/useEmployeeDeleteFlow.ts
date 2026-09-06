@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import type { DbEmployee } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
+import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
@@ -26,6 +27,12 @@ export const useEmployeeDeleteFlow = (
   const [deleteGuard, setDeleteGuard] = useState<EmployeeInUseGuard | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const deleteEmployeeMutation = useOdooMutation(
+    (variables: { id: string; force: boolean }) =>
+      odooData.deleteEmployee(variables.id, { force: variables.force }),
+    "employees",
+  );
+
   const requestDeleteEmployee = useCallback((target: DeleteEmployeeTarget) => {
     if (currentEmployeeId && target.id === currentEmployeeId) return;
     setDeleteGuard(null);
@@ -44,7 +51,7 @@ export const useEmployeeDeleteFlow = (
           // Device removal is best-effort.
         }
       }
-      await odooData.deleteEmployee(deleteConfirm.id, { force: Boolean(deleteGuard) });
+      await deleteEmployeeMutation.mutateAsync({ id: deleteConfirm.id, force: Boolean(deleteGuard) });
       refetch();
       setDeleteConfirm(null);
       setDeleteGuard(null);
@@ -62,7 +69,7 @@ export const useEmployeeDeleteFlow = (
       }
     }
     setDeleting(false);
-  }, [dbEmployees, deleteConfirm, deleteGuard, refetch]);
+  }, [dbEmployees, deleteConfirm, deleteEmployeeMutation.mutateAsync, deleteGuard, refetch]);
 
   const closeDeleteModal = useCallback(() => {
     setDeleteConfirm(null);

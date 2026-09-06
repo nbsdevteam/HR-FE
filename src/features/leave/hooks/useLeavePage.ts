@@ -5,6 +5,7 @@ import { isLeavePending, normalizeLeaveStatus } from "@/i18n/status";
 import * as odooData from "@/shared/api/odooData";
 import {
   empDisplayName,
+  useDebouncedValue,
   useLeaveBalances,
   useLeaveEmployeeScope,
   useLeavePermissions,
@@ -12,6 +13,7 @@ import {
   useLeaveRequests,
   useLeaveSettings,
   useLeaveTypes,
+  useOdooMutation,
 } from "@/shared/hooks";
 import type { DbLeaveRequest } from "@/shared/hooks";
 import type { LeaveSortKey, LeaveTabId, LeaveViewMode } from "../types";
@@ -36,7 +38,12 @@ export const useLeavePage = () => {
   } = useLeaveEmployeeScope();
   const { types: leaveTypes, loading: typesLoading } = useLeaveTypes();
   const { policies } = useLeavePolicies();
-  const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests();
+  // Debounced so the search box still filters per keystroke without firing a
+  // request for every one of them.
+  const debouncedSearch = useDebouncedValue(search);
+  const { requests, loading: reqLoading, refetch: refetchRequests } = useLeaveRequests({
+    search: debouncedSearch,
+  });
   const currentYear = new Date().getFullYear();
   const { balances, loading: balLoading, refetch: refetchBalances } = useLeaveBalances(
     currentYear,
@@ -44,6 +51,29 @@ export const useLeavePage = () => {
   );
   const { permissions, loading: permLoading, refetch: refetchPermissions } = useLeavePermissions();
   const { settings: leaveSettings } = useLeaveSettings();
+
+  const approveLeaveMutation = useOdooMutation(
+    async (id: string) => {
+      try {
+        return await odooData.hrApproveLeave(id);
+      } catch {
+        return await odooData.managerApproveLeave(id);
+      }
+    },
+    ["leaveRequests", "leaveBalances"],
+  );
+  const refuseLeaveMutation = useOdooMutation(
+    ({ id, reason }: { id: string; reason?: string }) => odooData.refuseLeave(id, reason),
+    "leaveRequests",
+  );
+  const cancelLeaveMutation = useOdooMutation(
+    (id: string) => odooData.cancelLeave(id),
+    ["leaveRequests", "leaveBalances"],
+  );
+  const followUpExcuseMutation = useOdooMutation(
+    ({ leaveId, note }: { leaveId: string; note?: string }) => odooData.followUpLeaveExcuse(leaveId, note),
+    "leaveRequests",
+  );
 
   const empMap = useMemo(() => {
     const mappedEmployees: Record<string, (typeof employees)[number]> = {};
@@ -63,18 +93,6 @@ export const useLeavePage = () => {
     if (filter !== arabicSource("common.all")) {
       list = list.filter((request) => normalizeLeaveStatus(request.status) === filter);
     }
-    const normalizedSearch = search.trim().toLowerCase();
-    if (normalizedSearch) {
-      list = list.filter((request) => {
-        const employee = empMap[request.employee_id];
-        const name = employee ? empDisplayName(employee) : "";
-        return (
-          name.toLowerCase().includes(normalizedSearch) ||
-          request.leave_type.toLowerCase().includes(normalizedSearch) ||
-          (request.reason || "").toLowerCase().includes(normalizedSearch)
-        );
-      });
-    }
 
     const dir = leaveSortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
@@ -91,7 +109,7 @@ export const useLeavePage = () => {
       return 0;
     });
     return list;
-  }, [empMap, filter, leaveSortBy, leaveSortDir, requests, search]);
+  }, [empMap, filter, leaveSortBy, leaveSortDir, requests]);
 
   // One pass over the request list instead of three full scans.
   const { pendingCount, approvedCount, rejectedCount } = useMemo(() => {
@@ -116,39 +134,30 @@ export const useLeavePage = () => {
 
   const handleApprove = useCallback(async (id: string) => {
     try {
-      try {
-        await odooData.hrApproveLeave(id);
-      } catch {
-        await odooData.managerApproveLeave(id);
-      }
-      refetchRequests();
-      refetchBalances();
+      await approveLeaveMutation.mutateAsync(id);
     } catch (error: any) {
       console.error("Approve error:", error.message);
       localizedAlert(`${arabicSource("leave.error_accepting_request")} ${error.message}`);
     }
-  }, [refetchBalances, refetchRequests]);
+  }, [approveLeaveMutation]);
 
   const handleReject = useCallback(async (id: string, reason?: string) => {
     try {
-      await odooData.refuseLeave(id, reason);
-      refetchRequests();
+      await refuseLeaveMutation.mutateAsync({ id, reason });
     } catch (error: any) {
       console.error("Reject error:", error.message);
       localizedAlert(`${arabicSource("leave.error_rejecting_the_request")} ${error.message}`);
     }
-  }, [refetchRequests]);
+  }, [refuseLeaveMutation]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await odooData.cancelLeave(id);
-      refetchRequests();
-      refetchBalances();
+      await cancelLeaveMutation.mutateAsync(id);
     } catch (error: any) {
       console.error("Delete error:", error.message);
       localizedAlert(`${arabicSource("leave.error_deleting_request")} ${error.message}`);
     }
-  }, [refetchBalances, refetchRequests]);
+  }, [cancelLeaveMutation]);
 
   const handleLeaveSubmit = useCallback(async () => {
     refetchRequests();
@@ -157,9 +166,8 @@ export const useLeavePage = () => {
   }, [refetchBalances, refetchRequests]);
 
   const handlePermissionSubmit = useCallback(async () => {
-    refetchPermissions();
     setShowPermForm(false);
-  }, [refetchPermissions]);
+  }, [setShowPermForm]);
 
   const handleViewAttachments = useCallback((leave: DbLeaveRequest) => {
     setViewingAttachmentsFor(leave);
@@ -178,10 +186,9 @@ export const useLeavePage = () => {
   }, []);
 
   const handleSubmitFollowUpExcuse = useCallback(async (leaveId: string, note: string) => {
-    await odooData.followUpLeaveExcuse(leaveId, note || undefined);
+    await followUpExcuseMutation.mutateAsync({ leaveId, note: note || undefined });
     setFollowingUpOnExcuse(null);
-    refetchRequests();
-  }, [refetchRequests]);
+  }, [followUpExcuseMutation]);
 
   // Keep the open attachments modal's leave in sync after an upload/delete
   // triggers a refetch — `requests` gets a fresh object, `viewingAttachmentsFor`

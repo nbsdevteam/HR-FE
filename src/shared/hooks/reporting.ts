@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 // ——— Phase 5: Notifications, Audit Trail & Reports ———
@@ -79,6 +80,8 @@ export const useNotifications = (employeeId?: string) => {
     () => odooData.fetchNotifications(),
     "Failed to load notifications",
     [employeeId],
+    true,
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );
   const unreadCount = notifications.filter(n => !n.is_read).length;
   return { notifications, unreadCount, loading, refetch };
@@ -95,16 +98,26 @@ export const useAuditLog = (filters?: { entityType?: string; action?: string; li
 }
 
 export const useReportTemplates = () => {
-  const { data: templates, loading, refetch } = useCachedList("reportTemplates", () => odooData.fetchReportTemplates(), "Failed to load report templates");
+  const { data: templates, loading, refetch } = useCachedList(
+    "reportTemplates",
+    () => odooData.fetchReportTemplates(),
+    "Failed to load report templates",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { templates, loading, refetch };
 }
 
-/** Form choices + `can_manage` for the report-configuration admin screen (backend §2.8). */
+/** Form choices + `can_manage` for the report-configuration admin screen (backend §2.8) — reference data, rarely changes. */
 export const useReportTemplateMetadata = () => {
   const { data, loading, refetch } = useCachedList(
     "reportTemplateMetadata",
     async () => [await odooData.fetchReportTemplatesMetadata()],
     "Failed to load report metadata",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { metadata: data[0] ?? null, loading, refetch };
 }

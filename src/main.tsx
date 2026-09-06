@@ -1,9 +1,18 @@
 
+  import { lazy, Suspense } from "react";
   import { createRoot } from "react-dom/client";
+  import { QueryClientProvider } from "@tanstack/react-query";
   import App from "./app/App.tsx";
   import LocalizationProvider from "./i18n/LocalizationProvider.tsx";
+  import { queryClient } from "./shared/api/queryClient.ts";
   import "./i18n";
   import "./styles/index.css";
+
+  // Dynamically imported so the devtools code never lands in the prod bundle —
+  // the import() only actually fires when the DEV branch below renders it.
+  const ReactQueryDevtools = lazy(() =>
+    import("@tanstack/react-query-devtools").then((m) => ({ default: m.ReactQueryDevtools })),
+  );
 
   const STALE_RELOAD_KEY = "hr-stale-chunk-reload";
 
@@ -20,9 +29,16 @@
   window.addEventListener("vite:preloadError", handleStaleChunk);
 
   createRoot(document.getElementById("root")!).render(
-    <LocalizationProvider>
-      <App />
-    </LocalizationProvider>,
+    <QueryClientProvider client={queryClient}>
+      <LocalizationProvider>
+        <App />
+      </LocalizationProvider>
+      {import.meta.env.DEV && (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Suspense>
+      )}
+    </QueryClientProvider>,
   );
 
   // Once the app has been stable for a bit, allow a future stale-chunk

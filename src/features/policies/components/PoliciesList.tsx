@@ -1,6 +1,7 @@
 import { FileText } from "lucide-react";
 import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
+import { scrollContentToTop } from "@/shared/utils/scrollToTop";
 import { policiesPageSize } from "../constants/policies";
 import type { DisplayPolicy } from "../types";
 import PolicyListItem from "./PolicyListItem";
@@ -38,10 +39,12 @@ const PoliciesList = ({
 }: PoliciesListProps) => {
   const handlePrevPage = (): void => {
     onPageChange((page) => Math.max(1, page - 1));
+    scrollContentToTop();
   };
 
   const handleNextPage = (): void => {
     onPageChange((page) => Math.min(totalPages, page + 1));
+    scrollContentToTop();
   };
 
   return (

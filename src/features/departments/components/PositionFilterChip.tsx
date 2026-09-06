@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { FilterChip } from "@/shared/components";
+import { isolateLtr } from "@/shared/utils/bidi";
 import type { PositionFilter } from "../types";
 
 type PositionFilterChipProps = {
@@ -15,7 +16,7 @@ const PositionFilterChip = ({ id, label, count, active, onSelect }: PositionFilt
     onSelect(id);
   }, [id, onSelect]);
 
-  return <FilterChip label={`${label} (${count})`} active={active} onClick={handleClick} />;
+  return <FilterChip label={`${label} ${isolateLtr(`(${count})`)}`} active={active} onClick={handleClick} />;
 };
 
 export default memo(PositionFilterChip);

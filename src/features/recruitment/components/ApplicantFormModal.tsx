@@ -2,7 +2,11 @@ import { useState, useRef, useCallback, useMemo, memo } from "react";
 import { UserPlus, X, FileCheck } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { Button, ModalOverlay } from "@/shared/components";
-import { type DbJobOpening, type DbApplicant } from "@/shared/hooks";
+import {
+  type DbJobOpening,
+  type DbApplicant,
+  useOdooMutation,
+} from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { GENDER_TO_ODOO, STAGE_TO_ODOO } from "../constants/recruitment";
 import { fileToBase64 } from "../utils/fileToBase64";
@@ -25,7 +29,6 @@ const ApplicantFormModal = ({
 }) => {
   const isEdit = !!editingApplicant;
   const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [pendingResumeFile, setPendingResumeFile] = useState<File | null>(null);
   const [form, setForm] = useState({
@@ -47,6 +50,52 @@ const ApplicantFormModal = ({
     notes: editingApplicant?.notes || "",
     resume_url: editingApplicant?.resume_url || "",
   });
+  const saveApplicantMutation = useOdooMutation<string | number | undefined, void>(
+    async () => {
+      const skillsArr = form.skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const odooPayload: Record<string, unknown> = {
+        name: form.name,
+        email: form.email || null,
+        phone: form.phone || null,
+        job_opening_id: form.job_opening_id,
+        stage: STAGE_TO_ODOO[form.stage] || form.stage,
+        rating: form.rating,
+        skills: skillsArr.length > 0 ? skillsArr : [],
+        experience_years: Number(form.experience_years) || 0,
+        education: form.education || null,
+        current_company: form.current_company || null,
+        city: form.city || null,
+        gender: form.gender ? GENDER_TO_ODOO[form.gender] || form.gender : null,
+        source: form.source || "مباشر",
+        expected_salary: form.expected_salary
+          ? Number(form.expected_salary)
+          : null,
+        salary_currency: form.salary_currency || "IQD",
+        notes: form.notes || null,
+      };
+      let applicantId: string | number | undefined;
+      if (isEdit) {
+        await odooData.updateApplicant(editingApplicant!.id, odooPayload);
+        applicantId = editingApplicant!.id;
+      } else {
+        const res: any = await odooData.createApplicant(odooPayload);
+        applicantId = res?.id;
+      }
+      if (pendingResumeFile && applicantId) {
+        const base64 = await fileToBase64(pendingResumeFile);
+        await odooData.uploadApplicantResume(
+          applicantId,
+          base64,
+          pendingResumeFile.name,
+        );
+      }
+      return applicantId;
+    },
+    isEdit ? "applicants" : ["applicants", "jobOpenings"],
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const openJobs = useMemo(
@@ -80,58 +129,15 @@ const ApplicantFormModal = ({
     setUploading(false);
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async (): Promise<void> => {
     if (!form.name.trim() || !form.job_opening_id) return;
-    setSaving(true);
-    const skillsArr = form.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
     try {
-      const odooPayload: Record<string, unknown> = {
-        name: form.name,
-        email: form.email || null,
-        phone: form.phone || null,
-        job_opening_id: form.job_opening_id,
-        stage: STAGE_TO_ODOO[form.stage] || form.stage,
-        rating: form.rating,
-        skills: skillsArr.length > 0 ? skillsArr : [],
-        experience_years: Number(form.experience_years) || 0,
-        education: form.education || null,
-        current_company: form.current_company || null,
-        city: form.city || null,
-        gender: form.gender ? GENDER_TO_ODOO[form.gender] || form.gender : null,
-        source: form.source || "مباشر",
-        expected_salary: form.expected_salary
-          ? Number(form.expected_salary)
-          : null,
-        salary_currency: form.salary_currency || "IQD",
-        notes: form.notes || null,
-      };
-      let applicantId: string | number;
-      if (isEdit) {
-        await odooData.updateApplicant(editingApplicant!.id, odooPayload);
-        applicantId = editingApplicant!.id;
-      } else {
-        const res: any = await odooData.createApplicant(odooPayload);
-        applicantId = res?.id;
-      }
-      if (pendingResumeFile && applicantId) {
-        const base64 = await fileToBase64(pendingResumeFile);
-        await odooData.uploadApplicantResume(
-          applicantId,
-          base64,
-          pendingResumeFile.name,
-        );
-      }
-      setSaving(false);
+      await saveApplicantMutation.mutateAsync();
       onSaved();
     } catch (e: any) {
-      setSaving(false);
       setUploadError(e.message || "فشل الحفظ");
     }
-  };
+  }, [form.name, form.job_opening_id, saveApplicantMutation, onSaved]);
 
   return (
     <ModalOverlay
@@ -228,13 +234,17 @@ const ApplicantFormModal = ({
             variant="primary"
             rounded="rounded-xl"
             icon={FileCheck}
-            loading={saving}
+            loading={saveApplicantMutation.isPending}
             onClick={handleSave}
-            disabled={saving || !form.name.trim() || !form.job_opening_id}
+            disabled={
+              saveApplicantMutation.isPending ||
+              !form.name.trim() ||
+              !form.job_opening_id
+            }
             className="flex-1 h-12 shadow-lg shadow-primary/20"
             style={{ fontSize: 14 }}
           >
-            {saving
+            {saveApplicantMutation.isPending
               ? arabicSource("common.saving")
               : isEdit
                 ? arabicSource("recruitment.update_data")

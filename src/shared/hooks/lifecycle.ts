@@ -1,4 +1,5 @@
 import * as odooData from "@/shared/api/odooData";
+import { STALE_TIME } from "@/shared/api/queryClient";
 import { useCachedList } from "./core";
 
 // ——— Phase 4: Employee Lifecycle & Compliance Types ———
@@ -162,7 +163,7 @@ export interface DbApprovalRequest {
 }
 
 export const useContractTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("contractTypes", () => odooData.fetchContractTypes(), "Failed to load contract types");
+  const { data: types, loading, refetch } = useCachedList("contractTypes", () => odooData.fetchContractTypes(), "Failed to load contract types", [], true, { ttlMs: STALE_TIME.LONG });
   return { types, loading, refetch };
 }
 
@@ -177,7 +178,7 @@ export const useEmployeeContracts = (employeeId?: string) => {
 }
 
 export const useDocumentTypes = () => {
-  const { data: types, loading, refetch } = useCachedList("documentTypes", () => odooData.fetchDocumentTypes(), "Failed to load document types");
+  const { data: types, loading, refetch } = useCachedList("documentTypes", () => odooData.fetchDocumentTypes(), "Failed to load document types", [], true, { ttlMs: STALE_TIME.LONG });
   return { types, loading, refetch };
 }
 
@@ -192,7 +193,7 @@ export const useEmployeeDocuments = (employeeId?: string) => {
 }
 
 export const useApprovalWorkflows = () => {
-  const { data: workflows, loading, refetch } = useCachedList("approvalWorkflows", () => odooData.fetchApprovalWorkflows(), "Failed to load approval workflows");
+  const { data: workflows, loading, refetch } = useCachedList("approvalWorkflows", () => odooData.fetchApprovalWorkflows(), "Failed to load approval workflows", [], true, { ttlMs: STALE_TIME.LONG });
   return { workflows, loading, refetch };
 }
 
@@ -216,10 +217,13 @@ export const useApprovalWorkflowSteps = (workflowId?: string) => {
     },
     "Failed to load workflow steps",
     [workflowId],
+    true,
+    { ttlMs: STALE_TIME.LONG },
   );
   return { steps, loading, refetch };
 }
 
+/** A live approval queue — a new request can land mid-session, so it stays short-lived and refetches on tab focus. */
 export const useApprovalRequests = (filters?: { entityType?: string; status?: string }) => {
   const { data: requests, loading, refetch } = useCachedList(
     "approvalRequests",
@@ -229,6 +233,8 @@ export const useApprovalRequests = (filters?: { entityType?: string; status?: st
     }),
     "Failed to load approval requests",
     [filters?.entityType, filters?.status],
+    true,
+    { ttlMs: STALE_TIME.SHORT, refetchOnWindowFocus: true },
   );
   return { requests, loading, refetch };
 }
@@ -247,7 +253,14 @@ export const useIssues = (filters?: { employeeId?: string; state?: string }) => 
 }
 
 export const useExitChecklistItems = () => {
-  const { data: items, loading, refetch } = useCachedList("exitChecklistItems", () => odooData.fetchExitChecklistItems(), "Failed to load exit checklist items");
+  const { data: items, loading, refetch } = useCachedList(
+    "exitChecklistItems",
+    () => odooData.fetchExitChecklistItems(),
+    "Failed to load exit checklist items",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
   return { items, loading, refetch };
 }
 
