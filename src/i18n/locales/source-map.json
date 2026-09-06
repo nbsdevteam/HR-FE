@@ -1352,7 +1352,7 @@
   "هل أنت متأكد من حذف هذه الوظيفة؟": "recruitment.are_you_sure_you_want_to_delete_this_vacancy",
   "هل تريد تحويل \"": "recruitment.do_you_want_to_convert",
   "تم نقل": "recruitment.applicant_moved_toast_prefix",
-  "إلى مرحلة": "recruitment.applicant_moved_toast_to_stage",
+  "مرحلة": "recruitment.applicant_moved_toast_stage_suffix",
   "وصف الوظيفة...": "recruitment.job_description",
   "وظائف شاغرة": "recruitment.vacancies_2",
   "وظيفة شاغرة جديدة": "common.new_vacancy",

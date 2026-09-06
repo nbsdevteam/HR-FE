@@ -1393,7 +1393,7 @@
   "recruitment.are_you_sure_you_want_to_delete_this_vacancy": "Are you sure you want to delete this vacancy?",
   "recruitment.do_you_want_to_convert": "Do you want to convert?",
   "recruitment.applicant_moved_toast_prefix": "Moved",
-  "recruitment.applicant_moved_toast_to_stage": "to stage",
+  "recruitment.applicant_moved_toast_stage_suffix": "stage",
   "recruitment.job_description": "Job Description...",
   "recruitment.vacancies_2": "Vacancies",
   "common.new_vacancy": "New vacancy",

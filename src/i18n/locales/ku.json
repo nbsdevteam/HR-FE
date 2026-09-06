@@ -1393,7 +1393,7 @@
   "recruitment.are_you_sure_you_want_to_delete_this_vacancy": "دڵنیایت لە سڕینەوەی ئەم پۆستە بەتاڵە؟",
   "recruitment.do_you_want_to_convert": "دەتەوێت بگۆڕیت؟",
   "recruitment.applicant_moved_toast_prefix": "گواسترایەوە",
-  "recruitment.applicant_moved_toast_to_stage": "بۆ قۆناغی",
+  "recruitment.applicant_moved_toast_stage_suffix": "قۆناغی",
   "recruitment.job_description": "وەسفکردنی کار...",
   "recruitment.vacancies_2": "پۆستە بەتاڵەکان",
   "common.new_vacancy": "پۆستی بەتاڵی نوێ",

@@ -37,7 +37,7 @@ const RecruitmentPipelineView = ({
       try {
         await onUpdateStage(applicantId, stage);
         showToast(
-          `${arabicSource("recruitment.applicant_moved_toast_prefix")} ${applicant?.name || ""} ${arabicSource("recruitment.applicant_moved_toast_to_stage")} ${stage}`,
+          `${arabicSource("recruitment.applicant_moved_toast_prefix")} ${applicant?.name || ""} ${arabicSource("common.to")} "${stage}" ${arabicSource("recruitment.applicant_moved_toast_stage_suffix")}.`,
         );
       } catch {
         showToast(arabicSource("common.error"));

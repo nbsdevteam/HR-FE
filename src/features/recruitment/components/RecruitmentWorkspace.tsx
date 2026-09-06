@@ -159,7 +159,7 @@ const RecruitmentWorkspace = () => {
           message={toastMessage}
           shape="banner"
           position="top-full"
-          toneClassName="bg-toast-success border border-toast-success-border shadow-lg"
+          toneClassName="bg-toast-success border border-toast-success-border shadow-lg text-center"
           textClassName="text-toast-success-fg font-medium"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
