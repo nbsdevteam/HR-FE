@@ -93,8 +93,6 @@ const JobScreeningSpecFields = ({
       <div>
         <label className={labelCls} style={{ fontSize: 12 }}>
           {arabicSource("recruitment.max_experience")}
-          {maxExperienceYears === 0 &&
-            ` — ${arabicSource("recruitment.max_experience_hint")}`}
         </label>
         <input
           type="number"
@@ -105,6 +103,14 @@ const JobScreeningSpecFields = ({
           className={inputCls}
           dir="ltr"
         />
+        {maxExperienceYears === 0 && (
+          <div
+            className="text-muted-foreground"
+            style={{ fontSize: 11, marginTop: 4 }}
+          >
+            {arabicSource("recruitment.max_experience_hint")}
+          </div>
+        )}
       </div>
     </div>
     <div>
