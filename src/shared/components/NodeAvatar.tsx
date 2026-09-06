@@ -30,10 +30,10 @@ const NodeAvatar = ({
   photo ? (
     // `alt` is a person/record name from the backend, and `alt` is one of the
     // attributes the DOM localizer rewrites — opt it out.
-    <img src={photo} alt={name} data-i18n-ignore className={`${sizeClassName} rounded-full object-cover ${extraClassName}`} style={imgStyle} />
+    <img src={photo} alt={name} data-i18n-ignore className={`${sizeClassName} rounded-full object-cover flex-shrink-0 aspect-square ${extraClassName}`} style={imgStyle} />
   ) : (
     <div
-      className={`${sizeClassName} rounded-full flex items-center justify-center ${extraClassName} ${fallbackClassName}`}
+      className={`${sizeClassName} rounded-full flex items-center justify-center flex-shrink-0 aspect-square ${extraClassName} ${fallbackClassName}`}
       style={{ background: color, ...fallbackStyle }}
     >
       <span className={textClassName} style={{ fontSize }}>{initials}</span>
