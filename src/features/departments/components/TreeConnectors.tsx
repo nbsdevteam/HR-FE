@@ -46,19 +46,49 @@ const TreeConnectors = ({ parentRef, childRefs, color }: {
     // The chart is zoomed via a CSS `transform: scale()` transition on an
     // ancestor (see StructureCardsView) — `getBoundingClientRect` reflects that
     // scale, but a pure transform never changes any element's layout size, so
-    // the ResizeObserver above never fires for it and these lines go stale the
-    // moment zoom changes. `transitionend` bubbles up from wherever the
-    // transform actually animates, so a document-level listener catches it
-    // regardless of how deep this connector is nested.
-    const handleTransitionEnd = (event: TransitionEvent): void => {
-      if (event.propertyName === "transform") requestAnimationFrame(measure);
+    // the ResizeObserver above never fires for it and these lines would go
+    // stale the moment zoom changes. Re-measuring only once the transition
+    // ends made the line visibly jump into place after the fact; tracking
+    // every frame from start to end instead keeps it moving in step with the
+    // cards, the same way the cards' own animation looks. Transition events
+    // bubble, so a document-level listener catches this regardless of how
+    // deep this connector is nested.
+    const MAX_TRACK_MS = 600;
+    let trackingRaf = 0;
+
+    const stopTracking = (): void => {
+      if (trackingRaf) cancelAnimationFrame(trackingRaf);
+      trackingRaf = 0;
     };
+
+    const track = (start: number) => (): void => {
+      measure();
+      if (performance.now() - start < MAX_TRACK_MS) {
+        trackingRaf = requestAnimationFrame(track(start));
+      }
+    };
+
+    const handleTransitionStart = (event: TransitionEvent): void => {
+      if (event.propertyName !== "transform") return;
+      stopTracking();
+      trackingRaf = requestAnimationFrame(track(performance.now()));
+    };
+    const handleTransitionEnd = (event: TransitionEvent): void => {
+      if (event.propertyName !== "transform") return;
+      stopTracking();
+      measure();
+    };
+    document.addEventListener("transitionstart", handleTransitionStart);
     document.addEventListener("transitionend", handleTransitionEnd);
+    document.addEventListener("transitioncancel", handleTransitionEnd);
 
     return () => {
       cancelAnimationFrame(raf);
       ro?.disconnect();
+      stopTracking();
+      document.removeEventListener("transitionstart", handleTransitionStart);
       document.removeEventListener("transitionend", handleTransitionEnd);
+      document.removeEventListener("transitioncancel", handleTransitionEnd);
     };
   }, [measure]);
 
