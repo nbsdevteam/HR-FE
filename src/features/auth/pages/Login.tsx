@@ -96,13 +96,13 @@ const Login = () => {
             >
               اسم المستخدم
             </label>
-            <div className="relative">
+            <div className="relative" dir="ltr">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={email}
                 onChange={handleEmailChange}
-                className="w-full ps-9 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
+                className="w-full ps-8 pe-4 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
                 placeholder="admin"
                 dir="ltr"
                 autoComplete="username"
@@ -118,13 +118,13 @@ const Login = () => {
             >
               كلمة المرور
             </label>
-            <div className="relative">
+            <div className="relative" dir="ltr">
               <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={handlePasswordChange}
-                className="w-full ps-9 pe-12 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
+                className="w-full ps-8 pe-10 py-2.5 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring outline-none"
                 placeholder="••••••••"
                 dir="ltr"
                 autoComplete="current-password"
@@ -132,6 +132,7 @@ const Login = () => {
               <Button
                 type="button"
                 variant="ghost"
+                size="unstyled"
                 onClick={handleTogglePasswordVisibility}
                 icon={showPassword ? EyeOff : Eye}
                 aria-label={
