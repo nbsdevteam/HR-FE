@@ -141,7 +141,14 @@ const StructureCardsView = ({
         >
           <div
             ref={contentRef}
-            className="min-w-max py-4 transition-transform duration-200"
+            // `w-max` (not `min-w-max`) pins this div's own width to its
+            // intrinsic content size. `min-w-max` only sets a floor, so once
+            // the wrapper above grows past that (zoom > 1, since it's sized
+            // to naturalSize * zoom), this div's `width: auto` would stretch
+            // to fill it — which useContentNaturalSize's ResizeObserver then
+            // reports as a bigger "natural" size, growing the wrapper again,
+            // in a runaway feedback loop.
+            className="w-max py-4 transition-transform duration-200"
             style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}
           >
             {showReportingTree && <ReportingTreeView roots={tree.reporting_tree} />}
