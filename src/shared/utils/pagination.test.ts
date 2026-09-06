@@ -12,18 +12,20 @@ describe("pageWindow", () => {
   });
 
   it("keeps the first and last page either side of a gap", () => {
-    expect(pageWindow(6, 12)).toEqual([1, PAGE_GAP, 4, 5, 6, 7, 8, PAGE_GAP, 12]);
+    expect(pageWindow(6, 12)).toEqual([1, PAGE_GAP, 5, 6, 7, PAGE_GAP, 12]);
   });
 
   it("only gaps on one side when the current page is near an end", () => {
-    expect(pageWindow(2, 12)).toEqual([1, 2, 3, 4, PAGE_GAP, 12]);
-    expect(pageWindow(11, 12)).toEqual([1, PAGE_GAP, 9, 10, 11, 12]);
+    expect(pageWindow(2, 12)).toEqual([1, 2, 3, PAGE_GAP, 12]);
+    expect(pageWindow(11, 12)).toEqual([1, PAGE_GAP, 10, 11, 12]);
   });
 
-  it("shows the skipped page rather than an ellipsis hiding a single number", () => {
-    // The window reaches 3 and 9; an ellipsis for page 2 alone would cost the
-    // same width as the number and one more click.
-    expect(pageWindow(5, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, PAGE_GAP, 10]);
+  it("keeps a fixed-width window instead of merging into a nearby end", () => {
+    // Page 6 of 9 used to pull the whole 4-9 tail into view because the
+    // window's edge (8) sat right next to the last page (9). The window now
+    // stays capped and gaps on both sides regardless of that proximity.
+    expect(pageWindow(6, 9)).toEqual([1, PAGE_GAP, 5, 6, 7, PAGE_GAP, 9]);
+    expect(pageWindow(5, 10)).toEqual([1, PAGE_GAP, 4, 5, 6, PAGE_GAP, 10]);
   });
 
   it("clamps a current page outside the range instead of inventing one", () => {
