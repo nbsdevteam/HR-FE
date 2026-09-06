@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, memo } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, type SelectOption } from "@/shared/components";
 import {
   type DbJobOpening,
   type JobSkillRequirement,
@@ -9,7 +9,7 @@ import {
 } from "@/shared/hooks";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import { DEPARTMENTS } from "@/shared/constants";
+import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import { JOB_STATUS_TO_ODOO, JOB_TYPE_TO_ODOO } from "../constants/recruitment";
 import JobFormFieldsSection from "./JobFormFieldsSection";
 import JobScreeningSpecFields from "./JobScreeningSpecFields";
@@ -50,6 +50,7 @@ const JobFormModal = ({
     editingJob?.nice_to_have_skills || [],
   );
   const { departments: odooDepartments } = useDepartments();
+  const isArabic = useIsArabicLanguage();
   const saveJobMutation = useOdooMutation<unknown, void>(() => {
     const reqs = form.requirements
       .split("\n")
@@ -79,17 +80,20 @@ const JobFormModal = ({
       : odooData.createJobOpening(payload);
   }, "jobOpenings");
 
-  // Odoo department names aren't guaranteed to match the static translated
-  // list (some departments have no Arabic name set), so the Select's options
-  // must include whatever the backend actually returns for this job.
+  // `DbDepartment.name` always prefers Arabic, so it can't be used as a
+  // display label directly — pick the column matching the active language,
+  // but keep the canonical `name` as the option's value since that's what
+  // `form.department` stores and what the save lookup above matches on.
   const departmentOptions = useMemo(() => {
-    const names = new Set<string>([
-      ...DEPARTMENTS,
-      ...odooDepartments.map((d) => d.name),
-    ]);
-    if (form.department) names.add(form.department);
-    return Array.from(names);
-  }, [odooDepartments, form.department]);
+    const options: SelectOption[] = odooDepartments.map((d) => ({
+      value: d.name,
+      label: localizedName(d.name_ar || d.name, d.name_en, isArabic),
+    }));
+    if (form.department && !odooDepartments.some((d) => d.name === form.department)) {
+      options.push({ value: form.department, label: form.department });
+    }
+    return options;
+  }, [odooDepartments, form.department, isArabic]);
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!form.title.trim()) return;

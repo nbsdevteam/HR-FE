@@ -1,4 +1,4 @@
-import { InputField, Select } from "@/shared/components";
+import { InputField, Select, type SelectOption } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { JOB_STATUSES } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
@@ -6,7 +6,7 @@ import { inputCls, labelCls, selectCls } from "../styles";
 type JobFormFieldsSectionProps = {
   title: string;
   department: string;
-  departmentOptions: readonly string[];
+  departmentOptions: readonly SelectOption[];
   location: string;
   type: string;
   deadline: string;
