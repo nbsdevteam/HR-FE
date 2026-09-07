@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Save, UserCog } from "lucide-react";
 import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
 import { empDisplayName } from "@/shared/hooks";
@@ -6,16 +6,19 @@ import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { localizedName, useIsArabicLanguage } from "@/i18n/useLocalizedName";
 import type { QuickEditDeptDesignationPayload } from "../types";
+import { departmentManagerValue } from "../utils/directManager";
 import FieldLabel from "./FieldLabel";
 
 const getDepartmentId = (department: DbDepartment): string => department.id;
 const getDepartmentLabel = (department: DbDepartment): string => department.name;
 const getPositionId = (position: DbPosition): string => position.id;
+const getEmployeeId = (employee: DbEmployee): string => employee.id;
 
 type QuickEditDeptDesignationModalProps = {
   employee: DbEmployee;
   dbDepartments: DbDepartment[];
   positions: DbPosition[];
+  dbEmployees: DbEmployee[];
   saving: boolean;
   onClose: () => void;
   onSave: (payload: QuickEditDeptDesignationPayload) => void;
@@ -30,14 +33,20 @@ const QuickEditDeptDesignationModal = ({
   employee,
   dbDepartments,
   positions,
+  dbEmployees,
   saving,
   onClose,
   onSave,
 }: QuickEditDeptDesignationModalProps) => {
   const [departmentId, setDepartmentId] = useState(employee.department_id || "");
   const [designationId, setDesignationId] = useState(employee.position_id || "");
+  const [managerId, setManagerId] = useState(employee.manager_id || "");
 
   const isArabic = useIsArabicLanguage();
+
+  // Nobody manages themselves. The backend refuses it too
+  // (`manager_self_assignment`) — this just keeps the choice unclickable.
+  const managerExcludeIds = useMemo(() => [employee.id], [employee.id]);
 
   // `title_ar`/`title_en` are backend columns, so the option label picks the
   // column matching the active language rather than always showing Arabic.
@@ -60,20 +69,33 @@ const QuickEditDeptDesignationModal = ({
         );
         return stillValid ? current : "";
       });
+      // Moving department moves the direct manager with it — the same rule the
+      // backend applies on save. Shown here so the form states the outcome
+      // instead of the manager silently changing after the request.
+      const inherited = departmentManagerValue(dbDepartments, value);
+      setManagerId(inherited === employee.id ? "" : inherited);
     },
-    [positions],
+    [positions, dbDepartments, employee.id],
   );
 
   const handleDesignationChange = useCallback((value: string): void => {
     setDesignationId(value);
   }, []);
 
+  const handleManagerChange = useCallback((value: string): void => {
+    setManagerId(value);
+  }, []);
+
   const handleSave = useCallback((): void => {
     onSave({
       department_id: departmentId || null,
       designation_id: designationId || null,
+      // `false`, not `null`: the employee update endpoint reads `null` as
+      // "field absent from this patch", so clearing the manager on purpose
+      // needs the explicit false. `null` would leave the old one in place.
+      manager_id: managerId || false,
     });
-  }, [departmentId, designationId, onSave]);
+  }, [departmentId, designationId, managerId, onSave]);
 
   return (
     <Modal
@@ -125,6 +147,19 @@ const QuickEditDeptDesignationModal = ({
           value={designationId}
           onChange={handleDesignationChange}
           blankLabel={arabicSource("hierarchy.no_job_title")}
+          optionsAreData
+        />
+      </div>
+      <div>
+        <FieldLabel>{arabicSource("common.direct_manager")}</FieldLabel>
+        <TypeAhead
+          items={dbEmployees}
+          getId={getEmployeeId}
+          getLabel={empDisplayName}
+          excludeIds={managerExcludeIds}
+          value={managerId}
+          onChange={handleManagerChange}
+          blankLabel={arabicSource("shared.without_a_direct_manager")}
           optionsAreData
         />
       </div>

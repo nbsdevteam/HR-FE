@@ -31,6 +31,7 @@ export const useHierarchyPage = () => {
   const positionForm = useAddPositionForm({
     refetchPositions: treeData.refetchPositions,
     setToast,
+    dbDepartments: treeData.dbDepartments,
   });
   const {
     handleDeleteEmployee,

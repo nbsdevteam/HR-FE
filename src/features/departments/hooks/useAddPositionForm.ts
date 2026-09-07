@@ -3,12 +3,15 @@ import type { Dispatch, SetStateAction } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
+import type { DbDepartment } from "@/shared/hooks";
 import type { PositionFormState } from "../components/PositionFormModal";
-import { EMPTY_POSITION_FORM } from "./usePositionsView";
+import { directManagerPatch } from "../utils/directManager";
+import { EMPTY_POSITION_FORM } from "../utils/positionFormDefaults";
 
 type UseAddPositionFormArgs = {
   refetchPositions: () => Promise<void> | void;
   setToast: Dispatch<SetStateAction<string | null>>;
+  dbDepartments: DbDepartment[];
 };
 
 /**
@@ -18,6 +21,7 @@ type UseAddPositionFormArgs = {
 export const useAddPositionForm = ({
   refetchPositions: _refetchPositions,
   setToast,
+  dbDepartments,
 }: UseAddPositionFormArgs) => {
   const [showAddPositionModal, setShowAddPositionModal] = useState(false);
   const [positionSaving, setPositionSaving] = useState(false);
@@ -51,6 +55,7 @@ export const useAddPositionForm = ({
         max_headcount: parseInt(posForm.max_headcount) || 1,
         description: posForm.description.trim() || null,
         level: 0,
+        ...directManagerPatch(dbDepartments, posForm.department_id, posForm.manager_id),
       });
       setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
       setShowAddPositionModal(false);
@@ -60,7 +65,7 @@ export const useAddPositionForm = ({
       setToast(`${arabicSource("common.error_2")} ${message}`);
     }
     setPositionSaving(false);
-  }, [posForm, createDesignationMutation.mutateAsync, setToast]);
+  }, [posForm, dbDepartments, createDesignationMutation.mutateAsync, setToast]);
 
   return {
     showAddPositionModal,

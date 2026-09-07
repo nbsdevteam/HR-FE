@@ -68,6 +68,9 @@ export type PendingAssignmentUndo = {
 export type QuickEditDeptDesignationPayload = {
   department_id: string | null;
   designation_id: string | null;
+  /** `false` clears the manager; a string sets it. Never `null` — the employee
+   *  update endpoint reads `null` as "not part of this patch". */
+  manager_id: string | false;
 };
 
 // ——— Org-structure admin screen (backend §4) ———

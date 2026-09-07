@@ -1,23 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { empDisplayName, usePositions } from "@/shared/hooks";
-import type { DbEmployee, DbDepartment, DbPosition } from "@/shared/hooks";
+import type { DbEmployee, DbDepartment } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import * as odooData from "@/shared/api/odooData";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
-import type { PositionNode, QuickEditDeptDesignationPayload } from "../types";
+import type { QuickEditDeptDesignationPayload } from "../types";
 import { buildPositionTree } from "../utils/hierarchyTree";
-import type { PositionFormState } from "../components/PositionFormModal";
 import { usePositionAssignment } from "./usePositionAssignment";
+import { usePositionCrud } from "./usePositionCrud";
 import { usePositionFilters } from "./usePositionFilters";
 
-export const EMPTY_POSITION_FORM: PositionFormState = {
-  title_ar: "",
-  title_en: "",
-  department_id: "",
-  max_headcount: "1",
-  description: "",
-};
+export { EMPTY_POSITION_FORM } from "../utils/positionFormDefaults";
 
 export const usePositionsView = ({
   dbEmployees,
@@ -31,17 +25,10 @@ export const usePositionsView = ({
   refetch: () => void;
 }) => {
   const [empSearch, setEmpSearch] = useState("");
-  const [showAddPositionModal, setShowAddPositionModal] = useState(false);
-  const [addParentId, setAddParentId] = useState<string | null>(null);
-  const [editingPosition, setEditingPosition] = useState<PositionNode | null>(null);
   const [draggingEmployeeId, setDraggingEmployeeId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [posForm, setPosForm] = useState<PositionFormState>(EMPTY_POSITION_FORM);
   const [quickEditEmployee, setQuickEditEmployee] = useState<DbEmployee | null>(null);
   const [quickEditSaving, setQuickEditSaving] = useState(false);
-  const [pendingDeletePosId, setPendingDeletePosId] = useState<string | null>(null);
-  const [deletingPosition, setDeletingPosition] = useState(false);
 
   const { positions, loading: posLoading, refetch: refetchPositions } = usePositions();
 
@@ -62,18 +49,24 @@ export const usePositionsView = ({
     onToast: showToast,
   });
 
-  const createDesignationMutation = useOdooMutation(
-    (payload: Record<string, unknown>) => odooData.createDesignation(payload),
-    "positions",
-  );
-  const updateDesignationMutation = useOdooMutation(
-    ({ id, payload }: { id: string; payload: Record<string, unknown> }) => odooData.updateDesignation(id, payload),
-    "positions",
-  );
-  const deleteDesignationMutation = useOdooMutation(
-    (id: string) => odooData.deleteDesignation(id),
-    "positions",
-  );
+  const {
+    showAddPositionModal,
+    editingPosition,
+    saving,
+    posForm,
+    setPosForm,
+    pendingDeletePosId,
+    deletingPosition,
+    handleAddPosition,
+    handleEditPosition,
+    requestDeletePosition,
+    cancelDeletePosition,
+    confirmDeletePosition,
+    closeAddEditModal,
+    openAddModal,
+    openEditModal,
+  } = usePositionCrud({ positions, dbDepartments, setToast });
+
   const updateEmployeeMutation = useOdooMutation(
     ({ id, payload }: { id: string; payload: QuickEditDeptDesignationPayload }) => odooData.updateEmployee(id, payload),
     ["employees", "positions"],
@@ -121,109 +114,6 @@ export const usePositionsView = ({
     },
     [assignEmployee],
   );
-
-  // Add position
-  const handleAddPosition = useCallback(async () => {
-    if (!posForm.title_ar.trim()) return;
-    setSaving(true);
-
-    // Calculate level from parent
-    let level = 0;
-    if (addParentId) {
-      const parent = positions.find((position: DbPosition) => position.id === addParentId);
-      if (parent) level = parent.level + 1;
-    }
-
-    try {
-      await createDesignationMutation.mutateAsync({
-        title_ar: posForm.title_ar.trim(),
-        name: posForm.title_en.trim() || posForm.title_ar.trim(),
-        department_id: posForm.department_id || null,
-        reports_to_job_id: addParentId,
-        max_headcount: parseInt(posForm.max_headcount) || 1,
-        description: posForm.description.trim() || null,
-        level,
-      });
-      setToast(arabicSource("hierarchy.the_position_was_created_successfully"));
-      setShowAddPositionModal(false);
-      setPosForm(EMPTY_POSITION_FORM);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "";
-      setToast(`${arabicSource("common.error_2")} ${message}`);
-    }
-    setSaving(false);
-  }, [posForm, addParentId, positions, createDesignationMutation.mutateAsync]);
-
-  // Edit position
-  const handleEditPosition = useCallback(async () => {
-    if (!editingPosition || !posForm.title_ar.trim()) return;
-    setSaving(true);
-    try {
-      await updateDesignationMutation.mutateAsync({
-        id: editingPosition.id,
-        payload: {
-          title_ar: posForm.title_ar.trim(),
-          name: posForm.title_en.trim() || posForm.title_ar.trim(),
-          department_id: posForm.department_id || null,
-          max_headcount: parseInt(posForm.max_headcount) || 1,
-          description: posForm.description.trim() || null,
-        },
-      });
-      setToast(arabicSource("hierarchy.position_updated_successfully"));
-      setEditingPosition(null);
-      setPosForm(EMPTY_POSITION_FORM);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "";
-      setToast(`${arabicSource("common.error_2")} ${message}`);
-    }
-    setSaving(false);
-  }, [editingPosition, posForm, updateDesignationMutation.mutateAsync]);
-
-  // Delete position
-  const requestDeletePosition = useCallback((posId: string) => {
-    setPendingDeletePosId(posId);
-  }, []);
-
-  const cancelDeletePosition = useCallback(() => {
-    setPendingDeletePosId(null);
-  }, []);
-
-  const confirmDeletePosition = useCallback(async () => {
-    if (!pendingDeletePosId) return;
-    setDeletingPosition(true);
-    try {
-      await deleteDesignationMutation.mutateAsync(pendingDeletePosId);
-      setToast(arabicSource("hierarchy.position_deleted"));
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "";
-      setToast(`${arabicSource("common.error_2")} ${message}`);
-    } finally {
-      setDeletingPosition(false);
-      setPendingDeletePosId(null);
-    }
-  }, [deleteDesignationMutation.mutateAsync, pendingDeletePosId]);
-
-  const closeAddEditModal = useCallback(() => {
-    setShowAddPositionModal(false);
-    setEditingPosition(null);
-  }, []);
-
-  const openAddModal = useCallback((parentId: string | null) => {
-    setAddParentId(parentId);
-    setPosForm(EMPTY_POSITION_FORM);
-    setShowAddPositionModal(true);
-  }, []);
-
-  const openEditModal = useCallback((pos: PositionNode) => {
-    setEditingPosition(pos);
-    setPosForm({
-      title_ar: pos.title_ar,
-      title_en: pos.title_en || "",
-      department_id: pos.department_id || "",
-      max_headcount: String(pos.max_headcount),
-      description: pos.description || "",
-    });
-  }, []);
 
   const openQuickEditEmployee = useCallback((employee: DbEmployee): void => {
     setQuickEditEmployee(employee);

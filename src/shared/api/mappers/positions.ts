@@ -9,6 +9,8 @@ export const mapPosition = (r: any): DbPosition => {
     title_en: r.name || r.title_en || null,
     department_id: sornull(r.department_id),
     department_name: r.department_name || null,
+    department_manager_id: sornull(r.department_manager_id),
+    department_manager_name: r.department_manager_name || null,
     reports_to_position_id: sornull(r.reports_to_job_id || r.reports_to_position_id),
     reports_to_job_name: r.reports_to_job_name || null,
     level: num(r.level),

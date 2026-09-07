@@ -146,6 +146,7 @@ const HierarchyModals = ({
             posForm={posForm}
             setPosForm={setPosForm}
             dbDepartments={dbDepartments}
+            dbEmployees={dbEmployees}
             onClose={onCloseAddPositionModal}
             onConfirm={onAddPosition}
             saving={positionSaving}

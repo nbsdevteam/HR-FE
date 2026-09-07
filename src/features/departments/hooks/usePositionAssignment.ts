@@ -61,7 +61,11 @@ export const usePositionAssignment = ({
   }, [dbEmployees, overrides]);
 
   const commit = useCallback(
-    async (employeeId: string, next: PositionAssignmentSnapshot): Promise<boolean> => {
+    async (
+      employeeId: string,
+      next: PositionAssignmentSnapshot,
+      { sendManager }: { sendManager: boolean },
+    ): Promise<boolean> => {
       setOverrides((current) => ({ ...current, [employeeId]: next }));
       setInFlight((count) => count + 1);
       try {
@@ -70,7 +74,7 @@ export const usePositionAssignment = ({
           updates: {
             designation_id: next.position_id,
             department_id: next.department_id,
-            manager_id: next.manager_id,
+            ...(sendManager ? { manager_id: next.manager_id ?? false } : {}),
           },
         });
         // The `employees`/`positions` cache invalidation triggered above
@@ -112,14 +116,12 @@ export const usePositionAssignment = ({
       const previous = snapshotOf(employee);
       const department = dbDepartments.find((candidate) => candidate.id === position.department_id);
 
-      // Manager is inherited from whoever holds the parent position, as before.
-      let managerId = previous.manager_id;
-      if (position.reports_to_position_id) {
-        const parentHolder = effectiveEmployees.find(
-          (candidate) => candidate.position_id === position.reports_to_position_id,
-        );
-        if (parentHolder) managerId = parentHolder.id;
-      }
+      // The department's configured Direct Manager is what the backend applies
+      // on save (hr.employee.write cascades on department_id). Computed here
+      // only to paint the optimistic row with the same answer.
+      const inherited = department ? department.manager_id || "" : "";
+      const managerId =
+        inherited && inherited !== employeeId ? inherited : previous.manager_id;
 
       setUndoEntry({
         employeeId,
@@ -130,12 +132,16 @@ export const usePositionAssignment = ({
         previous,
       });
 
-      const assigned = await commit(employeeId, {
-        position_id: positionId,
-        department_id: department ? department.id : previous.department_id,
-        department: department ? department.name : previous.department,
-        manager_id: managerId,
-      });
+      const assigned = await commit(
+        employeeId,
+        {
+          position_id: positionId,
+          department_id: department ? department.id : previous.department_id,
+          department: department ? department.name : previous.department,
+          manager_id: managerId,
+        },
+        { sendManager: false },
+      );
       // Nothing to take back if it never landed — let the error toast through.
       if (!assigned) setUndoEntry(null);
     },
@@ -146,7 +152,7 @@ export const usePositionAssignment = ({
     if (!undoEntry) return;
     const { employeeId, previous } = undoEntry;
     setUndoEntry(null);
-    const reverted = await commit(employeeId, previous);
+    const reverted = await commit(employeeId, previous, { sendManager: true });
     if (reverted) onToast(arabicSource("hierarchy.assignment_undone"));
   }, [undoEntry, commit, onToast]);
 

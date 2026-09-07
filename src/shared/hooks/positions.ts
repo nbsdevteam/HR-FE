@@ -10,6 +10,12 @@ export interface DbPosition {
   title_en: string | null;
   department_id: string | null;
   department_name: string | null;
+  /** The Direct Manager configured on this position's DEPARTMENT
+   *  (`hr.department.manager_id`). A position owns no manager of its own —
+   *  writing it back through `updateDesignation` changes the department, and
+   *  so every employee in it. `null` when the department configures none. */
+  department_manager_id: string | null;
+  department_manager_name: string | null;
   reports_to_position_id: string | null;
   reports_to_job_name: string | null;
   /** Reporting-tree depth, relative to a branch and computed client-side at

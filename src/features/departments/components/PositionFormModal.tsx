@@ -2,17 +2,24 @@ import type { Dispatch, SetStateAction } from "react";
 import { Briefcase, Save } from "lucide-react";
 import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { DbDepartment } from "@/shared/hooks";
+import { empDisplayName } from "@/shared/hooks";
+import type { DbDepartment, DbEmployee } from "@/shared/hooks";
 import type { PositionNode } from "../types";
 import FieldLabel from "./FieldLabel";
 
 const getDepartmentId = (d: DbDepartment): string => d.id;
 const getDepartmentLabel = (d: DbDepartment): string => d.name;
+const getEmployeeId = (e: DbEmployee): string => e.id;
 
 export type PositionFormState = {
   title_ar: string;
   title_en: string;
   department_id: string;
+  /** The department's configured Direct Manager, edited from here because
+   *  this is where the org structure is built. It is saved on the DEPARTMENT,
+   *  so it becomes the direct manager of everyone in it — not of this
+   *  position alone. Empty string = the department configures none. */
+  manager_id: string;
   max_headcount: string;
   description: string;
 };
@@ -22,12 +29,13 @@ type PositionFormModalProps = {
   posForm: PositionFormState;
   setPosForm: Dispatch<SetStateAction<PositionFormState>>;
   dbDepartments: DbDepartment[];
+  dbEmployees: DbEmployee[];
   onClose: () => void;
   onConfirm: () => void;
   saving: boolean;
 };
 
-const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments, onClose, onConfirm, saving }: PositionFormModalProps) => {
+const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments, dbEmployees, onClose, onConfirm, saving }: PositionFormModalProps) => {
   const handleTitleArChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setPosForm((p) => ({ ...p, title_ar: e.target.value }));
   };
@@ -36,8 +44,20 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
     setPosForm((p) => ({ ...p, title_en: e.target.value }));
   };
 
+  // Switching department switches which department's Direct Manager this
+  // field is editing, so the value has to follow — leaving the old one in
+  // place would silently reassign the newly-picked department's manager.
   const handleDepartmentIdChange = (value: string): void => {
-    setPosForm((p) => ({ ...p, department_id: value }));
+    const department = dbDepartments.find((d) => d.id === value);
+    setPosForm((p) => ({
+      ...p,
+      department_id: value,
+      manager_id: department?.manager_id || "",
+    }));
+  };
+
+  const handleManagerIdChange = (value: string): void => {
+    setPosForm((p) => ({ ...p, manager_id: value }));
   };
 
   const handleMaxHeadcountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -96,6 +116,22 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
           blankLabel={arabicSource("common.no_section")}
           optionsAreData
         />
+      </div>
+      <div>
+        <FieldLabel>{arabicSource("common.direct_manager")}</FieldLabel>
+        <TypeAhead
+          items={dbEmployees}
+          getId={getEmployeeId}
+          getLabel={empDisplayName}
+          value={posForm.manager_id}
+          onChange={handleManagerIdChange}
+          blankLabel={arabicSource("shared.without_a_direct_manager")}
+          disabled={!posForm.department_id}
+          optionsAreData
+        />
+        <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>
+          {arabicSource("hierarchy.the_department_and_manager_will_be_assigned_automatically_based")}
+        </p>
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.maximum_number")}</FieldLabel>
