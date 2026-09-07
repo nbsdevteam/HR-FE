@@ -1,15 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Loader2,
-  AlertCircle,
-  Link2,
-  Copy,
-  RefreshCw,
-  Check,
-  MessageCircle,
-  Linkedin,
-} from "lucide-react";
+import { Loader2, AlertCircle, Link2, Copy, RefreshCw, Check } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import {
   Button,
@@ -189,7 +180,7 @@ const ApplyLinkModal = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
               style={{ fontSize: 13 }}
             >
-              <MessageCircle className="w-4 h-4" />
+              <img src="/socialMediaLogos/whatsapp.png" alt="" className="w-4 h-4" />
               {arabicSource("recruitment.share_whatsapp")}
             </a>
             <a
@@ -199,7 +190,7 @@ const ApplyLinkModal = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-sky-500/40 text-sky-400 hover:bg-sky-500/10 transition-colors"
               style={{ fontSize: 13 }}
             >
-              <Linkedin className="w-4 h-4" />
+              <img src="/socialMediaLogos/linkedin.png" alt="" className="w-4 h-4" />
               {arabicSource("recruitment.share_linkedin")}
             </a>
             <Button
