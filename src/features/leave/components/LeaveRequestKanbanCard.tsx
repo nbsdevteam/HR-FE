@@ -12,10 +12,12 @@ import { resolveLeaveExcuseStatus } from "../utils/leaveExcuseStatus";
 import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
 import LeaveExcuseFollowUpControl from "./LeaveExcuseFollowUpControl";
 
+type LeaveRequestKanbanEmployee = TEmployeeNameFields & { profile_picture?: string | null };
+
 type LeaveRequestKanbanCardProps = {
   leave: DbLeaveRequest;
   index: number;
-  employee: TEmployeeNameFields | undefined;
+  employee: LeaveRequestKanbanEmployee | undefined;
   /** Resolved from `leave.leave_type`, so the card can show a real English name. */
   leaveType: DbLeaveType | undefined;
   onApprove: (id: string) => void;
@@ -44,6 +46,7 @@ const LeaveRequestKanbanCard = ({ leave, index, employee, leaveType, onApprove, 
     >
       <div className="flex items-center gap-2 mb-2">
         <NodeAvatar
+          photo={employee?.profile_picture}
           name={employeeName}
           initials={employeeName.charAt(0)}
           sizeClassName="w-7 h-7"

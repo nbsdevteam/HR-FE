@@ -22,6 +22,7 @@ export interface AttendanceRow {
   overtimeHours: number;
   breakMinutes: number;
   deptColor: string | null;
+  photo: string | null;
   excusedLate: boolean;
   excusedAbsence: boolean;
   excusedShortfall: boolean;

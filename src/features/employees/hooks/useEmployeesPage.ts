@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Employee } from "@/features/employees";
-import { useDepartments, useEmployees, usePositions } from "@/shared/hooks";
+import { useDepartments, useEmployeeAvatars, useEmployees, usePositions } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { toEmployees } from "../utils/employeeMapper";
 import { sortEmployees } from "../utils/employeeSort";
@@ -27,6 +27,14 @@ const pickLeanListGapFields = (employee: Employee): LeanListGapFields => ({
   bloodType: employee.bloodType,
   endDate: employee.endDate,
 });
+
+/** Overlays a batch avatar fetch onto already-mapped rows — `undefined` for an
+ *  id the batch never returned (out of scope, or not yet loaded) leaves the
+ *  row's existing `photo` untouched instead of blanking it. */
+const withAvatars = (employees: Employee[], avatars: Record<string, string | null>): Employee[] =>
+  employees.map(employee =>
+    employee.dbId in avatars ? { ...employee, photo: avatars[employee.dbId] || "" } : employee,
+  );
 
 export const useEmployeesPage = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -60,10 +68,27 @@ export const useEmployeesPage = () => {
   const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll, currentEmployeeId);
   const statusActions = useEmployeeStatusActions(refetchAll);
 
+  // The table only ever holds one page of ids — cheap to fetch on every page
+  // change. The kanban board renders the whole roster at once, so its avatar
+  // batch is only requested while that view is actually on screen.
+  const pageAvatarIds = useMemo(() => paged.pageEmployees.map(e => e.id), [paged.pageEmployees]);
+  const { avatars: pageAvatars } = useEmployeeAvatars(pageAvatarIds, { enabled: listFilters.viewMode === "list" });
+  const kanbanAvatarIds = useMemo(() => dbEmployees.map(e => e.id), [dbEmployees]);
+  const { avatars: kanbanAvatars } = useEmployeeAvatars(kanbanAvatarIds, { enabled: listFilters.viewMode === "kanban" });
+
   /** The server-returned page, ordered by the table's active sort column. */
   const pagedEmployees = useMemo(
-    () => sortEmployees(toEmployees(paged.pageEmployees), listFilters.sortBy, listFilters.sortDir),
-    [paged.pageEmployees, listFilters.sortBy, listFilters.sortDir],
+    () => withAvatars(sortEmployees(toEmployees(paged.pageEmployees), listFilters.sortBy, listFilters.sortDir), pageAvatars),
+    [paged.pageEmployees, listFilters.sortBy, listFilters.sortDir, pageAvatars],
+  );
+
+  const allEmployees = useMemo(
+    () => withAvatars(listFilters.allEmployees, kanbanAvatars),
+    [listFilters.allEmployees, kanbanAvatars],
+  );
+  const filtered = useMemo(
+    () => withAvatars(listFilters.filtered, kanbanAvatars),
+    [listFilters.filtered, kanbanAvatars],
   );
 
   const selectedEmployeeOptions = useMemo(
@@ -112,6 +137,8 @@ export const useEmployeesPage = () => {
     ...paged,
     ...statusActions,
     pagedEmployees,
+    allEmployees,
+    filtered,
     currentEmployeeId,
     dbDepartmentOptions,
     dbEmployees,

@@ -6,6 +6,7 @@ import * as odooData from "@/shared/api/odooData";
 import {
   empDisplayName,
   useDebouncedValue,
+  useEmployeeAvatars,
   useLeaveBalances,
   useLeaveEmployeeScope,
   useLeavePermissions,
@@ -75,13 +76,22 @@ export const useLeavePage = () => {
     "leaveRequests",
   );
 
+  // `/employees/list` (what `useLeaveEmployeeScope` reads through) never
+  // carries a photo — batch-fetch it for the roster this tab renders.
+  const employeeIds = useMemo(() => employees.map((employee) => employee.id), [employees]);
+  const { avatars } = useEmployeeAvatars(employeeIds);
+  const employeesWithAvatars = useMemo(
+    () => employees.map((employee) => (employee.id in avatars ? { ...employee, profile_picture: avatars[employee.id] } : employee)),
+    [employees, avatars],
+  );
+
   const empMap = useMemo(() => {
-    const mappedEmployees: Record<string, (typeof employees)[number]> = {};
-    employees.forEach((employee) => {
+    const mappedEmployees: Record<string, (typeof employeesWithAvatars)[number]> = {};
+    employeesWithAvatars.forEach((employee) => {
       mappedEmployees[employee.id] = employee;
     });
     return mappedEmployees;
-  }, [employees]);
+  }, [employeesWithAvatars]);
 
   const activeLeaveTypes = useMemo(
     () => leaveTypes.filter((leaveType) => leaveType.is_active),
@@ -207,7 +217,7 @@ export const useLeavePage = () => {
     balLoading,
     currentYear,
     employeeLinkError,
-    employees,
+    employees: employeesWithAvatars,
     empLoading,
     empMap,
     filter,

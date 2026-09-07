@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { Timer } from "lucide-react";
+import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow } from "../types";
 import { VerifyIcon } from "../utils/attendanceDisplay";
-import DeptAvatarBadge from "./DeptAvatarBadge";
 import ElapsedTime from "./ElapsedTime";
 
 type AttendanceKanbanCardProps = {
@@ -27,7 +27,16 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
       onClick={handleCardClick}
     >
       <div className="flex items-center gap-2.5 mb-2">
-        <DeptAvatarBadge initial={record.employee.charAt(0)} deptColor={record.deptColor} fontSize={11} />
+        <NodeAvatar
+          photo={record.photo}
+          name={record.employee}
+          initials={record.employee.charAt(0)}
+          sizeClassName="w-8 h-8"
+          fontSize={11}
+          fallbackClassName={`border ${!record.deptColor ? "bg-primary/15 border-primary/25" : ""}`}
+          fallbackStyle={record.deptColor ? { backgroundColor: `${record.deptColor}20`, borderColor: `${record.deptColor}40` } : undefined}
+          textClassName={record.deptColor ? "" : "text-primary"}
+        />
         <div className="flex-1 min-w-0">
           <p className="text-foreground truncate" style={{ fontSize: 13 }}>{record.employee}</p>
           <div className="flex items-center gap-2">

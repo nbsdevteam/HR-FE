@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useEmployees, useOdooMutation } from "@/shared/hooks";
+import { useEmployeeAvatars, useEmployees, useOdooMutation } from "@/shared/hooks";
 import { generatePayslipsServer } from "@/shared/api/payroll";
 import type { PayrollStatus, PayslipGenerateRequest } from "@/shared/api/payrollTypes";
 import { useAppSettings, formatMonthYear } from "@/app/providers";
@@ -38,6 +38,30 @@ export const usePayrollPage = () => {
     employeeId: null,
     status: status || null,
   });
+
+  // `PayrollRow.employee_id` is the person id, not the internal `DbEmployee.id`
+  // the avatars endpoint keys on — resolve it from the roster above, then
+  // batch-fetch only the ids for the page of rows actually on screen.
+  const personIdToDbId = useMemo(() => {
+    const map = new Map<number, string>();
+    employees.forEach(employee => map.set(employee.person_id, employee.id));
+    return map;
+  }, [employees]);
+  const pageAvatarIds = useMemo(
+    () => list.items
+      .map(row => personIdToDbId.get(row.employee_id))
+      .filter((id): id is string => Boolean(id)),
+    [list.items, personIdToDbId],
+  );
+  const { avatars } = useEmployeeAvatars(pageAvatarIds);
+  const photoByPersonId = useMemo(() => {
+    const map: Record<number, string | null> = {};
+    list.items.forEach(row => {
+      const dbId = personIdToDbId.get(row.employee_id);
+      map[row.employee_id] = dbId ? (avatars[dbId] ?? null) : null;
+    });
+    return map;
+  }, [list.items, personIdToDbId, avatars]);
 
   const availableMonths = metadata?.available_months ?? [];
   const initialLoading = metadataLoading && !metadata;
@@ -103,6 +127,7 @@ export const usePayrollPage = () => {
       onPerPageChange: list.onPerPageChange,
       page: list.page,
       payslipsSaved,
+      photoByPersonId,
       perPage: list.perPage,
       refetchList: list.refetchList,
       savingPayslips: generatePayslipsMutation.isPending,
@@ -121,7 +146,7 @@ export const usePayrollPage = () => {
       activeTab, appSettings, availableMonths, departmentId, displayMonth, employees,
       generatePayslipsMutation.isPending, handleDepartmentChange, handleGeneratePayslips,
       handleMonthChange, handleSearchChange, handleStatusChange, initialLoading, list,
-      metadata, payslipsSaved, search, selectedEmpId, selectedMonth, status,
+      metadata, payslipsSaved, photoByPersonId, search, selectedEmpId, selectedMonth, status,
     ],
   );
 };

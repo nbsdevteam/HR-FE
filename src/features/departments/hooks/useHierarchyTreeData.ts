@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useHierarchyData, usePositions } from "@/shared/hooks";
+import { useEmployeeAvatars, useHierarchyData, usePositions } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { OrgNode } from "../types";
 import { defaultDeptColorMap } from "../styles";
@@ -41,20 +41,30 @@ export const useHierarchyTreeData = () => {
     refetch: refetchPositions,
   } = usePositions();
 
+  // `/employees/list` (what `useHierarchyData` reads through) never carries a
+  // photo — batch-fetch it for the whole roster this tree is built from, so
+  // every card lights up with `employee.profile_picture` for free.
+  const employeeIds = useMemo(() => dbEmployees.map(e => e.id), [dbEmployees]);
+  const { avatars } = useEmployeeAvatars(employeeIds);
+  const employeesWithAvatars = useMemo(
+    () => dbEmployees.map(e => (e.id in avatars ? { ...e, profile_picture: avatars[e.id] } : e)),
+    [dbEmployees, avatars],
+  );
+
   // The org chart is always Employee -> Direct Manager -> ... -> Top
   // Management, built from `employee.manager_id` — department/job title are
   // card metadata only, never tree structure. Positions have their own,
   // separate tree on the Positions & Appointments tab (`buildPositionTree`).
   const { tree: orgTree, deptColors } = useMemo(() => {
-    if (dbEmployees.length === 0) {
+    if (employeesWithAvatars.length === 0) {
       return { tree: EMPTY_ORG_TREE, deptColors: defaultDeptColorMap };
     }
-    return buildOrgTree(dbEmployees, dbDepartments);
-  }, [dbEmployees, dbDepartments]);
+    return buildOrgTree(employeesWithAvatars, dbDepartments);
+  }, [employeesWithAvatars, dbDepartments]);
 
   const unlinkedEmps = useMemo(
-    () => getUnlinkedEmployees(dbEmployees),
-    [dbEmployees],
+    () => getUnlinkedEmployees(employeesWithAvatars),
+    [employeesWithAvatars],
   );
 
   const allNodes = useMemo(() => flattenTree(orgTree), [orgTree]);

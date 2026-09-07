@@ -13,10 +13,12 @@ import { leaveStatusColors } from "../styles";
 import LeaveAttachmentIndicator from "./LeaveAttachmentIndicator";
 import LeaveExcuseFollowUpControl from "./LeaveExcuseFollowUpControl";
 
+type LeaveRequestEmployee = TEmployeeNameFields & { profile_picture?: string | null };
+
 type LeaveRequestTableRowProps = {
   leave: DbLeaveRequest;
   index: number;
-  employee: TEmployeeNameFields | undefined;
+  employee: LeaveRequestEmployee | undefined;
   /** Shown when the employee record is missing, so the row still identifies the request. */
   fallbackEmployeeLabel: string;
   leaveType: DbLeaveType | undefined;
@@ -50,6 +52,7 @@ const LeaveRequestTableRow = ({ leave, index, employee, fallbackEmployeeLabel, l
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <NodeAvatar
+            photo={employee?.profile_picture}
             name={employeeName}
             initials={employeeName.charAt(0)}
             sizeClassName="w-7 h-7"

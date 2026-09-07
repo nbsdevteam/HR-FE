@@ -74,7 +74,8 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const isArabic = useIsArabicLanguage();
   const createEmployeeMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createEmployee(payload),
-    "employees",
+    // A new employee can be created with a photo already attached.
+    ["employees", "employeeAvatars"],
   );
 
   const closeAddTimeoutRef = useRef<number | null>(null);

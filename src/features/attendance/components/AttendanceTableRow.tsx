@@ -1,12 +1,11 @@
 import { memo } from "react";
 import { motion } from "motion/react";
 import { Fingerprint, ShieldCheck, Timer } from "lucide-react";
-import { StatusBadge } from "@/shared/components";
+import { NodeAvatar, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow, ExcuseForm } from "../types";
 import { statusColors, statusDotColors } from "../styles";
 import { statusDetail, VerifyIcon, verifyModeLabel } from "../utils/attendanceDisplay";
-import DeptAvatarBadge from "./DeptAvatarBadge";
 import ElapsedTime from "./ElapsedTime";
 
 type AttendanceTableRowProps = {
@@ -46,7 +45,16 @@ const AttendanceTableRow = ({ record, index, onSelectEmployee, onOpenExcuse }: A
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className={`w-1.5 h-8 rounded-full ${statusDotColors[record.status] || "bg-muted"}`} />
-          <DeptAvatarBadge initial={record.employee.charAt(0)} deptColor={record.deptColor} fontSize={12} />
+          <NodeAvatar
+            photo={record.photo}
+            name={record.employee}
+            initials={record.employee.charAt(0)}
+            sizeClassName="w-8 h-8"
+            fontSize={12}
+            fallbackClassName={`border ${!record.deptColor ? "bg-primary/15 border-primary/25" : ""}`}
+            fallbackStyle={record.deptColor ? { backgroundColor: `${record.deptColor}20`, borderColor: `${record.deptColor}40` } : undefined}
+            textClassName={record.deptColor ? "" : "text-primary"}
+          />
           <div className="min-w-0">
             <p className="text-foreground truncate" style={{ fontSize: 13 }}>{record.employee}</p>
           </div>

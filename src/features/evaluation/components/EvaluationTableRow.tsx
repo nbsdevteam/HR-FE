@@ -30,6 +30,7 @@ const EvaluationTableRow = ({ evaluation, index, employee, evaluator, onSelectEv
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <NodeAvatar
+            photo={employee?.profile_picture}
             name={employee ? empDisplayName(employee) : "?"}
             initials={employee ? empDisplayName(employee).charAt(0) : "?"}
             sizeClassName="w-8 h-8"

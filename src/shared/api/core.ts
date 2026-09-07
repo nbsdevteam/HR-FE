@@ -1,5 +1,6 @@
 import { hrCall } from "./client";
 import { mapEmployee, mapDepartment, mapDepartmentTree, mapDepartmentMetadata } from "./mappers";
+import { sid, num } from "./mappers/mapHelpers";
 import type { DbEmployee, DbDepartment, DepartmentTreeNode, DepartmentTreeResult, DepartmentMetadata } from "../hooks";
 import { items, eid } from "./httpHelpers";
 import { dedupeBy } from "../utils/collections";
@@ -25,6 +26,40 @@ export const fetchEmployees = async (): Promise<DbEmployee[]> => {
   // Backend allows up to 5000; load the full active roster for dropdowns.
   const rows = await items<any>("/api/hr/employees/list", { limit: 5000, offset: 0 });
   return rows.map(mapEmployee);
+}
+
+export type EmployeeAvatar = { id: string; photo: string | null; photoVersion: number };
+
+/** Backend refuses more than this in one call (`too_many_ids`) — chunk client-side. */
+const AVATAR_IDS_PER_CHUNK = 200;
+
+/**
+ * Profile pictures for the rows on screen. `/employees/list` deliberately
+ * carries none (§2.1 of the avatar hand-off) — a base64 thumbnail per row on
+ * a 5000-row roster fetch would be several megabytes — so this is the
+ * dedicated batch fetch for whatever ids the caller actually renders.
+ * Chunked at the backend's 200-id cap; an id out of the caller's scope, or
+ * that doesn't exist, is simply absent from the result rather than an error.
+ */
+export const fetchEmployeeAvatars = async (
+  employeeIds: readonly (string | number)[],
+): Promise<EmployeeAvatar[]> => {
+  const ids = Array.from(new Set(employeeIds.map(eid)));
+  if (ids.length === 0) return [];
+
+  const chunks: number[][] = [];
+  for (let i = 0; i < ids.length; i += AVATAR_IDS_PER_CHUNK) {
+    chunks.push(ids.slice(i, i + AVATAR_IDS_PER_CHUNK));
+  }
+
+  const pages = await Promise.all(
+    chunks.map(chunk => items<any>("/api/hr/employees/avatars", { employee_ids: chunk })),
+  );
+  return pages.flat().map(row => ({
+    id: sid(row.id),
+    photo: row.photo || null,
+    photoVersion: num(row.photo_version),
+  }));
 }
 
 export type EmployeeListParams = {

@@ -18,6 +18,9 @@ type UseAttendanceRowsArgs = {
   selectedDate: string;
   employees: DbEmployee[];
   departments: { name: string; color?: string | null }[];
+  /** Batch avatar fetch keyed by employee id — `/employees/list` (what `employees`
+   *  reads through) never carries a photo, so this fills the gap for the day's rows. */
+  avatars?: Record<string, string | null>;
   searchTerm: string;
   statusFilter: string;
   sortBy: AttendanceSortKey;
@@ -49,6 +52,8 @@ const FALLBACK_EMPLOYEE = {
   deptColor: null,
 };
 
+const EMPTY_AVATARS: Record<string, string | null> = {};
+
 /**
  * Builds the employee lookup and the day's rows, then filters + sorts them.
  * The mapping pass is memoised separately from the filter/sort pass so typing
@@ -59,6 +64,7 @@ export const useAttendanceRows = ({
   selectedDate,
   employees,
   departments,
+  avatars = EMPTY_AVATARS,
   searchTerm,
   statusFilter,
   sortBy,
@@ -79,13 +85,13 @@ export const useAttendanceRows = ({
         name: empDisplayName(employee),
         dept: employee.department || "—",
         deviceNo: employee.device_employee_no || "—",
-        photo: employee.profile_picture || null,
+        photo: avatars[employee.id] ?? employee.profile_picture ?? null,
         position: employee.position || null,
         deptColor: deptColorMap[employee.department] || null,
       };
     });
     return map;
-  }, [employees, deptColorMap]);
+  }, [employees, deptColorMap, avatars]);
 
   const dayRows: AttendanceRow[] = useMemo(
     () =>
@@ -120,6 +126,7 @@ export const useAttendanceRows = ({
             overtimeHours: record.overtime_hours || 0,
             breakMinutes: (record as any).total_break_minutes || 0,
             deptColor: info.deptColor || null,
+            photo: info.photo || null,
             excusedLate: record.excused_late || false,
             excusedAbsence: record.excused_absence || false,
             excusedShortfall: record.excused_shortfall || false,

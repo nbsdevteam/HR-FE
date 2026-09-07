@@ -20,6 +20,7 @@ const PayrollTabContent = ({ page }: PayrollTabContentProps) => (
       >
         <OverviewTab
           items={page.items}
+          photoByPersonId={page.photoByPersonId}
           totals={page.totals}
           loading={page.listLoading}
           error={page.listError}

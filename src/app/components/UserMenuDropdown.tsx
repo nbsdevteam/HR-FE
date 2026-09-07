@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import { User, Loader2, LogOut } from "lucide-react";
+import { NodeAvatar } from "@/shared/components";
 import { ThemeSwitcher } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import DropdownPanel from "./DropdownPanel";
@@ -7,6 +8,7 @@ import DropdownPanel from "./DropdownPanel";
 type UserMenuDropdownProps = {
   displayName: string;
   email?: string | null;
+  photo?: string | null;
   isOpen: boolean;
   dropdownRef: RefObject<HTMLDivElement>;
   onToggle: () => void;
@@ -17,6 +19,7 @@ type UserMenuDropdownProps = {
 const UserMenuDropdown = ({
   displayName,
   email,
+  photo,
   isOpen,
   dropdownRef,
   onToggle,
@@ -27,10 +30,17 @@ const UserMenuDropdown = ({
     <button
       type="button"
       onClick={onToggle}
-      className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors"
+      className="rounded-full cursor-pointer hover:opacity-80 transition-opacity"
       aria-label="User menu"
     >
-      <User className="w-4 h-4 text-primary" />
+      <NodeAvatar
+        photo={photo}
+        name={displayName}
+        initials={<User className="w-4 h-4 text-primary" />}
+        sizeClassName="w-9 h-9"
+        fallbackClassName="bg-primary/20 border border-primary/30"
+        fontSize={16}
+      />
     </button>
     <DropdownPanel isOpen={isOpen} widthClassName="w-56">
       <div className="p-3 border-b border-border/40">

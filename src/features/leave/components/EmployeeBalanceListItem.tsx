@@ -22,6 +22,7 @@ const EmployeeBalanceListItem = ({ emp, index, totalUsed, onSelect }: EmployeeBa
       className="flex items-center gap-3 p-4 rounded-xl border border-border/30 hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer text-start"
     >
       <NodeAvatar
+        photo={emp.profile_picture}
         name={employeeName}
         initials={employeeName.charAt(0)}
         sizeClassName="w-10 h-10"

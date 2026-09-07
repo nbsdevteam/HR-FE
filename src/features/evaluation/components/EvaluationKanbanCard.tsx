@@ -30,6 +30,7 @@ const EvaluationKanbanCard = ({ evaluation, index, employee, evaluator, onSelect
     >
       <div className="flex items-center gap-3 mb-2">
         <NodeAvatar
+          photo={employee?.profile_picture}
           name={employee ? empDisplayName(employee) : "?"}
           initials={employee ? empDisplayName(employee).charAt(0) : "?"}
           sizeClassName="w-8 h-8"

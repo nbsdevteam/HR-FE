@@ -50,7 +50,11 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
   const updateEmployeeMutation = useOdooMutation(
     (variables: { id: string; payload: Record<string, unknown> }) =>
       odooData.updateEmployee(variables.id, variables.payload),
-    ["employees", "departments"],
+    // A save can carry a new photo — invalidate the avatar batch too, or the
+    // roster refetches with a new `photo_version` while the cached data URL
+    // stays the old face. `currentEmployee` covers a self-edit through this
+    // same panel updating the top-bar avatar.
+    ["employees", "departments", "employeeAvatars", "currentEmployee"],
   );
 
   // Some endpoints (list/search) may only carry the department name, not its

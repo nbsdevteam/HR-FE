@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   useAttendanceRecords,
+  useEmployeeAvatars,
   useEmployees,
   useHierarchyData,
   useShifts,
@@ -52,6 +53,14 @@ export const useAttendancePage = () => {
     refetch: refetchAttendance,
   } = useAttendanceRecords({ date: selectedDate });
 
+  // Scoped to the day actually on screen, not the whole roster — `useEmployees`
+  // never carries a photo (the list endpoint deliberately omits it).
+  const dayEmployeeIds = useMemo(
+    () => Array.from(new Set(rawRecords.filter((r) => r.date === selectedDate).map((r) => r.employee_id))),
+    [rawRecords, selectedDate],
+  );
+  const { avatars } = useEmployeeAvatars(dayEmployeeIds);
+
   const {
     weeklyAttendance,
     weekLoading,
@@ -66,6 +75,7 @@ export const useAttendancePage = () => {
     selectedDate,
     employees,
     departments: dbDepartments,
+    avatars,
     searchTerm,
     statusFilter,
     sortBy,

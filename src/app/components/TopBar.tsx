@@ -3,6 +3,7 @@ import { MessageSquare, Search, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
 import {
+  useCurrentEmployee,
   useDeviceStatus,
   useNotifications,
   useOdooMutation,
@@ -32,6 +33,7 @@ const TopBar = () => {
   const { user, signOut } = useAuth();
   const { notifications, unreadCount } = useNotifications();
   const { deviceStatus } = useDeviceStatus();
+  const { currentEmployee } = useCurrentEmployee();
 
   const markAllReadMutation = useOdooMutation(
     odooData.markAllNotificationsRead,
@@ -237,6 +239,7 @@ const TopBar = () => {
         <UserMenuDropdown
           displayName={displayName}
           email={user?.email}
+          photo={currentEmployee?.profile_picture ?? null}
           isOpen={userOpen}
           dropdownRef={userRef}
           onToggle={handleUserToggle}

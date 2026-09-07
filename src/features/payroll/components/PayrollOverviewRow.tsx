@@ -9,10 +9,11 @@ import type { PayrollRow } from "@/shared/api/payrollTypes";
 type PayrollOverviewRowProps = {
   row: PayrollRow;
   index: number;
+  photo: string | null;
   onViewPayslip: (id: string) => void;
 };
 
-const PayrollOverviewRow = ({ row: r, index: i, onViewPayslip }: PayrollOverviewRowProps) => {
+const PayrollOverviewRow = ({ row: r, index: i, photo, onViewPayslip }: PayrollOverviewRowProps) => {
   const handleClick = useCallback(() => onViewPayslip(String(r.employee_id)), [onViewPayslip, r.employee_id]);
 
   return (
@@ -26,6 +27,7 @@ const PayrollOverviewRow = ({ row: r, index: i, onViewPayslip }: PayrollOverview
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <NodeAvatar
+            photo={photo}
             name={r.employee_name}
             initials={r.employee_name.charAt(0)}
             sizeClassName="w-8 h-8"

@@ -27,6 +27,7 @@ const STATUS_LABELS: Record<PayrollStatus, string> = {
 
 type OverviewTabProps = {
   items: PayrollRow[];
+  photoByPersonId: Record<number, string | null>;
   totals: PayrollTotals | null;
   loading: boolean;
   error: string | null;
@@ -49,6 +50,7 @@ type OverviewTabProps = {
 
 const OverviewTab = ({
   items,
+  photoByPersonId,
   totals,
   loading,
   error,
@@ -143,9 +145,15 @@ const OverviewTab = ({
 
   const renderRow = useCallback(
     (r: PayrollRow, i: number) => (
-      <PayrollOverviewRow key={r.employee_id} row={r} index={i} onViewPayslip={onViewPayslip} />
+      <PayrollOverviewRow
+        key={r.employee_id}
+        row={r}
+        index={i}
+        photo={photoByPersonId[r.employee_id] ?? null}
+        onViewPayslip={onViewPayslip}
+      />
     ),
-    [onViewPayslip],
+    [onViewPayslip, photoByPersonId],
   );
 
   return (

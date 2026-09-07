@@ -1,4 +1,5 @@
-import { useCallback, type DependencyList } from "react";
+import { useCallback, useMemo, type DependencyList } from "react";
+import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { STALE_TIME } from "@/shared/api/queryClient";
 import { useAsyncList } from "./useAsyncList";
@@ -84,11 +85,20 @@ export interface DbEmployee {
   shift_id: string | null;
   position_id: string | null;
   direct_manager_id: string | null;
+  /** The Direct Manager the employee's DEPARTMENT configures. `manager_id` is
+   *  the one they actually have — the two differ only where HR overrode the
+   *  department default by hand, which `manager_from_department` reports. */
+  department_manager_id: string | null;
+  manager_from_department: boolean;
   device_employee_no: string | null;
   /** `false` once archived via the delete endpoint's default (non-hard) mode. */
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  /** `int(write_date.timestamp())`, `0` when never written. Over-invalidates
+   *  (any employee change bumps it), never under-invalidates — safe as a
+   *  cache key for a stored avatar. */
+  photo_version: number;
 }
 
 export interface DbDepartment {
@@ -146,6 +156,21 @@ export const useEmployees = () => {
   return { employees, loading, error, refetch };
 }
 
+/** The signed-in user's own `hr.employee` record (`/employees/me`) — used for
+ *  their avatar in the top bar's user menu. Invalidated alongside `"employees"`
+ *  whenever a save could be a self-edit. */
+export const useCurrentEmployee = () => {
+  const { data, loading, refetch } = useCachedList(
+    "currentEmployee",
+    async () => [await odooData.fetchCurrentEmployee()],
+    "Failed to load current employee",
+    [],
+    true,
+    { ttlMs: STALE_TIME.LONG },
+  );
+  return { currentEmployee: data[0] ?? null, loading, refetch };
+}
+
 /** Reference list — edited only via the org-structure admin screen, which invalidates this key on save. */
 export const useDepartments = () => {
   const { data: departments, loading, error, refetch } = useAsyncList(
@@ -191,6 +216,49 @@ export const useHierarchyData = () => {
     refetch,
   };
 }
+
+// Stable reference for "no avatars yet" so callers keying effects off the
+// returned map never see a new object identity on every render.
+const EMPTY_AVATAR_MAP: Record<string, string | null> = {};
+
+/**
+ * Profile pictures for a specific set of employees — the roster/paged-list
+ * endpoints deliberately carry none (a base64 thumbnail per row would turn a
+ * roster fetch into several megabytes), so this is the dedicated batch fetch
+ * for whatever ids are actually on screen. Never call this with the whole
+ * roster — page the caller's own request to what it renders.
+ *
+ * Keyed by the sorted, deduped id set so the same visible set always shares
+ * one cache entry regardless of array identity/order.
+ */
+export const useEmployeeAvatars = (
+  employeeIds: readonly (string | number)[],
+  options: { enabled?: boolean } = {},
+) => {
+  const ids = useMemo(
+    () => Array.from(new Set(employeeIds.map(id => String(id)))).sort(),
+    [employeeIds],
+  );
+  const enabled = (options.enabled ?? true) && ids.length > 0;
+
+  const query = useQuery<Record<string, string | null>, Error>({
+    queryKey: ["employeeAvatars", ids],
+    queryFn: async () => {
+      const avatars = await odooData.fetchEmployeeAvatars(ids);
+      const map: Record<string, string | null> = {};
+      avatars.forEach(avatar => { map[avatar.id] = avatar.photo; });
+      return map;
+    },
+    enabled,
+    staleTime: STALE_TIME.LONG,
+  });
+
+  return {
+    avatars: query.data ?? EMPTY_AVATAR_MAP,
+    loading: query.isFetching,
+    refetch: query.refetch,
+  };
+};
 
 // ——— Helpers ———
 

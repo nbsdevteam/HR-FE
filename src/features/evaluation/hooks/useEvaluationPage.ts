@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { useEmployees } from "@/shared/hooks";
+import { useEmployeeAvatars, useEmployees } from "@/shared/hooks";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import {
@@ -35,11 +35,20 @@ export const useEvaluationPage = () => {
 
   const { employees, loading: empLoading } = useEmployees();
 
+  // `/employees/list` (what `useEmployees` reads through) never carries a
+  // photo — batch-fetch it for the roster this page renders.
+  const employeeIds = useMemo(() => employees.map(employee => employee.id), [employees]);
+  const { avatars } = useEmployeeAvatars(employeeIds);
+  const employeesWithAvatars = useMemo(
+    () => employees.map(employee => (employee.id in avatars ? { ...employee, profile_picture: avatars[employee.id] } : employee)),
+    [employees, avatars],
+  );
+
   const empMap = useMemo(() => {
     const map: Record<string, DbEmployee> = {};
-    employees.forEach(employee => { map[employee.id] = employee; });
+    employeesWithAvatars.forEach(employee => { map[employee.id] = employee; });
     return map;
-  }, [employees]);
+  }, [employeesWithAvatars]);
 
   const employeeSortKeys = useMemo(() => buildEmployeeSortKeys(empMap), [empMap]);
 
@@ -84,7 +93,7 @@ export const useEvaluationPage = () => {
     criteria,
     empLoading,
     empMap,
-    employees,
+    employees: employeesWithAvatars,
     evalSortBy,
     evalSortDir,
     evaluations,
