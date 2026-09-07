@@ -305,6 +305,16 @@
   height: 4px;
 }
 
+/* Thinner scrollbar for compact dropdown/popup lists (Select, TypeAhead). */
+.dropdown-scroll {
+  scrollbar-width: thin;
+}
+
+.dropdown-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
 .text-gradient-gold {
   background: var(--gold-gradient);
   background-size: 200% auto;

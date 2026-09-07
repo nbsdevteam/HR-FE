@@ -142,7 +142,7 @@ const Select = ({
       {open && !disabled && popupRect
         ? createPortal(
             <div
-              className="fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
+              className="dropdown-scroll fixed z-[800] max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl"
               style={{
                 top: popupRect.top,
                 bottom: popupRect.bottom,
