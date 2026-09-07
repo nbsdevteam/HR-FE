@@ -1,9 +1,11 @@
 import { useCallback } from "react";
+import { DatePicker } from "@/shared/components";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { EmployeeAddForm, EmployeeOption } from "../types";
 import type { EmployeeFieldErrors } from "../utils/employeeFieldErrors";
+import { labelCls } from "../styles";
 import EmployeeManagerField from "./EmployeeManagerField";
 import EmployeeTypeAheadField from "./EmployeeTypeAheadField";
 import LabeledInput from "./LabeledInput";
@@ -80,14 +82,12 @@ const EmployeeCoreFields = ({
   );
 
   const handleBirthDateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void =>
-      onFormChange({ birthDate: e.target.value }),
+    (value: string): void => onFormChange({ birthDate: value }),
     [onFormChange],
   );
 
   const handleJoinDateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void =>
-      onFormChange({ joinDate: e.target.value }),
+    (value: string): void => onFormChange({ joinDate: value }),
     [onFormChange],
   );
 
@@ -154,27 +154,25 @@ const EmployeeCoreFields = ({
         placeholder="0"
         dir="ltr"
       />
-      <LabeledInput
-        label={arabicSource("common.birth_date")}
-        type="date"
-        value={addForm.birthDate}
-        onChange={handleBirthDateChange}
-        max={todayInBaghdad()}
-        error={birthDateError}
-        dir="ltr"
-        addedContainerClasses="w-full col-span-2"
-        addedInputClasses="w-full block"
-      />
-      <LabeledInput
-        label={arabicSource("common.direct_date")}
-        type="date"
-        value={addForm.joinDate}
-        onChange={handleJoinDateChange}
-        max={todayInBaghdad()}
-        dir="ltr"
-        addedContainerClasses="w-full col-span-2"
-        addedInputClasses="w-full block"
-      />
+      <div className="w-full col-span-2">
+        <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.birth_date")}</label>
+        <DatePicker
+          value={addForm.birthDate}
+          onChange={handleBirthDateChange}
+          maxDate={todayInBaghdad()}
+          error={birthDateError ?? undefined}
+          className="w-full"
+        />
+      </div>
+      <div className="w-full col-span-2">
+        <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.direct_date")}</label>
+        <DatePicker
+          value={addForm.joinDate}
+          onChange={handleJoinDateChange}
+          maxDate={todayInBaghdad()}
+          className="w-full"
+        />
+      </div>
     </div>
   );
 };

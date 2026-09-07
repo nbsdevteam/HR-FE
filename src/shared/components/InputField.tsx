@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import DatePicker from "./ui/DatePicker";
 
 interface InputFieldProps {
   /** When set, wraps the input in a labeled block; omit for a bare input. */
@@ -38,19 +39,22 @@ const InputField = ({
     [onChange]
   );
 
-  const input = (
-    <input
-      type={type}
-      value={value}
-      onChange={handleChange}
-      placeholder={placeholder}
-      className={className}
-      dir={dir}
-      step={step}
-      min={min}
-      max={max}
-    />
-  );
+  const input =
+    type === "date" ? (
+      <DatePicker value={String(value)} onChange={onChange} placeholder={placeholder} className={className} />
+    ) : (
+      <input
+        type={type}
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className={className}
+        dir={dir}
+        step={step}
+        min={min}
+        max={max}
+      />
+    );
 
   if (!label) return input;
 

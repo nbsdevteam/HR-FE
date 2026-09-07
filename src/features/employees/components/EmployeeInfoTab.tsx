@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
 import { todayInBaghdad } from "@/shared/utils/timezone";
-import { Select, TypeAhead } from "@/shared/components";
+import { DatePicker, Select, TypeAhead } from "@/shared/components";
 import type { GeoCountry, GeoState, GeoCity } from "@/shared/api/geo";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentOption, Employee, EmployeeOption, PositionOption } from "../types";
@@ -117,12 +117,12 @@ const EmployeeInfoTab = ({
     onFieldChange("salary", Number(e.target.value));
   };
 
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("startDate", e.target.value);
+  const handleStartDateChange = (value: string): void => {
+    onFieldChange("startDate", value);
   };
 
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("endDate", e.target.value || "");
+  const handleEndDateChange = (value: string): void => {
+    onFieldChange("endDate", value);
   };
 
   const handleNationalIdChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -211,14 +211,20 @@ const EmployeeInfoTab = ({
         icon={Wallet} label={arabicSource("common.salary")} value={formatCurrency(editData.salary, editData.currency || "IQD")}
         inputValue={editData.salary} type="number" highlight isEditing={isEditing} onChange={handleSalaryChange}
       />
-      <EmployeeInputFieldRow
+      <EmployeeFieldRow
         icon={CalendarCheck} iconColor="text-emerald-400" label={arabicSource("common.direct_date")} value={editData.startDate}
-        inputValue={editData.startDate} type="date" max={todayInBaghdad()} isEditing={isEditing} onChange={handleStartDateChange}
+        dir="ltr" isEditing={isEditing}
+        editElement={
+          <DatePicker value={editData.startDate} onChange={handleStartDateChange} maxDate={todayInBaghdad()} />
+        }
       />
-      <EmployeeInputFieldRow
+      <EmployeeFieldRow
         icon={CalendarX} iconColor="text-destructive" label={arabicSource("shared.departure_date")}
         value={editData.endDate || arabicSource("shared.still_working")}
-        inputValue={editData.endDate || ""} type="date" isEditing={isEditing} onChange={handleEndDateChange}
+        dir="ltr" isEditing={isEditing}
+        editElement={
+          <DatePicker value={editData.endDate || ""} onChange={handleEndDateChange} />
+        }
       />
       <EmployeeInputFieldRow
         icon={FileText} label={arabicSource("common.id_number")} value={editData.nationalId || "—"}

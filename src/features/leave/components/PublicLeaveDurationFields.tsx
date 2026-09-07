@@ -1,3 +1,4 @@
+import { DatePicker } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { usePublicLeaveRequestPage } from "../hooks/usePublicLeaveRequestPage";
 
@@ -15,12 +16,12 @@ const PublicLeaveDurationFields = ({ page }: PublicLeaveDurationFieldsProps) => 
   const maxHours = info.info?.max_hours_per_request || 0;
   const isHourly = form.form.duration_unit === "hour";
 
-  const handleDateFromChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    form.updateForm({ date_from: event.target.value });
+  const handleDateFromChange = (value: string): void => {
+    form.updateForm({ date_from: value });
   };
 
-  const handleDateToChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    form.updateForm({ date_to: event.target.value });
+  const handleDateToChange = (value: string): void => {
+    form.updateForm({ date_to: value });
   };
 
   const handleHalfDayChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -75,28 +76,14 @@ const PublicLeaveDurationFields = ({ page }: PublicLeaveDurationFieldsProps) => 
           <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
             {arabicSource("public_leave.date_from_label")}
           </label>
-          <input
-            type="date"
-            dir="ltr"
-            value={form.form.date_from}
-            onChange={handleDateFromChange}
-            className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-            style={{ fontSize: 14 }}
-          />
+          <DatePicker value={form.form.date_from} onChange={handleDateFromChange} className="w-full" />
         </div>
         {!isHourly && (
           <div>
             <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
               {arabicSource("public_leave.date_to_label")}
             </label>
-            <input
-              type="date"
-              dir="ltr"
-              value={form.form.date_to}
-              onChange={handleDateToChange}
-              className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
-              style={{ fontSize: 14 }}
-            />
+            <DatePicker value={form.form.date_to} onChange={handleDateToChange} className="w-full" />
           </div>
         )}
       </div>

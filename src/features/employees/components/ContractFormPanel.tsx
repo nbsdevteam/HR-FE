@@ -4,7 +4,7 @@ import {
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/shared/utils/employeeTypeAhead";
-import { Select, TypeAhead } from "@/shared/components";
+import { DatePicker, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbContractType, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
@@ -68,16 +68,12 @@ const ContractFormPanel = ({
     setFormData((p) => ({ ...p, contract_number: e.target.value }));
   };
 
-  const handleStartDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    setFormData((p) => ({ ...p, start_date: e.target.value }));
+  const handleStartDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, start_date: value }));
   };
 
-  const handleEndDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    setFormData((p) => ({ ...p, end_date: e.target.value }));
+  const handleEndDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, end_date: value }));
   };
 
   const handleSalaryAmountChange = (
@@ -141,23 +137,11 @@ const ContractFormPanel = ({
         </div>
         <div>
           <FormFieldLabel>{arabicSource("lifecycle.start_date")}</FormFieldLabel>
-          <input
-            type="date"
-            value={formData.start_date}
-            onChange={handleStartDateChange}
-            className={inputCls}
-            dir="ltr"
-          />
+          <DatePicker value={formData.start_date} onChange={handleStartDateChange} className={inputCls} />
         </div>
         <div>
           <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
-          <input
-            type="date"
-            value={formData.end_date}
-            onChange={handleEndDateChange}
-            className={inputCls}
-            dir="ltr"
-          />
+          <DatePicker value={formData.end_date} onChange={handleEndDateChange} className={inputCls} />
         </div>
         <div>
           <FormFieldLabel>{arabicSource("common.salary")}</FormFieldLabel>

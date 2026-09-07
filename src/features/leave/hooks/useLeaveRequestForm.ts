@@ -145,12 +145,12 @@ export const useLeaveRequestForm = ({
     setEmployeeId(String(id));
   }, []);
 
-  const handleStartDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setStartDate(e.target.value);
+  const handleStartDateChange = useCallback((value: string): void => {
+    setStartDate(value);
   }, []);
 
-  const handleEndDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setEndDate(e.target.value);
+  const handleEndDateChange = useCallback((value: string): void => {
+    setEndDate(value);
   }, []);
 
   const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>): void => {

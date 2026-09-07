@@ -1,4 +1,4 @@
-import { ModalHeader, ModalOverlay } from "@/shared/components";
+import { DatePicker, ModalHeader, ModalOverlay } from "@/shared/components";
 import { type DbLeaveType, type DbLeaveBalance, type DbLeaveSettings } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { useLeaveRequestForm } from "../hooks/useLeaveRequestForm";
@@ -104,14 +104,12 @@ const LeaveRequestModal = ({
                 <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>
                   {isHalfDay ? arabicSource("common.date") : arabicSource("common.from_date")} *
                 </label>
-                {/* Raw input rather than the shared InputField: `min` is a date
-                    string (the probation floor), and InputField types `min` as a number. */}
-                <input type="date" value={startDate} onChange={handleStartDateChange} className={inputCls} dir="ltr" min={minStartDate || undefined} />
+                <DatePicker value={startDate} onChange={handleStartDateChange} className={inputCls} minDate={minStartDate || undefined} />
               </div>
               {!isHalfDay && (
                 <div>
                   <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("leave.to_date")}</label>
-                  <input type="date" value={endDate} onChange={handleEndDateChange} className={inputCls} dir="ltr" min={startDate || minStartDate || undefined} />
+                  <DatePicker value={endDate} onChange={handleEndDateChange} className={inputCls} minDate={startDate || minStartDate || undefined} />
                 </div>
               )}
             </div>
@@ -129,7 +127,7 @@ const LeaveRequestModal = ({
             {/* Single date for an hourly request */}
             <div>
               <label className="text-foreground block mb-1.5" style={{ fontSize: 13 }}>{arabicSource("common.date_2")}</label>
-              <input type="date" value={startDate} onChange={handleStartDateChange} className={inputCls} dir="ltr" min={minStartDate || undefined} />
+              <DatePicker value={startDate} onChange={handleStartDateChange} className={inputCls} minDate={minStartDate || undefined} />
             </div>
             <LeaveRequestHoursRow
               hours={hourly.hours}

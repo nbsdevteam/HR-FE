@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { LayoutGrid, Search, Table } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DbDepartment } from "@/shared/hooks";
-import { Select } from "@/shared/components";
+import { DatePicker, Select } from "@/shared/components";
 import { categoryLabels } from "../constants/reports";
 import { cardCls } from "../styles";
 import type { ReportViewMode } from "../types";
@@ -61,14 +61,6 @@ const ReportFiltersBar = ({
     onFilterDeptChange(value);
   };
 
-  const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onDateFromChange(e.target.value);
-  };
-
-  const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onDateToChange(e.target.value);
-  };
-
   const handleGridViewClick = (): void => {
     onViewModeChange("grid");
   };
@@ -102,23 +94,11 @@ const ReportFiltersBar = ({
         blankLabel={arabicSource("reports.all_sections")}
         className={selectStyle}
       />
-      <input
-        type="date"
-        value={dateFrom}
-        onChange={handleDateFromChange}
-        className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-        dir="ltr"
-      />
+      <DatePicker value={dateFrom} onChange={onDateFromChange} />
       <span className="text-muted-foreground text-sm">
         {arabicSource("common.to")}
       </span>
-      <input
-        type="date"
-        value={dateTo}
-        onChange={handleDateToChange}
-        className="px-3 py-2 rounded-lg bg-input border border-border/50 text-foreground text-sm"
-        dir="ltr"
-      />
+      <DatePicker value={dateTo} onChange={onDateToChange} />
       <div className="flex items-center border border-border/50 rounded-lg overflow-hidden">
         <button
           onClick={handleGridViewClick}

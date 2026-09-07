@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { Button } from "@/shared/components";
+import { Button, DatePicker } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type DeviceEventsFiltersProps = {
@@ -27,14 +27,6 @@ const DeviceEventsFilters = ({
   onSearchEmpChange,
   onSearch,
 }: DeviceEventsFiltersProps) => {
-  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    onStartDateChange(event.target.value);
-  };
-
-  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    onEndDateChange(event.target.value);
-  };
-
   const handleSearchEmpChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     onSearchEmpChange(event.target.value);
   };
@@ -44,21 +36,11 @@ const DeviceEventsFilters = ({
       <div className="flex items-end gap-4 flex-wrap">
         <div>
           <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("common.from_date")}</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={handleStartDateChange}
-            className="px-3 py-2 rounded-lg bg-muted/20 border border-border/20 text-foreground text-sm"
-          />
+          <DatePicker value={startDate} onChange={onStartDateChange} />
         </div>
         <div>
           <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("devicemanagement.to_date")}</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={handleEndDateChange}
-            className="px-3 py-2 rounded-lg bg-muted/20 border border-border/20 text-foreground text-sm"
-          />
+          <DatePicker value={endDate} onChange={onEndDateChange} />
         </div>
         <div>
           <label className="text-xs text-muted-foreground mb-1 block">{arabicSource("common.employee_number")}</label>

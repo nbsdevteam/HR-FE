@@ -1,4 +1,5 @@
 import ViewToggle from "@/shared/components/ViewToggle";
+import { DatePicker } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 
 type AttendanceHeaderProps = {
@@ -9,10 +10,6 @@ type AttendanceHeaderProps = {
 };
 
 const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelectedDateChange }: AttendanceHeaderProps) => {
-  const handleSelectedDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onSelectedDateChange(e.target.value);
-  };
-
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -21,12 +18,10 @@ const AttendanceHeader = ({ viewMode, selectedDate, onViewModeChange, onSelected
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <ViewToggle view={viewMode} onChange={onViewModeChange} />
-        <input
-          type="date"
+        <DatePicker
           value={selectedDate}
-          onChange={handleSelectedDateChange}
-          className="h-11 flex-1 min-w-0 px-4 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none sm:flex-none"
-          dir="ltr"
+          onChange={onSelectedDateChange}
+          className="flex-1 min-w-0 sm:flex-none sm:w-44"
         />
       </div>
     </div>

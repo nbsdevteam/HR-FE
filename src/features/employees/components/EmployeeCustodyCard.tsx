@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Calendar, Hash, Laptop, StickyNote } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { StatusBadge } from "@/shared/components";
+import { DatePicker, StatusBadge } from "@/shared/components";
 import type { Custody, CustodyStatus } from "../types";
 import { CUSTODY_STATUS_KEYS, custodyStatusColors, custodyStatusLabels } from "../utils/custodyStatus";
 import { dashedRecordInputClass } from "./shared/DashedAddRecordCard";
@@ -26,8 +26,8 @@ const EmployeeCustodyCard = ({ custody, isEditing, onDelete, onUpdate }: Employe
     onUpdate(custody.id, { status: e.target.value as CustodyStatus });
   };
 
-  const handleReturnDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onUpdate(custody.id, { returnDate: e.target.value || null });
+  const handleReturnDateChange = (value: string): void => {
+    onUpdate(custody.id, { returnDate: value || null });
   };
 
   return (
@@ -73,17 +73,10 @@ const EmployeeCustodyCard = ({ custody, isEditing, onDelete, onUpdate }: Employe
       )}
       {custody.status === "returned" && (
         isEditing ? (
-          <label className="flex items-center gap-1.5 text-muted-foreground" style={{ fontSize: 12 }}>
+          <div className="flex items-center gap-1.5 text-muted-foreground" style={{ fontSize: 12 }}>
             {arabicSource("shared.return_date")}
-            <input
-              type="date"
-              dir="ltr"
-              value={custody.returnDate ?? ""}
-              onChange={handleReturnDateChange}
-              className={`${dashedRecordInputClass} h-8 w-auto px-2`}
-              style={{ fontSize: 12 }}
-            />
-          </label>
+            <DatePicker value={custody.returnDate ?? ""} onChange={handleReturnDateChange} className="w-auto" />
+          </div>
         ) : custody.returnDate && (
           <RecordMetaItem icon={Calendar} label={arabicSource("shared.return_date")} value={custody.returnDate} />
         )

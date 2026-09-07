@@ -1,3 +1,4 @@
+import { DatePicker } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { CustodyStatus } from "../types";
 import { CUSTODY_STATUS_KEYS, custodyStatusLabels } from "../utils/custodyStatus";
@@ -25,8 +26,8 @@ const EmployeeAddCustodyForm = ({ newCustody, onChange, onConfirm, onCancel }: E
     onChange({ description: e.target.value });
   };
 
-  const handleDateReceivedChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onChange({ dateReceived: e.target.value });
+  const handleDateReceivedChange = (value: string): void => {
+    onChange({ dateReceived: value });
   };
 
   const handleSerialNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -60,13 +61,12 @@ const EmployeeAddCustodyForm = ({ newCustody, onChange, onConfirm, onCancel }: E
         onChange={handleDescriptionChange}
         placeholder={arabicSource("shared.example_dell_latitude_5540")}
       />
-      <DashedRecordField
-        label={arabicSource("shared.date_of_receipt")}
-        type="date"
-        value={newCustody.dateReceived}
-        onChange={handleDateReceivedChange}
-        dir="ltr"
-      />
+      <div>
+        <label className="text-muted-foreground block mb-1" style={{ fontSize: 11 }}>
+          {arabicSource("shared.date_of_receipt")}
+        </label>
+        <DatePicker value={newCustody.dateReceived} onChange={handleDateReceivedChange} />
+      </div>
       <DashedRecordField
         label={arabicSource("common.serial_number")}
         value={newCustody.serialNumber}

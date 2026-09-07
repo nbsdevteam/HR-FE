@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { FileText, Plus } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
-import { Button, DataTable, EmptyState, FilterChip, Select, TableHeaderRow, TypeAhead } from "@/shared/components";
+import { Button, DataTable, DatePicker, EmptyState, FilterChip, Select, TableHeaderRow, TypeAhead } from "@/shared/components";
 import {
   getEmployeeDescription,
   getEmployeeId,
@@ -138,12 +138,12 @@ const DocumentsTab = ({
     setFormData((p) => ({ ...p, document_number: e.target.value }));
   };
 
-  const handleIssueDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setFormData((p) => ({ ...p, issue_date: e.target.value }));
+  const handleIssueDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, issue_date: value }));
   };
 
-  const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setFormData((p) => ({ ...p, expiry_date: e.target.value }));
+  const handleExpiryDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, expiry_date: value }));
   };
 
   const renderDocumentRow = useCallback(
@@ -213,11 +213,11 @@ const DocumentsTab = ({
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.release_date")}</FormFieldLabel>
-              <input type="date" value={formData.issue_date} onChange={handleIssueDateChange} className={inputCls} dir="ltr" />
+              <DatePicker value={formData.issue_date} onChange={handleIssueDateChange} className={inputCls} />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
-              <input type="date" value={formData.expiry_date} onChange={handleExpiryDateChange} className={inputCls} dir="ltr" />
+              <DatePicker value={formData.expiry_date} onChange={handleExpiryDateChange} className={inputCls} />
             </div>
           </ExpandFormCard>
         )}

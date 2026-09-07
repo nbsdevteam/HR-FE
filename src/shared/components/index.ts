@@ -2,6 +2,7 @@ export { default as Button } from "./Button";
 export { default as ColorStatTile } from "./ColorStatTile";
 export { default as ConfirmDeleteModal } from "./ConfirmDeleteModal";
 export { default as DataTable } from "./DataTable";
+export { default as DatePicker, parseDatePickerValueToLocalDate } from "./ui/DatePicker";
 export { default as EmptyState } from "./EmptyState";
 export { default as FilterChip } from "./FilterChip";
 export { default as InputField } from "./InputField";

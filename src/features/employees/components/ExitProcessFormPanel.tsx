@@ -4,7 +4,7 @@ import {
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/shared/utils/employeeTypeAhead";
-import { Select, TypeAhead } from "@/shared/components";
+import { DatePicker, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
@@ -52,16 +52,16 @@ const ExitProcessFormPanel = ({
     setFormData((p) => ({ ...p, exit_type: value }));
   };
 
-  const handleExitDateChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setFormData((p) => ({ ...p, exit_date: e.target.value }));
+  const handleExitDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, exit_date: value }));
   };
 
-  const handleLastWorkingDayChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setFormData((p) => ({ ...p, last_working_day: e.target.value }));
+  const handleLastWorkingDayChange = (value: string): void => {
+    setFormData((p) => ({ ...p, last_working_day: value }));
   };
 
-  const handleNoticeDateChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setFormData((p) => ({ ...p, notice_date: e.target.value }));
+  const handleNoticeDateChange = (value: string): void => {
+    setFormData((p) => ({ ...p, notice_date: value }));
   };
 
   const handleReasonChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -102,15 +102,15 @@ const ExitProcessFormPanel = ({
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.termination_date_2")}</FormFieldLabel>
-        <input type="date" value={formData.exit_date} onChange={handleExitDateChange} className={inputCls} dir="ltr" />
+        <DatePicker value={formData.exit_date} onChange={handleExitDateChange} className={inputCls} />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("common.last_working_day")}</FormFieldLabel>
-        <input type="date" value={formData.last_working_day} onChange={handleLastWorkingDayChange} className={inputCls} dir="ltr" />
+        <DatePicker value={formData.last_working_day} onChange={handleLastWorkingDayChange} className={inputCls} />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.notice_date")}</FormFieldLabel>
-        <input type="date" value={formData.notice_date} onChange={handleNoticeDateChange} className={inputCls} dir="ltr" />
+        <DatePicker value={formData.notice_date} onChange={handleNoticeDateChange} className={inputCls} />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("common.the_reason")}</FormFieldLabel>

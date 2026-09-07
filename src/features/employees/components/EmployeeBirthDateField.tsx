@@ -1,9 +1,8 @@
 import { Cake } from "lucide-react";
+import { DatePicker } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { Employee } from "../types";
-
-const inputClass = "w-full bg-transparent border-b-2 border-primary/40 focus:border-primary px-1 py-1.5 text-foreground outline-none transition-colors";
 
 type EmployeeBirthDateFieldProps = {
   birthDate: string;
@@ -14,8 +13,8 @@ type EmployeeBirthDateFieldProps = {
 };
 
 const EmployeeBirthDateField = ({ birthDate, isEditing, error, onFieldChange }: EmployeeBirthDateFieldProps) => {
-  const handleBirthDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("birthDate", e.target.value);
+  const handleBirthDateChange = (value: string): void => {
+    onFieldChange("birthDate", value);
   };
 
   return (
@@ -24,19 +23,12 @@ const EmployeeBirthDateField = ({ birthDate, isEditing, error, onFieldChange }: 
       <span className="text-muted-foreground shrink-0 min-w-[110px]" style={{ fontSize: 13 }}>{arabicSource("common.birth_date")}:</span>
       <div className="flex-1 min-w-0">
         {isEditing ? (
-          <>
-            <input
-              type="date"
-              value={birthDate}
-              onChange={handleBirthDateChange}
-              max={todayInBaghdad()}
-              className={`${inputClass} ${error ? "border-destructive" : ""}`}
-              style={{ fontSize: 14 }}
-              aria-invalid={error ? true : undefined}
-              dir="ltr"
-            />
-            {error && <p className="text-destructive mt-1" style={{ fontSize: 11 }}>{error}</p>}
-          </>
+          <DatePicker
+            value={birthDate}
+            onChange={handleBirthDateChange}
+            maxDate={todayInBaghdad()}
+            error={error ?? undefined}
+          />
         ) : (
           <span className="text-foreground" style={{ fontSize: 14 }} dir="ltr">{birthDate || "—"}</span>
         )}

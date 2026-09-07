@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
-import { Modal, ModalFooterActions, MultiSelect, Select } from "@/shared/components";
+import { DatePicker, Modal, ModalFooterActions, MultiSelect, Select } from "@/shared/components";
 import type { DbDepartment, DbLeaveType } from "@/shared/hooks";
 import type { LeaveLinkFormState } from "../types";
 import { inputCls, labelCls } from "../styles";
@@ -65,8 +65,8 @@ const LeaveLinkFormModal = ({
     onFieldChange({ active: event.target.checked });
   };
 
-  const handleExpiresOnChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange({ expires_on: event.target.value });
+  const handleExpiresOnChange = (value: string): void => {
+    onFieldChange({ expires_on: value });
   };
 
   const handleMaxSubmissionsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -119,13 +119,7 @@ const LeaveLinkFormModal = ({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("settings.leave_links_expires_label")}</label>
-          <input
-            type="date"
-            dir="ltr"
-            value={form.expires_on}
-            onChange={handleExpiresOnChange}
-            className={`${inputCls} w-full`}
-          />
+          <DatePicker value={form.expires_on} onChange={handleExpiresOnChange} className="w-full" />
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("settings.leave_links_max_submissions_label")}</label>
