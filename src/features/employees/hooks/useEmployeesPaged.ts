@@ -83,9 +83,14 @@ export const useEmployeesPaged = ({ search, departmentId, includeArchived = fals
   }, [query.refetch]);
 
   // A deletion can empty the last page; step back rather than stranding the
-  // user on a page that will always render zero rows.
+  // user on a page that will always render zero rows. `totalPages` is 0 for a
+  // zero-result search (no rows at all), so clamp to 1 rather than stepping
+  // back to page 0 — that would change the query key and fire a redundant
+  // second fetch that the backend clamps right back to page 1 anyway.
   useEffect(() => {
-    if (!query.isFetching && page > result.totalPages) setPage(result.totalPages);
+    if (!query.isFetching && result.totalPages > 0 && page > result.totalPages) {
+      setPage(result.totalPages);
+    }
   }, [query.isFetching, page, result.totalPages]);
 
   return {
