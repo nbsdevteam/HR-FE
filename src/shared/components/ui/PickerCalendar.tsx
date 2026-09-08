@@ -69,10 +69,12 @@ const PickerCalendar = ({ selected, onSelect, minDay, maxDay }: PickerCalendarPr
           "relative p-0 text-center text-xs",
           "[&:has([aria-selected])]:bg-primary/10 [&:has([aria-selected])]:rounded-md",
         ),
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 p-0 font-normal text-xs text-foreground hover:bg-accent hover:text-accent-foreground",
-        ),
+        // `ghost` already carries `hover:bg-secondary hover:text-secondary-foreground`
+        // — the app's standard hover treatment. Day cells used to override it with
+        // `hover:bg-accent`, but `--accent` is a light cream badge color reserved
+        // for the "today" cell below; using it for every hover flashed a bright,
+        // off-theme box in dark mode.
+        day: cn(buttonVariants({ variant: "ghost" }), "h-8 w-8 p-0 font-normal text-xs text-foreground"),
         day_selected:
           "!bg-primary !text-primary-foreground hover:!bg-primary hover:!text-primary-foreground rounded-md",
         day_today: "bg-accent text-accent-foreground font-semibold rounded-md",
