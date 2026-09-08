@@ -69,9 +69,10 @@ const PickerCalendar = ({ selected, onSelect, minDay, maxDay }: PickerCalendarPr
           "relative p-0 text-center text-xs",
           "[&:has([aria-selected])]:bg-primary/10 [&:has([aria-selected])]:rounded-md",
         ),
-        // `ghost` already carries `hover:bg-secondary hover:text-secondary-foreground`
-        // — the app's standard hover treatment.
-        day: cn(buttonVariants({ variant: "ghost" }), "h-8 w-8 p-0 font-normal text-xs text-foreground"),
+        day: cn(
+          buttonVariants({ variant: "ghost" }),
+          "h-8 w-8 p-0 font-normal text-xs text-foreground hover:bg-accent hover:text-accent-foreground",
+        ),
         day_selected:
           "!bg-primary !text-primary-foreground hover:!bg-primary hover:!text-primary-foreground rounded-md",
         // `--accent` is a pale cream token elsewhere reserved for on-brand light
