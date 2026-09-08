@@ -3,7 +3,7 @@ import { AnimatePresence } from "motion/react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
-import { ConfirmDeleteModal, Toast } from "@/shared/components";
+import { ConfirmDeleteModal } from "@/shared/components";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
 import { useToast } from "../hooks/useToast";
@@ -13,6 +13,7 @@ import LoadingState from "@/shared/components/LoadingState";
 import RecruitmentModals from "./RecruitmentModals";
 import RecruitmentStats from "./RecruitmentStats";
 import RecruitmentTabs from "./RecruitmentTabs";
+import RecruitmentToast from "./RecruitmentToast";
 import { sortTypes, viewType } from "../types";
 
 const AiScreeningView = lazy(() => import("../components/AiScreeningView"));
@@ -154,18 +155,7 @@ const RecruitmentWorkspace = () => {
 
   return (
     <div className="space-y-6">
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          shape="banner"
-          position="top-full"
-          toneClassName="bg-toast-success border border-toast-success-border shadow-lg text-center"
-          textClassName="text-toast-success-fg font-medium"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        />
-      )}
+      <RecruitmentToast message={toastMessage} />
 
       <RecruitmentHeader
         viewMode={viewMode}
