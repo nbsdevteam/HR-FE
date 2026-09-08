@@ -11,6 +11,7 @@ import {
   JOB_STATUS_TO_ODOO,
   STAGE_TO_ODOO,
 } from "../constants/recruitment";
+import type { ToastTone } from "./useToast";
 
 type ApplicantRollbackContext = { previousApplicants?: DbApplicant[] };
 
@@ -18,7 +19,7 @@ export const useRecruitmentActions = (
   refetchJobs: () => void,
   refetchApps: () => void,
   setSelectedApplicant: Dispatch<SetStateAction<DbApplicant | null>>,
-  showToast: (message: string) => void,
+  showToast: (message: string, tone?: ToastTone) => void,
 ) => {
   const [pendingDeleteJob, setPendingDeleteJob] = useState<DbJobOpening | null>(null);
   const [deletingJob, setDeletingJob] = useState(false);
@@ -147,9 +148,14 @@ export const useRecruitmentActions = (
           showToast(
             `${arabicSource("recruitment.added_to_favorites_toast_prefix")} ${app.name} ${arabicSource("recruitment.added_to_favorites_toast_suffix")}`,
           );
+        } else {
+          showToast(
+            `${arabicSource("recruitment.removed_from_favorites_toast_prefix")} ${app.name} ${arabicSource("recruitment.removed_from_favorites_toast_suffix")}`,
+            "error",
+          );
         }
       } catch {
-        showToast(arabicSource("common.error"));
+        showToast(arabicSource("common.error"), "error");
       }
     },
     [toggleBookmarkMutation, showToast],

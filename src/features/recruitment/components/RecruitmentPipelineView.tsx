@@ -3,6 +3,7 @@ import type { DbApplicant } from "@/shared/hooks";
 import { groupBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 import { STAGES } from "../constants/recruitment";
+import type { ToastTone } from "../hooks/useToast";
 import PipelineColumn from "./PipelineColumn";
 
 const EMPTY_APPLICANTS: DbApplicant[] = [];
@@ -11,7 +12,7 @@ type RecruitmentPipelineViewProps = {
   applicants: DbApplicant[];
   onSelectApplicant: (applicant: DbApplicant) => void;
   onUpdateStage: (id: string, stage: string) => Promise<void>;
-  showToast: (message: string) => void;
+  showToast: (message: string, tone?: ToastTone) => void;
 };
 
 const RecruitmentPipelineView = ({
@@ -40,7 +41,7 @@ const RecruitmentPipelineView = ({
           `${arabicSource("recruitment.applicant_moved_toast_prefix")} ${applicant?.name || ""} ${arabicSource("common.to")} "${stage}" ${arabicSource("recruitment.applicant_moved_toast_stage_suffix")}.`,
         );
       } catch {
-        showToast(arabicSource("common.error"));
+        showToast(arabicSource("common.error"), "error");
       }
     },
     [applicants, onUpdateStage, showToast],

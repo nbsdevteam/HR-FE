@@ -1398,6 +1398,8 @@
   "recruitment.add_to_favorites": "زیادکردن بۆ دڵخوازەکان",
   "recruitment.added_to_favorites_toast_prefix": "زیادکرا",
   "recruitment.added_to_favorites_toast_suffix": "بۆ دڵخوازەکان",
+  "recruitment.removed_from_favorites_toast_prefix": "لابرا",
+  "recruitment.removed_from_favorites_toast_suffix": "لە دڵخوازەکان",
   "recruitment.job_description": "وەسفکردنی کار...",
   "recruitment.vacancies_2": "پۆستە بەتاڵەکان",
   "common.new_vacancy": "پۆستی بەتاڵی نوێ",

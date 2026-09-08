@@ -1398,6 +1398,8 @@
   "recruitment.add_to_favorites": "إضافة إلى المفضلة",
   "recruitment.added_to_favorites_toast_prefix": "تمت إضافة",
   "recruitment.added_to_favorites_toast_suffix": "إلى المفضلة",
+  "recruitment.removed_from_favorites_toast_prefix": "تمت إزالة",
+  "recruitment.removed_from_favorites_toast_suffix": "من المفضلة",
   "recruitment.job_description": "وصف الوظيفة...",
   "recruitment.vacancies_2": "وظائف شاغرة",
   "common.new_vacancy": "وظيفة شاغرة جديدة",

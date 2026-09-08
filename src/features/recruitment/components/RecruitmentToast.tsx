@@ -1,18 +1,15 @@
 import Toast from "@/shared/components/Toast";
-import { arabicSource } from "@/i18n/source";
+import type { ToastTone } from "../hooks/useToast";
 
 type RecruitmentToastProps = {
   message: string | null;
+  tone: ToastTone;
 };
 
-/**
- * Tone is derived from the message instead of a separate error flag, matching
- * the pattern used by the other feature-level toasts (e.g. HierarchyToast).
- */
-const RecruitmentToast = ({ message }: RecruitmentToastProps) => {
+const RecruitmentToast = ({ message, tone }: RecruitmentToastProps) => {
   if (!message) return null;
 
-  const isError = message.startsWith(arabicSource("common.error"));
+  const isError = tone === "error";
 
   return (
     <Toast

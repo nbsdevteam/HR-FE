@@ -1398,6 +1398,8 @@
   "recruitment.add_to_favorites": "Add to Favorites",
   "recruitment.added_to_favorites_toast_prefix": "Added",
   "recruitment.added_to_favorites_toast_suffix": "to favorites",
+  "recruitment.removed_from_favorites_toast_prefix": "Removed",
+  "recruitment.removed_from_favorites_toast_suffix": "from favorites",
   "recruitment.job_description": "Job Description...",
   "recruitment.vacancies_2": "Vacancies",
   "common.new_vacancy": "New vacancy",

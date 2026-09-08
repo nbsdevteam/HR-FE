@@ -77,7 +77,7 @@ const RecruitmentWorkspace = () => {
       recSortDir,
     );
 
-  const { toastMessage, showToast } = useToast();
+  const { toastMessage, toastTone, showToast } = useToast();
 
   const {
     handleToggleBookmark,
@@ -155,7 +155,7 @@ const RecruitmentWorkspace = () => {
 
   return (
     <div className="space-y-6">
-      <RecruitmentToast message={toastMessage} />
+      <RecruitmentToast message={toastMessage} tone={toastTone} />
 
       <RecruitmentHeader
         viewMode={viewMode}
