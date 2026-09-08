@@ -102,15 +102,15 @@ const ExitProcessFormPanel = ({
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.termination_date_2")}</FormFieldLabel>
-        <DatePicker value={formData.exit_date} onChange={handleExitDateChange} className={inputCls} />
+        <DatePicker value={formData.exit_date} onChange={handleExitDateChange} className="w-full" />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("common.last_working_day")}</FormFieldLabel>
-        <DatePicker value={formData.last_working_day} onChange={handleLastWorkingDayChange} className={inputCls} />
+        <DatePicker value={formData.last_working_day} onChange={handleLastWorkingDayChange} className="w-full" />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.notice_date")}</FormFieldLabel>
-        <DatePicker value={formData.notice_date} onChange={handleNoticeDateChange} className={inputCls} />
+        <DatePicker value={formData.notice_date} onChange={handleNoticeDateChange} className="w-full" />
       </div>
       <div>
         <FormFieldLabel>{arabicSource("common.the_reason")}</FormFieldLabel>

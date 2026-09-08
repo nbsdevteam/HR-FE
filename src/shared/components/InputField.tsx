@@ -41,7 +41,12 @@ const InputField = ({
 
   const input =
     type === "date" ? (
-      <DatePicker value={String(value)} onChange={onChange} placeholder={placeholder} className={className} />
+      // `className` here is a native-input box style (border/bg/rounded/height)
+      // meant for the `<input>` branch below — DatePicker already carries its
+      // own matching box styling on the trigger button, so forwarding it here
+      // would double it up as a border around a border. Only width belongs on
+      // its wrapper.
+      <DatePicker value={String(value)} onChange={onChange} placeholder={placeholder} className="w-full" />
     ) : (
       <input
         type={type}

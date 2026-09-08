@@ -213,11 +213,11 @@ const DocumentsTab = ({
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.release_date")}</FormFieldLabel>
-              <DatePicker value={formData.issue_date} onChange={handleIssueDateChange} className={inputCls} />
+              <DatePicker value={formData.issue_date} onChange={handleIssueDateChange} className="w-full" />
             </div>
             <div>
               <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
-              <DatePicker value={formData.expiry_date} onChange={handleExpiryDateChange} className={inputCls} />
+              <DatePicker value={formData.expiry_date} onChange={handleExpiryDateChange} className="w-full" />
             </div>
           </ExpandFormCard>
         )}

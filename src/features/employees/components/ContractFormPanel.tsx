@@ -137,11 +137,11 @@ const ContractFormPanel = ({
         </div>
         <div>
           <FormFieldLabel>{arabicSource("lifecycle.start_date")}</FormFieldLabel>
-          <DatePicker value={formData.start_date} onChange={handleStartDateChange} className={inputCls} />
+          <DatePicker value={formData.start_date} onChange={handleStartDateChange} className="w-full" />
         </div>
         <div>
           <FormFieldLabel>{arabicSource("common.end_date")}</FormFieldLabel>
-          <DatePicker value={formData.end_date} onChange={handleEndDateChange} className={inputCls} />
+          <DatePicker value={formData.end_date} onChange={handleEndDateChange} className="w-full" />
         </div>
         <div>
           <FormFieldLabel>{arabicSource("common.salary")}</FormFieldLabel>
