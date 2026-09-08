@@ -47,9 +47,20 @@ export const useRecruitmentActions = (
     [queryClient],
   );
 
-  const toggleBookmarkMutation = useOdooMutation<unknown, DbApplicant>(
+  const toggleBookmarkMutation = useOdooMutation<
+    unknown,
+    DbApplicant,
+    ApplicantRollbackContext
+  >(
     (app) => odooData.updateApplicant(app.id, { is_bookmarked: !app.is_bookmarked }),
     "applicants",
+    {
+      onMutate: async (app) => {
+        await queryClient.cancelQueries({ queryKey: ["applicants"] });
+        return applyOptimisticApplicantPatch(app.id, { is_bookmarked: !app.is_bookmarked });
+      },
+      onError: (_err, _vars, context) => rollbackApplicants(context),
+    },
   );
   const updateRatingMutation = useOdooMutation<
     unknown,
@@ -130,11 +141,15 @@ export const useRecruitmentActions = (
   const handleToggleBookmark = useCallback(
     async (app: DbApplicant) => {
       const isAdding = !app.is_bookmarked;
-      await toggleBookmarkMutation.mutateAsync(app);
-      if (isAdding) {
-        showToast(
-          `${arabicSource("recruitment.added_to_favorites_toast_prefix")} ${app.name} ${arabicSource("recruitment.added_to_favorites_toast_suffix")}`,
-        );
+      try {
+        await toggleBookmarkMutation.mutateAsync(app);
+        if (isAdding) {
+          showToast(
+            `${arabicSource("recruitment.added_to_favorites_toast_prefix")} ${app.name} ${arabicSource("recruitment.added_to_favorites_toast_suffix")}`,
+          );
+        }
+      } catch {
+        showToast(arabicSource("common.error"));
       }
     },
     [toggleBookmarkMutation, showToast],
