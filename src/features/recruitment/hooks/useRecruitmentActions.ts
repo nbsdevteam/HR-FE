@@ -18,6 +18,7 @@ export const useRecruitmentActions = (
   refetchJobs: () => void,
   refetchApps: () => void,
   setSelectedApplicant: Dispatch<SetStateAction<DbApplicant | null>>,
+  showToast: (message: string) => void,
 ) => {
   const [pendingDeleteJob, setPendingDeleteJob] = useState<DbJobOpening | null>(null);
   const [deletingJob, setDeletingJob] = useState(false);
@@ -128,9 +129,15 @@ export const useRecruitmentActions = (
 
   const handleToggleBookmark = useCallback(
     async (app: DbApplicant) => {
+      const isAdding = !app.is_bookmarked;
       await toggleBookmarkMutation.mutateAsync(app);
+      if (isAdding) {
+        showToast(
+          `${arabicSource("recruitment.added_to_favorites_toast_prefix")} ${app.name} ${arabicSource("recruitment.added_to_favorites_toast_suffix")}`,
+        );
+      }
     },
-    [toggleBookmarkMutation],
+    [toggleBookmarkMutation, showToast],
   );
   const handleUpdateRating = useCallback(
     async (id: string, rating: number) => {

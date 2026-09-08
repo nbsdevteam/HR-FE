@@ -58,6 +58,7 @@ const ApplicantTableRow = ({
           size="unstyled"
           rounded="rounded"
           className="p-1 hover:bg-primary/10"
+          title={arabicSource("recruitment.add_to_favorites")}
         >
           {app.is_bookmarked ? (
             <BookmarkCheck className="w-4 h-4 text-primary" />

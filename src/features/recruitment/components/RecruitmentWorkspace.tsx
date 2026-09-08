@@ -76,6 +76,8 @@ const RecruitmentWorkspace = () => {
       recSortDir,
     );
 
+  const { toastMessage, showToast } = useToast();
+
   const {
     handleToggleBookmark,
     handleUpdateRating,
@@ -93,9 +95,7 @@ const RecruitmentWorkspace = () => {
     requestDeleteApplicant,
     cancelDeleteApplicant,
     confirmDeleteApplicant,
-  } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant);
-
-  const { toastMessage, showToast } = useToast();
+  } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant, showToast);
 
   const handleApplicantFormOpen = useCallback(
     () => setShowApplicantForm(true),
