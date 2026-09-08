@@ -70,14 +70,16 @@ const PickerCalendar = ({ selected, onSelect, minDay, maxDay }: PickerCalendarPr
           "[&:has([aria-selected])]:bg-primary/10 [&:has([aria-selected])]:rounded-md",
         ),
         // `ghost` already carries `hover:bg-secondary hover:text-secondary-foreground`
-        // — the app's standard hover treatment. Day cells used to override it with
-        // `hover:bg-accent`, but `--accent` is a light cream badge color reserved
-        // for the "today" cell below; using it for every hover flashed a bright,
-        // off-theme box in dark mode.
+        // — the app's standard hover treatment.
         day: cn(buttonVariants({ variant: "ghost" }), "h-8 w-8 p-0 font-normal text-xs text-foreground"),
         day_selected:
           "!bg-primary !text-primary-foreground hover:!bg-primary hover:!text-primary-foreground rounded-md",
-        day_today: "bg-accent text-accent-foreground font-semibold rounded-md",
+        // `--accent` is a pale cream token elsewhere reserved for on-brand light
+        // surfaces — read literally by the dark theme it painted "today" as a
+        // stray off-theme badge. A translucent primary tint matches how this app
+        // marks "today" elsewhere (e.g. CalendarDayCell's `ring-primary`/`bg-primary`)
+        // and stays visually distinct from the solid-gold `day_selected` above.
+        day_today: "bg-primary/15 text-primary font-semibold rounded-md",
         day_outside: "text-muted-foreground/40 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground/30 cursor-not-allowed",
         day_hidden: "invisible",
