@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import {
   useEmployees,
   useTrainingParticipants,
@@ -67,6 +68,7 @@ const TrainingWorkspace = () => {
     refetchParticipants,
     showToast,
   });
+  const { pendingModalId, consumeModal } = useCommandIntent();
 
   const displayPrograms = useMemo(
     () => mapProgramsToDisplay(programs),
@@ -107,6 +109,13 @@ const TrainingWorkspace = () => {
     () => buildEmployeeNameLookup(employees),
     [employees],
   );
+
+  useEffect(() => {
+    if (pendingModalId === "training.addProgram") {
+      programForm.openCreateModal();
+      consumeModal("training.addProgram");
+    }
+  }, [pendingModalId, programForm.openCreateModal, consumeModal]);
 
   return (
     <div className="space-y-6">

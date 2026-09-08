@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import EmployeesFilters from "../components/EmployeesFilters";
 import EmployeesHeader from "../components/EmployeesHeader";
 import EmployeesListView from "../components/EmployeesListView";
@@ -105,6 +106,15 @@ const Employees = () => {
     updateAddForm,
     viewMode,
   } = useEmployeesPage();
+
+  const { pendingModalId, consumeModal } = useCommandIntent();
+
+  useEffect(() => {
+    if (pendingModalId === "employee.add") {
+      openAddModal();
+      consumeModal("employee.add");
+    }
+  }, [pendingModalId, openAddModal, consumeModal]);
 
   if (dbLoading) {
     return <LoadingState message={arabicSource("employees.loading_employee_data")} />;

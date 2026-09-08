@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import { ThemeProvider } from "@/app/providers";
 import { SettingsProvider } from "@/app/providers";
 import NavShellProvider from "@/app/components/NavShellContext";
+import { CommandPaletteProvider, CommandPalette } from "@/app/components/command-palette";
+import CommandIntentProvider from "@/app/components/command-palette/CommandIntentContext";
 import { useTranslation } from "react-i18next";
 
 const LayoutInner = () => {
@@ -58,7 +60,12 @@ const Layout = () => {
     <SettingsProvider>
       <ThemeProvider>
         <NavShellProvider>
-          <LayoutInner />
+          <CommandIntentProvider>
+            <CommandPaletteProvider>
+              <LayoutInner />
+              <CommandPalette />
+            </CommandPaletteProvider>
+          </CommandIntentProvider>
         </NavShellProvider>
       </ThemeProvider>
     </SettingsProvider>

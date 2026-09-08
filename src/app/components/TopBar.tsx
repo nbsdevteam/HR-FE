@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { MessageSquare, Search, Menu } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { ThemeSwitcher } from "@/app/providers";
 import {
   useCurrentEmployee,
@@ -13,6 +13,7 @@ import { Button } from "@/shared/components";
 import { LanguageSwitcher } from "@/app/providers";
 import { arabicSource } from "@/i18n/source";
 import { useNavShell } from "./NavShellContext";
+import { useCommandPalette } from "./command-palette";
 import { useAuth } from "@/shared/auth";
 import { SYNC_API } from "@/shared/constants";
 import * as odooData from "@/shared/api/odooData";
@@ -22,14 +23,13 @@ import UserMenuDropdown from "./UserMenuDropdown";
 import { quotes } from "../data";
 
 const TopBar = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [deviceOpen, setDeviceOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const { toggleMobileNav, isDesktop } = useNavShell();
+  const { openPalette } = useCommandPalette();
   const { user, signOut } = useAuth();
   const { notifications, unreadCount } = useNotifications();
   const { deviceStatus } = useDeviceStatus();
@@ -66,22 +66,13 @@ const TopBar = () => {
     user?.email ||
     arabicSource("shared.hello_human_resources_manager");
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      setSearchQuery(e.target.value);
-    },
-    [],
-  );
   const handleBellToggle = useCallback(() => setBellOpen((o) => !o), []);
   const handleBellClose = useCallback(() => setBellOpen(false), []);
   const handleDeviceToggle = useCallback(() => setDeviceOpen((o) => !o), []);
   const handleDeviceClose = useCallback(() => setDeviceOpen(false), []);
   const handleUserToggle = useCallback(() => setUserOpen((v) => !v), []);
   const handleUserClose = useCallback(() => setUserOpen(false), []);
-  const handleSearchOpenToggle = useCallback(
-    () => setSearchOpen((v) => !v),
-    [],
-  );
+  const handleOpenPalette = useCallback(() => openPalette(), [openPalette]);
 
   const handleMarkAllRead = useCallback(async () => {
     try {
@@ -167,15 +158,17 @@ const TopBar = () => {
       <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
         <LanguageSwitcher />
 
-        {/* Search: icon on mobile, full field on md+ */}
+        {/* Search: icon on mobile, full field on md+ — both open the command palette */}
         <div className="relative hidden md:block">
           <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
           <input
             type="text"
+            readOnly
             placeholder={arabicSource("common.search")}
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="h-9 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none w-[160px] lg:w-[220px]"
+            onClick={handleOpenPalette}
+            onFocus={handleOpenPalette}
+            aria-haspopup="dialog"
+            className="h-9 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none w-[160px] lg:w-[220px] cursor-pointer"
           />
         </div>
         <Button
@@ -186,7 +179,7 @@ const TopBar = () => {
           variant="unstyled"
           rounded="rounded-lg"
           className="md:hidden hover:bg-secondary"
-          onClick={handleSearchOpenToggle}
+          onClick={handleOpenPalette}
           aria-label={arabicSource("common.search")}
         />
 
@@ -247,30 +240,6 @@ const TopBar = () => {
           onSignOut={handleSignOut}
         />
       </div>
-
-      {/* Mobile search expand */}
-      <AnimatePresence>
-        {searchOpen && !isDesktop && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="absolute top-full inset-x-0 border-b border-border bg-card/95 backdrop-blur-md p-3 z-[90] md:hidden"
-          >
-            <div className="relative">
-              <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground" />
-              <input
-                autoFocus
-                type="text"
-                placeholder={arabicSource("common.search")}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full h-10 ps-9 pe-4 rounded-lg border border-border bg-input-background text-foreground outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 };

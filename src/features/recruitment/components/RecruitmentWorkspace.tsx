@@ -1,9 +1,10 @@
-import { useState, useCallback, memo, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect, memo, lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import type { DbJobOpening, DbApplicant } from "@/shared/hooks";
 import { useJobOpenings, useApplicants } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import { useRecruitmentWorkspaceData } from "../hooks/useRecruitmentWorkspaceData";
 import { useRecruitmentActions } from "../hooks/useRecruitmentActions";
 import { useToast } from "../hooks/useToast";
@@ -78,6 +79,7 @@ const RecruitmentWorkspace = () => {
     );
 
   const { toastMessage, toastTone, showToast } = useToast();
+  const { pendingModalId, consumeModal } = useCommandIntent();
 
   const {
     handleToggleBookmark,
@@ -98,10 +100,7 @@ const RecruitmentWorkspace = () => {
     confirmDeleteApplicant,
   } = useRecruitmentActions(refetchJobs, refetchApps, setSelectedApplicant, showToast);
 
-  const handleApplicantFormOpen = useCallback(
-    () => setShowApplicantForm(true),
-    [],
-  );
+  const handleApplicantFormOpen = useCallback(() => setShowApplicantForm(true), []);
   const handleJobFormOpen = useCallback(() => setShowJobForm(true), []);
 
   const handleAiScreeningOpen = useCallback((jobId: string) => {
@@ -143,6 +142,16 @@ const RecruitmentWorkspace = () => {
   }, [refetchJobs]);
 
   const handleLinkJobClose = useCallback(() => setLinkJob(null), []);
+
+  useEffect(() => {
+    if (pendingModalId === "recruitment.addJob") {
+      handleJobFormOpen();
+      consumeModal("recruitment.addJob");
+    } else if (pendingModalId === "recruitment.addApplicant") {
+      handleApplicantFormOpen();
+      consumeModal("recruitment.addApplicant");
+    }
+  }, [pendingModalId, handleJobFormOpen, handleApplicantFormOpen, consumeModal]);
 
   /* ──── Loading State ──── */
   if (loading) {

@@ -1,7 +1,8 @@
-import { lazy, Suspense, useCallback } from "react";
+import { lazy, Suspense, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { Loader2 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import { useDepartmentMetadata } from "@/shared/hooks";
 import HierarchyHeader from "../components/HierarchyHeader";
 import HierarchyModals from "../components/HierarchyModals";
@@ -107,9 +108,21 @@ const HierarchyChart = () => {
     refetchHierarchyAndPositions,
   } = useHierarchyPage();
 
+  const { pendingModalId, consumeModal } = useCommandIntent();
+
   const handleOpenManagement = useCallback((): void => {
     setSearchParams({ tab: "manage" });
   }, [setSearchParams]);
+
+  useEffect(() => {
+    if (pendingModalId === "hierarchy.addDepartment") {
+      openAddDepartmentModal();
+      consumeModal("hierarchy.addDepartment");
+    } else if (pendingModalId === "hierarchy.addPosition") {
+      openAddPositionModal();
+      consumeModal("hierarchy.addPosition");
+    }
+  }, [pendingModalId, openAddDepartmentModal, openAddPositionModal, consumeModal]);
 
   if (dbLoading || positionsLoading) {
     return (

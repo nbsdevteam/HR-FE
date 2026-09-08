@@ -1,10 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import { CheckCircle } from "lucide-react";
 import { lazy, Suspense } from "react";
 import Toast from "@/shared/components/Toast";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import PoliciesFilters from "../components/PoliciesFilters";
 import PoliciesHeader from "../components/PoliciesHeader";
 import PoliciesList from "../components/PoliciesList";
@@ -25,6 +26,8 @@ const Policies = () => {
     setShowViewModal,
     setSortBy,
   } = page;
+
+  const { pendingModalId, consumeModal } = useCommandIntent();
 
   const handleCreateClick = useCallback(() => {
     setShowCreateModal(true);
@@ -50,6 +53,13 @@ const Policies = () => {
     },
     [setSortBy],
   );
+
+  useEffect(() => {
+    if (pendingModalId === "policy.create") {
+      setShowCreateModal(true);
+      consumeModal("policy.create");
+    }
+  }, [pendingModalId, setShowCreateModal, consumeModal]);
 
   if (page.loading) {
     return <PoliciesLoadingState />;

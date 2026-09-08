@@ -1,8 +1,9 @@
-import { memo, useCallback, useMemo, useState, lazy, Suspense } from "react";
+import { memo, useCallback, useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { AnimatePresence } from "motion/react";
 import { Clock } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
 import { useEmployees, useWarningAttachmentSettings, useWarnings } from "@/shared/hooks";
 import { useWarningConfig } from "../hooks/useWarningConfig";
 import { useWarningForm } from "../hooks/useWarningForm";
@@ -54,6 +55,7 @@ const WarningsWorkspace = () => {
     refetch,
     setToast,
   });
+  const { pendingModalId, consumeModal } = useCommandIntent();
 
   const enrichedWarnings = useMemo(
     () =>
@@ -121,6 +123,13 @@ const WarningsWorkspace = () => {
     recordActions.requestDelete(selectedWarning.id);
     setSelectedWarningId(null);
   }, [recordActions, selectedWarning]);
+
+  useEffect(() => {
+    if (pendingModalId === "warning.add") {
+      form.openNewForm();
+      consumeModal("warning.add");
+    }
+  }, [pendingModalId, form.openNewForm, consumeModal]);
 
   return (
     <div className="space-y-6">
