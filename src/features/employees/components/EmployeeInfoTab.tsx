@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { motion } from "motion/react";
 import {
   Mail, Wallet, CalendarCheck, CalendarX,
@@ -97,25 +98,35 @@ const EmployeeInfoTab = ({
   onConfirmAddLocationCity,
   onDismissLocationCitySuggestions,
 }: EmployeeInfoTabProps) => {
-  const handleEmployeeNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("employeeNumber", e.target.value);
-  };
+  const handleEmployeeNumberChange = useCallback(
+    (value: string): void => onFieldChange("employeeNumber", value),
+    [onFieldChange],
+  );
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("email", e.target.value);
-  };
+  const handleEmailChange = useCallback(
+    (value: string): void => onFieldChange("email", value),
+    [onFieldChange],
+  );
 
-  const handlePersonalPhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("personalPhone", e.target.value);
-  };
+  const handlePersonalPhoneChange = useCallback(
+    (value: string): void => onFieldChange("personalPhone", value),
+    [onFieldChange],
+  );
 
-  const handleCompanyPhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("companyPhone", e.target.value);
-  };
+  const handleCompanyPhoneChange = useCallback(
+    (value: string): void => onFieldChange("companyPhone", value),
+    [onFieldChange],
+  );
 
-  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("salary", Number(e.target.value));
-  };
+  const handleSalaryChange = useCallback(
+    (value: string): void => onFieldChange("salary", Number(value)),
+    [onFieldChange],
+  );
+
+  const handleNationalIdChange = useCallback(
+    (value: string): void => onFieldChange("nationalId", value),
+    [onFieldChange],
+  );
 
   const handleStartDateChange = (value: string): void => {
     onFieldChange("startDate", value);
@@ -123,10 +134,6 @@ const EmployeeInfoTab = ({
 
   const handleEndDateChange = (value: string): void => {
     onFieldChange("endDate", value);
-  };
-
-  const handleNationalIdChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("nationalId", e.target.value);
   };
 
   const handleBloodTypeChange = (value: string): void => {

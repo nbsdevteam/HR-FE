@@ -1,4 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
+import { useCallback } from "react";
+import { PositiveNumberInput } from "@/shared/components";
 import EmployeeFieldRow from "./EmployeeFieldRow";
 
 type EmployeeInputFieldRowProps = {
@@ -12,7 +14,7 @@ type EmployeeInputFieldRowProps = {
   type?: "text" | "number";
   highlight?: boolean;
   isEditing: boolean;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (value: string) => void;
 };
 
 const inputClass =
@@ -35,26 +37,43 @@ const EmployeeInputFieldRow = ({
   highlight,
   isEditing,
   onChange,
-}: EmployeeInputFieldRowProps) => (
-  <EmployeeFieldRow
-    icon={icon}
-    iconColor={iconColor}
-    label={label}
-    value={value}
-    dir="ltr"
-    highlight={highlight}
-    isEditing={isEditing}
-    editElement={
-      <input
-        type={type}
-        value={inputValue}
-        onChange={onChange}
-        className={inputClass}
-        style={{ fontSize: 14 }}
-        dir="ltr"
-      />
-    }
-  />
-);
+}: EmployeeInputFieldRowProps) => {
+  const handleTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => onChange(e.target.value),
+    [onChange],
+  );
+
+  return (
+    <EmployeeFieldRow
+      icon={icon}
+      iconColor={iconColor}
+      label={label}
+      value={value}
+      dir="ltr"
+      highlight={highlight}
+      isEditing={isEditing}
+      editElement={
+        type === "number" ? (
+          <PositiveNumberInput
+            value={inputValue}
+            onChange={onChange}
+            className={inputClass}
+            style={{ fontSize: 14 }}
+            dir="ltr"
+          />
+        ) : (
+          <input
+            type={type}
+            value={inputValue}
+            onChange={handleTextChange}
+            className={inputClass}
+            style={{ fontSize: 14 }}
+            dir="ltr"
+          />
+        )
+      }
+    />
+  );
+};
 
 export default EmployeeInputFieldRow;

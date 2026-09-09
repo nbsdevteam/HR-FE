@@ -8,6 +8,7 @@ interface PositiveNumberInputProps {
   placeholder?: string;
   className: string;
   dir?: string;
+  style?: React.CSSProperties;
   /** Allow a single decimal point (e.g. half-hour steps). Defaults to integers only. */
   allowDecimal?: boolean;
   /** Caps digits after the decimal point. Only meaningful when `allowDecimal` is set. */
@@ -43,6 +44,7 @@ const PositiveNumberInput = ({
   placeholder,
   className,
   dir = "ltr",
+  style,
   allowDecimal = false,
   decimalPlaces,
   min = 0,
@@ -89,6 +91,7 @@ const PositiveNumberInput = ({
       placeholder={placeholder}
       className={className}
       dir={dir}
+      style={style}
       step={step}
       min={min}
       max={max}

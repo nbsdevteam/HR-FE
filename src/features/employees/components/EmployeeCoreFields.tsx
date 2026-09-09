@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { DatePicker } from "@/shared/components";
+import { DatePicker, PositiveNumberInput } from "@/shared/components";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { EmployeeAddForm, EmployeeOption } from "../types";
 import type { EmployeeFieldErrors } from "../utils/employeeFieldErrors";
-import { labelCls } from "../styles";
+import { inputCls, labelCls } from "../styles";
 import EmployeeManagerField from "./EmployeeManagerField";
 import EmployeeTypeAheadField from "./EmployeeTypeAheadField";
 import LabeledInput from "./LabeledInput";
@@ -76,8 +76,7 @@ const EmployeeCoreFields = ({
   );
 
   const handleSalaryChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void =>
-      onFormChange({ salary: e.target.value }),
+    (value: string): void => onFormChange({ salary: value }),
     [onFormChange],
   );
 
@@ -146,14 +145,16 @@ const EmployeeCoreFields = ({
         managerOptions={managerOptions}
         onChange={handleManagerChange}
       />
-      <LabeledInput
-        label={arabicSource("employees.salary_iqd")}
-        type="number"
-        value={addForm.salary}
-        onChange={handleSalaryChange}
-        placeholder="0"
-        dir="ltr"
-      />
+      <div>
+        <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("employees.salary_iqd")}</label>
+        <PositiveNumberInput
+          value={addForm.salary}
+          onChange={handleSalaryChange}
+          placeholder="0"
+          className={inputCls}
+          dir="ltr"
+        />
+      </div>
       <div className="w-full col-span-2">
         <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("common.birth_date")}</label>
         <DatePicker
