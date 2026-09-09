@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { Select } from "@/shared/components";
+import { PositiveNumberInput, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { translateCataloguedValue } from "@/i18n/legacy";
 import { useAppLanguage } from "@/i18n/useLocalizedName";
@@ -84,8 +84,8 @@ const ConfigRow = ({
     onEdit(config.id, value);
   }, [config.id, onEdit]);
 
-  const handleNumberChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    onEdit(config.id, e.target.value ? parseFloat(e.target.value) : 0);
+  const handleNumberChange = useCallback((value: string): void => {
+    onEdit(config.id, value ? parseFloat(value) : 0);
   }, [config.id, onEdit]);
 
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -123,11 +123,11 @@ const ConfigRow = ({
           </div>
         ) : config.value_type === "number" ? (
           <div className="flex items-center gap-2">
-            <input
-              type="number"
+            <PositiveNumberInput
               value={toInputValue(currentValue)}
               onChange={handleNumberChange}
               onBlur={handleSaveCurrentValue}
+              allowDecimal
               className={`w-24 ${FIELD_CLASS}`}
             />
             {hasChanged && <ConfigSaveButton onSave={handleSaveCurrentValue} />}

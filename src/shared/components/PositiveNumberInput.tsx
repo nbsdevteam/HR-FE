@@ -18,6 +18,7 @@ interface PositiveNumberInputProps {
   step?: string;
   autoFocus?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const buildPattern = (allowDecimal: boolean, decimalPlaces?: number): RegExp => {
@@ -54,6 +55,7 @@ const PositiveNumberInput = ({
   step,
   autoFocus,
   onKeyDown,
+  onBlur,
 }: PositiveNumberInputProps) => {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -65,15 +67,14 @@ const PositiveNumberInput = ({
 
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>): void => {
-      if (e.target.value === "") return;
-      const numeric = Number(e.target.value);
-      if (min !== undefined && numeric < min) {
-        onChange(String(min));
-        return;
+      if (e.target.value !== "") {
+        const numeric = Number(e.target.value);
+        if (min !== undefined && numeric < min) onChange(String(min));
+        else if (max !== undefined && numeric > max) onChange(String(max));
       }
-      if (max !== undefined && numeric > max) onChange(String(max));
+      onBlur?.(e);
     },
-    [onChange, min, max]
+    [onChange, min, max, onBlur]
   );
 
   const handlePaste = useCallback(
