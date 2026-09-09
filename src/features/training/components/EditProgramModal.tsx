@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { Button, InputField, ModalHeader, ModalOverlay, Select } from "@/shared/components";
+import { Button, InputField, ModalHeader, ModalOverlay, PositiveNumberInput, Select } from "@/shared/components";
 import { fieldCls } from "../styles";
 import type { DbTrainingProgram } from "@/shared/hooks";
 
@@ -31,9 +32,10 @@ const EditProgramModal = ({
     onFieldChange({ status: value });
   };
 
-  const handleCompletionRateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange({ completion_rate: parseInt(e.target.value) || 0 });
-  };
+  const handleCompletionRateChange = useCallback(
+    (value: string): void => onFieldChange({ completion_rate: parseInt(value) || 0 }),
+    [onFieldChange],
+  );
 
   return (
     <ModalOverlay
@@ -74,12 +76,11 @@ const EditProgramModal = ({
             <label className="block text-sm text-foreground mb-2">
               {arabicSource("training.completion_rate")}
             </label>
-            <input
-              type="number"
+            <PositiveNumberInput
               value={program.completion_rate}
               onChange={handleCompletionRateChange}
-              min="0"
-              max="100"
+              min={0}
+              max={100}
               className={fieldCls}
             />
           </div>

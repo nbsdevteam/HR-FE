@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import { Save } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { Button, InputField, ModalHeader, ModalOverlay, Select } from "@/shared/components";
+import { Button, InputField, ModalHeader, ModalOverlay, PositiveNumberInput, Select } from "@/shared/components";
 import { fieldCls, textareaCls } from "../styles";
 import type { CreateProgramForm } from "../types";
 
@@ -55,9 +56,10 @@ const CreateProgramModal = ({
     onFieldChange({ status: value });
   };
 
-  const handleMaxParticipantsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange({ max_participants: e.target.value });
-  };
+  const handleMaxParticipantsChange = useCallback(
+    (value: string): void => onFieldChange({ max_participants: value }),
+    [onFieldChange],
+  );
 
   const handleObjectivesChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     onFieldChange({ objectives: e.target.value });
@@ -149,8 +151,7 @@ const CreateProgramModal = ({
           <label className="block text-sm text-foreground mb-2">
             {arabicSource("training.maximum_participants")}
           </label>
-          <input
-            type="number"
+          <PositiveNumberInput
             value={form.max_participants}
             onChange={handleMaxParticipantsChange}
             className={fieldCls}

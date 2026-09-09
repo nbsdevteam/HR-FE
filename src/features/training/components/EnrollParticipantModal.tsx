@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Save } from "lucide-react";
 import {
   getEmployeeDescription,
@@ -6,7 +6,7 @@ import {
   getEmployeeSearchText,
 } from "@/shared/utils/employeeTypeAhead";
 import { arabicSource } from "@/i18n/source";
-import { ModalFooterActions, ModalHeader, ModalOverlay, Select, TypeAhead } from "@/shared/components";
+import { ModalFooterActions, ModalHeader, ModalOverlay, PositiveNumberInput, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
 import { fieldCls, TRAINING_FOOTER_CANCEL_CLASS, TRAINING_FOOTER_WRAPPER_CLASS } from "../styles";
 import type { EnrollParticipantForm } from "../types";
@@ -46,9 +46,10 @@ const EnrollParticipantModal = ({
     onFieldChange({ completion_status: value });
   };
 
-  const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange({ score: e.target.value });
-  };
+  const handleScoreChange = useCallback(
+    (value: string): void => onFieldChange({ score: value }),
+    [onFieldChange],
+  );
 
   return (
     <ModalOverlay
@@ -99,12 +100,11 @@ const EnrollParticipantModal = ({
             <label className="block text-sm text-foreground mb-2">
               {arabicSource("training.grade")}
             </label>
-            <input
-              type="number"
+            <PositiveNumberInput
               value={form.score}
               onChange={handleScoreChange}
-              min="0"
-              max="100"
+              min={0}
+              max={100}
               className={fieldCls}
               placeholder="85"
             />
