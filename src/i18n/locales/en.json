@@ -357,6 +357,7 @@
   "auditcenter.end_of_service": "End of service",
   "auditcenter.alarm": "Alarm",
   "common.create": "Create",
+  "common.actions": "Actions",
   "auditcenter.search_notifications": "Search notifications...",
   "auditcenter.search_records": "Search records...",
   "common.update": "Update",

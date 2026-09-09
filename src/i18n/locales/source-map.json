@@ -355,6 +355,7 @@
   "انتهاء خدمة": "auditcenter.end_of_service",
   "إنذار": "auditcenter.alarm",
   "إنشاء": "common.create",
+  "الإجراءات": "common.actions",
   "بحث في الإشعارات...": "auditcenter.search_notifications",
   "بحث في السجلات...": "auditcenter.search_records",
   "تحديث": "common.update",

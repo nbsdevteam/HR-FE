@@ -83,7 +83,12 @@ const CommandPalette = () => {
             commands={registry.pages}
             onSelect={handleSelect}
           />
-          <CommandPaletteGroup groupId="actions" commands={registry.actions} onSelect={handleSelect} />
+          <CommandPaletteGroup
+            groupId="actions"
+            heading={arabicSource("common.actions")}
+            commands={registry.actions}
+            onSelect={handleSelect}
+          />
         </Command.List>
       )}
     </Command.Dialog>
