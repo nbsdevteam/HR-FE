@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
+import { useCallback } from "react";
 import { Briefcase, Save } from "lucide-react";
-import { Modal, ModalFooterActions, TypeAhead } from "@/shared/components";
+import { Modal, ModalFooterActions, PositiveNumberInput, TypeAhead } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { empDisplayName } from "@/shared/hooks";
 import type { DbDepartment, DbEmployee } from "@/shared/hooks";
@@ -60,9 +61,10 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
     setPosForm((p) => ({ ...p, manager_id: value }));
   };
 
-  const handleMaxHeadcountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setPosForm((p) => ({ ...p, max_headcount: e.target.value }));
-  };
+  const handleMaxHeadcountChange = useCallback(
+    (value: string): void => setPosForm((p) => ({ ...p, max_headcount: value })),
+    [setPosForm],
+  );
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setPosForm((p) => ({ ...p, description: e.target.value }));
@@ -135,8 +137,8 @@ const PositionFormModal = ({ editingPosition, posForm, setPosForm, dbDepartments
       </div>
       <div>
         <FieldLabel>{arabicSource("hierarchy.maximum_number")}</FieldLabel>
-        <input type="number" value={posForm.max_headcount} onChange={handleMaxHeadcountChange}
-          min="1" max="100"
+        <PositiveNumberInput value={posForm.max_headcount} onChange={handleMaxHeadcountChange}
+          min={1} max={100}
           className="w-full bg-background border border-border/60 rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:border-primary/50"
           style={{ fontSize: 13 }} dir="ltr" />
       </div>
