@@ -1,6 +1,6 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { Trophy } from "lucide-react";
-import { Select } from "@/shared/components";
+import { PositiveNumberInput, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { ALL_STAGES } from "../constants/recruitment";
 import { labelCls, selectCls, inputCls } from "../styles";
@@ -23,9 +23,10 @@ const ApplicantFormSalarySection = ({
   onFieldChange,
   onRatingChange,
 }: ApplicantFormSalarySectionProps) => {
-  const handleExpectedSalaryChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("expected_salary", e.target.value);
-  };
+  const handleExpectedSalaryChange = useCallback(
+    (value: string): void => onFieldChange("expected_salary", value),
+    [onFieldChange],
+  );
 
   const handleSalaryCurrencyChange = (value: string): void => {
     onFieldChange("salary_currency", value);
@@ -49,8 +50,7 @@ const ApplicantFormSalarySection = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("recruitment.expected_salary")}
           </label>
-          <input
-            type="number"
+          <PositiveNumberInput
             value={expectedSalary}
             onChange={handleExpectedSalaryChange}
             placeholder="0"

@@ -1,5 +1,6 @@
+import { useCallback } from "react";
 import { Sparkles } from "lucide-react";
-import { Select } from "@/shared/components";
+import { PositiveNumberInput, Select } from "@/shared/components";
 import { type JobSkillRequirement } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { EDUCATION_LEVELS } from "../constants/recruitment";
@@ -36,16 +37,14 @@ const JobScreeningSpecFields = ({
   onEducationLevelChange,
   onIrAutoShortlistChange,
 }: JobScreeningSpecFieldsProps) => {
-  const handleMinExperienceYearsChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onMinExperienceYearsChange(Number(e.target.value) || 0);
-  };
-  const handleMaxExperienceYearsChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    onMaxExperienceYearsChange(Number(e.target.value) || 0);
-  };
+  const handleMinExperienceYearsChange = useCallback(
+    (value: string): void => onMinExperienceYearsChange(Number(value) || 0),
+    [onMinExperienceYearsChange],
+  );
+  const handleMaxExperienceYearsChange = useCallback(
+    (value: string): void => onMaxExperienceYearsChange(Number(value) || 0),
+    [onMaxExperienceYearsChange],
+  );
   const handleEducationLevelChange = (value: string): void => {
     onEducationLevelChange(value);
   };
@@ -80,8 +79,7 @@ const JobScreeningSpecFields = ({
         <label className={labelCls} style={{ fontSize: 12 }}>
           {arabicSource("recruitment.min_experience")}
         </label>
-        <input
-          type="number"
+        <PositiveNumberInput
           min={0}
           max={50}
           value={minExperienceYears}
@@ -94,8 +92,7 @@ const JobScreeningSpecFields = ({
         <label className={labelCls} style={{ fontSize: 12 }}>
           {arabicSource("recruitment.max_experience")}
         </label>
-        <input
-          type="number"
+        <PositiveNumberInput
           min={0}
           max={50}
           value={maxExperienceYears}

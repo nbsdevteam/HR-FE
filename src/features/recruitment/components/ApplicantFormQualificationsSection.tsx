@@ -1,6 +1,6 @@
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { GraduationCap } from "lucide-react";
-import { Select } from "@/shared/components";
+import { PositiveNumberInput, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { sourceOptions } from "../constants/recruitment";
 import { inputCls, labelCls, selectCls } from "../styles";
@@ -27,9 +27,10 @@ const ApplicantFormQualificationsSection = ({
     onFieldChange("education", value);
   };
 
-  const handleExperienceYearsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange("experience_years", Number(e.target.value));
-  };
+  const handleExperienceYearsChange = useCallback(
+    (value: string): void => onFieldChange("experience_years", Number(value)),
+    [onFieldChange],
+  );
 
   const handleCurrentCompanyChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange("current_company", e.target.value);
@@ -80,8 +81,7 @@ const ApplicantFormQualificationsSection = ({
           <label className={labelCls} style={{ fontSize: 13 }}>
             {arabicSource("common.years_of_experience")}
           </label>
-          <input
-            type="number"
+          <PositiveNumberInput
             min={0}
             max={50}
             value={experienceYears}

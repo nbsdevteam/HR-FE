@@ -8,6 +8,7 @@ import {
   ModalFooterActions,
   ModalHeader,
   ModalOverlay,
+  PositiveNumberInput,
 } from "@/shared/components";
 import { type DbJobOpening, type ApplicationLink, useOdooMutation } from "@/shared/hooks";
 import { localizedConfirm } from "@/i18n/native";
@@ -97,8 +98,8 @@ const ApplyLinkModal = ({
   }, []);
 
   const handleMaxSubmissionsChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      setPendingMaxSubmissions(Number(e.target.value) || 0);
+    (value: string): void => {
+      setPendingMaxSubmissions(Number(value) || 0);
     },
     [],
   );
@@ -221,8 +222,7 @@ const ApplyLinkModal = ({
               <label className={labelCls} style={{ fontSize: 12 }}>
                 {arabicSource("recruitment.link_max_submissions")}
               </label>
-              <input
-                type="number"
+              <PositiveNumberInput
                 min={0}
                 value={pendingMaxSubmissions}
                 dir="ltr"
