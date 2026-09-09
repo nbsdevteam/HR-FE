@@ -1,4 +1,5 @@
-import { DatePicker } from "@/shared/components";
+import { useCallback } from "react";
+import { DatePicker, PositiveNumberInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { usePublicLeaveRequestPage } from "../hooks/usePublicLeaveRequestPage";
 
@@ -36,13 +37,15 @@ const PublicLeaveDurationFields = ({ page }: PublicLeaveDurationFieldsProps) => 
     form.updateForm({ duration_unit: "hour" });
   };
 
-  const handleHoursChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    form.updateForm({ hours: event.target.value });
-  };
+  const handleHoursChange = useCallback(
+    (value: string): void => form.updateForm({ hours: value }),
+    [form],
+  );
 
-  const handleHourFromChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    form.updateForm({ hour_from: event.target.value });
-  };
+  const handleHourFromChange = useCallback(
+    (value: string): void => form.updateForm({ hour_from: value }),
+    [form],
+  );
 
   return (
     <div className="space-y-4">
@@ -94,12 +97,13 @@ const PublicLeaveDurationFields = ({ page }: PublicLeaveDurationFieldsProps) => 
             <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
               {arabicSource("public_leave.hours_label")} ({arabicSource("public_leave.hours_max_hint")} {maxHours})
             </label>
-            <input
-              type="number"
+            <PositiveNumberInput
               dir="ltr"
               min={0}
               max={maxHours || undefined}
               step="0.5"
+              allowDecimal
+              decimalPlaces={1}
               value={form.form.hours}
               onChange={handleHoursChange}
               className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"
@@ -110,12 +114,13 @@ const PublicLeaveDurationFields = ({ page }: PublicLeaveDurationFieldsProps) => 
             <label className="text-muted-foreground block mb-1.5" style={{ fontSize: 12 }}>
               {arabicSource("public_leave.hour_from_label")}
             </label>
-            <input
-              type="number"
+            <PositiveNumberInput
               dir="ltr"
               min={0}
               max={24}
               step="0.5"
+              allowDecimal
+              decimalPlaces={1}
               value={form.form.hour_from}
               onChange={handleHourFromChange}
               className="w-full px-4 py-3 rounded-lg border border-border bg-input-background text-foreground focus:ring-2 focus:ring-ring outline-none"

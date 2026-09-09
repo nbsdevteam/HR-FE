@@ -1,3 +1,4 @@
+import { PositiveNumberInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 
@@ -5,7 +6,7 @@ type LeaveRequestHoursRowProps = {
   hours: number;
   hourFrom: string;
   maxHours: number;
-  onHoursChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onHoursChange: (value: string) => void;
   onHourFromChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -23,13 +24,14 @@ const LeaveRequestHoursRow = ({
         {arabicSource("leave.number_of_hours")}
         {/* * ({arabicSource("leave.maximum_hours_per_request")}: {maxHours}) */}
       </label>
-      <input
-        type="number"
+      <PositiveNumberInput
         value={hours}
         onChange={onHoursChange}
         min={0.5}
         max={maxHours}
-        step={0.5}
+        step="0.5"
+        allowDecimal
+        decimalPlaces={1}
         className={inputCls}
         dir="ltr"
       />

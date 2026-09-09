@@ -39,8 +39,8 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
   /** `hourFrom` is held as an `<input type="time">` string; the API wants a 24h float. */
   const hourFromFloat = useMemo(() => timeToFloat(hourFrom), [hourFrom]);
 
-  const handleHoursChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setHours(Number(e.target.value) || 0);
+  const handleHoursChange = useCallback((value: string): void => {
+    setHours(Number(value) || 0);
   }, []);
 
   const handleHourFromChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
