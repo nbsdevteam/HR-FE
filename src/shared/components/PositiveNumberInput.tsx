@@ -16,6 +16,8 @@ interface PositiveNumberInputProps {
   min?: number;
   max?: number;
   step?: string;
+  autoFocus?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const buildPattern = (allowDecimal: boolean, decimalPlaces?: number): RegExp => {
@@ -50,6 +52,8 @@ const PositiveNumberInput = ({
   min = 0,
   max,
   step,
+  autoFocus,
+  onKeyDown,
 }: PositiveNumberInputProps) => {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -88,6 +92,8 @@ const PositiveNumberInput = ({
       onChange={handleChange}
       onBlur={handleBlur}
       onPaste={handlePaste}
+      onKeyDown={onKeyDown}
+      autoFocus={autoFocus}
       placeholder={placeholder}
       className={className}
       dir={dir}

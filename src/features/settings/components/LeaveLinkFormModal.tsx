@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
-import { DatePicker, Modal, ModalFooterActions, MultiSelect, Select } from "@/shared/components";
+import { DatePicker, Modal, ModalFooterActions, MultiSelect, PositiveNumberInput, Select } from "@/shared/components";
 import type { DbDepartment, DbLeaveType } from "@/shared/hooks";
 import type { LeaveLinkFormState } from "../types";
 import { inputCls, labelCls } from "../styles";
@@ -69,9 +69,10 @@ const LeaveLinkFormModal = ({
     onFieldChange({ expires_on: value });
   };
 
-  const handleMaxSubmissionsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    onFieldChange({ max_submissions: Number(event.target.value) || 0 });
-  };
+  const handleMaxSubmissionsChange = useCallback(
+    (value: string): void => onFieldChange({ max_submissions: Number(value) || 0 }),
+    [onFieldChange],
+  );
 
   const handleAllowAttachmentsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     onFieldChange({ allow_attachments: event.target.checked });
@@ -123,8 +124,7 @@ const LeaveLinkFormModal = ({
         </div>
         <div>
           <label className={labelCls} style={{ fontSize: 12 }}>{arabicSource("settings.leave_links_max_submissions_label")}</label>
-          <input
-            type="number"
+          <PositiveNumberInput
             min={0}
             dir="ltr"
             value={form.max_submissions}

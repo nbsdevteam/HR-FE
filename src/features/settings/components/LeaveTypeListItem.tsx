@@ -2,6 +2,7 @@ import { useState, memo, useCallback } from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
+import { PositiveNumberInput } from "@/shared/components";
 import type { DbLeaveType, LeaveBalanceResetPolicy } from "@/shared/hooks";
 import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
 import LeaveTypeResetPolicyControl from "./LeaveTypeResetPolicyControl";
@@ -44,8 +45,8 @@ const LeaveTypeListItem = ({
     setEditingDays(false);
   }, []);
 
-  const handleDaysValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    setDaysValue(e.target.value);
+  const handleDaysValueChange = useCallback((value: string): void => {
+    setDaysValue(value);
   }, []);
 
   const handleConfirmEditDays = useCallback((): void => {
@@ -83,9 +84,8 @@ const LeaveTypeListItem = ({
           <div className="flex flex-wrap items-center gap-2 mt-1">
             {editingDays ? (
               <span className="flex items-center gap-1">
-                <input
+                <PositiveNumberInput
                   autoFocus
-                  type="number"
                   min={0}
                   value={daysValue}
                   onChange={handleDaysValueChange}
