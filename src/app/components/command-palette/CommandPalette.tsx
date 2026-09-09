@@ -7,6 +7,7 @@ import { usePermissions } from "@/shared/auth/permissions";
 import { LoadingState } from "@/shared/components";
 import { useCommandPalette } from "./CommandPaletteContext";
 import { useCommandIntent } from "./CommandIntentContext";
+import { commandFilter } from "./commandFilter";
 import { useCommandRegistry } from "./commands";
 import type { CommandDefinition } from "./commands/types";
 import CommandPaletteGroup from "./CommandPaletteGroup";
@@ -48,6 +49,7 @@ const CommandPalette = () => {
       open={isOpen}
       onOpenChange={handleOpenChange}
       label="Command palette"
+      filter={commandFilter}
       loop
       overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200]"
       contentClassName="fixed inset-x-4 top-[15vh] z-[210] mx-auto w-auto max-w-xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
