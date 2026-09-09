@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import DatePicker from "./ui/DatePicker";
+import PositiveNumberInput from "./PositiveNumberInput";
 
 interface InputFieldProps {
   /** When set, wraps the input in a labeled block; omit for a bare input. */
@@ -14,6 +15,16 @@ interface InputFieldProps {
   min?: number;
   max?: number;
 }
+
+/** A fractional `step` (e.g. "0.5", "any") signals the field needs decimal input. */
+const isDecimalStep = (step?: string): boolean => step !== undefined && (step === "any" || step.includes("."));
+
+/** Digits after the point in `step` (e.g. "0.5" -> 1); undefined caps nothing (`step="any"`). */
+const decimalPlacesFromStep = (step?: string): number | undefined => {
+  if (!step || step === "any") return undefined;
+  const dotIndex = step.indexOf(".");
+  return dotIndex === -1 ? 0 : step.length - dotIndex - 1;
+};
 
 /**
  * Shared labeled/bare text-or-number input field, factored out of the
@@ -47,6 +58,19 @@ const InputField = ({
       // would double it up as a border around a border. Only width belongs on
       // its wrapper.
       <DatePicker value={String(value)} onChange={onChange} placeholder={placeholder} className="w-full" />
+    ) : type === "number" ? (
+      <PositiveNumberInput
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={className}
+        dir={dir}
+        step={step}
+        min={min}
+        max={max}
+        allowDecimal={isDecimalStep(step)}
+        decimalPlaces={decimalPlacesFromStep(step)}
+      />
     ) : (
       <input
         type={type}
