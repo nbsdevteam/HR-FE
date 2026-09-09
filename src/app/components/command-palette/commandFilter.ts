@@ -1,6 +1,15 @@
-/** Trims, collapses whitespace, and case-folds so " Employees " === "employees". */
+/**
+ * Trims, collapses whitespace, case-folds, and folds Arabic letter variants
+ * that people type interchangeably — أ/إ/آ all fold to ا, and ة folds to ه —
+ * so "اجهزة البصمة" and "أجهزة البصمه" match the same item.
+ */
 export const normalizeSearchText = (value: string): string =>
-  value.replace(/\s+/g, " ").trim().toLowerCase();
+  value
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه");
 
 /**
  * Replaces cmdk's default fuzzy `command-score` filter with plain substring
