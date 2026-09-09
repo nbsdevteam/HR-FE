@@ -1,17 +1,31 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useParams } from "react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, type Query } from "@tanstack/react-query";
 import {
+  fetchApplyJob,
   fetchApplyLinkInfo,
   PublicApiError,
   submitApplication,
   type ApplyLinkInfo,
   type ApplySubmitResult,
+  type PublicJob,
 } from "@/features/recruitment/api/publicApi";
 import { arabicSource } from "@/i18n/source";
+import { useAppLanguage } from "@/i18n/useLocalizedName";
 import { acceptedResumeTypes, publicApplyErrorKeys } from "../constants/publicApply";
 import type { PublicApplyForm } from "../types";
 import { fileToBase64 } from "../utils/fileToBase64";
+
+/** Stop polling a "pending" translation after this many completed fetches (initial + retries). */
+const MAX_TRANSLATION_POLL_ATTEMPTS = 3;
+const TRANSLATION_POLL_INTERVAL_MS = 5000;
+
+function pendingTranslationRefetchInterval<TData extends { job?: PublicJob | null }>(
+  query: Query<TData, Error>,
+): number | false {
+  if (query.state.data?.job?.translation_status !== "pending") return false;
+  return query.state.dataUpdateCount < MAX_TRANSLATION_POLL_ATTEMPTS ? TRANSLATION_POLL_INTERVAL_MS : false;
+}
 
 const initialForm: PublicApplyForm = {
   job_opening_id: "",
@@ -31,12 +45,16 @@ export const usePublicApplyPage = () => {
   const [form, setForm] = useState<PublicApplyForm>(initialForm);
 
   const { token = "" } = useParams();
+  const language = useAppLanguage();
 
   // No retry: a bad/expired link will never succeed on a second try.
+  // `language` is part of the key so switching it re-fetches instead of
+  // serving the previous language's cached payload.
   const infoQuery = useQuery<ApplyLinkInfo, Error>({
-    queryKey: ["publicApplyLinkInfo", token],
-    queryFn: () => fetchApplyLinkInfo(token),
+    queryKey: ["publicApplyLinkInfo", token, language],
+    queryFn: () => fetchApplyLinkInfo(token, language),
     retry: false,
+    refetchInterval: pendingTranslationRefetchInterval,
   });
   const info = infoQuery.data ?? null;
 
@@ -60,15 +78,30 @@ export const usePublicApplyPage = () => {
     retry: false,
   });
 
+  // `all_open` links carry no per-position description in `open_positions`,
+  // so the picked position's Job Description is fetched separately.
+  const pickedJobId = form.job_opening_id ? Number(form.job_opening_id) : null;
+  const jobQuery = useQuery<{ job: PublicJob }, Error>({
+    queryKey: ["publicApplyJob", token, pickedJobId, language],
+    queryFn: () => fetchApplyJob(token, pickedJobId!, language),
+    enabled: info?.link_scope === "all_open" && Boolean(pickedJobId),
+    retry: false,
+    refetchInterval: pendingTranslationRefetchInterval,
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const maxBytes = useMemo(() => (info?.max_resume_mb || 10) * 1024 * 1024, [info?.max_resume_mb]);
 
+  // While `jobQuery` is in flight, fall back to the light `open_positions`
+  // row so the title/department stay visible instead of blanking the card.
   const selectedJob = useMemo(() => {
     if (!info) return null;
     if (info.link_scope === "job") return info.job;
-    return info.open_positions.find((job) => String(job.id) === form.job_opening_id) || null;
-  }, [form.job_opening_id, info]);
+    return jobQuery.data?.job
+      ?? info.open_positions.find((job) => String(job.id) === form.job_opening_id)
+      ?? null;
+  }, [form.job_opening_id, info, jobQuery.data]);
 
   const canSubmit = useMemo(() => (
     Boolean(form.name.trim() && form.email.trim() && form.phone.trim() && file && form.consent)

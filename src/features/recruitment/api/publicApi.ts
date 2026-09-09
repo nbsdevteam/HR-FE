@@ -14,6 +14,9 @@ const ODOO_DB = import.meta.env.VITE_ODOO_DB || "";
 // failures in local development. Production still uses the absolute host.
 const BASE_URL = import.meta.env.DEV ? "" : API_BASE_CONFIGURED;
 
+export type PublicJobTranslationStatus =
+  | "done" | "source" | "pending" | "unsupported" | "unavailable";
+
 export interface PublicJob {
   id: number;
   title: string;
@@ -24,12 +27,15 @@ export interface PublicJob {
   requirements?: string[];
   salary_range?: string;
   deadline?: string | null;
+  translation_status?: PublicJobTranslationStatus;
+  translation_lang?: string;
 }
 
 export interface ApplyLinkInfo {
   link_scope: "job" | "all_open";
   unusable_reason: string;
   company_name: string;
+  lang?: string;
   job: PublicJob | null;
   open_positions: PublicJob[];
   max_resume_mb: number;
@@ -75,8 +81,20 @@ async function publicCall<T>(path: string, params: Record<string, unknown>): Pro
   return (result?.data ?? result) as T;
 }
 
-export const fetchApplyLinkInfo = (token: string): Promise<ApplyLinkInfo> => {
-  return publicCall<ApplyLinkInfo>("/api/hr/public/apply/info", { token });
+export const fetchApplyLinkInfo = (token: string, lang: string): Promise<ApplyLinkInfo> => {
+  return publicCall<ApplyLinkInfo>("/api/hr/public/apply/info", { token, lang });
+}
+
+export const fetchApplyJob = (
+  token: string,
+  jobOpeningId: number,
+  lang: string,
+): Promise<{ job: PublicJob }> => {
+  return publicCall<{ job: PublicJob }>("/api/hr/public/apply/job", {
+    token,
+    job_opening_id: jobOpeningId,
+    lang,
+  });
 }
 
 export const submitApplication = (payload: {

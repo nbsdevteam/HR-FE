@@ -2162,6 +2162,7 @@
   "apply.error_rate_limited": "Too many attempts. Please try again later.",
   "apply.apply_another": "Submit another application",
   "apply.required_field": "This field is required",
+  "apply.showing_original": "Showing the original text — translation in progress",
   "recruitment.ai_tab": "AI screening",
   "recruitment.ir_score": "Initial rating",
   "recruitment.ir_pending": "Awaiting screening",

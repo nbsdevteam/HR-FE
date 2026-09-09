@@ -2162,6 +2162,7 @@
   "apply.error_rate_limited": "عدد المحاولات كبير. حاول لاحقاً.",
   "apply.apply_another": "تقديم طلب آخر",
   "apply.required_field": "هذا الحقل مطلوب",
+  "apply.showing_original": "عرض النص الأصلي — الترجمة قيد الإعداد",
   "recruitment.ai_tab": "الفرز الذكي",
   "recruitment.ir_score": "التقييم الأولي",
   "recruitment.ir_pending": "بانتظار الفرز",

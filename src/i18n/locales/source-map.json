@@ -2063,6 +2063,7 @@
   "عدد المحاولات كبير. حاول لاحقاً.": "apply.error_rate_limited",
   "تقديم طلب آخر": "apply.apply_another",
   "هذا الحقل مطلوب": "apply.required_field",
+  "عرض النص الأصلي — الترجمة قيد الإعداد": "apply.showing_original",
   "الفرز الذكي": "recruitment.ai_tab",
   "بانتظار الفرز": "recruitment.ir_pending",
   "جاري الفرز": "recruitment.ir_processing",

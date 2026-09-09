@@ -1,6 +1,7 @@
 import { Briefcase, CalendarClock, MapPin } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { ApplyLinkInfo } from "@/features/recruitment/api/publicApi";
+import PublicApplyRequirementChip from "./PublicApplyRequirementChip";
 
 type TPublicApplyJobSummaryProps = {
   job: NonNullable<ApplyLinkInfo["job"]>;
@@ -39,6 +40,7 @@ const PublicApplyJobSummary = ({ job }: TPublicApplyJobSummaryProps) => (
       <p
         className="text-muted-foreground whitespace-pre-line"
         style={{ fontSize: 12.5 }}
+        data-i18n-ignore
       >
         {job.description}
       </p>
@@ -48,18 +50,17 @@ const PublicApplyJobSummary = ({ job }: TPublicApplyJobSummaryProps) => (
         <div className="text-muted-foreground mb-1.5" style={{ fontSize: 11 }}>
           {arabicSource("apply.requirements_label")}
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5" data-i18n-ignore>
           {job.requirements?.map((requirement, index) => (
-            <span
-              key={`${requirement}-${index}`}
-              className="px-2 py-1 rounded-md bg-muted/20 border border-border/40 text-foreground"
-              style={{ fontSize: 11 }}
-            >
-              {requirement}
-            </span>
+            <PublicApplyRequirementChip key={`${requirement}-${index}`} requirement={requirement} />
           ))}
         </div>
       </div>
+    )}
+    {job.translation_status === "pending" && (
+      <p className="text-muted-foreground" style={{ fontSize: 11 }}>
+        {arabicSource("apply.showing_original")}
+      </p>
     )}
   </div>
 );

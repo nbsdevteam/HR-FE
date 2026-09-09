@@ -2162,6 +2162,7 @@
   "apply.error_rate_limited": "هەوڵی زۆر. تکایە دواتر هەوڵ بدەرەوە.",
   "apply.apply_another": "ناردنی داواکارییەکی تر",
   "apply.required_field": "ئەم خانەیە پێویستە",
+  "apply.showing_original": "پیشاندانی دەقی ڕەسەن — وەرگێڕان لە بەردەوامدایە",
   "recruitment.ai_tab": "پاڵاوتنی زیرەک",
   "recruitment.ir_score": "هەڵسەنگاندنی سەرەتایی",
   "recruitment.ir_pending": "چاوەڕێی پاڵاوتن",
