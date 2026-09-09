@@ -1,4 +1,6 @@
 import type { ComponentType } from "react";
+import { useCallback } from "react";
+import { PositiveNumberInput } from "@/shared/components";
 import { formatCurrency } from "@/shared/utils/currency";
 
 type PayrollLedgerRowProps = {
@@ -15,9 +17,10 @@ type PayrollLedgerRowProps = {
 };
 
 const PayrollLedgerRow = ({ label, value, onChange, icon: Icon, isCredit, color, otherVal, otherCurrency, editing, currency }: PayrollLedgerRowProps) => {
-  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    onChange(Number(e.target.value) || 0);
-  };
+  const handleValueChange = useCallback(
+    (value: string): void => onChange(Number(value) || 0),
+    [onChange],
+  );
 
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-border/15">
@@ -33,8 +36,7 @@ const PayrollLedgerRow = ({ label, value, onChange, icon: Icon, isCredit, color,
         )}
         {editing ? (
           <div className="flex items-center gap-2">
-            <input
-              type="number"
+            <PositiveNumberInput
               value={value || ""}
               onChange={handleValueChange}
               className="w-32 h-8 px-3 rounded-lg border border-border bg-input-background text-foreground text-end outline-none focus:ring-2 focus:ring-ring"
