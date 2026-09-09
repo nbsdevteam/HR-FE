@@ -359,6 +359,56 @@
   }
 }
 
+/*
+ * Command palette pop in/out. cmdk's Command.Dialog renders on Radix Dialog,
+ * which sets data-state="open"/"closed" on its overlay and content elements
+ * (keeping the "closed" element mounted until this animation finishes, so
+ * this is what actually produces the close animation, not just the open
+ * one). Scoped to cmdk's own [cmdk-overlay]/[cmdk-dialog] attributes so it
+ * doesn't affect any other Radix Dialog in the app.
+ */
+@keyframes command-palette-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes command-palette-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes command-palette-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes command-palette-pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+[cmdk-overlay][data-state="open"] {
+  animation: command-palette-overlay-in 150ms ease-out;
+}
+
+[cmdk-overlay][data-state="closed"] {
+  animation: command-palette-overlay-out 120ms ease-in;
+}
+
+[cmdk-dialog][data-state="open"] {
+  animation: command-palette-pop-in 150ms ease-out;
+}
+
+[cmdk-dialog][data-state="closed"] {
+  animation: command-palette-pop-out 120ms ease-in;
+}
+
 /* 1. Force the interactive icon to remain visible with a distinct color */
 /* Picker icon (calendar for date, clock for time) */
 input[type="date"]::-webkit-calendar-picker-indicator,
