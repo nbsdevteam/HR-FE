@@ -25,13 +25,11 @@ const SettingsWorkspace = () => {
       {toastMessage && (
         <Toast
           message={toastMessage}
-          shape="banner"
-          position="top-full"
-          toneClassName="bg-toast-success border border-toast-success-border shadow-lg"
+          shape="card"
+          position="top-end"
+          toneClassName="bg-toast-success border-toast-success-border"
           textClassName="text-toast-success-fg font-medium"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          textSize={14}
         />
       )}
 

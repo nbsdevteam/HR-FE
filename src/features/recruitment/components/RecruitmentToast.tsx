@@ -14,17 +14,15 @@ const RecruitmentToast = ({ message, tone }: RecruitmentToastProps) => {
   return (
     <Toast
       message={message}
-      shape="banner"
-      position="top-full"
+      shape="card"
+      position="top-end"
       toneClassName={
         isError
-          ? "bg-toast-error border border-toast-error-border shadow-lg text-center"
-          : "bg-toast-success border border-toast-success-border shadow-lg text-center"
+          ? "bg-toast-error border-toast-error-border"
+          : "bg-toast-success border-toast-success-border"
       }
       textClassName={isError ? "text-toast-error-fg font-medium" : "text-toast-success-fg font-medium"}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+      textSize={14}
     />
   );
 };

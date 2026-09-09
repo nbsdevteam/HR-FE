@@ -130,13 +130,13 @@
   --orb-1: rgba(6, 182, 212, 0.06);
   --orb-2: rgba(6, 182, 212, 0.04);
   --orb-3: rgba(6, 182, 212, 0.03);
-  --toast-success: #dcfce7;
+  --toast-success: #bbf7d0;
   --toast-success-border: #16a34a;
   --toast-success-fg: #14532d;
-  --toast-error: #fee2e2;
+  --toast-error: #fecaca;
   --toast-error-border: #dc2626;
   --toast-error-fg: #7f1d1d;
-  --toast-info: #dbeafe;
+  --toast-info: #bfdbfe;
   --toast-info-border: #2563eb;
   --toast-info-fg: #1e3a8a;
   /* Grade ladder — band + matrix ramp, light values. */

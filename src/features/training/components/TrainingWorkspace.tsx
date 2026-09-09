@@ -130,9 +130,6 @@ const TrainingWorkspace = () => {
             iconBoxClassName={TOAST_TONE_ICON_BG[toast.type]}
             iconClassName={`w-3 h-3 ${TOAST_TONE_TEXT[toast.type]}`}
             textClassName={`${TOAST_TONE_TEXT[toast.type]} text-sm font-medium`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
           />
         ))}
       </AnimatePresence>

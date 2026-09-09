@@ -251,9 +251,6 @@ const WarningsWorkspace = () => {
             position="bottom-end"
             toneClassName="bg-card border-border"
             textClassName="text-foreground text-sm"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
           />
         )}
       </AnimatePresence>
