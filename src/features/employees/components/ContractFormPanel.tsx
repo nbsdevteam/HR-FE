@@ -4,7 +4,7 @@ import {
   getEmployeeId,
   getEmployeeSearchText,
 } from "@/shared/utils/employeeTypeAhead";
-import { DatePicker, Select, TypeAhead } from "@/shared/components";
+import { DatePicker, PositiveNumberInput, Select, TypeAhead } from "@/shared/components";
 import { empDisplayName, type DbContractType, type DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
@@ -76,12 +76,10 @@ const ContractFormPanel = ({
     setFormData((p) => ({ ...p, end_date: value }));
   };
 
-  const handleSalaryAmountChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
+  const handleSalaryAmountChange = (value: string): void => {
     setFormData((p) => ({
       ...p,
-      salary_amount: Number(e.target.value),
+      salary_amount: Number(value),
     }));
   };
 
@@ -146,8 +144,7 @@ const ContractFormPanel = ({
         <div>
           <FormFieldLabel>{arabicSource("common.salary")}</FormFieldLabel>
           <div className="flex gap-2">
-            <input
-              type="number"
+            <PositiveNumberInput
               value={formData.salary_amount || ""}
               onChange={handleSalaryAmountChange}
               className={`${inputCls} flex-1`}
