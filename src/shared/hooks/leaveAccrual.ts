@@ -46,6 +46,12 @@ export interface DbLeaveBalanceItem {
   accrual_periods: number;
   used: number;
   blocked_by_probation: boolean;
+  /** `true` when the employee hasn't yet completed the type's `min_service_months` (backend hand-off 2026-09-10 §5). */
+  blocked_by_min_service: boolean;
+  /** The type's service-length requirement, in months. `0` when there is none. */
+  min_service_months: number;
+  /** ISO date the employee becomes eligible, or `null` when not blocked / no joining date on file. */
+  min_service_eligible_from: string | null;
   can_apply: boolean;
   /** Year-end balance policy of this leave type (backend v1.21.0). */
   balance_reset_policy: LeaveBalanceResetPolicy;

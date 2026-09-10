@@ -88,7 +88,18 @@ const LeaveAccrualCard = ({ item, color = "#d4af37" }: LeaveAccrualCardProps) =>
           {arabicSource("leave.probation_blocked_badge")}
         </p>
       )}
-      {!item.blocked_by_probation && item.remaining <= 0 && (
+      {item.blocked_by_min_service && (
+        <p className="text-amber-400" style={{ fontSize: 11 }}>
+          {arabicSource("leave.error_min_service_block")}{" "}
+          {item.min_service_eligible_from && (
+            <>
+              {arabicSource("leave.min_service_eligible_from")}{" "}
+              <span dir="ltr">{item.min_service_eligible_from}</span>
+            </>
+          )}
+        </p>
+      )}
+      {!item.blocked_by_probation && !item.blocked_by_min_service && item.remaining <= 0 && (
         <p className="text-destructive" style={{ fontSize: 11 }}>
           {arabicSource("leave.no_balance_remaining")}
         </p>

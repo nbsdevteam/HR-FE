@@ -20,23 +20,9 @@ const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCar
     [onFieldChange],
   );
 
-  const handleCarryoverAllowedChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      onFieldChange({ is_carryover_allowed: e.target.checked });
-    },
-    [onFieldChange],
-  );
-
   const handleMaxCarryoverDaysChange = useCallback(
     (value: string): void => {
       onFieldChange({ max_carryover_days: value === "" ? 0 : Number(value) });
-    },
-    [onFieldChange],
-  );
-
-  const handleEncashableChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      onFieldChange({ is_encashable: e.target.checked });
     },
     [onFieldChange],
   );
@@ -66,43 +52,28 @@ const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCar
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-          <input type="checkbox" checked={form.is_carryover_allowed} onChange={handleCarryoverAllowedChange} className="rounded" />
-          {arabicSource("common.relay")}
-        </label>
-        {form.is_carryover_allowed && (
+      <div className="grid grid-cols-2 gap-3 items-start">
+        <InputField
+          type="number"
+          value={form.max_carryover_days || ""}
+          onChange={handleMaxCarryoverDaysChange}
+          placeholder={arabicSource("settings.carryover_days_label")}
+          className={inputCls}
+        />
+        <div>
           <InputField
             type="number"
-            value={form.max_carryover_days || ""}
-            onChange={handleMaxCarryoverDaysChange}
-            placeholder={arabicSource("settings.carryover_days_label")}
+            min={0}
+            max={100}
+            value={form.encashment_percentage || ""}
+            onChange={handleEncashmentPercentageChange}
+            placeholder={arabicSource("settings.encashment_percentage_label")}
             className={inputCls}
           />
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-          <input type="checkbox" checked={form.is_encashable} onChange={handleEncashableChange} className="rounded" />
-          {arabicSource("common.exchangeable")}
-        </label>
-        {form.is_encashable && (
-          <div>
-            <InputField
-              type="number"
-              min={0}
-              max={100}
-              value={form.encashment_percentage || ""}
-              onChange={handleEncashmentPercentageChange}
-              placeholder={arabicSource("settings.encashment_percentage_label")}
-              className={inputCls}
-            />
-            {errors.encashment_percentage && (
-              <p className="text-destructive text-xs mt-1">{errors.encashment_percentage}</p>
-            )}
-          </div>
-        )}
+          {errors.encashment_percentage && (
+            <p className="text-destructive text-xs mt-1">{errors.encashment_percentage}</p>
+          )}
+        </div>
       </div>
     </div>
   );

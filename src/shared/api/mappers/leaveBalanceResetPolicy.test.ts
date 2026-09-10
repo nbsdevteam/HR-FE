@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mapLeaveType, mapLeaveBalanceItem } from "./leave";
+import { mapLeaveType } from "./leave";
+import { mapLeaveBalanceItem } from "./leaveAccrual";
 
 describe("year-end leave balance policy mapping", () => {
   it("reads an explicit reset policy off a leave type", () => {

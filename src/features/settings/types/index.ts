@@ -25,8 +25,6 @@ export interface NewHolidayForm {
   is_recurring: boolean;
 }
 
-export type LeaveTypeGenderRestriction = "" | "male" | "female";
-
 export interface NewLeaveTypeForm {
   // basic
   name_ar: string;
@@ -37,20 +35,17 @@ export interface NewLeaveTypeForm {
   accrual_enabled: boolean;
   /** `0` lets the backend derive the rate from `default_days_per_year / 12`. */
   accrual_days_per_month: number;
-
-  // advanced: Accrual
-  accrual_method: string;
+  color: string;
 
   // advanced: Leave Rules
   allow_half_day: boolean;
   allow_hourly: boolean;
   requires_attachment: boolean;
-  /** Type cannot be taken while the employee is on probation. */
-  probation_blocked: boolean;
-  gender_restriction: LeaveTypeGenderRestriction;
+  /**
+   * Months of service required before this type can be taken (replaces the
+   * old company-wide probation toggle — backend hand-off 2026-09-10 §5).
+   */
   min_service_months: number;
-  min_days_per_request: number;
-  max_days_per_request: number;
   /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
   excuse_on_insufficient_balance: boolean;
 
@@ -60,16 +55,8 @@ export interface NewLeaveTypeForm {
    * `"accumulate"` carries it forward, `"reset_yearly"` starts it again.
    */
   balance_reset_policy: LeaveBalanceResetPolicy;
-  is_carryover_allowed: boolean;
   max_carryover_days: number;
-  is_encashable: boolean;
   encashment_percentage: number;
-
-  // advanced: Other
-  code: string;
-  color: string;
-  icon: string;
-  sort_order: number;
 }
 
 export interface NewContractTypeForm {

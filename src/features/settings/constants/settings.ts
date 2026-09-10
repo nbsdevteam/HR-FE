@@ -91,31 +91,19 @@ export const INITIAL_NEW_LEAVE_TYPE: NewLeaveTypeForm = {
   default_days_per_year: 0,
   accrual_enabled: false,
   accrual_days_per_month: 0,
-
-  accrual_method: "annual",
+  color: "#3b82f6",
 
   allow_half_day: false,
   allow_hourly: false,
   requires_attachment: false,
-  probation_blocked: false,
-  gender_restriction: "",
   min_service_months: 0,
-  min_days_per_request: 0,
-  max_days_per_request: 0,
   excuse_on_insufficient_balance: false,
 
   // The backend's own default. Every leave type has always carried its
   // balance forward, so a new type keeps doing that unless HR says otherwise.
   balance_reset_policy: "accumulate",
-  is_carryover_allowed: false,
   max_carryover_days: 0,
-  is_encashable: false,
   encashment_percentage: 100,
-
-  code: "",
-  color: "#3b82f6",
-  icon: "",
-  sort_order: 0,
 };
 
 export const INITIAL_NEW_CONTRACT_TYPE: NewContractTypeForm = {
@@ -177,18 +165,6 @@ export const EXPAND_MOTION: HTMLMotionProps<"div"> = {
   initial: { opacity: 0, height: 0 },
   animate: { opacity: 1, height: "auto" },
 };
-
-export const ACCRUAL_OPTIONS = [
-  { value: "annual", label: arabicSource("common.annual") },
-  { value: "monthly", label: arabicSource("common.monthly") },
-  { value: "none", label: arabicSource("settings.without_merit") },
-];
-
-export const GENDER_RESTRICTION_OPTIONS = [
-  { value: "", label: arabicSource("settings.no_gender_restriction") },
-  { value: "male", label: arabicSource("common.male") },
-  { value: "female", label: arabicSource("common.female") },
-];
 
 /**
  * What happens to an unused leave balance at the end of a leave year. The

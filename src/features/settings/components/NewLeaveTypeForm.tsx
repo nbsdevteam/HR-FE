@@ -69,6 +69,13 @@ const NewLeaveTypeForm = ({
     onFieldChange({ accrual_enabled: !form.accrual_enabled });
   }, [onFieldChange, form.accrual_enabled]);
 
+  const handleColorChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      onFieldChange({ color: e.target.value });
+    },
+    [onFieldChange],
+  );
+
   const handleToggleAdvanced = useCallback((): void => {
     setShowAdvanced((prev) => !prev);
   }, []);
@@ -109,6 +116,13 @@ const NewLeaveTypeForm = ({
             {form.is_paid ? arabicSource("settings.leave_paid_label") : arabicSource("settings.leave_unpaid_label")}
           </span>
         </div>
+        <input
+          type="color"
+          value={form.color}
+          onChange={handleColorChange}
+          className="w-9 h-9 rounded cursor-pointer border-0"
+          aria-label={arabicSource("org_structure.color_label")}
+        />
       </div>
       {errors.name && <p className="text-destructive text-xs">{errors.name}</p>}
 

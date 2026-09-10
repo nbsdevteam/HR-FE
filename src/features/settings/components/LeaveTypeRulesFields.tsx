@@ -1,9 +1,8 @@
 import { useCallback } from "react";
-import { InputField, Select } from "@/shared/components";
+import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import { GENDER_RESTRICTION_OPTIONS } from "../constants/settings";
 import { inputCls } from "../styles";
-import type { NewLeaveTypeForm, LeaveTypeGenderRestriction } from "../types";
+import type { NewLeaveTypeForm } from "../types";
 import type { LeaveTypeFormErrors } from "../hooks/useLeaveTypeFormValidation";
 
 type TLeaveTypeRulesFieldsProps = {
@@ -34,13 +33,6 @@ const LeaveTypeRulesFields = ({ form, errors, onFieldChange }: TLeaveTypeRulesFi
     [onFieldChange],
   );
 
-  const handleProbationBlockedChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      onFieldChange({ probation_blocked: e.target.checked });
-    },
-    [onFieldChange],
-  );
-
   const handleExcuseOnInsufficientBalanceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
       onFieldChange({ excuse_on_insufficient_balance: e.target.checked });
@@ -48,30 +40,9 @@ const LeaveTypeRulesFields = ({ form, errors, onFieldChange }: TLeaveTypeRulesFi
     [onFieldChange],
   );
 
-  const handleGenderRestrictionChange = useCallback(
-    (value: string): void => {
-      onFieldChange({ gender_restriction: value as LeaveTypeGenderRestriction });
-    },
-    [onFieldChange],
-  );
-
   const handleMinServiceMonthsChange = useCallback(
     (value: string): void => {
       onFieldChange({ min_service_months: value === "" ? 0 : Number(value) });
-    },
-    [onFieldChange],
-  );
-
-  const handleMinDaysPerRequestChange = useCallback(
-    (value: string): void => {
-      onFieldChange({ min_days_per_request: value === "" ? 0 : Number(value) });
-    },
-    [onFieldChange],
-  );
-
-  const handleMaxDaysPerRequestChange = useCallback(
-    (value: string): void => {
-      onFieldChange({ max_days_per_request: value === "" ? 0 : Number(value) });
     },
     [onFieldChange],
   );
@@ -93,45 +64,19 @@ const LeaveTypeRulesFields = ({ form, errors, onFieldChange }: TLeaveTypeRulesFi
           <input type="checkbox" checked={form.requires_attachment} onChange={handleRequiresAttachmentChange} className="rounded" />
           {arabicSource("settings.attachment_required")}
         </label>
-        <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
-          <input type="checkbox" checked={form.probation_blocked} onChange={handleProbationBlockedChange} className="rounded" />
-          {arabicSource("settings.blocked_during_probation")}
-        </label>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Select
-          value={form.gender_restriction}
-          onChange={handleGenderRestrictionChange}
-          options={GENDER_RESTRICTION_OPTIONS}
-          className="h-9 px-3"
-        />
+      <div>
         <InputField
           type="number"
           value={form.min_service_months || ""}
           onChange={handleMinServiceMonthsChange}
           placeholder={arabicSource("settings.min_service_months_label")}
-          className={inputCls}
+          className={`${inputCls} w-full sm:w-56`}
         />
-        <InputField
-          type="number"
-          value={form.min_days_per_request || ""}
-          onChange={handleMinDaysPerRequestChange}
-          placeholder={arabicSource("settings.min_days_per_request_label")}
-          className={inputCls}
-        />
-        <div>
-          <InputField
-            type="number"
-            value={form.max_days_per_request || ""}
-            onChange={handleMaxDaysPerRequestChange}
-            placeholder={arabicSource("settings.max_days_per_request_label")}
-            className={inputCls}
-          />
-          {errors.days_per_request && (
-            <p className="text-destructive text-xs mt-1">{errors.days_per_request}</p>
-          )}
-        </div>
+        {errors.min_service_months && (
+          <p className="text-destructive text-xs mt-1">{errors.min_service_months}</p>
+        )}
       </div>
 
       <label className="flex items-start gap-2 cursor-pointer text-xs text-foreground">

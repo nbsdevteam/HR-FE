@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { type DbLeaveType, type LeaveBalanceResetPolicy, useOdooMutation } from "@/shared/hooks";
 import { INITIAL_NEW_LEAVE_TYPE } from "../constants/settings";
+import { leaveTypeErrorMessage } from "../utils/leaveTypeErrorMessage";
 import type { NewLeaveTypeForm } from "../types";
 
 export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast: (message: string) => void) => {
@@ -40,7 +41,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
       await refetchLeaveTypes();
       showToast("Saved");
     } catch (e: any) {
-      showToast(e?.message || "Failed to create leave type");
+      showToast(leaveTypeErrorMessage(e, "Failed to create leave type"));
     }
   }, [createLeaveTypeMutation, newLeaveType, refetchLeaveTypes, showToast]);
 
@@ -52,7 +53,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
       });
       await refetchLeaveTypes();
     } catch (e: any) {
-      showToast(e?.message || "Failed to update leave type");
+      showToast(leaveTypeErrorMessage(e, "Failed to update leave type"));
     }
   }, [refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
 
@@ -66,7 +67,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
       });
       await refetchLeaveTypes();
     } catch (e: any) {
-      showToast(e?.message || "Failed to update leave type");
+      showToast(leaveTypeErrorMessage(e, "Failed to update leave type"));
     }
   }, [refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
 
@@ -83,7 +84,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
       });
       await refetchLeaveTypes();
     } catch (e: any) {
-      showToast(e?.message || "Failed to update leave type");
+      showToast(leaveTypeErrorMessage(e, "Failed to update leave type"));
     }
   }, [refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
 
@@ -92,7 +93,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
       await deleteLeaveTypeMutation.mutateAsync(leaveTypeId);
       await refetchLeaveTypes();
     } catch (e: any) {
-      showToast(e?.message || "Failed to delete leave type");
+      showToast(leaveTypeErrorMessage(e, "Failed to delete leave type"));
     }
   }, [deleteLeaveTypeMutation, refetchLeaveTypes, showToast]);
 

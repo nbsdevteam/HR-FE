@@ -5,7 +5,7 @@ import type { NewLeaveTypeForm } from "../types";
 export interface LeaveTypeFormErrors {
   name?: string;
   encashment_percentage?: string;
-  days_per_request?: string;
+  min_service_months?: string;
 }
 
 /**
@@ -20,19 +20,17 @@ export const useLeaveTypeFormValidation = (form: NewLeaveTypeForm) => {
     if (!form.name_ar.trim() && !form.name_en.trim()) {
       next.name = arabicSource("settings.leave_type_name_required");
     }
-    if (form.is_encashable && (form.encashment_percentage < 0 || form.encashment_percentage > 100)) {
+    if (form.encashment_percentage < 0 || form.encashment_percentage > 100) {
       next.encashment_percentage = arabicSource("settings.encashment_percentage_range");
     }
-    // `max_days_per_request` of 0 means "no cap set yet", not "cap of zero" —
-    // only flag the range once a real cap is chosen.
-    if (form.max_days_per_request > 0 && form.min_days_per_request > form.max_days_per_request) {
-      next.days_per_request = arabicSource("settings.days_per_request_range");
+    if (form.min_service_months < 0) {
+      next.min_service_months = arabicSource("settings.min_service_months_negative");
     }
 
     return next;
   }, [form]);
 
-  const hasAdvancedError = Boolean(errors.encashment_percentage || errors.days_per_request);
+  const hasAdvancedError = Boolean(errors.encashment_percentage || errors.min_service_months);
   const isValid = Object.keys(errors).length === 0;
 
   return { errors, isValid, hasAdvancedError };

@@ -42,6 +42,8 @@ const LeaveRequestModal = ({
   const {
     balanceWarning,
     blockedByProbation,
+    blockedByMinService,
+    minServiceEligibleFrom,
     days,
     employeeId,
     endDate,
@@ -136,6 +138,8 @@ const LeaveRequestModal = ({
         <LeaveRequestProbationNotice
           blockedByProbation={blockedByProbation}
           probationEndDate={probationEndDate}
+          blockedByMinService={blockedByMinService}
+          minServiceEligibleFrom={minServiceEligibleFrom}
           minStartDate={minStartDate}
           firstAccrualOn={firstAccrualOn}
           outOfBalance={outOfBalance}

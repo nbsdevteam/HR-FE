@@ -37,6 +37,12 @@ const probationEndDateOf = (error: unknown): string => {
   return typeof value === "string" ? value : "";
 };
 
+/** `min_service_block` responses also carry the eligible-from date (backend hand-off 2026-09-10 §5). */
+const minServiceEligibleFromOf = (error: unknown): string => {
+  const value = (error as HrApiError | undefined)?.details?.eligible_from;
+  return typeof value === "string" ? value : "";
+};
+
 /** Branch on `error.code`, never on message text, per the backend contract. */
 export const leaveErrorMessage = (error: unknown, fallback: string): string => {
   const code = (error as HrApiError | undefined)?.code;
@@ -44,6 +50,11 @@ export const leaveErrorMessage = (error: unknown, fallback: string): string => {
     const endDate = probationEndDateOf(error);
     const message = arabicSource("leave.error_probation_block");
     return endDate ? `${message} ${arabicSource("leave.probation_ends_on")} ${endDate}` : message;
+  }
+  if (code === "min_service_block") {
+    const eligibleFrom = minServiceEligibleFromOf(error);
+    const message = arabicSource("leave.error_min_service_block");
+    return eligibleFrom ? `${message} ${arabicSource("leave.min_service_eligible_from")} ${eligibleFrom}` : message;
   }
   if (code && LEAVE_ERROR_KEYS[code]) return arabicSource(LEAVE_ERROR_KEYS[code]);
   return (error as Error | undefined)?.message || fallback;

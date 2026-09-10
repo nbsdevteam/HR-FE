@@ -10,6 +10,7 @@ export * from "./orgStructure";
 export * from "./settings";
 export * from "./payroll";
 export * from "./leave";
+export * from "./leaveAccrual";
 export * from "./leaveEntitlementAdjustment";
 export * from "./leaveExcuse";
 export * from "./leaveExcuseQueue";

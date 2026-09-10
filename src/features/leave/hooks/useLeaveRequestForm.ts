@@ -91,16 +91,31 @@ export const useLeaveRequestForm = ({
 
   const probationEndDate = balanceSummary?.probation_end_date ?? null;
   const blockedByProbation = Boolean(balanceItem?.blocked_by_probation);
+  const blockedByMinService = Boolean(balanceItem?.blocked_by_min_service);
+  const minServiceEligibleFrom = balanceItem?.min_service_eligible_from ?? null;
 
   /**
    * `blocked_by_probation` is a *today* snapshot while the backend gates on the
    * leave start date, so the form stays open and only the earliest start date
    * moves — booking 1 April while on probation until 31 March is legitimate.
    */
-  const minStartDate = useMemo(
+  const probationMinStartDate = useMemo(
     () => (blockedByProbation ? earliestLeaveStartDate(probationEndDate) : ""),
     [blockedByProbation, probationEndDate],
   );
+
+  // `min_service_eligible_from` is already the first allowed day (the
+  // anniversary itself counts — backend hand-off 2026-09-10 §5), unlike
+  // `probation_end_date` which needs +1 day.
+  const minServiceMinStartDate = blockedByMinService ? minServiceEligibleFrom || "" : "";
+
+  /** Both gates can be live at once — the later of the two thresholds wins. */
+  const minStartDate = useMemo(() => {
+    if (probationMinStartDate && minServiceMinStartDate) {
+      return probationMinStartDate > minServiceMinStartDate ? probationMinStartDate : minServiceMinStartDate;
+    }
+    return probationMinStartDate || minServiceMinStartDate;
+  }, [probationMinStartDate, minServiceMinStartDate]);
 
   /** True once accrual has granted nothing at all — the employee's first month. */
   const firstAccrualOn = useMemo(() => {
@@ -175,9 +190,9 @@ export const useLeaveRequestForm = ({
     // form, is the source of truth for whether that request is allowed.
 
     if (minStartDate && startDate < minStartDate) {
-      setError(
-        `${arabicSource("leave.error_probation_block")} ${arabicSource("leave.earliest_start_date")} ${minStartDate}`,
-      );
+      const stillProbationBlocked = Boolean(probationMinStartDate) && startDate < probationMinStartDate;
+      const reasonKey = stillProbationBlocked ? "leave.error_probation_block" : "leave.error_min_service_block";
+      setError(`${arabicSource(reasonKey)} ${arabicSource("leave.earliest_start_date")} ${minStartDate}`);
       return;
     }
 
@@ -218,8 +233,8 @@ export const useLeaveRequestForm = ({
     }
   }, [
     employeeId, endDate, hourly, isHalfDay, isHourly, leaveTypeId, linkError,
-    minStartDate, onSubmit, reason, requestLeaveMutation, selectedType,
-    selfEmployee, selfOnly, startDate,
+    minStartDate, onSubmit, probationMinStartDate, reason, requestLeaveMutation,
+    selectedType, selfEmployee, selfOnly, startDate,
   ]);
 
   useEffect(() => {
@@ -237,6 +252,8 @@ export const useLeaveRequestForm = ({
     balanceItem,
     balanceWarning,
     blockedByProbation,
+    blockedByMinService,
+    minServiceEligibleFrom,
     days,
     employeeId,
     firstAccrualOn,
