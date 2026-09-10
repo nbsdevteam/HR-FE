@@ -42,6 +42,20 @@ const stripTrailingZeroFraction = (raw: string): string => {
   return fraction === "" || /^0+$/.test(fraction) ? raw.slice(0, dotIndex) : raw;
 };
 
+/** The arrow-key increment amount — same "step defaults to 1" rule native `type="number"` uses. */
+const parseStepAmount = (step?: string): number => {
+  if (!step || step === "any") return 1;
+  const parsed = parseFloat(step);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
+
+/** Digits after the point in `step` (e.g. "0.5" -> 1), for rounding off float noise. */
+const stepDecimalPlaces = (step?: string): number => {
+  if (!step || step === "any") return 0;
+  const dotIndex = step.indexOf(".");
+  return dotIndex === -1 ? 0 : step.length - dotIndex - 1;
+};
+
 /**
  * Text input restricted to positive numbers via regex, replacing native
  * `type="number"` inputs so behavior (no spinner, no silent-empty on invalid
@@ -49,6 +63,8 @@ const stripTrailingZeroFraction = (raw: string): string => {
  * Accepts a decimal point by default (pass `allowDecimal={false}` to
  * restrict a field to integers); a trailing "." or an all-zero fraction
  * (e.g. "12.", "12.0") is normalized down to the integer part on blur.
+ * ArrowUp/ArrowDown increment or decrement by `step` (defaulting to 1,
+ * same as native `type="number"`), clamped to `min`/`max`.
  * Keeps the same string-in/string-out contract as `InputField` so existing
  * `Number(value)`/`parseInt(value)` casts at call sites keep working unchanged.
  */
@@ -96,6 +112,22 @@ const PositiveNumberInput = ({
     [onChange, min, max, onBlur, allowDecimal]
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      onKeyDown?.(e);
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      const delta = parseStepAmount(step);
+      const current = value === "" ? 0 : Number(value);
+      let next = e.key === "ArrowUp" ? current + delta : current - delta;
+      if (min !== undefined) next = Math.max(next, min);
+      if (max !== undefined) next = Math.min(next, max);
+      const precision = decimalPlaces ?? stepDecimalPlaces(step);
+      onChange(String(Number(next.toFixed(precision))));
+    },
+    [onKeyDown, step, value, min, max, decimalPlaces, onChange]
+  );
+
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>): void => {
       const pasted = e.clipboardData.getData("text");
@@ -112,7 +144,7 @@ const PositiveNumberInput = ({
       onChange={handleChange}
       onBlur={handleBlur}
       onPaste={handlePaste}
-      onKeyDown={onKeyDown}
+      onKeyDown={handleKeyDown}
       autoFocus={autoFocus}
       placeholder={placeholder}
       className={className}
