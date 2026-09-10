@@ -27,11 +27,15 @@ const DEFAULT_MAX_BYTES = 10485760;
  */
 export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHourlyAttachmentArgs) => {
   const [durationUnit, setDurationUnit] = useState<LeaveDurationUnit>("day");
-  const [hours, setHours] = useState(1);
+  // Held as the raw text the field is being edited into (not the parsed
+  // number) so a trailing "." isn't immediately cast away and re-rendered
+  // out of the input before the user can type a digit after it.
+  const [hoursText, setHoursText] = useState("1");
   const [hourFrom, setHourFrom] = useState("");
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentError, setAttachmentError] = useState("");
 
+  const hours = useMemo(() => Number(hoursText) || 0, [hoursText]);
   const maxHours = settings?.max_hours_per_request ?? 4;
   const acceptedFormats = settings?.attachment_accepted_formats ?? DEFAULT_ACCEPTED_FORMATS;
   const maxBytes = settings?.attachment_max_bytes ?? DEFAULT_MAX_BYTES;
@@ -40,7 +44,7 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
   const hourFromFloat = useMemo(() => timeToFloat(hourFrom), [hourFrom]);
 
   const handleHoursChange = useCallback((value: string): void => {
-    setHours(Number(value) || 0);
+    setHoursText(value);
   }, []);
 
   const handleHourFromChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -103,7 +107,7 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
 
   const reset = useCallback((): void => {
     setDurationUnit("day");
-    setHours(1);
+    setHoursText("1");
     setHourFrom("");
     setAttachmentFile(null);
     setAttachmentError("");
@@ -122,6 +126,7 @@ export const useLeaveHourlyAttachment = ({ selectedType, settings }: UseLeaveHou
     hourFrom,
     hourFromFloat,
     hours,
+    hoursText,
     maxBytes,
     maxHours,
     reset,

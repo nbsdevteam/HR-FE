@@ -3,7 +3,9 @@ import { arabicSource } from "@/i18n/source";
 import { leaveInputClass as inputCls } from "../styles";
 
 type LeaveRequestHoursRowProps = {
-  hours: number;
+  /** Raw text of the hours field as it's being typed — not the parsed number,
+   *  so a trailing "." isn't cast away before the user can type a digit after it. */
+  hoursText: string;
   hourFrom: string;
   maxHours: number;
   onHoursChange: (value: string) => void;
@@ -12,7 +14,7 @@ type LeaveRequestHoursRowProps = {
 
 /** Hours + optional start-time inputs shown when the request's duration unit is "hour". */
 const LeaveRequestHoursRow = ({
-  hours,
+  hoursText,
   hourFrom,
   maxHours,
   onHoursChange,
@@ -25,7 +27,7 @@ const LeaveRequestHoursRow = ({
         {/* * ({arabicSource("leave.maximum_hours_per_request")}: {maxHours}) */}
       </label>
       <PositiveNumberInput
-        value={hours}
+        value={hoursText}
         onChange={onHoursChange}
         min={0.5}
         max={maxHours}

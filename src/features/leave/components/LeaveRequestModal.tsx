@@ -206,7 +206,7 @@ const LeaveRequestModal = ({
               />
             </div>
             <LeaveRequestHoursRow
-              hours={hourly.hours}
+              hoursText={hourly.hoursText}
               hourFrom={hourly.hourFrom}
               maxHours={hourly.maxHours}
               onHoursChange={hourly.handleHoursChange}
