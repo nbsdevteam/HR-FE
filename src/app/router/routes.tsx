@@ -4,7 +4,9 @@ import Layout from "@/app/layouts/Layout";
 import NotFound from "./NotFound";
 import HydrateFallback from "./HydrateFallback";
 import RequireHrRoute from "./RequireHrRoute";
+import RouteError from "./RouteError";
 import { ROUTE_SEGMENT } from "./routePaths";
+import { isStaleChunkError, reloadForStaleChunk } from "./staleChunkReload";
 
 /**
  * Wraps a page's dynamic import in the `{ lazy: () => ... }` shape react-router
@@ -16,7 +18,19 @@ import { ROUTE_SEGMENT } from "./routePaths";
  */
 const lazyRoute = (importFn: () => Promise<{ default: ComponentType }>, routeKeys: string[]) => ({
   lazy: async () => {
-    const module = await importFn();
+    let module: { default: ComponentType };
+    try {
+      module = await importFn();
+    } catch (error) {
+      // A tab left open across a deploy still points at the old build's
+      // chunk hashes, so this route's chunk 404s. Reload once to pick up
+      // the fresh build instead of surfacing the raw fetch error — keep
+      // showing the loading state while the reload lands.
+      if (isStaleChunkError(error) && reloadForStaleChunk()) {
+        return { Component: HydrateFallback };
+      }
+      throw error;
+    }
     const Page = module.default;
     const Guarded = () => (
       <RequireHrRoute routeKeys={routeKeys}>
@@ -32,6 +46,7 @@ export const router = createBrowserRouter([
     path: "/",
     Component: Layout,
     HydrateFallback,
+    ErrorBoundary: RouteError,
     children: [
       {
         index: true,
