@@ -102,8 +102,6 @@ export const INITIAL_NEW_LEAVE_TYPE: NewLeaveTypeForm = {
   // The backend's own default. Every leave type has always carried its
   // balance forward, so a new type keeps doing that unless HR says otherwise.
   balance_reset_policy: "accumulate",
-  max_carryover_days: 0,
-  encashment_percentage: 100,
 };
 
 export const INITIAL_NEW_CONTRACT_TYPE: NewContractTypeForm = {

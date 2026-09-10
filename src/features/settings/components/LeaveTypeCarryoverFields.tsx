@@ -1,35 +1,18 @@
 import { useCallback } from "react";
-import { InputField, Select } from "@/shared/components";
+import { Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import { inputCls } from "../styles";
 import { BALANCE_RESET_POLICY_OPTIONS } from "../constants/settings";
 import type { LeaveBalanceResetPolicy, NewLeaveTypeForm } from "../types";
-import type { LeaveTypeFormErrors } from "../hooks/useLeaveTypeFormValidation";
 
 type TLeaveTypeCarryoverFieldsProps = {
   form: NewLeaveTypeForm;
-  errors: LeaveTypeFormErrors;
   onFieldChange: (patch: Partial<NewLeaveTypeForm>) => void;
 };
 
-const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCarryoverFieldsProps) => {
+const LeaveTypeCarryoverFields = ({ form, onFieldChange }: TLeaveTypeCarryoverFieldsProps) => {
   const handleBalanceResetPolicyChange = useCallback(
     (value: string): void => {
       onFieldChange({ balance_reset_policy: value as LeaveBalanceResetPolicy });
-    },
-    [onFieldChange],
-  );
-
-  const handleMaxCarryoverDaysChange = useCallback(
-    (value: string): void => {
-      onFieldChange({ max_carryover_days: value === "" ? 0 : Number(value) });
-    },
-    [onFieldChange],
-  );
-
-  const handleEncashmentPercentageChange = useCallback(
-    (value: string): void => {
-      onFieldChange({ encashment_percentage: value === "" ? 0 : Number(value) });
     },
     [onFieldChange],
   );
@@ -50,30 +33,6 @@ const LeaveTypeCarryoverFields = ({ form, errors, onFieldChange }: TLeaveTypeCar
         <p className="text-muted-foreground/70 text-xs mt-1">
           {arabicSource("settings.balance_at_year_end_hint")}
         </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 items-start">
-        <InputField
-          type="number"
-          value={form.max_carryover_days || ""}
-          onChange={handleMaxCarryoverDaysChange}
-          placeholder={arabicSource("settings.carryover_days_label")}
-          className={inputCls}
-        />
-        <div>
-          <InputField
-            type="number"
-            min={0}
-            max={100}
-            value={form.encashment_percentage || ""}
-            onChange={handleEncashmentPercentageChange}
-            placeholder={arabicSource("settings.encashment_percentage_label")}
-            className={inputCls}
-          />
-          {errors.encashment_percentage && (
-            <p className="text-destructive text-xs mt-1">{errors.encashment_percentage}</p>
-          )}
-        </div>
       </div>
     </div>
   );

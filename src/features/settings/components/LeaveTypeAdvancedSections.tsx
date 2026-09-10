@@ -20,7 +20,7 @@ type TLeaveTypeAdvancedSectionsProps = {
 const LeaveTypeAdvancedSections = ({ form, errors, onFieldChange }: TLeaveTypeAdvancedSectionsProps) => (
   <motion.div {...EXPAND_MOTION} className="space-y-3 overflow-hidden">
     <LeaveTypeRulesFields form={form} errors={errors} onFieldChange={onFieldChange} />
-    <LeaveTypeCarryoverFields form={form} errors={errors} onFieldChange={onFieldChange} />
+    <LeaveTypeCarryoverFields form={form} onFieldChange={onFieldChange} />
   </motion.div>
 );
 

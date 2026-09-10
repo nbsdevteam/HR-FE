@@ -55,8 +55,6 @@ export interface NewLeaveTypeForm {
    * `"accumulate"` carries it forward, `"reset_yearly"` starts it again.
    */
   balance_reset_policy: LeaveBalanceResetPolicy;
-  max_carryover_days: number;
-  encashment_percentage: number;
 }
 
 export interface NewContractTypeForm {
