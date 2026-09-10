@@ -33,6 +33,15 @@ const sanitizePositiveNumber = (raw: string, allowDecimal: boolean, decimalPlace
   return buildPattern(allowDecimal, decimalPlaces).test(raw) ? raw : null;
 };
 
+/** "12." -> "12", "12.0"/"12.00" -> "12", "." or ".0" -> "" — a trailing dot with
+ *  nothing meaningful after it is dropped once the field is done being typed into. */
+const stripTrailingZeroFraction = (raw: string): string => {
+  const dotIndex = raw.indexOf(".");
+  if (dotIndex === -1) return raw;
+  const fraction = raw.slice(dotIndex + 1);
+  return fraction === "" || /^0+$/.test(fraction) ? raw.slice(0, dotIndex) : raw;
+};
+
 /**
  * Text input restricted to positive numbers via regex, replacing native
  * `type="number"` inputs so behavior (no spinner, no silent-empty on invalid
@@ -67,14 +76,21 @@ const PositiveNumberInput = ({
 
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>): void => {
-      if (e.target.value !== "") {
-        const numeric = Number(e.target.value);
-        if (min !== undefined && numeric < min) onChange(String(min));
-        else if (max !== undefined && numeric > max) onChange(String(max));
+      const raw = e.target.value;
+      if (raw !== "") {
+        const numeric = Number(raw);
+        if (min !== undefined && numeric < min) {
+          onChange(String(min));
+        } else if (max !== undefined && numeric > max) {
+          onChange(String(max));
+        } else if (allowDecimal) {
+          const normalized = stripTrailingZeroFraction(raw);
+          if (normalized !== raw) onChange(normalized);
+        }
       }
       onBlur?.(e);
     },
-    [onChange, min, max, onBlur]
+    [onChange, min, max, onBlur, allowDecimal]
   );
 
   const handlePaste = useCallback(
