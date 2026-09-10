@@ -16,10 +16,7 @@ interface InputFieldProps {
   max?: number;
 }
 
-/** A fractional `step` (e.g. "0.5", "any") signals the field needs decimal input. */
-const isDecimalStep = (step?: string): boolean => step !== undefined && (step === "any" || step.includes("."));
-
-/** Digits after the point in `step` (e.g. "0.5" -> 1); undefined caps nothing (`step="any"`). */
+/** Digits after the point in `step` (e.g. "0.5" -> 1); undefined caps nothing (no step, or `step="any"`). */
 const decimalPlacesFromStep = (step?: string): number | undefined => {
   if (!step || step === "any") return undefined;
   const dotIndex = step.indexOf(".");
@@ -68,7 +65,6 @@ const InputField = ({
         step={step}
         min={min}
         max={max}
-        allowDecimal={isDecimalStep(step)}
         decimalPlaces={decimalPlacesFromStep(step)}
       />
     ) : (

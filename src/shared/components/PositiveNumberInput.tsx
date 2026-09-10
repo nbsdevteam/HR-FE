@@ -9,9 +9,9 @@ interface PositiveNumberInputProps {
   className: string;
   dir?: string;
   style?: React.CSSProperties;
-  /** Allow a single decimal point (e.g. half-hour steps). Defaults to integers only. */
+  /** Allow a single decimal point. Defaults to true; pass `false` to restrict a field to integers. */
   allowDecimal?: boolean;
-  /** Caps digits after the decimal point. Only meaningful when `allowDecimal` is set. */
+  /** Caps digits after the decimal point. Only meaningful when `allowDecimal` is true (the default). */
   decimalPlaces?: number;
   min?: number;
   max?: number;
@@ -46,6 +46,9 @@ const stripTrailingZeroFraction = (raw: string): string => {
  * Text input restricted to positive numbers via regex, replacing native
  * `type="number"` inputs so behavior (no spinner, no silent-empty on invalid
  * keystrokes, no "-"/"+"/"e" sneaking through) is consistent everywhere.
+ * Accepts a decimal point by default (pass `allowDecimal={false}` to
+ * restrict a field to integers); a trailing "." or an all-zero fraction
+ * (e.g. "12.", "12.0") is normalized down to the integer part on blur.
  * Keeps the same string-in/string-out contract as `InputField` so existing
  * `Number(value)`/`parseInt(value)` casts at call sites keep working unchanged.
  */
@@ -57,7 +60,7 @@ const PositiveNumberInput = ({
   className,
   dir = "ltr",
   style,
-  allowDecimal = false,
+  allowDecimal = true,
   decimalPlaces,
   min = 0,
   max,
