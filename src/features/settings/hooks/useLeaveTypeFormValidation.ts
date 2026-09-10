@@ -16,7 +16,7 @@ export const useLeaveTypeFormValidation = (form: NewLeaveTypeForm) => {
   const errors = useMemo<LeaveTypeFormErrors>(() => {
     const next: LeaveTypeFormErrors = {};
 
-    if (!form.name_ar.trim() && !form.name_en.trim()) {
+    if (!form.name_ar.trim() || !form.name_en.trim()) {
       next.name = arabicSource("settings.leave_type_name_required");
     }
     if (form.min_service_months < 0) {
