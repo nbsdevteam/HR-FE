@@ -20,11 +20,12 @@
 
 import "dotenv/config";
 import { HikvisionClient } from "./hikvision-api.mjs";
+import { resolveDeviceAddresses } from "./device-address.mjs";
 import os from "node:os";
 
 // ── Config ──
 const config = {
-  ip: process.env.DEVICE_IP || "192.168.15.15",
+  addresses: resolveDeviceAddresses(),
   port: parseInt(process.env.DEVICE_PORT || "443"),
   username: process.env.DEVICE_USERNAME || "admin",
   password: process.env.DEVICE_PASSWORD || "",
@@ -66,7 +67,7 @@ async function main() {
   console.log("═══════════════════════════════════════════\n");
 
   // 1. Test connection
-  log("🔗", `Connecting to device at ${config.ip}:${config.port}...`);
+  log("🔗", `Connecting to device at ${hik.selector.describe()} (port ${config.port})...`);
   try {
     const info = await hik.getDeviceInfo();
     log("✅", `Connected: ${info.model} (FW: ${info.firmwareVersion})`);
@@ -192,7 +193,7 @@ async function main() {
     console.log("");
     console.log("  Manual configuration instructions:");
     console.log("  ─────────────────────────────────");
-    console.log(`  1. Open device web UI: https://${config.ip}`);
+    console.log(`  1. Open device web UI: https://${hik.selector.identityIp}`);
     console.log(`  2. Go to: Configuration → Network → Advanced Settings → HTTP Listening`);
     console.log(`  3. Add a listening host:`);
     console.log(`     - Listening IP: ${SERVER_IP}`);

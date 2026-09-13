@@ -21,6 +21,7 @@ import cron from "node-cron";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import { HikvisionClient } from "./hikvision-api.mjs";
+import { resolveDeviceAddresses } from "./device-address.mjs";
 import { createBackend as createSupabaseBackend } from "./backend-supabase.mjs";
 import { createBackend as createOdooBackend } from "./backend-odoo.mjs";
 
@@ -28,11 +29,13 @@ import { createBackend as createOdooBackend } from "./backend-odoo.mjs";
 
 const config = {
   device: {
-    ip: process.env.DEVICE_IP || "192.168.15.15",
+    addresses: resolveDeviceAddresses(), // [{ network: "lan", ip }, { network: "wifi", ip }]
     port: parseInt(process.env.DEVICE_PORT || "443"),
     username: process.env.DEVICE_USERNAME || "admin",
     password: process.env.DEVICE_PASSWORD || "",
     useHttps: process.env.DEVICE_USE_HTTPS !== "false",
+    connectTimeoutMs: parseInt(process.env.DEVICE_CONNECT_TIMEOUT_MS || "3000"),
+    requestTimeoutMs: parseInt(process.env.DEVICE_REQUEST_TIMEOUT_MS || "30000"),
   },
   supabase: {
     url: process.env.SUPABASE_URL,
@@ -61,7 +64,7 @@ const config = {
 
 // ── Clients ──
 
-const hik = new HikvisionClient(config.device);
+const hik = new HikvisionClient({ ...config.device, log });
 
 // Supabase client backs the polling-cursor bootstrap (loadLastSyncTime) and
 // the pre-existing /api/device/* management routes. When BACKEND=odoo for
@@ -107,11 +110,21 @@ const backend =
           username: config.odoo.username,
           password: config.odoo.password,
           tzOffsetHours: config.sync.tzOffsetHours,
-          device: { ip: config.device.ip, port: config.device.port, useHttps: config.device.useHttps, username: config.device.username },
+          device: {
+            ip: hik.selector.identityIp,      // LAN — the row key
+            allIps: hik.selector.allIps,      // [LAN, Wi-Fi] — for lookup and messages
+            port: config.device.port,
+            useHttps: config.device.useHttps,
+            username: config.device.username,
+          },
         },
         backendCtx,
       )
-    : createSupabaseBackend({ url: config.supabase.url, serviceKey: config.supabase.serviceKey, deviceIp: config.device.ip }, backendCtx);
+    : createSupabaseBackend(
+        { url: config.supabase.url, serviceKey: config.supabase.serviceKey,
+          deviceIp: hik.selector.identityIp, deviceIps: hik.selector.allIps },
+        backendCtx,
+      );
 
 log("⚙️", `Backend: ${config.backendType}${config.backendType === "odoo" ? ` (${config.odoo.apiBase})` : ""}`);
 
@@ -145,7 +158,7 @@ async function loadLastSyncTime() {
     const { data } = await db
       .from("biometric_devices")
       .select("last_sync_at")
-      .eq("ip_address", config.device.ip)
+      .eq("ip_address", hik.selector.identityIp)
       .maybeSingle();
     if (data?.last_sync_at) {
       // Normalise before use. The column is a timestamptz, so it comes back as
@@ -456,7 +469,9 @@ function startPushListener() {
       lastSync: lastSyncTime,
       processedCount: processedEventIds.size,
       uptime: Math.round(process.uptime()),
-      deviceIp: config.device.ip,
+      deviceIp: hik.selector.active.ip,
+      deviceNetwork: hik.selector.active.network,   // "lan" | "wifi"
+      deviceAddresses: hik.selector.addresses,
       deviceSyncPaused,
       skippedEnrolments,
     });
@@ -478,8 +493,9 @@ function startPushListener() {
         hik.getDoorStatus(),
       ]);
       // Ensure IP is always available from config
-      if (network && !network.ipAddress) network.ipAddress = config.device.ip;
-      res.json({ success: true, info, capacity, network, door, deviceIp: config.device.ip });
+      if (network && !network.ipAddress) network.ipAddress = hik.selector.active.ip;
+      res.json({ success: true, info, capacity, network, door,
+                 deviceIp: hik.selector.active.ip, deviceNetwork: hik.selector.active.network });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });
     }
@@ -888,11 +904,13 @@ async function main() {
   // Test device connection
   let deviceInfo = null;
   try {
+    await hik.selector.select();          // LAN first, then Wi-Fi
     deviceInfo = await hik.getDeviceInfo();
-    log("🔗", `Connected to device: ${deviceInfo.model} (${deviceInfo.serialNumber})`);
+    const { network, ip } = hik.selector.active;
+    log("🔗", `Connected to device over ${network} (${ip}): ${deviceInfo.model} (${deviceInfo.serialNumber})`);
   } catch (err) {
-    log("❌", `Cannot connect to device at ${config.device.ip}: ${err.message}`);
-    log("💡", "Check: IP, port, username, password, and network connectivity");
+    log("❌", `Cannot connect to device (${hik.selector.describe()}): ${err.message}`);
+    log("💡", "Check: both addresses, port, username, password, and network connectivity");
     process.exit(1);
   }
 
@@ -930,6 +948,7 @@ async function main() {
   // ── Schedule: Device health check every 5 minutes ──
   cron.schedule("*/5 * * * *", async () => {
     try {
+      await hik.selector.select();        // prefers LAN again as soon as it answers
       const info = await hik.getDeviceInfo();
       await backend.checkDeviceHealth(info, null);
     } catch (err) {

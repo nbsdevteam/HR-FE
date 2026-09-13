@@ -69,7 +69,7 @@ function normalizeEmployee(item) {
 }
 
 /**
- * @param {object} config - { apiBase, db, username, password, device: { ip, port, model, serialNumber, useHttps, username }, tzOffsetHours }
+ * @param {object} config - { apiBase, db, username, password, device: { ip, allIps, port, model, serialNumber, useHttps, username }, tzOffsetHours }
  * @param {object} ctx - shared helpers: { log, todayIraq, getDayOfWeek, IRAQ_TZ }
  */
 export function createBackend(config, ctx) {
@@ -129,7 +129,12 @@ export function createBackend(config, ctx) {
   async function _ensureDevice() {
     if (deviceId) return deviceId;
     const list = await odoo.call("/api/hr/devices/list", { active_only: false });
-    const found = (list?.items || []).find((d) => d.ip_address === config.device.ip);
+    const items = list?.items || [];
+    const knownIps = config.device.allIps || [config.device.ip];
+    // Prefer the LAN row; accept a row registered under the Wi-Fi address rather than create a second one.
+    const found =
+      items.find((d) => d.ip_address === config.device.ip) ||
+      items.find((d) => knownIps.includes(d.ip_address));
     if (found) {
       deviceId = found.id;
       return deviceId;
@@ -343,7 +348,7 @@ export function createBackend(config, ctx) {
     try {
       await odoo.call("/api/hr/notifications/create", {
         title: "⚠️ جهاز البصمة غير متصل",
-        body: `فشل الاتصال بجهاز البصمة (${config.device.ip}) لمدة ${MAX_HEALTH_FAILURES} محاولات متتالية. يرجى التحقق من الجهاز والشبكة.`,
+        body: `فشل الاتصال بجهاز البصمة (${(config.device.allIps || [config.device.ip]).join(" / ")}) لمدة ${MAX_HEALTH_FAILURES} محاولات متتالية. يرجى التحقق من الجهاز والشبكة.`,
         type: "error",
         category: "device_health",
         entity_type: "device",

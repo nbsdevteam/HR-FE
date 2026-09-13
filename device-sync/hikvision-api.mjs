@@ -8,13 +8,18 @@
 import https from "node:https";
 import http from "node:http";
 import crypto from "node:crypto";
+import { DeviceAddressSelector, isNetworkError } from "./device-address.mjs";
 
 // ── Digest Auth HTTP Client ──
 
 class DigestClient {
-  constructor(username, password) {
+  constructor(username, password, { connectTimeoutMs = 3000, requestTimeoutMs = 30000 } = {}) {
     this.username = username;
     this.password = password;
+    // Without these, a request to an interface that is down waits for the OS
+    // TCP timeout (about two minutes on Linux) instead of failing over.
+    this.connectTimeoutMs = connectTimeoutMs;
+    this.requestTimeoutMs = requestTimeoutMs;
     this._nc = 0; // nonce counter — increments per authenticated request
   }
 
@@ -70,10 +75,14 @@ class DigestClient {
         rejectUnauthorized: false,
       };
 
+      // `connected` separates "this address never answered" (safe to retry on
+      // the other interface) from "the device may already have acted on it".
+      let connected = false;
       const req = mod.request(reqOpts, (res) => {
         const chunks = [];
         res.on("data", (c) => chunks.push(c));
         res.on("end", () => {
+          clearTimeout(connectTimer);
           const rawBuffer = Buffer.concat(chunks);
           resolve({
             status: res.statusCode,
@@ -84,7 +93,22 @@ class DigestClient {
         });
       });
 
-      req.on("error", reject);
+      const timeOut = (message) => req.destroy(Object.assign(new Error(message), { code: "ETIMEDOUT" }));
+      const connectTimer = setTimeout(() => {
+        if (!connected) timeOut(`connect to ${url.hostname}:${reqOpts.port} timed out after ${this.connectTimeoutMs}ms`);
+      }, this.connectTimeoutMs);
+      req.on("socket", (socket) => {
+        if (!socket.connecting) connected = true; // reused keep-alive socket
+        else socket.once("connect", () => { connected = true; });
+      });
+      req.setTimeout(this.requestTimeoutMs, () => {
+        timeOut(`no response from ${url.hostname}:${reqOpts.port} within ${this.requestTimeoutMs}ms`);
+      });
+      req.on("error", (err) => {
+        clearTimeout(connectTimer);
+        err.deviceConnected = connected;
+        reject(err);
+      });
       if (opts.body) req.write(opts.body);
       req.end();
     });
@@ -125,9 +149,15 @@ class DigestClient {
 // ── Hikvision Client ──
 
 export class HikvisionClient {
-  constructor({ ip, port = 443, username, password, useHttps = true }) {
-    this.baseUrl = `${useHttps ? "https" : "http"}://${ip}:${port}`;
-    this.client = new DigestClient(username, password);
+  /**
+   * `addresses` is the preference-ordered list from resolveDeviceAddresses()
+   * (LAN first, then Wi-Fi). A single `ip` is still accepted, for one-off scripts.
+   */
+  constructor({ ip, addresses, port = 443, username, password, useHttps = true, connectTimeoutMs, requestTimeoutMs, log }) {
+    this.scheme = useHttps ? "https" : "http";
+    this.port = port;
+    this.selector = new DeviceAddressSelector(addresses || [{ network: "lan", ip }], { port, connectTimeoutMs, log });
+    this.client = new DigestClient(username, password, { connectTimeoutMs: this.selector.connectTimeoutMs, requestTimeoutMs });
     // Capacity cache — invalidated on person create/delete or after TTL
     this._capacityCache = null;
     this._capacityCacheTime = 0;
@@ -140,10 +170,33 @@ export class HikvisionClient {
     this._capacityCacheTime = 0;
   }
 
+  /** Base URL of the address in use right now — changes when the service fails over. */
+  get baseUrl() {
+    return `${this.scheme}://${this.selector.active.ip}:${this.port}`;
+  }
+
+  /**
+   * Every ISAPI request goes through here. A network-level failure re-selects
+   * the address (LAN first) and retries once on the other interface — but only
+   * when the request never reached the device, or is a GET. A POST/PUT/DELETE
+   * that connected and then timed out may already have enrolled or deleted a
+   * person, so it is surfaced instead of being sent a second time.
+   */
+  async _fetch(method, pathAndQuery, body, contentType) {
+    const tried = this.selector.active.ip;
+    try {
+      return await this.client.fetch(method, `${this.baseUrl}${pathAndQuery}`, body, contentType);
+    } catch (err) {
+      if (!isNetworkError(err) || (err.deviceConnected && method !== "GET")) throw err;
+      await this.selector.select(); // rejects when no configured address answers
+      if (this.selector.active.ip === tried) throw err;
+      return this.client.fetch(method, `${this.baseUrl}${pathAndQuery}`, body, contentType);
+    }
+  }
+
   async _get(path) {
     const sep = path.includes("?") ? "&" : "?";
-    const url = `${this.baseUrl}${path}${sep}format=json`;
-    const res = await this.client.fetch("GET", url, null, null);
+    const res = await this._fetch("GET", `${path}${sep}format=json`, null, null);
     if (res.status >= 400) {
       throw new Error(`ISAPI GET ${path} → ${res.status}: ${res.body.slice(0, 300)}`);
     }
@@ -153,9 +206,8 @@ export class HikvisionClient {
 
   async _postJson(path, data) {
     const sep = path.includes("?") ? "&" : "?";
-    const url = `${this.baseUrl}${path}${sep}format=json`;
     const body = JSON.stringify(data);
-    const res = await this.client.fetch("POST", url, body, "application/json");
+    const res = await this._fetch("POST", `${path}${sep}format=json`, body, "application/json");
     if (res.status >= 400) {
       throw new Error(`ISAPI POST ${path} → ${res.status}: ${res.body.slice(0, 300)}`);
     }
@@ -165,9 +217,8 @@ export class HikvisionClient {
 
   async _putJson(path, data) {
     const sep = path.includes("?") ? "&" : "?";
-    const url = `${this.baseUrl}${path}${sep}format=json`;
     const body = JSON.stringify(data);
-    const res = await this.client.fetch("PUT", url, body, "application/json");
+    const res = await this._fetch("PUT", `${path}${sep}format=json`, body, "application/json");
     if (res.status >= 400) {
       throw new Error(`ISAPI PUT ${path} → ${res.status}: ${res.body.slice(0, 300)}`);
     }
@@ -177,8 +228,7 @@ export class HikvisionClient {
 
   async _delete(path) {
     const sep = path.includes("?") ? "&" : "?";
-    const url = `${this.baseUrl}${path}${sep}format=json`;
-    const res = await this.client.fetch("DELETE", url, null, null);
+    const res = await this._fetch("DELETE", `${path}${sep}format=json`, null, null);
     if (res.status >= 400) {
       throw new Error(`ISAPI DELETE ${path} → ${res.status}: ${res.body.slice(0, 300)}`);
     }
@@ -632,7 +682,6 @@ export class HikvisionClient {
 
   /** Upload a face photo for a person (base64 JPEG/PNG) */
   async uploadFacePhoto(employeeNo, imageBuffer) {
-    const url = `${this.baseUrl}/ISAPI/Intelligent/FDLib/FDSetUp?format=json`;
     const boundary = `----HikBoundary${Date.now()}`;
 
     // Build multipart body
@@ -655,7 +704,7 @@ export class HikvisionClient {
     const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
     const body = Buffer.concat([header, imageBuffer, footer]);
 
-    const res = await this.client.fetch("POST", url, body, `multipart/form-data; boundary=${boundary}`);
+    const res = await this._fetch("POST", "/ISAPI/Intelligent/FDLib/FDSetUp?format=json", body, `multipart/form-data; boundary=${boundary}`);
     if (res.status >= 400) throw new Error(`Face upload failed: ${res.status} — ${res.body.slice(0, 300)}`);
     try { return JSON.parse(res.body); } catch { return res.body; }
   }
@@ -674,8 +723,9 @@ export class HikvisionClient {
       const match = Array.isArray(matchList) ? matchList[0] : matchList;
       if (match?.faceURL) {
         // Fetch the actual image — use rawBuffer to avoid UTF-8 corruption of binary JPEG
-        const imgUrl = match.faceURL.startsWith("http") ? match.faceURL : `${this.baseUrl}${match.faceURL}`;
-        const res = await this.client.fetch("GET", imgUrl, null, null);
+        // An absolute faceURL names one interface; re-base it onto the address in use.
+        const face = new URL(match.faceURL, this.baseUrl);
+        const res = await this._fetch("GET", face.pathname + face.search, null, null);
         if (res.status === 200 && res.rawBuffer && res.rawBuffer.length > 100) {
           return { found: true, imageBase64: res.rawBuffer.toString("base64") };
         }
@@ -719,21 +769,18 @@ export class HikvisionClient {
   // ── Raw request (for debugging) ──
 
   async rawGet(path) {
-    const url = `${this.baseUrl}${path}`;
-    const res = await this.client.fetch("GET", url, null, null);
+    const res = await this._fetch("GET", path, null, null);
     return { status: res.status, body: res.body };
   }
 
   async rawPostJson(path, data) {
-    const url = `${this.baseUrl}${path}`;
     const body = JSON.stringify(data);
-    const res = await this.client.fetch("POST", url, body, "application/json");
+    const res = await this._fetch("POST", path, body, "application/json");
     return { status: res.status, body: res.body };
   }
 
   async rawPostXml(path, xml) {
-    const url = `${this.baseUrl}${path}`;
-    const res = await this.client.fetch("POST", url, xml, "application/xml");
+    const res = await this._fetch("POST", path, xml, "application/xml");
     return { status: res.status, body: res.body };
   }
 }

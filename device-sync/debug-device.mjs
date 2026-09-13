@@ -5,11 +5,12 @@
 
 import "dotenv/config";
 import { HikvisionClient } from "./hikvision-api.mjs";
+import { resolveDeviceAddresses } from "./device-address.mjs";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const hik = new HikvisionClient({
-  ip: process.env.DEVICE_IP || "192.168.15.15",
+  addresses: resolveDeviceAddresses(),
   port: parseInt(process.env.DEVICE_PORT || "443"),
   username: process.env.DEVICE_USERNAME || "admin",
   password: process.env.DEVICE_PASSWORD || "",

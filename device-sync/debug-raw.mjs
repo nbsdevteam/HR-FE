@@ -5,10 +5,11 @@
 import "dotenv/config";
 import https from "node:https";
 import crypto from "node:crypto";
+import { resolveDeviceAddresses } from "./device-address.mjs";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const IP = process.env.DEVICE_IP || "192.168.15.15";
+const IP = resolveDeviceAddresses()[0].ip;
 const PORT = parseInt(process.env.DEVICE_PORT || "443");
 const USER = process.env.DEVICE_USERNAME || "admin";
 const PASS = process.env.DEVICE_PASSWORD || "";

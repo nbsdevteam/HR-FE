@@ -14,6 +14,7 @@
 
 import "dotenv/config";
 import { HikvisionClient } from "./hikvision-api.mjs";
+import { resolveDeviceAddresses } from "./device-address.mjs";
 import { createBackend as createSupabaseBackend } from "./backend-supabase.mjs";
 import { createBackend as createOdooBackend } from "./backend-odoo.mjs";
 
@@ -33,11 +34,14 @@ function getDayOfWeek(dateStr) {
 const backendType = (process.env.BACKEND || "supabase").trim().toLowerCase();
 
 const hik = new HikvisionClient({
-  ip: process.env.DEVICE_IP || "192.168.15.15",
+  addresses: resolveDeviceAddresses(),
   port: parseInt(process.env.DEVICE_PORT || "443"),
   username: process.env.DEVICE_USERNAME || "admin",
   password: process.env.DEVICE_PASSWORD || "",
   useHttps: process.env.DEVICE_USE_HTTPS !== "false",
+  connectTimeoutMs: parseInt(process.env.DEVICE_CONNECT_TIMEOUT_MS || "3000"),
+  requestTimeoutMs: parseInt(process.env.DEVICE_REQUEST_TIMEOUT_MS || "30000"),
+  log,
 });
 
 const backendCtx = { log, todayIraq, getDayOfWeek, IRAQ_TZ };
@@ -50,12 +54,18 @@ const backend =
           username: process.env.ODOO_SYNC_USERNAME || "",
           password: process.env.ODOO_SYNC_PASSWORD || "",
           tzOffsetHours: parseInt(process.env.TZ_OFFSET_HOURS || "3"),
-          device: { ip: process.env.DEVICE_IP || "192.168.15.15", port: parseInt(process.env.DEVICE_PORT || "443"), useHttps: process.env.DEVICE_USE_HTTPS !== "false", username: process.env.DEVICE_USERNAME || "admin" },
+          device: {
+            ip: hik.selector.identityIp,
+            allIps: hik.selector.allIps,
+            port: parseInt(process.env.DEVICE_PORT || "443"),
+            useHttps: process.env.DEVICE_USE_HTTPS !== "false",
+            username: process.env.DEVICE_USERNAME || "admin",
+          },
         },
         backendCtx,
       )
     : createSupabaseBackend(
-        { url: process.env.SUPABASE_URL, serviceKey: process.env.SUPABASE_SERVICE_KEY, deviceIp: process.env.DEVICE_IP || "192.168.15.15" },
+        { url: process.env.SUPABASE_URL, serviceKey: process.env.SUPABASE_SERVICE_KEY, deviceIp: hik.selector.identityIp },
         backendCtx,
       );
 

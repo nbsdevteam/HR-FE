@@ -8,16 +8,19 @@
 import "dotenv/config";
 import { HikvisionClient } from "./hikvision-api.mjs";
 import { OdooClient } from "./odoo-client.mjs";
+import { resolveDeviceAddresses, probeTcp } from "./device-address.mjs";
 
 // Allow self-signed certificates (Hikvision uses self-signed HTTPS)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const hik = new HikvisionClient({
-  ip: process.env.DEVICE_IP || "192.168.15.15",
+  addresses: resolveDeviceAddresses(),
   port: parseInt(process.env.DEVICE_PORT || "443"),
   username: process.env.DEVICE_USERNAME || "admin",
   password: process.env.DEVICE_PASSWORD || "",
   useHttps: process.env.DEVICE_USE_HTTPS !== "false",
+  connectTimeoutMs: parseInt(process.env.DEVICE_CONNECT_TIMEOUT_MS || "3000"),
+  requestTimeoutMs: parseInt(process.env.DEVICE_REQUEST_TIMEOUT_MS || "30000"),
 });
 
 async function test() {
@@ -26,10 +29,19 @@ async function test() {
   console.log("  (Local only — no Supabase needed)");
   console.log("═══════════════════════════════════════\n");
 
-  console.log(`  Device IP: ${process.env.DEVICE_IP || "192.168.15.15"}`);
+  console.log(`  Device addresses: ${hik.selector.describe()}`);
   console.log(`  Port: ${process.env.DEVICE_PORT || "443"}`);
   console.log(`  HTTPS: ${process.env.DEVICE_USE_HTTPS !== "false"}`);
   console.log(`  Username: ${process.env.DEVICE_USERNAME || "admin"}\n`);
+
+  console.log("0️⃣  Checking each configured address...");
+  const addresses = resolveDeviceAddresses();
+  const port = parseInt(process.env.DEVICE_PORT || "443");
+  for (const a of addresses) {
+    const ok = await probeTcp(a.ip, port, 3000);
+    console.log(`   ${ok ? "✅" : "❌"} ${a.network.padEnd(4)} ${a.ip}:${port}`);
+  }
+  console.log();
 
   // 1. Device info
   console.log("1️⃣  Testing device connection...");
@@ -43,12 +55,12 @@ async function test() {
   } catch (err) {
     console.log(`   ❌ Connection failed: ${err.message}\n`);
     console.log(`   Troubleshooting:`);
-    console.log(`   - Can you open https://${process.env.DEVICE_IP || "192.168.15.15"} in your browser?`);
+    console.log(`   - Can you open https://${addresses[0].ip} in your browser?`);
     console.log(`   - Verify username/password are correct`);
     console.log(`   - If using HTTP (not HTTPS), set DEVICE_USE_HTTPS=false in .env`);
     console.log(`   - If using a different port, set DEVICE_PORT in .env`);
     console.log(`\n   Manual test with curl:`);
-    console.log(`   curl -k https://${process.env.DEVICE_IP || "192.168.15.15"}/ISAPI/System/deviceInfo --digest -u ${process.env.DEVICE_USERNAME || "admin"}:YOUR_PASSWORD`);
+    console.log(`   curl -k https://${addresses[0].ip}/ISAPI/System/deviceInfo --digest -u ${process.env.DEVICE_USERNAME || "admin"}:YOUR_PASSWORD`);
     process.exit(1);
   }
 

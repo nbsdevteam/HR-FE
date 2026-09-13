@@ -25,7 +25,7 @@ function timeToMinutes(timeStr) {
 }
 
 /**
- * @param {object} config - { url, serviceKey, deviceIp }
+ * @param {object} config - { url, serviceKey, deviceIp, deviceIps }
  * @param {object} ctx - shared helpers: { log, todayIraq, getDayOfWeek, IRAQ_TZ }
  */
 export function createBackend(config, ctx) {
@@ -383,7 +383,7 @@ export function createBackend(config, ctx) {
       await db.from("notifications").insert({
         id: uuid(),
         title: "⚠️ جهاز البصمة غير متصل",
-        body: `فشل الاتصال بجهاز البصمة (${deviceIp}) لمدة ${MAX_HEALTH_FAILURES} محاولات متتالية. يرجى التحقق من الجهاز والشبكة.`,
+        body: `فشل الاتصال بجهاز البصمة (${(config.deviceIps || [deviceIp]).join(" / ")}) لمدة ${MAX_HEALTH_FAILURES} محاولات متتالية. يرجى التحقق من الجهاز والشبكة.`,
         type: "error",
         category: "device_health",
         entity_type: "device",

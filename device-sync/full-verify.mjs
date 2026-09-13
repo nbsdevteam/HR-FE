@@ -247,8 +247,9 @@ if (weekRecs && weekRecs.length > 0) {
 log(`\n▸ STEP 6: Device Cross-Check\n`);
 try {
   const { HikvisionClient } = await import("./hikvision-api.mjs");
+  const { resolveDeviceAddresses } = await import("./device-address.mjs");
   const hik = new HikvisionClient({
-    ip: process.env.DEVICE_IP || "192.168.15.15",
+    addresses: resolveDeviceAddresses(),
     port: parseInt(process.env.DEVICE_PORT || "443"),
     username: process.env.DEVICE_USERNAME || "admin",
     password: process.env.DEVICE_PASSWORD || "",

@@ -72,7 +72,7 @@ npm start
 ```
 
 ### 6. (Optional) Configure device push
-In the device web UI (https://192.168.15.15):
+In the device web UI (https://192.168.15.15 — the LAN address):
 1. Go to **Network → Advanced → HTTP Listening**
 2. Set URL: `http://<your-server-ip>:8089/ISAPI/Event/notification/alertStream`
 3. Enable the listener
@@ -90,24 +90,30 @@ In the device web UI (https://192.168.15.15):
 ## Architecture
 
 ```
-┌─────────────────────┐     ISAPI/HTTP      ┌──────────────────┐
-│  Hikvision Device   │ ──── Push ────────▶ │                  │
-│  DS-K1T342MFWX      │ ◀─── Poll ──────── │  Sync Service    │
-│  192.168.15.15      │                     │  (Node.js)       │
-└─────────────────────┘                     │                  │
-                                            │  ┌─ Poll: 5min   │
-                                            │  ├─ Reconcile:30m│
-                                            │  └─ Emp Sync:60m │
-                                            └────────┬─────────┘
-                                                     │ Supabase API
-                                            ┌────────▼─────────┐
-                                            │  Supabase DB     │
-                                            │  ┌─ attendance   │
-                                            │  ├─ employees    │
-                                            │  ├─ device_events│
-                                            │  └─ notifications│
-                                            └──────────────────┘
+┌─────────────────────────┐   ISAPI/HTTP      ┌──────────────────┐
+│  Hikvision Device       │ ──── Push ───────▶ │                  │
+│  DS-K1T342MFWX          │ ◀─── Poll ──────── │  Sync Service    │
+│  LAN:  192.168.15.15    │  (LAN preferred,   │  (Node.js)       │
+│  Wi-Fi: 192.168.116.115 │   Wi-Fi fallback)  │                  │
+└─────────────────────────┘                    │  ┌─ Poll: 5min   │
+                                                │  ├─ Reconcile:30m│
+                                                │  └─ Emp Sync:60m │
+                                                └────────┬─────────┘
+                                                         │ Supabase API
+                                                ┌────────▼─────────┐
+                                                │  Supabase DB     │
+                                                │  ┌─ attendance   │
+                                                │  ├─ employees    │
+                                                │  ├─ device_events│
+                                                │  └─ notifications│
+                                                └──────────────────┘
 ```
+
+The device answers on two interfaces (see `device-address.mjs`). LAN
+(`DEVICE_LAN_IP`) is used whenever it answers; Wi-Fi (`DEVICE_WIFI_IP`) is
+used only while LAN does not. Both are the same physical terminal — the LAN
+address is its permanent identity in Odoo/Supabase, and `/api/status` reports
+which interface is currently active (`deviceNetwork: "lan" | "wifi"`).
 
 ## How Check-in/Check-out Works
 

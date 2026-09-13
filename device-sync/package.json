@@ -13,7 +13,8 @@
     "setup-push": "node setup-device-push.mjs",
     "test-connection": "node test-connection.mjs",
     "manual-sync": "node manual-sync.mjs",
-    "diff-backends": "node diff-backends.mjs"
+    "diff-backends": "node diff-backends.mjs",
+    "test": "node timezone.selftest.mjs && node device-address.selftest.mjs && node hikvision-failover.selftest.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
