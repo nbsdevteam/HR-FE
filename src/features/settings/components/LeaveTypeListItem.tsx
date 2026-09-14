@@ -1,8 +1,8 @@
 import { useState, memo, useCallback } from "react";
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Edit2, Pencil, Trash2, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
-import { PositiveNumberInput } from "@/shared/components";
+import { PositiveNumberInput, StatusBadge } from "@/shared/components";
 import type { DbLeaveType, LeaveBalanceResetPolicy } from "@/shared/hooks";
 import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
 import LeaveTypeResetPolicyControl from "./LeaveTypeResetPolicyControl";
@@ -11,6 +11,7 @@ import SettingsToggle from "./SettingsToggle";
 type TLeaveTypeListItemProps = {
   leaveType: DbLeaveType;
   onToggleActive: (leaveType: DbLeaveType) => void;
+  onEdit: (leaveType: DbLeaveType) => void;
   onDelete: (leaveTypeId: string) => void;
   onUpdateDays: (leaveTypeId: string, defaultDaysPerYear: number) => void;
   onUpdateResetPolicy: (leaveTypeId: string, policy: LeaveBalanceResetPolicy) => void;
@@ -19,6 +20,7 @@ type TLeaveTypeListItemProps = {
 const LeaveTypeListItem = ({
   leaveType,
   onToggleActive,
+  onEdit,
   onDelete,
   onUpdateDays,
   onUpdateResetPolicy,
@@ -31,6 +33,10 @@ const LeaveTypeListItem = ({
   const handleToggleActive = useCallback((): void => {
     onToggleActive(leaveType);
   }, [onToggleActive, leaveType]);
+
+  const handleEdit = useCallback((): void => {
+    onEdit(leaveType);
+  }, [onEdit, leaveType]);
 
   const handleDelete = useCallback((): void => {
     onDelete(leaveType.id);
@@ -80,6 +86,11 @@ const LeaveTypeListItem = ({
             <span className="text-muted-foreground text-xs px-1.5 py-0.5 bg-muted/20 rounded">
               {leaveType.code}
             </span>
+            {leaveType.is_system && (
+              <StatusBadge colorClassName="bg-primary/10 border-primary/30 text-primary" fontSize={10}>
+                {arabicSource("settings.system_type_badge")}
+              </StatusBadge>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             {editingDays ? (
@@ -176,6 +187,14 @@ const LeaveTypeListItem = ({
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <SettingsToggle on={leaveType.is_active} onClick={handleToggleActive} />
+        {canManage && (
+          <button
+            onClick={handleEdit}
+            className="p-1 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </button>
+        )}
         {canManage && (
           <button
             onClick={handleDelete}

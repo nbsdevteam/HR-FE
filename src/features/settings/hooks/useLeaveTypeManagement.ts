@@ -1,13 +1,18 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
+import { arabicSource } from "@/i18n/source";
 import { type DbLeaveType, type LeaveBalanceResetPolicy, useOdooMutation } from "@/shared/hooks";
 import { INITIAL_NEW_LEAVE_TYPE } from "../constants/settings";
 import { leaveTypeErrorMessage } from "../utils/leaveTypeErrorMessage";
+import { diffLeaveTypeForm, leaveTypeToEditForm } from "../utils/leaveTypeEditForm";
 import type { NewLeaveTypeForm } from "../types";
 
 export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast: (message: string) => void) => {
   const [showNewLeaveTypeForm, setShowNewLeaveTypeForm] = useState(false);
   const [newLeaveType, setNewLeaveType] = useState<NewLeaveTypeForm>({ ...INITIAL_NEW_LEAVE_TYPE });
+  const [editingLeaveType, setEditingLeaveType] = useState<DbLeaveType | null>(null);
+  const [editLeaveType, setEditLeaveType] = useState<NewLeaveTypeForm>({ ...INITIAL_NEW_LEAVE_TYPE });
+  const [editLeaveTypeInitial, setEditLeaveTypeInitial] = useState<NewLeaveTypeForm>({ ...INITIAL_NEW_LEAVE_TYPE });
 
   const createLeaveTypeMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createLeaveType(payload),
@@ -97,10 +102,50 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     }
   }, [deleteLeaveTypeMutation, refetchLeaveTypes, showToast]);
 
+  // System rows are fully editable here — only Delete/archive are refused
+  // (handled above), never Edit (§1 of the Edit-a-leave-type build spec).
+  const openEditLeaveType = useCallback((leaveType: DbLeaveType) => {
+    const snapshot = leaveTypeToEditForm(leaveType);
+    setEditingLeaveType(leaveType);
+    setEditLeaveType(snapshot);
+    setEditLeaveTypeInitial(snapshot);
+  }, []);
+
+  const updateEditLeaveType = useCallback((patch: Partial<NewLeaveTypeForm>) => {
+    setEditLeaveType((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const closeEditLeaveType = useCallback(() => {
+    setEditingLeaveType(null);
+  }, []);
+
+  const saveEditLeaveType = useCallback(async () => {
+    if (!editingLeaveType) return;
+    // Only the changed keys go out — an omitted key is left alone server-side,
+    // so a no-op edit (or an untouched accrual override) never overwrites
+    // something the admin didn't mean to touch.
+    const patch = diffLeaveTypeForm(editLeaveTypeInitial, editLeaveType);
+    if (Object.keys(patch).length === 0) {
+      setEditingLeaveType(null);
+      return;
+    }
+    try {
+      await updateLeaveTypeMutation.mutateAsync({ leaveTypeId: editingLeaveType.id, patch });
+      setEditingLeaveType(null);
+      await refetchLeaveTypes();
+      showToast(arabicSource("settings.leave_type_updated"));
+    } catch (e: any) {
+      showToast(leaveTypeErrorMessage(e, "Failed to update leave type"));
+    }
+  }, [editingLeaveType, editLeaveType, editLeaveTypeInitial, refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
+
   return {
     showNewLeaveTypeForm, setShowNewLeaveTypeForm,
     newLeaveType, updateNewLeaveType,
     createLeaveType, toggleLeaveTypeActive, deleteLeaveTypeEntry, updateLeaveTypeDays,
     updateLeaveTypeResetPolicy,
+    editingLeaveType, editLeaveType, openEditLeaveType, updateEditLeaveType,
+    closeEditLeaveType, saveEditLeaveType,
+    savingEditLeaveType: updateLeaveTypeMutation.isPending,
   };
 };

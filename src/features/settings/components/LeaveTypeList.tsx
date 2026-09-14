@@ -6,6 +6,7 @@ type TLeaveTypeListProps = {
   leaveTypes: DbLeaveType[];
   loading: boolean;
   onToggleActive: (leaveType: DbLeaveType) => void;
+  onEdit: (leaveType: DbLeaveType) => void;
   onDelete: (leaveTypeId: string) => void;
   onUpdateDays: (leaveTypeId: string, defaultDaysPerYear: number) => void;
   onUpdateResetPolicy: (leaveTypeId: string, policy: LeaveBalanceResetPolicy) => void;
@@ -15,6 +16,7 @@ const LeaveTypeList = ({
   leaveTypes,
   loading,
   onToggleActive,
+  onEdit,
   onDelete,
   onUpdateDays,
   onUpdateResetPolicy,
@@ -40,6 +42,7 @@ const LeaveTypeList = ({
           key={leaveType.id}
           leaveType={leaveType}
           onToggleActive={onToggleActive}
+          onEdit={onEdit}
           onDelete={onDelete}
           onUpdateDays={onUpdateDays}
           onUpdateResetPolicy={onUpdateResetPolicy}

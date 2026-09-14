@@ -34,6 +34,7 @@ export const mapLeaveType = (r: any): DbLeaveType => {
     icon: r.icon || "",
     is_active: isActive(r),
     sort_order: num(r.sort_order),
+    is_system: bool(r.is_system),
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
   };

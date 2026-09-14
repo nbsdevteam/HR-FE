@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { AnimatePresence } from "motion/react";
 import { Calendar, Plus } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useSettingsBootstrap } from "../context/SettingsBootstrapContext";
@@ -6,6 +7,7 @@ import { useLeaveTypeManagement } from "../hooks/useLeaveTypeManagement";
 import { useLeaveTypePermissions } from "../hooks/useLeaveTypePermissions";
 import LeaveTypeList from "./LeaveTypeList";
 import NewLeaveTypeForm from "./NewLeaveTypeForm";
+import EditLeaveTypeModal from "./EditLeaveTypeModal";
 import SettingsSectionCard from "./SettingsSectionCard";
 
 type TLeaveTypesCardProps = {
@@ -29,6 +31,13 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
     deleteLeaveTypeEntry,
     updateLeaveTypeDays,
     updateLeaveTypeResetPolicy,
+    editingLeaveType,
+    editLeaveType,
+    openEditLeaveType,
+    updateEditLeaveType,
+    closeEditLeaveType,
+    saveEditLeaveType,
+    savingEditLeaveType,
   } = useLeaveTypeManagement(refetchLeaveTypes, showToast);
 
   const handleToggleNewLeaveTypeForm = useCallback((): void => {
@@ -70,10 +79,24 @@ const LeaveTypesCard = ({ showToast }: TLeaveTypesCardProps) => {
         leaveTypes={leaveTypes}
         loading={leaveTypesLoading}
         onToggleActive={toggleLeaveTypeActive}
+        onEdit={openEditLeaveType}
         onDelete={deleteLeaveTypeEntry}
         onUpdateDays={updateLeaveTypeDays}
         onUpdateResetPolicy={updateLeaveTypeResetPolicy}
       />
+
+      <AnimatePresence>
+        {editingLeaveType && (
+          <EditLeaveTypeModal
+            leaveType={editingLeaveType}
+            form={editLeaveType}
+            saving={savingEditLeaveType}
+            onFieldChange={updateEditLeaveType}
+            onSave={saveEditLeaveType}
+            onClose={closeEditLeaveType}
+          />
+        )}
+      </AnimatePresence>
     </SettingsSectionCard>
   );
 };

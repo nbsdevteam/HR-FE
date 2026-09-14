@@ -48,6 +48,7 @@ export interface DbLeaveType {
   icon: string;
   is_active: boolean;
   sort_order: number;
+  is_system: boolean;
   created_at: string;
   updated_at: string;
 }
