@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { InputField } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
@@ -35,6 +35,12 @@ const LeaveTypeFormFields = ({
   onToggleAdvanced,
   currentMonthlyAccrual,
 }: TLeaveTypeFormFieldsProps) => {
+  // Held as the exact typed string, not derived from form.accrual_days_per_month —
+  // that number is 0 both when untouched and when explicitly cleared/typed "0",
+  // and `value={number || ""}` would collapse both to blank, making "0" look
+  // like it's being rejected the instant it's typed.
+  const [accrualDaysText, setAccrualDaysText] = useState("");
+
   const handleNameArChange = useCallback(
     (value: string): void => {
       onFieldChange({ name_ar: value });
@@ -58,6 +64,7 @@ const LeaveTypeFormFields = ({
 
   const handleAccrualDaysChange = useCallback(
     (value: string): void => {
+      setAccrualDaysText(value);
       onFieldChange({ accrual_days_per_month: value === "" ? 0 : Number(value) });
     },
     [onFieldChange],
@@ -126,7 +133,7 @@ const LeaveTypeFormFields = ({
           <div>
             <InputField
               type="number"
-              value={form.accrual_days_per_month || ""}
+              value={accrualDaysText}
               onChange={handleAccrualDaysChange}
               placeholder={
                 currentMonthlyAccrual
