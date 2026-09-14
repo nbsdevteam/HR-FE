@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Save } from "lucide-react";
+import { Edit2, Save } from "lucide-react";
 import { Modal, ModalFooterActions, StatusBadge } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
@@ -56,6 +56,7 @@ const EditLeaveTypeModal = ({
   return (
     <Modal
       onClose={onClose}
+      icon={Edit2}
       title={arabicSource("settings.edit_leave_type")}
       subtitle={subtitle}
       footer={
