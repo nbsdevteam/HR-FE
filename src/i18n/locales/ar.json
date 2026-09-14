@@ -2585,6 +2585,7 @@
   "settings.error_invalid_min_service_months": "أقل مدة خدمة يجب أن تكون صفراً أو أكثر",
   "settings.error_leave_type_system_protected": "هذا نوع إجازة نظامي ولا يمكن تعديله",
   "settings.accrual_days_per_month_hint": "اتركه فارغاً لاشتقاقه من أيام السنة ÷ 12",
+  "settings.accrual_days_per_month_edit_hint": "المعدل الحالي معروض كنص توضيحي. اتركه فارغاً للإبقاء عليه، أو أدخل 0 لاشتقاقه من أيام السنة ÷ 12 مجدداً",
   "settings.edit_leave_type": "تعديل نوع الإجازة",
   "settings.system_type_badge": "نظامي",
   "settings.leave_type_updated": "تم تحديث نوع الإجازة",

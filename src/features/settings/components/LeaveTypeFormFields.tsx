@@ -14,6 +14,12 @@ type TLeaveTypeFormFieldsProps = {
   onFieldChange: (patch: Partial<NewLeaveTypeForm>) => void;
   showAdvanced: boolean;
   onToggleAdvanced: () => void;
+  /**
+   * Edit only — the read never returns the accrual override itself (see
+   * `leaveTypeToEditForm`), only this derived-or-overridden effective rate.
+   * Shown as a placeholder so a blank input doesn't look broken.
+   */
+  currentMonthlyAccrual?: number;
 };
 
 /**
@@ -27,6 +33,7 @@ const LeaveTypeFormFields = ({
   onFieldChange,
   showAdvanced,
   onToggleAdvanced,
+  currentMonthlyAccrual,
 }: TLeaveTypeFormFieldsProps) => {
   const handleNameArChange = useCallback(
     (value: string): void => {
@@ -121,11 +128,17 @@ const LeaveTypeFormFields = ({
               type="number"
               value={form.accrual_days_per_month || ""}
               onChange={handleAccrualDaysChange}
-              placeholder={arabicSource("settings.accrual_days_per_month")}
+              placeholder={
+                currentMonthlyAccrual
+                  ? String(currentMonthlyAccrual)
+                  : arabicSource("settings.accrual_days_per_month")
+              }
               className={inputCls}
             />
             <p className="text-muted-foreground mt-1" style={{ fontSize: 11 }}>
-              {arabicSource("settings.accrual_days_per_month_hint")}
+              {currentMonthlyAccrual
+                ? arabicSource("settings.accrual_days_per_month_edit_hint")
+                : arabicSource("settings.accrual_days_per_month_hint")}
             </p>
           </div>
         )}

@@ -77,6 +77,7 @@ const EditLeaveTypeModal = ({
         onFieldChange={onFieldChange}
         showAdvanced={showAdvanced}
         onToggleAdvanced={handleToggleAdvanced}
+        currentMonthlyAccrual={leaveType.monthly_accrual}
       />
     </Modal>
   );

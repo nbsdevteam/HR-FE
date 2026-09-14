@@ -2491,6 +2491,7 @@
   "هذا نوع إجازة نظامي ولا يمكن تعديله": "settings.error_leave_type_system_protected",
   "أقل عدد أيام لا يمكن أن يكون أكبر من الأقصى": "settings.days_per_request_range",
   "اتركه فارغاً لاشتقاقه من أيام السنة ÷ 12": "settings.accrual_days_per_month_hint",
+  "المعدل الحالي معروض كنص توضيحي. اتركه فارغاً للإبقاء عليه، أو أدخل 0 لاشتقاقه من أيام السنة ÷ 12 مجدداً": "settings.accrual_days_per_month_edit_hint",
   "تعديل نوع الإجازة": "settings.edit_leave_type",
   "نظامي": "settings.system_type_badge",
   "تم تحديث نوع الإجازة": "settings.leave_type_updated",

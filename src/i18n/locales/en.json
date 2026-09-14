@@ -2585,6 +2585,7 @@
   "settings.error_invalid_min_service_months": "Minimum service months must be zero or greater",
   "settings.error_leave_type_system_protected": "This is a system leave type and cannot be modified",
   "settings.accrual_days_per_month_hint": "Leave blank to derive from Days per Year ÷ 12",
+  "settings.accrual_days_per_month_edit_hint": "The current rate is shown as a placeholder. Leave blank to keep it, or enter 0 to derive it from Days per Year ÷ 12 again",
   "settings.edit_leave_type": "Edit leave type",
   "settings.system_type_badge": "System",
   "settings.leave_type_updated": "Leave type updated",

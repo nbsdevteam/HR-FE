@@ -2585,6 +2585,7 @@
   "settings.error_invalid_min_service_months": "کەمترین ماوەی خزمەت دەبێت سفر یان زیاتر بێت",
   "settings.error_leave_type_system_protected": "ئەمە جۆرێکی سیستمی مۆڵەتە و ناتوانرێت بگۆڕدرێت",
   "settings.accrual_days_per_month_hint": "بەتاڵی بهێڵەرەوە بۆ دەرهێنانی خۆکار لە ڕۆژەکانی ساڵ ÷ ١٢",
+  "settings.accrual_days_per_month_edit_hint": "ڕێژەی ئێستا وەک دەقی ڕێنمایی پیشان دراوە. بۆ مانەوە لەسەری بەتاڵی بهێڵەرەوە، یان 0 بنووسە بۆ دەرهێنانەوەی لە ڕۆژەکانی ساڵ ÷ ١٢",
   "settings.edit_leave_type": "دەستکاریکردنی جۆری مۆڵەت",
   "settings.system_type_badge": "سیستمی",
   "settings.leave_type_updated": "جۆری مۆڵەت نوێکرایەوە",
