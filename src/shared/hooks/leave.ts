@@ -17,12 +17,9 @@ export interface DbLeaveType {
   code: string;
   is_paid: boolean;
   default_days_per_year: number;
-  max_days_per_request: number | null;
-  min_days_per_request: number;
   allow_half_day: boolean;
   requires_attachment: boolean;
   allow_hourly: boolean;
-  gender_restriction: string | null;
   min_service_months: number;
   /** Insufficient-balance requests go to the manager as an approve/reject exception instead of being rejected outright. */
   excuse_on_insufficient_balance: boolean;
@@ -45,9 +42,7 @@ export interface DbLeaveType {
   /** Type cannot be taken while the employee is on probation. */
   probation_blocked: boolean;
   color: string;
-  icon: string;
   is_active: boolean;
-  sort_order: number;
   is_system: boolean;
   created_at: string;
   updated_at: string;
