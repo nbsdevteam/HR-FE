@@ -40,14 +40,28 @@ const EDIT_FIELD_KEYS: Extract<keyof NewLeaveTypeForm, string>[] = [
   "balance_reset_policy",
 ];
 
-/** Only the fields the admin actually changed — an untouched key is left alone server-side. */
+/**
+ * Only the fields the admin actually changed go out — an untouched key is
+ * left alone server-side. `forceKeys` overrides that for a field whose
+ * "no visible change" is itself meaningful (accrual_days_per_month: clearing
+ * it back to 0 must still reach the backend, since 0 also happens to be the
+ * always-blank starting value — see `leaveTypeToEditForm`).
+ */
 export const diffLeaveTypeForm = (
   original: NewLeaveTypeForm,
   edited: NewLeaveTypeForm,
+  forceKeys: ReadonlySet<Extract<keyof NewLeaveTypeForm, string>> = new Set(),
 ): Record<string, unknown> => {
   const patch: Record<string, unknown> = {};
   for (const key of EDIT_FIELD_KEYS) {
-    if (edited[key] !== original[key]) patch[key] = edited[key];
+    if (edited[key] !== original[key] || forceKeys.has(key)) patch[key] = edited[key];
+  }
+  // The backend's English-name column is `name`, not `name_en` — Create
+  // already maps it the same way (see useLeaveTypeManagement.createLeaveType).
+  // Sending `name_en` as-is is silently ignored, leaving the name unchanged.
+  if ("name_en" in patch) {
+    patch.name = patch.name_en;
+    delete patch.name_en;
   }
   return patch;
 };

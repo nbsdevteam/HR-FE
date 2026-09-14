@@ -13,6 +13,10 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
   const [editingLeaveType, setEditingLeaveType] = useState<DbLeaveType | null>(null);
   const [editLeaveType, setEditLeaveType] = useState<NewLeaveTypeForm>({ ...INITIAL_NEW_LEAVE_TYPE });
   const [editLeaveTypeInitial, setEditLeaveTypeInitial] = useState<NewLeaveTypeForm>({ ...INITIAL_NEW_LEAVE_TYPE });
+  // accrual_days_per_month always starts at 0 (the read never returns it — see
+  // leaveTypeToEditForm), so clearing it back to 0 is invisible to a plain
+  // diff. Track the touch separately so a deliberate clear still reaches save.
+  const [editAccrualTouched, setEditAccrualTouched] = useState(false);
 
   const createLeaveTypeMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createLeaveType(payload),
@@ -109,9 +113,11 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     setEditingLeaveType(leaveType);
     setEditLeaveType(snapshot);
     setEditLeaveTypeInitial(snapshot);
+    setEditAccrualTouched(false);
   }, []);
 
   const updateEditLeaveType = useCallback((patch: Partial<NewLeaveTypeForm>) => {
+    if ("accrual_days_per_month" in patch) setEditAccrualTouched(true);
     setEditLeaveType((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -122,9 +128,13 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
   const saveEditLeaveType = useCallback(async () => {
     if (!editingLeaveType) return;
     // Only the changed keys go out — an omitted key is left alone server-side,
-    // so a no-op edit (or an untouched accrual override) never overwrites
-    // something the admin didn't mean to touch.
-    const patch = diffLeaveTypeForm(editLeaveTypeInitial, editLeaveType);
+    // so a no-op edit never overwrites something the admin didn't mean to
+    // touch. accrual_days_per_month is force-included once touched, since a
+    // deliberate clear-back-to-0 would otherwise look like "no change" (§4).
+    const forceKeys = editAccrualTouched
+      ? new Set<Extract<keyof NewLeaveTypeForm, string>>(["accrual_days_per_month"])
+      : undefined;
+    const patch = diffLeaveTypeForm(editLeaveTypeInitial, editLeaveType, forceKeys);
     if (Object.keys(patch).length === 0) {
       setEditingLeaveType(null);
       return;
@@ -137,7 +147,7 @@ export const useLeaveTypeManagement = (refetchLeaveTypes: () => void, showToast:
     } catch (e: any) {
       showToast(leaveTypeErrorMessage(e, "Failed to update leave type"));
     }
-  }, [editingLeaveType, editLeaveType, editLeaveTypeInitial, refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
+  }, [editAccrualTouched, editingLeaveType, editLeaveType, editLeaveTypeInitial, refetchLeaveTypes, showToast, updateLeaveTypeMutation]);
 
   return {
     showNewLeaveTypeForm, setShowNewLeaveTypeForm,
