@@ -3,6 +3,7 @@ import { formatTime, formatWorkHours, mapAttendanceStatus, type DbAttendanceReco
 import { StatusBadge } from "@/shared/components";
 import { statusColors } from "@/features/attendance/styles";
 import { attendanceDayNamesShort } from "../data";
+import { weekdayKeyFromDate } from "../utils/attendanceDisplay";
 
 type DailyAttendanceTableRowProps = {
   record: DbAttendanceRecord;
@@ -15,7 +16,7 @@ const DailyAttendanceTableRow = ({ record }: DailyAttendanceTableRowProps) => {
   return (
     <tr className="border-b border-border/10 hover:bg-muted/5">
       <td className="px-3 py-2 text-center font-mono text-foreground" style={{ fontSize: 12 }}>{record.date.slice(5)}</td>
-      <td className="px-3 py-2 text-center text-muted-foreground" style={{ fontSize: 11 }}>{attendanceDayNamesShort[record.day_of_week?.toLowerCase()] || "—"}</td>
+      <td className="px-3 py-2 text-center text-muted-foreground" style={{ fontSize: 11 }}>{attendanceDayNamesShort[weekdayKeyFromDate(record.date) || ""] || "—"}</td>
       <td className="px-3 py-2 text-center">
         <span className="text-emerald-400 font-mono" style={{ fontSize: 12 }} dir="ltr">{record.check_in_time ? formatTime(record.check_in_time) : "—"}</span>
       </td>

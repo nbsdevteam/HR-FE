@@ -84,8 +84,14 @@ export const buildTodayAttendanceStats = (
   };
 };
 
-/** Midday UTC keeps date math free of DST/timezone drift when only the calendar date matters. */
-const weekdayKeyFromDate = (dateStr: string): string | undefined =>
+/**
+ * Midday UTC keeps date math free of DST/timezone drift when only the
+ * calendar date matters. Derives the weekday from `date` rather than
+ * trusting a record's separately-stored `day_of_week` field, which can be
+ * empty or wrong on some records — see `DailyAttendanceTableRow`, the other
+ * caller of this.
+ */
+export const weekdayKeyFromDate = (dateStr: string): string | undefined =>
   WEEK_DAY_KEYS[new Date(`${dateStr}T12:00:00Z`).getUTCDay()];
 
 /** Per-weekday status tallies for the weekly bar chart, Sunday through Saturday. */

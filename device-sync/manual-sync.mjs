@@ -28,7 +28,12 @@ function todayIraq() {
 }
 function getDayOfWeek(dateStr) {
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  return days[new Date(dateStr + "T00:00:00+03:00").getDay()];
+  // `dateStr` is already the Baghdad calendar date — read it back with
+  // getUTCDay() on a Date.UTC() instant so the result doesn't depend on the
+  // host process's own timezone (getDay() reads in host-local time, which
+  // is wrong whenever this service isn't itself running in Asia/Baghdad).
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return days[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 }
 
 const backendType = (process.env.BACKEND || "supabase").trim().toLowerCase();
