@@ -12,20 +12,21 @@ const parseAsUtcNoon = (dateStr: string): Date => new Date(`${dateStr}T12:00:00Z
 const formatUtcDate = (date: Date): string => date.toISOString().slice(0, 10);
 
 /**
- * Sunday–Saturday bounds for the week `weekOffset` weeks away from the
- * current Baghdad week (0 = this week, -1 = last week, ...).
+ * Trailing 7-day bounds ending `weekOffset` weeks away from today in Baghdad
+ * (0 = the 7 days up to and including today, -1 = the 7 days before that, ...).
+ * Anchored on today rather than the calendar Sunday–Saturday week so the
+ * default view never reaches into future, not-yet-happened days.
  */
 export const getWeekRange = (weekOffset: number): WeekRange => {
   const today = parseAsUtcNoon(todayInBaghdad());
-  const dayOfWeek = today.getUTCDay();
 
-  const sunday = new Date(today);
-  sunday.setUTCDate(today.getUTCDate() - dayOfWeek + weekOffset * 7);
+  const end = new Date(today);
+  end.setUTCDate(today.getUTCDate() + weekOffset * 7);
 
-  const saturday = new Date(sunday);
-  saturday.setUTCDate(sunday.getUTCDate() + 6);
+  const start = new Date(end);
+  start.setUTCDate(end.getUTCDate() - 6);
 
-  return { start: formatUtcDate(sunday), end: formatUtcDate(saturday) };
+  return { start: formatUtcDate(start), end: formatUtcDate(end) };
 };
 
 /** e.g. "Aug 24 – Aug 30" / localized equivalent, for the chart's week nav label. */
