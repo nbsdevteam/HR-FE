@@ -84,6 +84,10 @@ export const buildTodayAttendanceStats = (
   };
 };
 
+/** Midday UTC keeps date math free of DST/timezone drift when only the calendar date matters. */
+const weekdayKeyFromDate = (dateStr: string): string | undefined =>
+  WEEK_DAY_KEYS[new Date(`${dateStr}T12:00:00Z`).getUTCDay()];
+
 /** Per-weekday status tallies for the weekly bar chart, Sunday through Saturday. */
 export const buildWeeklyAttendance = (
   records: DbAttendanceRecord[],
@@ -94,7 +98,13 @@ export const buildWeeklyAttendance = (
   });
 
   records.forEach((record) => {
-    const counts = byDay.get(record.day_of_week?.toLowerCase());
+    if (!record.date) return;
+    // Derived from `date` (always present — it's what the range query
+    // filtered on) rather than the backend's `day_of_week` field, which can
+    // be empty/missing on some records and would otherwise silently drop
+    // them from the chart while they still show up in the plain date-keyed
+    // table.
+    const counts = byDay.get(weekdayKeyFromDate(record.date)!);
     if (!counts) return;
 
     const countKey =
