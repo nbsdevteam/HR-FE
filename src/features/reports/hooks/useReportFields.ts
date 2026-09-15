@@ -10,6 +10,29 @@ interface ReportFieldCatalog {
   defaultFields: string[];
 }
 
+const COLUMN_SELECTION_STORAGE_KEY = "hr-report-selected-fields";
+
+const readStoredFieldSelections = (): Record<string, string[]> => {
+  try {
+    const saved = localStorage.getItem(COLUMN_SELECTION_STORAGE_KEY);
+    if (!saved) return {};
+    const parsed: unknown = JSON.parse(saved);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, string[]>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const persistFieldSelection = (code: string, keys: string[]): void => {
+  try {
+    const all = readStoredFieldSelections();
+    localStorage.setItem(COLUMN_SELECTION_STORAGE_KEY, JSON.stringify({ ...all, [code]: keys }));
+  } catch {
+    // localStorage may be unavailable (e.g. private browsing) — the
+    // selection simply won't persist across visits.
+  }
+};
+
 /** Fetches + caches the selectable field catalog for a report code (null/FE-local code = no catalog). */
 export const useReportFields = (code: string | null) => {
   const [selected, setSelected] = useState<string[]>([]);
@@ -28,26 +51,43 @@ export const useReportFields = (code: string | null) => {
   const fields = enabled ? query.data?.fields ?? [] : [];
 
   const toggle = useCallback((key: string): void => {
-    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-  }, []);
+    setSelected((prev) => {
+      const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key];
+      if (code) persistFieldSelection(code, next);
+      return next;
+    });
+  }, [code]);
 
   const selectAll = useCallback((): void => {
-    setSelected(fields.map((f) => f.key));
-  }, [fields]);
+    const next = fields.map((f) => f.key);
+    setSelected(next);
+    if (code) persistFieldSelection(code, next);
+  }, [fields, code]);
 
-  const clearAll = useCallback((): void => setSelected([]), []);
+  const clearAll = useCallback((): void => {
+    setSelected([]);
+    if (code) persistFieldSelection(code, []);
+  }, [code]);
 
-  // Reset the selection to the catalog's defaults whenever the report code
-  // changes (or its catalog resolves) — mirrors the previous effect-per-code
-  // behavior, but also fires on a cache hit since `query.data` is available
-  // immediately instead of only on a fresh fetch.
+  // Reset the selection whenever the report code changes (or its catalog
+  // resolves): restore the user's last choices for that code from
+  // localStorage, falling back to the catalog's defaults if they never
+  // chose columns before (or every stored key has since been removed from
+  // the catalog).
   useEffect(() => {
     if (!enabled) {
       setSelected([]);
       return;
     }
-    if (query.data) setSelected(query.data.defaultFields);
-  }, [enabled, query.data]);
+    if (!query.data) return;
+    const stored = readStoredFieldSelections()[code as string];
+    if (stored) {
+      const validKeys = new Set(query.data.fields.map((f) => f.key));
+      setSelected(stored.filter((k) => validKeys.has(k)));
+    } else {
+      setSelected(query.data.defaultFields);
+    }
+  }, [enabled, code, query.data]);
 
   return { fields, selected, toggle, selectAll, clearAll, loading: enabled && query.isFetching };
 };
