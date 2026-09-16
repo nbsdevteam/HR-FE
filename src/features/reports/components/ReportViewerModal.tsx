@@ -90,20 +90,7 @@ const ReportViewerModal = ({
         </p>
       </div>
       <div className="flex items-center gap-2">
-        {!generatedData ? (
-          <Button
-            variant="primary"
-            icon={BarChart3}
-            loading={generating}
-            disabled={!canGenerate}
-            onClick={onGenerate}
-            className="shadow cursor-pointer"
-          >
-            {generating
-              ? arabicSource("reports.construction_underway")
-              : arabicSource("common.create")}
-          </Button>
-        ) : (
+        {generatedData && (
           <>
             <Button
               variant="success"
