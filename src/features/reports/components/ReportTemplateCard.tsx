@@ -50,6 +50,7 @@ const ReportTemplateCard = ({
             className="text-muted-foreground mt-1 line-clamp-2 min-h-[36px]"
             style={{ fontSize: 12 }}
             title={template?.description || undefined}
+            data-i18n-ignore
           >
             {template.description}
           </p>

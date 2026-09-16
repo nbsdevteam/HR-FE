@@ -87,7 +87,7 @@ const ReportViewerModal = ({
     <div className="p-6 border-b border-border/40 flex items-center justify-between">
       <div>
         <h2 className="text-lg text-foreground" data-i18n-ignore>{templateName}</h2>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-sm mt-1" data-i18n-ignore>
           {template.description}
         </p>
       </div>
