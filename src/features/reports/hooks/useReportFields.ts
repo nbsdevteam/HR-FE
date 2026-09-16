@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchReportFields } from "@/shared/api/reporting";
 import { STALE_TIME } from "@/shared/api/queryClient";
-import { isBackendReportCode, resolveReportCode, REPORT_DEFAULT_FIELDS } from "../constants/reports";
+import { isBackendReportCode, resolveReportCode, REPORT_DEFAULT_FIELDS, HIDDEN_REPORT_FIELD_KEYS } from "../constants/reports";
 import type { ReportField } from "../types";
 
 interface ReportFieldCatalog {
@@ -42,7 +42,11 @@ export const useReportFields = (code: string | null) => {
     queryKey: ["reportFields", code],
     queryFn: async () => {
       const result = await fetchReportFields(resolveReportCode(code as string));
-      return { fields: result.fields || [], defaultFields: result.default_fields || [] };
+      const hidden = new Set(HIDDEN_REPORT_FIELD_KEYS);
+      return {
+        fields: (result.fields || []).filter((f) => !hidden.has(f.key)),
+        defaultFields: (result.default_fields || []).filter((k) => !hidden.has(k)),
+      };
     },
     enabled,
     staleTime: STALE_TIME.LONG,

@@ -52,6 +52,14 @@ export const isBackendReportCode = (code: string): boolean =>
   (BACKEND_REPORT_CODES as readonly string[]).includes(resolveReportCode(code));
 
 /**
+ * Field keys hidden from the column picker across every backend report type.
+ * `status` duplicates `status_label` (raw code vs. human-readable text) —
+ * the backend still returns it for other consumers, it's just not offered
+ * as a report column here.
+ */
+export const HIDDEN_REPORT_FIELD_KEYS: readonly string[] = ["status"];
+
+/**
  * FE-curated default column selections, applied when a user has never picked
  * columns for that report code before (i.e. nothing saved in localStorage
  * yet). Keyed by the resolved (canonical) report code. Falls back to the
