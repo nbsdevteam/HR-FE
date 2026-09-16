@@ -50,3 +50,22 @@ export const resolveReportCode = (code: string): string => REPORT_CODE_ALIASES[c
 
 export const isBackendReportCode = (code: string): boolean =>
   (BACKEND_REPORT_CODES as readonly string[]).includes(resolveReportCode(code));
+
+/**
+ * FE-curated default column selections, applied when a user has never picked
+ * columns for that report code before (i.e. nothing saved in localStorage
+ * yet). Keyed by the resolved (canonical) report code. Falls back to the
+ * backend's `default_fields` for any report code not listed here.
+ */
+export const REPORT_DEFAULT_FIELDS: Record<string, string[]> = {
+  attendance_monthly: [
+    "employee_name",
+    "date",
+    "expected_hours",
+    "check_in",
+    "check_out",
+    "worked_hours",
+    "shortfall_hours",
+    "overtime_hours",
+  ],
+};

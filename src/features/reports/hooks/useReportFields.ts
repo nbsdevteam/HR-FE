@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchReportFields } from "@/shared/api/reporting";
 import { STALE_TIME } from "@/shared/api/queryClient";
-import { isBackendReportCode, resolveReportCode } from "../constants/reports";
+import { isBackendReportCode, resolveReportCode, REPORT_DEFAULT_FIELDS } from "../constants/reports";
 import type { ReportField } from "../types";
 
 interface ReportFieldCatalog {
@@ -71,9 +71,9 @@ export const useReportFields = (code: string | null) => {
 
   // Reset the selection whenever the report code changes (or its catalog
   // resolves): restore the user's last choices for that code from
-  // localStorage, falling back to the catalog's defaults if they never
-  // chose columns before (or every stored key has since been removed from
-  // the catalog).
+  // localStorage, falling back to the FE-curated defaults (REPORT_DEFAULT_FIELDS)
+  // and then the backend's defaults if they never chose columns before (or
+  // every stored key has since been removed from the catalog).
   useEffect(() => {
     if (!enabled) {
       setSelected([]);
@@ -81,11 +81,13 @@ export const useReportFields = (code: string | null) => {
     }
     if (!query.data) return;
     const stored = readStoredFieldSelections()[code as string];
+    const validKeys = new Set(query.data.fields.map((f) => f.key));
     if (stored) {
-      const validKeys = new Set(query.data.fields.map((f) => f.key));
       setSelected(stored.filter((k) => validKeys.has(k)));
     } else {
-      setSelected(query.data.defaultFields);
+      const curatedDefaults = REPORT_DEFAULT_FIELDS[resolveReportCode(code as string)];
+      const validCuratedDefaults = curatedDefaults?.filter((k) => validKeys.has(k));
+      setSelected(validCuratedDefaults?.length ? validCuratedDefaults : query.data.defaultFields);
     }
   }, [enabled, code, query.data]);
 
