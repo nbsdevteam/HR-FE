@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import { Button, ModalOverlay } from "@/shared/components";
 import type { DbEmployee, DbReportTemplate } from "@/shared/hooks";
 import { isBackendReportCode } from "../constants/reports";
@@ -70,6 +71,7 @@ const ReportViewerModal = ({
   const includedColumnCount = requiresFieldSelection
     ? selectedFieldKeys.length
     : template.columns.length;
+  const { primary: templateName } = useLocalizedName(template.name_ar, template.name_en);
 
   return (
   <ModalOverlay
@@ -84,7 +86,7 @@ const ReportViewerModal = ({
   >
     <div className="p-6 border-b border-border/40 flex items-center justify-between">
       <div>
-        <h2 className="text-lg text-foreground">{template.name_ar}</h2>
+        <h2 className="text-lg text-foreground" data-i18n-ignore>{templateName}</h2>
         <p className="text-muted-foreground text-sm mt-1">
           {template.description}
         </p>

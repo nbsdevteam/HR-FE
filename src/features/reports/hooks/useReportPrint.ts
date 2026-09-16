@@ -3,6 +3,7 @@ import i18n, { getLanguageDirection, normalizeLanguage } from "@/i18n";
 import { formatDateTime } from "@/i18n/format";
 import { translateArabicSource, translateCataloguedValue } from "@/i18n/legacy";
 import { arabicSource } from "@/i18n/source";
+import { localizedName } from "@/i18n/useLocalizedName";
 import type { DbReportTemplate } from "@/shared/hooks";
 import type { ReportColumn, ReportRow } from "../types";
 
@@ -50,7 +51,7 @@ export const useReportPrint = ({
     const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
     const direction = getLanguageDirection(language);
 
-    const title = translateArabicSource(template.name_ar, language);
+    const title = localizedName(template.name_ar, template.name_en, language === "ar");
     const subtitle = template.description
       ? translateArabicSource(template.description, language)
       : "";

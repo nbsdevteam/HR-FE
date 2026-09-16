@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import { FileText } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import { useLocalizedName } from "@/i18n/useLocalizedName";
 import type { DbReportTemplate } from "@/shared/hooks";
 import { categoryIcons, categoryLabels } from "../constants/reports";
 
@@ -11,6 +12,7 @@ type ReportTemplateRowProps = {
 
 const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
   const Icon = categoryIcons[template.category] || FileText;
+  const { primary: templateName } = useLocalizedName(template.name_ar, template.name_en);
 
   const handleSelectClick = useCallback((): void => {
     onSelect(template);
@@ -21,7 +23,7 @@ const ReportTemplateRow = ({ template, onSelect }: ReportTemplateRowProps) => {
       <td className="p-3">
         <div className="flex items-center gap-2">
           <Icon className="w-4 h-4 text-primary" />
-          <span className="text-foreground">{template.name_ar}</span>
+          <span className="text-foreground" data-i18n-ignore>{templateName}</span>
         </div>
       </td>
       <td className="p-3">
