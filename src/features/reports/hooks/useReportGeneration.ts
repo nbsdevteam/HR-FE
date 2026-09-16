@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { generateHrReport } from "@/shared/api/reporting";
 import { eid } from "@/shared/api/httpHelpers";
+import { useAppLanguage } from "@/i18n/useLocalizedName";
 import {
   logAudit, useOdooMutation,
   type DbAttendanceRecord, type DbContractType, type DbDepartment, type DbDocumentType, type DbEmployee,
@@ -52,6 +53,7 @@ export const useReportGeneration = ({
   const [generatedColumns, setGeneratedColumns] = useState<ReportColumn[] | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const lang = useAppLanguage();
 
   // Both produce a report + log a history row; nothing else visibly needs
   // this beyond the report-history list, so that's the only invalidation.
@@ -77,6 +79,7 @@ export const useReportGeneration = ({
           fields: selectedFieldKeys,
           create_history: true,
           generated_by: arabicSource("common.human_resources_manager"),
+          lang,
         });
 
         await logAudit({
@@ -124,7 +127,7 @@ export const useReportGeneration = ({
     attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
     employees, contracts, contractTypes, empDocuments, documentTypes,
     empMap, empDeptMap, departments, dateFrom, dateTo, filterDept,
-    selectedEmployeeIds, selectedFieldKeys,
+    selectedEmployeeIds, selectedFieldKeys, lang,
     generateHrReportMutation.mutateAsync, createReportHistoryMutation.mutateAsync,
   ]);
 

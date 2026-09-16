@@ -107,12 +107,13 @@ export const fetchReportTemplates = async (lang?: AppLanguage): Promise<DbReport
   return rows.map(mapReportTemplate);
 }
 
-/** Full list for the admin management screen — search/category/archived filters, plus `total` (backend §2.2). */
-export const fetchReportTemplatesAdmin = async (params: ReportTemplateListParams = {}): Promise<ReportTemplateListResult> => {
+/** Full list for the admin management screen — search/category/archived filters, plus `total` (backend §2.2). `lang` localizes `description`/`columns[].label`; the edit form must always reload its own template without `lang` (see `fetchReportTemplate`). */
+export const fetchReportTemplatesAdmin = async (params: ReportTemplateListParams & { lang?: AppLanguage } = {}): Promise<ReportTemplateListResult> => {
   const data = await hrCall<{ items?: any[]; total?: number } | any[]>("/api/hr/reports/templates/list", {
     category: params.category,
     search: params.search,
     include_archived: params.includeArchived,
+    lang: params.lang,
   });
   const rows = Array.isArray(data) ? data : data?.items || [];
   const total = Array.isArray(data) ? rows.length : Number(data?.total) || rows.length;
@@ -165,12 +166,12 @@ export const createReportHistory = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/reports/history/create", params);
 }
 
-/** Selectable field catalog for one (or, when `code` is omitted, every) backend-generated report. */
-export const fetchReportFields = async (code?: string): Promise<ReportFieldsResult> => {
-  return hrCall<ReportFieldsResult>("/api/hr/reports/fields", code ? { code } : {});
+/** Selectable field catalog for one (or, when `code` is omitted, every) backend-generated report. `lang` returns `fields[].label` in that language — this drives the column-picker checkboxes. */
+export const fetchReportFields = async (code?: string, lang?: AppLanguage): Promise<ReportFieldsResult> => {
+  return hrCall<ReportFieldsResult>("/api/hr/reports/fields", { ...(code ? { code } : {}), ...(lang ? { lang } : {}) });
 }
 
-/** Runs a backend report generator with employee/field selection applied. */
+/** Runs a backend report generator with employee/field selection applied. Put `lang` at the top level of `payload` (never inside `filters`) to localize `columns[].label`/`available_fields[].label` in the response. */
 export const generateHrReport = async (payload: Record<string, unknown>): Promise<HrReportGenerateResult> => {
   return hrCall<HrReportGenerateResult>("/api/hr/reports/generate", payload);
 }

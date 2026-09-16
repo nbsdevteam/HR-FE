@@ -100,9 +100,14 @@ export const useReportConfigForm = ({ metadata, refetch, setToast }: UseReportCo
     setShowForm(true);
   }, [resetForm]);
 
-  const openEditForm = useCallback((template: DbReportTemplate) => {
-    setEditingTemplate(template);
-    setFormData(templateToForm(template));
+  // The row passed in may have come from a list fetched with `lang` (the
+  // admin table is localized too), but this form edits the stored English
+  // description/column labels, so it always reloads the template by id
+  // without `lang` rather than seeding itself from that row.
+  const openEditForm = useCallback(async (template: DbReportTemplate) => {
+    const englishTemplate = await odooData.fetchReportTemplate(template.id).catch(() => template);
+    setEditingTemplate(englishTemplate);
+    setFormData(templateToForm(englishTemplate));
     setCodeConflict(null);
     setConfirmCodeChange(false);
     setShowForm(true);

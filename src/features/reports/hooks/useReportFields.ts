@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchReportFields } from "@/shared/api/reporting";
 import { STALE_TIME } from "@/shared/api/queryClient";
+import { useAppLanguage } from "@/i18n/useLocalizedName";
 import { isBackendReportCode, resolveReportCode, REPORT_DEFAULT_FIELDS, HIDDEN_REPORT_FIELD_KEYS } from "../constants/reports";
 import type { ReportField } from "../types";
 
@@ -33,15 +34,16 @@ const persistFieldSelection = (code: string, keys: string[]): void => {
   }
 };
 
-/** Fetches + caches the selectable field catalog for a report code (null/FE-local code = no catalog). */
+/** Fetches + caches the selectable field catalog for a report code (null/FE-local code = no catalog). Labels come back in the active app language — the query key includes it so a language switch refetches instead of serving the stale-language cache. */
 export const useReportFields = (code: string | null) => {
   const [selected, setSelected] = useState<string[]>([]);
+  const lang = useAppLanguage();
   const enabled = !!code && isBackendReportCode(code);
 
   const query = useQuery<ReportFieldCatalog, Error>({
-    queryKey: ["reportFields", code],
+    queryKey: ["reportFields", code, lang],
     queryFn: async () => {
-      const result = await fetchReportFields(resolveReportCode(code as string));
+      const result = await fetchReportFields(resolveReportCode(code as string), lang);
       const hidden = new Set(HIDDEN_REPORT_FIELD_KEYS);
       return {
         fields: (result.fields || []).filter((f) => !hidden.has(f.key)),
