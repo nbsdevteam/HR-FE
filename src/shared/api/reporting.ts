@@ -2,6 +2,7 @@ import { hrCall } from "./client";
 import { mapNotification, mapAuditLog, mapReportTemplate, mapReportHistory, mapReportTemplateMetadata } from "./mappers";
 import type { DbNotification, DbAuditLog, DbReportTemplate, DbReportHistory, ReportTemplateMetadata } from "../hooks";
 import { items, eid } from "./httpHelpers";
+import type { AppLanguage } from "@/i18n";
 
 export type ReportTemplateListParams = {
   category?: string;
@@ -100,8 +101,9 @@ export const createAuditLog = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/audit/create", payload);
 }
 
-export const fetchReportTemplates = async (): Promise<DbReportTemplate[]> => {
-  const rows = await items<any>("/api/hr/reports/templates/list", { active_only: true });
+/** `lang` returns `description`/`columns[].label` in that language; omit (or "en") for English. */
+export const fetchReportTemplates = async (lang?: AppLanguage): Promise<DbReportTemplate[]> => {
+  const rows = await items<any>("/api/hr/reports/templates/list", { active_only: true, lang });
   return rows.map(mapReportTemplate);
 }
 
@@ -117,8 +119,9 @@ export const fetchReportTemplatesAdmin = async (params: ReportTemplateListParams
   return { items: rows.map(mapReportTemplate), total };
 }
 
-export const fetchReportTemplate = async (templateId: string | number): Promise<DbReportTemplate> => {
-  const row = await hrCall<any>(`/api/hr/reports/templates/${eid(templateId)}`, {});
+/** `lang` returns `description`/`columns[].label` in that language. Leave unset for the config/edit form — it must always load the stored English values, regardless of the active UI language. */
+export const fetchReportTemplate = async (templateId: string | number, lang?: AppLanguage): Promise<DbReportTemplate> => {
+  const row = await hrCall<any>(`/api/hr/reports/templates/${eid(templateId)}`, { lang });
   return mapReportTemplate(row);
 }
 

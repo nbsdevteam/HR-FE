@@ -1,5 +1,6 @@
 import * as odooData from "@/shared/api/odooData";
 import { STALE_TIME } from "@/shared/api/queryClient";
+import { useAppLanguage } from "@/i18n/useLocalizedName";
 import { useCachedList } from "./core";
 
 // ——— Phase 5: Notifications, Audit Trail & Reports ———
@@ -97,12 +98,14 @@ export const useAuditLog = (filters?: { entityType?: string; action?: string; li
   return { logs, loading, refetch };
 }
 
+/** Report picker + viewer source — `description`/`columns[].label` come back in the active app language. */
 export const useReportTemplates = () => {
+  const lang = useAppLanguage();
   const { data: templates, loading, refetch } = useCachedList(
     "reportTemplates",
-    () => odooData.fetchReportTemplates(),
+    () => odooData.fetchReportTemplates(lang),
     "Failed to load report templates",
-    [],
+    [lang],
     true,
     { ttlMs: STALE_TIME.LONG },
   );
