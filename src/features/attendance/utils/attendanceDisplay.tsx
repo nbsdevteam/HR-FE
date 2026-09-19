@@ -78,6 +78,8 @@ export const buildTodayAttendanceStats = (
     const status = mapAttendanceStatus(record.status, record.is_late, record.excused_late);
     const countKey = attendanceStatusKeyByLabel[status];
     if (countKey) counts[countKey]++;
+    // Late people are present: the Late card is a subset of Present, not a split.
+    if (countKey === "late") counts.present++;
     if (countKey === "leave") rowLeaveIds.add(record.employee_id);
     if (countKey === "absent") rowAbsentIds.add(record.employee_id);
 
