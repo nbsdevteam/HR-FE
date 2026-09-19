@@ -5,11 +5,17 @@ import {
   useEmployeeAvatars,
   useEmployees,
   useHierarchyData,
+  useLeaveRequests,
   useShifts,
 } from "@/shared/hooks";
 import type { DbAttendanceRecord } from "@/shared/hooks";
+import { arabicSource } from "@/i18n/source";
+import { todayInBaghdad } from "@/shared/utils/timezone";
 import type { ExcuseForm } from "@/features/attendance/types";
-import { buildTodayAttendanceStats } from "@/features/attendance/utils/attendanceDisplay";
+import {
+  buildTodayAttendanceStats,
+  type AttendanceRoster,
+} from "@/features/attendance/utils/attendanceDisplay";
 import { useAttendanceRows } from "./useAttendanceRows";
 import { useAttendanceViewState } from "./useAttendanceViewState";
 import { useExcuseModal } from "./useExcuseModal";
@@ -52,6 +58,9 @@ export const useAttendancePage = () => {
     loading,
     refetch: refetchAttendance,
   } = useAttendanceRecords({ date: selectedDate });
+  const { requests: leaveRequests } = useLeaveRequests({
+    month: selectedDate.slice(0, 7),
+  });
 
   // Scoped to the day actually on screen, not the whole roster — `useEmployees`
   // never carries a photo (the list endpoint deliberately omits it).
@@ -82,14 +91,39 @@ export const useAttendancePage = () => {
     sortDir,
   });
 
+  // Absence is derived from the roster (no punch = no row). A future date has
+  // nobody absent yet, so it falls back to the row-only counts.
+  const roster = useMemo<AttendanceRoster | undefined>(() => {
+    if (selectedDate > todayInBaghdad()) return undefined;
+    const acceptedLabel = arabicSource("common.accepted");
+    const onLeaveEmployeeIds = new Set(
+      leaveRequests
+        .filter(
+          (request) =>
+            request.status === acceptedLabel &&
+            !request.is_hourly &&
+            request.start_date <= selectedDate &&
+            request.end_date >= selectedDate,
+        )
+        .map((request) => request.employee_id),
+    );
+    return {
+      activeEmployeeIds: employees
+        .filter((employee) => employee.is_active !== false)
+        .map((employee) => employee.id),
+      onLeaveEmployeeIds,
+    };
+  }, [employees, leaveRequests, selectedDate]);
+
   const todayStats = useMemo(
     () =>
       buildTodayAttendanceStats(
         rawRecords,
         selectedDate,
         i18n.resolvedLanguage,
+        roster,
       ),
-    [rawRecords, selectedDate, i18n.resolvedLanguage],
+    [rawRecords, selectedDate, i18n.resolvedLanguage, roster],
   );
 
   const handleExcuseSaved = useCallback(

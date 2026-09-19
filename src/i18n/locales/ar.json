@@ -331,6 +331,7 @@
   "attendance.follow_up_on_employee_attendance_and_dismissal_live_data": "متابعة حضور وانصراف الموظفين — بيانات حية",
   "attendance.are_late": "متأخرون",
   "attendance.average_hours": "متوسط الساعات",
+  "attendance.average_hours_checked_out": "متوسط الساعات (بعد الانصراف)",
   "common.employee_2": "موظف",
   "attendance.attendance_rate": "نسبة الحضور",
   "attendance.system": "نظام",

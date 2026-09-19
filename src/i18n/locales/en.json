@@ -331,6 +331,7 @@
   "attendance.follow_up_on_employee_attendance_and_dismissal_live_data": "Follow up on employee attendance and dismissal — live data",
   "attendance.are_late": "are late",
   "attendance.average_hours": "Average hours",
+  "attendance.average_hours_checked_out": "Average hours (checked out)",
   "common.employee_2": "employee",
   "attendance.attendance_rate": "Attendance rate",
   "attendance.system": "System",

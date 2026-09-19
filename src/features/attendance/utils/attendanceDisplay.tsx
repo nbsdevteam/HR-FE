@@ -44,12 +44,26 @@ const formatAverageHours = (hours: number, language?: AppLanguage | string): str
   }).format(hours);
 };
 
+/**
+ * Who should have been at work on the day. Someone who did not punch has no
+ * attendance row at all, so absence can only be derived from the roster.
+ */
+export type AttendanceRoster = {
+  activeEmployeeIds: readonly string[];
+  /** Employees with an approved leave request covering the day. */
+  onLeaveEmployeeIds: ReadonlySet<string>;
+};
+
 export const buildTodayAttendanceStats = (
   records: DbAttendanceRecord[],
   selectedDate: string,
   language?: AppLanguage | string,
+  roster?: AttendanceRoster,
 ): TodayAttendanceStats => {
   const counts = createEmptyAttendanceCounts();
+  const rowEmployeeIds = new Set<string>();
+  const rowLeaveIds = new Set<string>();
+  const rowAbsentIds = new Set<string>();
   let total = 0;
   let totalWorkingHours = 0;
   let validHoursCount = 0;
@@ -59,12 +73,16 @@ export const buildTodayAttendanceStats = (
     if (record.date !== selectedDate) return;
 
     total++;
+    rowEmployeeIds.add(record.employee_id);
 
-    const status = mapAttendanceStatus(record.status, record.is_late);
+    const status = mapAttendanceStatus(record.status, record.is_late, record.excused_late);
     const countKey = attendanceStatusKeyByLabel[status];
     if (countKey) counts[countKey]++;
+    if (countKey === "leave") rowLeaveIds.add(record.employee_id);
+    if (countKey === "absent") rowAbsentIds.add(record.employee_id);
 
-    if (record.working_hours > 0) {
+    // Average only rows that have a check-out: `working_hours` is 0 until then.
+    if (record.check_out_time && record.working_hours > 0) {
       totalWorkingHours += record.working_hours;
       validHoursCount++;
     }
@@ -73,6 +91,21 @@ export const buildTodayAttendanceStats = (
       autoCheckouts++;
     }
   });
+
+  if (roster) {
+    const active = new Set(roster.activeEmployeeIds);
+    const leaveIds = new Set(rowLeaveIds);
+    roster.onLeaveEmployeeIds.forEach((id) => {
+      if (active.has(id)) leaveIds.add(id);
+    });
+    const absentIds = new Set(rowAbsentIds);
+    active.forEach((id) => {
+      if (!rowEmployeeIds.has(id)) absentIds.add(id);
+    });
+    leaveIds.forEach((id) => absentIds.delete(id));
+    counts.leave = leaveIds.size;
+    counts.absent = absentIds.size;
+  }
 
   const averageHours = validHoursCount === 0 ? 0 : totalWorkingHours / validHoursCount;
 
@@ -115,7 +148,7 @@ export const buildWeeklyAttendance = (
 
     const countKey =
       attendanceStatusKeyByLabel[
-        mapAttendanceStatus(record.status, record.is_late)
+        mapAttendanceStatus(record.status, record.is_late, record.excused_late)
       ];
     if (countKey) counts[countKey]++;
   });

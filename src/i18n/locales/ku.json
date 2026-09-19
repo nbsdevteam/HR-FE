@@ -331,6 +331,7 @@
   "attendance.follow_up_on_employee_attendance_and_dismissal_live_data": "بەدواداچوون بۆ ئامادەبوونی کارمەند و دەرکردن — داتای ڕاستەوخۆ",
   "attendance.are_late": "دواکەوتوون",
   "attendance.average_hours": "تێکڕای کاتژمێرەکان",
+  "attendance.average_hours_checked_out": "تێکڕای کاتژمێرەکان (دوای دەرچوون)",
   "common.employee_2": "کارمەند",
   "attendance.attendance_rate": "ڕێژەی ئامادەبوون",
   "attendance.system": "سیستەم",

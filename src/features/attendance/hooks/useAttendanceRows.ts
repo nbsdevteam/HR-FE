@@ -115,7 +115,7 @@ export const useAttendanceRows = ({
             checkOut: formatTime(record.check_out_time),
             rawCheckIn: record.check_in_time,
             rawCheckOut: record.check_out_time,
-            status: mapAttendanceStatus(record.status, record.is_late),
+            status: mapAttendanceStatus(record.status, record.is_late, record.excused_late),
             rawStatus: record.status,
             workHours: formatWorkHours(record.working_hours || 0),
             workHoursNum: record.working_hours || 0,

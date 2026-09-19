@@ -10,7 +10,7 @@ type DailyAttendanceTableRowProps = {
 };
 
 const DailyAttendanceTableRow = ({ record }: DailyAttendanceTableRowProps) => {
-  const statusLabel = mapAttendanceStatus(record.status, record.is_late);
+  const statusLabel = mapAttendanceStatus(record.status, record.is_late, record.excused_late);
   const sColor = statusColors[statusLabel] || "";
 
   return (

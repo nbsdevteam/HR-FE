@@ -125,10 +125,18 @@ export const useMonthlyLedgers = (monthYear?: string) => {
   return { ledgers, loading, refetch };
 }
 
-/** Map attendance status from DB to Arabic display */
-export const mapAttendanceStatus = (status: string, isLate: boolean): string | string | string | string => {
-  if (status === "complete" && isLate) return arabicSource("common.late");
-  if (status === "complete" || status === "missing_checkout" || status === "checked_in" || status === "missing_checkin" || status === "auto_checkout") return arabicSource("common.present");
+/**
+ * Map attendance status from DB to Arabic display.
+ * Lateness is decided at check-in and never changes, so it shows for every
+ * present-type status (including `missing_checkout`, i.e. still at work) — not
+ * only after a check-out. An excused late arrival is shown as plain present.
+ */
+export const mapAttendanceStatus = (status: string, isLate: boolean, excusedLate = false): string => {
+  const isPresentType =
+    status === "complete" || status === "missing_checkout" || status === "checked_in" ||
+    status === "missing_checkin" || status === "auto_checkout";
+  if (isPresentType && isLate && !excusedLate) return arabicSource("common.late");
+  if (status === "complete" ||status === "missing_checkout" || status === "checked_in" || status === "missing_checkin" || status === "auto_checkout") return arabicSource("common.present");
   if (status === "absent") return arabicSource("common.absent");
   if (status === "leave") return arabicSource("common.leave");
   return arabicSource("common.present");
