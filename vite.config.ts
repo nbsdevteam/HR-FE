@@ -15,13 +15,13 @@ import { federation } from '@module-federation/vite'
  * The CRM side of the composition configures all of this through @nbs/module-federation/vite (`defineFederatedApp`), a
  * shared preset in that workspace. HR-FE is a separate repository, so the relevant parts are
  * mirrored here — the SINGLETON list especially, which must stay byte-identical in meaning to
- * packages/mf/vite/shared-deps.mjs. Two copies of React, react-router or TanStack Query in one
+ * packages/module-federation/vite/shared-deps.mjs. Two copies of React, react-router or TanStack Query in one
  * page is not a slow page, it is "Invalid hook call" and a second query cache.
  *
  * TODO: publish @nbs/module-federation and depend on it, deleting the duplication below.
  */
 
-/** Must match packages/mf/vite/shared-deps.mjs in CRM-FE. */
+/** Must match packages/module-federation/vite/shared-deps.mjs in CRM-FE. */
 const SHARED_SINGLETONS = {
   react: { singleton: true, requiredVersion: '18.3.1' },
   'react-dom': { singleton: true, requiredVersion: '18.3.1' },
@@ -36,13 +36,21 @@ const SHARED_SINGLETONS = {
   '@radix-ui/react-dropdown-menu': { singleton: true, requiredVersion: '2.1.6' },
   '@radix-ui/react-tooltip': { singleton: true, requiredVersion: '1.1.8' },
   '@radix-ui/react-select': { singleton: true, requiredVersion: '2.1.6' },
-  'date-fns': { singleton: false, requiredVersion: '3.6.0' },
   clsx: { singleton: false, requiredVersion: '2.1.1' },
   'tailwind-merge': { singleton: false, requiredVersion: '3.2.0' },
-  'lucide-react': { singleton: false, requiredVersion: '0.487.0' },
-  recharts: { singleton: false, requiredVersion: '2.15.2' },
   'react-hook-form': { singleton: false, requiredVersion: '^7.55.0' },
-  motion: { singleton: false, requiredVersion: '12.23.24' },
+  /*
+    date-fns, lucide-react, recharts and motion are deliberately NOT shared, mirroring
+    packages/module-federation/vite/shared-deps.mjs in CRM-FE. A shared module enters the scope
+    whole — the container must be able to hand over any export — so tree-shaking cannot apply to it.
+    Measured on the CRM composition: sharing lucide-react put an 820 KB icon set in the host's
+    startup graph, against ~160 KB of icons actually imported. Barrels are bundled per app.
+
+    KNOWN DRIFT, not fixed here: CRM declares `zustand` a singleton and this list does not, so an
+    HR surface rendered inside the shell uses HR's own store instance. That is harmless while HR's
+    federated components (EmployeePicker, EmployeeAvatar, EmployeeMiniCard) own their state, and it
+    breaks the moment one of them reads the shell's session.
+  */
 }
 
 export default defineConfig(({ mode, command }) => {

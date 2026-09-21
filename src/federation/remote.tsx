@@ -19,7 +19,7 @@ import type { ClickToCallProps } from "./contracts";
  *     import { ClickToCall } from "@/mf/remote";
  *     <ClickToCall phone={employee.phone} displayName={employee.name} />
  *
- * Mirrors packages/mf/src/runtime/RemoteComponent.tsx in CRM-FE (see contracts.ts on why this is
+ * Mirrors packages/module-federation/src/runtime/RemoteComponent.tsx in CRM-FE (see contracts.ts on why this is
  * duplicated rather than imported). Every remote mount degrades rather than throws: contact-centre
  * being mid-deploy must cost this screen its call button and nothing else.
  */
