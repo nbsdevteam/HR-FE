@@ -38,3 +38,7 @@ coverage/
 *.tsbuildinfo
 .i18n-cache/
 .tmp-i18n-strings.json
+
+# Module Federation build output
+.mf/
+@mf-types/
