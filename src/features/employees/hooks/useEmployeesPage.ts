@@ -64,7 +64,7 @@ export const useEmployeesPage = () => {
     paged.refetchPage();
   }, [refetch, paged.refetchPage]);
 
-  const addFormState = useEmployeeAddForm(dbEmployees, designations, refetchAll);
+  const addFormState = useEmployeeAddForm(designations, refetchAll);
   const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll, currentEmployeeId);
   const statusActions = useEmployeeStatusActions(refetchAll);
 

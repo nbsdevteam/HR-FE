@@ -216,7 +216,12 @@ export const restoreDepartment = async (departmentId: string | number): Promise<
 }
 
 /** Next available employee code/id, computed by Odoo (requires hr.employees.create, falls back to hr.employees.list). */
-export const fetchNextEmployeeCode = async (): Promise<{ next_code: string; next_id: number }> => {
+export const fetchNextEmployeeCode = async (): Promise<{
+  next_code: string;
+  next_id: number;
+  /** Sequence-backed, never-reused Hikvision device number — independent of next_id. */
+  next_device_no: number | string | null;
+}> => {
   return hrCall("/api/hr/employees/next_code", {});
 }
 

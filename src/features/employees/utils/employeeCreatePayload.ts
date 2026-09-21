@@ -23,6 +23,7 @@ export const buildEmployeeCreatePayload = (
   form: EmployeeAddForm,
   personId: number,
   photo?: string | null,
+  deviceEmployeeNo?: number | string | null,
 ): Record<string, unknown> => ({
   name: form.name,
   // Optional: the data URL captured by the face-photo picker, if the user
@@ -40,7 +41,7 @@ export const buildEmployeeCreatePayload = (
   national_id: form.nationalId || null,
   status: "active",
   person_id: personId,
-  device_employee_no: String(personId),
+  device_employee_no: String(deviceEmployeeNo ?? personId),
   gender: form.gender || null,
   manager_id: form.managerId || null,
   department_id: form.departmentId || null,

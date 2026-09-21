@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import type { DbEmployee, DbPosition } from "@/shared/hooks";
+import type { DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
 import { SYNC_API } from "@/shared/constants";
 import { todayInBaghdad } from "@/shared/utils/timezone";
@@ -38,7 +38,7 @@ const defaultAddForm: EmployeeAddForm = {
   workLocation: "local",
 };
 
-export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPosition[], refetch: () => void) => {
+export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => void) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState<EmployeeAddForm>(defaultAddForm);
   const [addSaving, setAddSaving] = useState(false);
@@ -48,6 +48,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
   const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
   const [nextEmployeeId, setNextEmployeeId] = useState<number | null>(null);
+  const [nextDeviceNo, setNextDeviceNo] = useState<number | string | null>(null);
   const [loadingNextId, setLoadingNextId] = useState(false);
   const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
   const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
@@ -95,6 +96,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setDeviceSyncStatus("idle");
     setNextEmployeeId(null);
+    setNextDeviceNo(null);
     setFacePhotoBase64(null);
     setFacePhotoPreview(null);
     resetLocationOptions();
@@ -104,17 +106,16 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     setLoadingNextId(true);
     try {
       const data = await odooData.fetchNextEmployeeCode();
-      if (data?.next_id) setNextEmployeeId(data.next_id);
-      else {
-        const maxPerson = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0);
-        setNextEmployeeId(maxPerson + 1);
-      }
+      setNextEmployeeId(data?.next_id ?? null);
+      setNextDeviceNo(data?.next_device_no ?? null);
     } catch {
-      const maxPerson = dbEmployees.reduce((max, e) => Math.max(max, e.person_id || 0), 0);
-      setNextEmployeeId(maxPerson + 1);
+      // No client-side guess (MAX+1 can reuse a retired id): surface the error and let the admin retry.
+      setNextEmployeeId(null);
+      setNextDeviceNo(null);
+      setAddError(arabicSource("employees.employee_number_not_specified"));
     }
     setLoadingNextId(false);
-  }, [dbEmployees]);
+  }, []);
 
   const openAddModal = useCallback(() => {
     setShowAddModal(true);
@@ -215,7 +216,14 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
     try {
       const newPersonId = nextEmployeeId;
 
-      await createEmployeeMutation.mutateAsync(buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview));
+      const createdEmployee = await createEmployeeMutation.mutateAsync(
+        buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview, nextDeviceNo),
+      );
+      // Odoo may remap the requested number if it was taken by the time create()
+      // ran (second admin, stale pre-fetch). The device must always be enrolled
+      // under whatever Odoo actually saved, never the number shown pre-submit.
+      const savedDeviceNo = (createdEmployee as { device_employee_no?: string } | null)?.device_employee_no
+        || String(nextDeviceNo ?? newPersonId);
 
       setDeviceSyncStatus("syncing");
       try {
@@ -223,7 +231,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            employeeNo: String(newPersonId),
+            employeeNo: savedDeviceNo,
             name: addForm.name,
             gender: addForm.gender,
             facePhoto: facePhotoBase64 || undefined,
@@ -250,7 +258,7 @@ export const useEmployeeAddForm = (dbEmployees: DbEmployee[], designations: DbPo
       else setAddError(errorMessage(error));
     }
     setAddSaving(false);
-  }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm]);
+  }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextDeviceNo, nextEmployeeId, refetch, resetAddForm]);
 
   useEffect(() => {
     return () => {
