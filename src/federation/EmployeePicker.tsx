@@ -9,7 +9,7 @@ import type { EmployeePickerProps } from "./contracts";
  *
  * Owned by HR because the employee record is: CRM's conversations screen, supply chain's approvals
  * and the contact centre's agent rota all need to name a person, and none of them should be
- * querying /api/hr themselves. Before federation, crm-core kept its own 8,674-line employees
+ * querying /api/hr themselves. Before federation, crm kept its own 8,674-line employees
  * feature and 13 call sites reached into it for an avatar URL alone.
  *
  * Built on the same fetchEmployees the HR dropdowns already use — the full active roster, which the

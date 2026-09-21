@@ -7,7 +7,7 @@ import type { EmployeeAvatarProps } from "./contracts";
 /**
  * One employee's face, anywhere in the composition.
  *
- * This is the single most duplicated thing the split found: crm-core had 13 imports of an
+ * This is the single most duplicated thing the split found: crm had 13 imports of an
  * employeeAvatarUrl helper, and the shell's own header had another. Now there is one implementation,
  * owned by the app that owns the photo.
  *

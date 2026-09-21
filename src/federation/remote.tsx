@@ -89,6 +89,6 @@ const remoteComponent = <P extends object>(
 };
 
 /** Contact Center's dialer. Renders nothing at all if that remote is unreachable. */
-export const ClickToCall = remoteComponent<ClickToCallProps>("contact_center", "./ClickToCall");
+export const ClickToCall = remoteComponent<ClickToCallProps>("call_centre_omnichannel", "./ClickToCall");
 
 export { remoteComponent };

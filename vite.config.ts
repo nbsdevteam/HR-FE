@@ -10,15 +10,15 @@ import { federation } from '@module-federation/vite'
  *   standalone  `npm run dev` — the HR app as it has always been, on :5273 with its own Layout,
  *               sidebar and login. Nothing about that changes.
  *   remote      the same code exposed as a Module Federation container, mounted inside the CRM
- *               shell alongside contact-center, commerce, supply-chain and crm-core.
+ *               shell alongside call-centre-omnichannel, orders, supply-chain and crm.
  *
- * The CRM side of the composition configures all of this through @nbs/mf/vite (`defineMfApp`), a
+ * The CRM side of the composition configures all of this through @nbs/module-federation/vite (`defineFederatedApp`), a
  * shared preset in that workspace. HR-FE is a separate repository, so the relevant parts are
  * mirrored here — the SINGLETON list especially, which must stay byte-identical in meaning to
  * packages/mf/vite/shared-deps.mjs. Two copies of React, react-router or TanStack Query in one
  * page is not a slow page, it is "Invalid hook call" and a second query cache.
  *
- * TODO: publish @nbs/mf and depend on it, deleting the duplication below.
+ * TODO: publish @nbs/module-federation and depend on it, deleting the duplication below.
  */
 
 /** Must match packages/mf/vite/shared-deps.mjs in CRM-FE. */
@@ -59,10 +59,10 @@ export default defineConfig(({ mode, command }) => {
     setupFiles: ['./src/test-utils/setup.ts'],
   },
   /**
-   * Served from /mfe/hr/ inside the composition so this app's own chunks resolve beside its
+   * Served from /federated/hr/ inside the composition so this app's own chunks resolve beside its
    * remoteEntry, and from the server root when it runs alone.
    */
-  base: isDev ? '/' : '/mfe/hr/',
+  base: isDev ? '/' : '/federated/hr/',
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them
@@ -72,29 +72,29 @@ export default defineConfig(({ mode, command }) => {
       name: 'hr',
       filename: 'remoteEntry.js',
       exposes: {
-        './routes': './src/mf/routes.tsx',
-        './publicRoutes': './src/mf/publicRoutes.tsx',
-        './navItems': './src/mf/navItems.ts',
-        './EmployeePicker': './src/mf/EmployeePicker.tsx',
-        './EmployeeAvatar': './src/mf/EmployeeAvatar.tsx',
-        './EmployeeMiniCard': './src/mf/EmployeeMiniCard.tsx',
+        './routes': './src/federation/routes.tsx',
+        './publicRoutes': './src/federation/publicRoutes.tsx',
+        './navItems': './src/federation/navItems.ts',
+        './EmployeePicker': './src/federation/EmployeePicker.tsx',
+        './EmployeeAvatar': './src/federation/EmployeeAvatar.tsx',
+        './EmployeeMiniCard': './src/federation/EmployeeMiniCard.tsx',
       },
       /**
-       * HR consumes from the CRM composition too — contact-center's dialer on an employee record.
-       * In dev that is the contact-centre dev server; in production both apps sit on one origin.
+       * HR consumes from the CRM composition too — call-centre-omnichannel's dialer on an employee record.
+       * In dev that is the call-centre dev server; in production both apps sit on one origin.
        */
       remotes: {
-        contact_center: {
+        call_centre_omnichannel: {
           type: 'module',
-          name: 'contact_center',
+          name: 'call_centre_omnichannel',
           entry: isDev
             ? 'http://localhost:5181/remoteEntry.js'
-            : '/mfe/contact-center/remoteEntry.js',
+            : '/federated/call-centre-omnichannel/remoteEntry.js',
         },
       },
       shared: SHARED_SINGLETONS,
       manifest: { fileName: 'mf-manifest.json' },
-      // Types come from src/mf/contracts.ts (a reviewed mirror of @nbs/contracts), not from
+      // Types come from src/federation/contracts.ts (a reviewed mirror of @nbs/contracts), not from
       // generated declarations — see that file's note.
       dts: false,
     }),

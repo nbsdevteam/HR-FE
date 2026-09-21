@@ -10,7 +10,7 @@ import { ROUTE_SEGMENT } from "@/app/router/routePaths";
  *
  * 1. NO Layout. The shell supplies the chrome — sidebar, header, branch selector, marquee — so
  *    these are bare page routes patched into the shell's authenticated subtree.
- * 2. Every path is namespaced under hr/. crm-core already claims /reports and /settings, and HR has
+ * 2. Every path is namespaced under hr/. crm already claims /reports and /settings, and HR has
  *    screens by both names; two apps claiming one prefix makes which one wins an ordering accident.
  *    The namespace also reads better in the shell: /hr/payroll says whose payroll.
  *
