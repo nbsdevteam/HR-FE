@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import type { EmployeeStatusFilter } from "../types";
 
 export const categoryIcons: Record<string, LucideIcon> = {
   attendance: Clock,
@@ -77,3 +78,17 @@ export const REPORT_DEFAULT_FIELDS: Record<string, string[]> = {
     "overtime_hours",
   ],
 };
+
+/** Report codes whose employee picker carries the Active/Inactive status filter. */
+export const EMPLOYEE_STATUS_FILTER_REPORT_CODES = ["employee_master"] as const;
+
+export const hasEmployeeStatusFilter = (code: string): boolean =>
+  (EMPLOYEE_STATUS_FILTER_REPORT_CODES as readonly string[]).includes(resolveReportCode(code));
+
+export const DEFAULT_EMPLOYEE_STATUS_FILTER: EmployeeStatusFilter = "active";
+
+export const EMPLOYEE_STATUS_FILTER_OPTIONS: { value: EmployeeStatusFilter; label: string }[] = [
+  { value: "all", label: arabicSource("reports.all_employees") },
+  { value: "active", label: arabicSource("common.is_active") },
+  { value: "inactive", label: arabicSource("common.is_inactive") },
+];

@@ -12,7 +12,7 @@ import { arabicSource } from "@/i18n/source";
 import { useLocalizedName } from "@/i18n/useLocalizedName";
 import { Button, ModalOverlay } from "@/shared/components";
 import type { DbEmployee, DbReportTemplate } from "@/shared/hooks";
-import { isBackendReportCode } from "../constants/reports";
+import { hasEmployeeStatusFilter, isBackendReportCode } from "../constants/reports";
 import type { ReportColumn, ReportField, ReportRow } from "../types";
 import ReportSelectionPanel from "./ReportSelectionPanel";
 import ReportResultsTable from "./ReportResultsTable";
@@ -143,6 +143,7 @@ const ReportViewerModal = ({
         selectedFieldKeys={selectedFieldKeys}
         fieldsLoading={fieldsLoading}
         showColumns={requiresFieldSelection}
+        showStatusFilter={hasEmployeeStatusFilter(template.code)}
         onSelectedEmployeeIdsChange={onSelectedEmployeeIdsChange}
         onToggleField={onToggleField}
         onSelectAllFields={onSelectAllFields}

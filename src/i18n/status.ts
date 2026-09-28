@@ -15,6 +15,22 @@ export const employeeStatusKeys: TranslationKeyMap = {
   [arabicSource("common.pending")]: "common.pending",
 };
 
+/**
+ * `employeeStatusKeys` maps both raw backend codes (e.g. "active") and the
+ * legacy Arabic value to the same canonical key. Comparing against the key
+ * — not a translated string — keeps this independent of the current UI
+ * language (i18n.t() would return whatever language is active, which is not
+ * always Arabic, unlike `arabicSource`).
+ *
+ * Unset counts as active and every other code (onboarding, suspended, …) does
+ * not — the same test the backend's Control Panel headcount applies.
+ */
+export const isActiveEmployeeStatus = (status: string | null): boolean => {
+  if (!status) return true;
+  const key = employeeStatusKeys[status] ?? employeeStatusKeys[status.toLowerCase()];
+  return key === "common.is_active";
+};
+
 export const workflowStatusKeys: TranslationKeyMap = {
   accepted: "common.accepted",
   approved: "common.accepted",

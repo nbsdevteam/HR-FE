@@ -1,9 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { arabicSource } from "@/i18n/source";
-import { Button, SearchInput } from "@/shared/components";
+import { Button, SearchInput, Select } from "@/shared/components";
 import { empDisplayName, type DbEmployee } from "@/shared/hooks";
+import {
+  DEFAULT_EMPLOYEE_STATUS_FILTER,
+  EMPLOYEE_STATUS_FILTER_OPTIONS,
+} from "../constants/reports";
 import { employeeInitials } from "../utils/employeeInitials";
-import type { ReportField, ReportSelectionTabId } from "../types";
+import { matchesEmployeeStatusFilter } from "../utils/employeeStatusFilter";
+import type { EmployeeStatusFilter, ReportField, ReportSelectionTabId } from "../types";
 import ReportSelectionGrid from "./ReportSelectionGrid";
 import ReportSelectionTab from "./ReportSelectionTab";
 
@@ -15,6 +20,8 @@ type ReportSelectionPanelProps = {
   fieldsLoading: boolean;
   /** Only reports with a backend field catalogue can pick their own columns. */
   showColumns: boolean;
+  /** Adds the Active/Inactive/All picker filter (defaults to Active). */
+  showStatusFilter: boolean;
   onSelectedEmployeeIdsChange: (ids: string[]) => void;
   onToggleField: (key: string) => void;
   onSelectAllFields: () => void;
@@ -23,6 +30,9 @@ type ReportSelectionPanelProps = {
 
 const SEARCH_INPUT_CLASS =
   "w-full ps-9 pe-3 py-2 rounded-lg bg-input border border-border/50 text-foreground outline-none placeholder:text-muted-foreground";
+
+// `h-auto` lets the row's `items-stretch` size the select to the search input.
+const STATUS_SELECT_CLASS = "w-44 shrink-0 h-auto px-3 bg-input border-border/50";
 
 /**
  * Employees and columns pickers merged into one tabbed section, replacing the
@@ -35,6 +45,7 @@ const ReportSelectionPanel = ({
   selectedFieldKeys,
   fieldsLoading,
   showColumns,
+  showStatusFilter,
   onSelectedEmployeeIdsChange,
   onToggleField,
   onSelectAllFields,
@@ -42,16 +53,27 @@ const ReportSelectionPanel = ({
 }: ReportSelectionPanelProps) => {
   const [activeTab, setActiveTab] = useState<ReportSelectionTabId>("employees");
   const [employeeQuery, setEmployeeQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatusFilter>(
+    DEFAULT_EMPLOYEE_STATUS_FILTER,
+  );
 
   const isEmployeesTab = activeTab === "employees" || !showColumns;
 
+  const statusScopedEmployees = useMemo(
+    () =>
+      showStatusFilter
+        ? employees.filter((employee) => matchesEmployeeStatusFilter(employee.status, statusFilter))
+        : employees,
+    [employees, showStatusFilter, statusFilter],
+  );
+
   const employeeItems = useMemo(
     () =>
-      employees.map((employee) => {
+      statusScopedEmployees.map((employee) => {
         const label = empDisplayName(employee);
         return { value: employee.id, label, initials: employeeInitials(label) };
       }),
-    [employees],
+    [statusScopedEmployees],
   );
 
   const visibleEmployeeItems = useMemo(() => {
@@ -66,6 +88,23 @@ const ReportSelectionPanel = ({
   );
 
   const handleClearQuery = useCallback((): void => setEmployeeQuery(""), []);
+
+  // The status filter is a scope, not a view like the search: switching it
+  // drops selections outside the new scope so none stay selected unseen.
+  const handleStatusFilterChange = useCallback(
+    (value: string): void => {
+      const next = value as EmployeeStatusFilter;
+      setStatusFilter(next);
+      const inScope = new Set(
+        employees
+          .filter((employee) => matchesEmployeeStatusFilter(employee.status, next))
+          .map((employee) => employee.id),
+      );
+      const kept = selectedEmployeeIds.filter((id) => inScope.has(id));
+      if (kept.length !== selectedEmployeeIds.length) onSelectedEmployeeIdsChange(kept);
+    },
+    [employees, onSelectedEmployeeIdsChange, selectedEmployeeIds],
+  );
 
   const handleToggleEmployee = useCallback(
     (id: string): void => {
@@ -109,13 +148,19 @@ const ReportSelectionPanel = ({
     visibleEmployeeItems,
   ]);
 
+  // With a status filter the badge counts the employees the picker offers;
+  // the footer still reports how many are selected.
+  const employeeTabCount = showStatusFilter
+    ? visibleEmployeeItems.length
+    : selectedEmployeeIds.length;
+
   return (
     <div className="mb-4 space-y-3">
       <div className="flex items-center gap-2">
         <ReportSelectionTab
           id="employees"
           label={arabicSource("common.employees")}
-          count={selectedEmployeeIds.length}
+          count={employeeTabCount}
           active={isEmployeesTab}
           onSelect={setActiveTab}
         />
@@ -131,14 +176,27 @@ const ReportSelectionPanel = ({
       </div>
 
       {isEmployeesTab && (
-        <SearchInput
-          value={employeeQuery}
-          onChange={setEmployeeQuery}
-          onClear={handleClearQuery}
-          placeholder={arabicSource("common.search_for_an_employee")}
-          inputClassName={SEARCH_INPUT_CLASS}
-          style={{ fontSize: 13 }}
-        />
+        <div className="flex flex-wrap items-stretch gap-2">
+          <SearchInput
+            value={employeeQuery}
+            onChange={setEmployeeQuery}
+            onClear={handleClearQuery}
+            placeholder={arabicSource("common.search_for_an_employee")}
+            wrapperClassName="relative flex-1 min-w-[200px]"
+            inputClassName={SEARCH_INPUT_CLASS}
+            style={{ fontSize: 13 }}
+          />
+          {showStatusFilter && (
+            <Select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              options={EMPLOYEE_STATUS_FILTER_OPTIONS}
+              aria-label={arabicSource("common.status")}
+              title={arabicSource("common.status")}
+              className={STATUS_SELECT_CLASS}
+            />
+          )}
+        </div>
       )}
 
       <div className="flex items-center justify-end gap-2">
