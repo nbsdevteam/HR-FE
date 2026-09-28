@@ -16,6 +16,7 @@ const baseEmployee: Employee = {
   id: 1,
   dbId: "emp-1",
   employeeNumber: "EMP-0001",
+  deviceEmployeeNo: null,
   name: "Test Employee",
   position: "IT Manager",
   positionId: "2",

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import type { DbEmployee } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
-import { SYNC_API } from "@/shared/constants";
+import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
@@ -43,15 +43,23 @@ export const useEmployeeDeleteFlow = (
     if (!deleteConfirm) return;
     setDeleting(true);
     try {
+      // Odoo has to agree first (hand-off §3.5): removing the terminal person
+      // before Odoo confirms the delete means an `employee_in_use` refusal —
+      // followed by the admin cancelling the re-prompt — leaves the employee
+      // still active in Odoo but no longer able to punch in on the terminal.
+      await deleteEmployeeMutation.mutateAsync({ id: deleteConfirm.id, force: Boolean(deleteGuard) });
+
       const dbEmp = dbEmployees.find(e => e.id === deleteConfirm.id);
       if (dbEmp?.device_employee_no) {
         try {
-          await fetch(`${SYNC_API}/device/persons/${dbEmp.device_employee_no}`, { method: "DELETE" });
+          await fetch(`${SYNC_API}/device/persons/${dbEmp.device_employee_no}`, {
+            method: "DELETE",
+            headers: deviceSyncHeaders(),
+          });
         } catch {
           // Device removal is best-effort.
         }
       }
-      await deleteEmployeeMutation.mutateAsync({ id: deleteConfirm.id, force: Boolean(deleteGuard) });
       refetch();
       setDeleteConfirm(null);
       setDeleteGuard(null);

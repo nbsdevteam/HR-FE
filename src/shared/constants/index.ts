@@ -1,5 +1,6 @@
 
-import { arabicSource } from "@/i18n/source";/**
+import { arabicSource } from "@/i18n/source";
+import { getAccessToken } from "@/shared/api/client";/**
  * Shared constants for the HR system.
  * Single source of truth for departments, status values, etc.
  */
@@ -14,6 +15,19 @@ import { arabicSource } from "@/i18n/source";/**
 export const SYNC_API =
   import.meta.env.VITE_SYNC_API ||
   (import.meta.env.DEV ? "http://localhost:8089/api" : "/device-api");
+
+/**
+ * Headers for a `SYNC_API` write call. Forwards the caller's own Odoo JWT so
+ * device-sync can authenticate the request against Odoo before touching the
+ * terminal — its `/api/device/*` write routes must never be reachable by an
+ * unauthenticated LAN caller (Hikvision employee-number hand-off §4.4).
+ */
+export const deviceSyncHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = getAccessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+};
 
 // ══════════════════════════ Departments ══════════════════════════
 

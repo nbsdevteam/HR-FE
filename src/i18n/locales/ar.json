@@ -2676,5 +2676,6 @@
   "employees.invalid_photo": "هذا الملف ليس صورة صالحة — جرّب PNG أو JPEG أو GIF أو WEBP أو BMP أو SVG",
   "employees.photo_too_large": "حجم هذه الصورة كبير جداً — الحد الأقصى 10 ميجابايت",
   "employees.change_photo": "تغيير الصورة",
-  "employees.remove_photo": "إزالة الصورة"
+  "employees.remove_photo": "إزالة الصورة",
+  "shared.employee_has_no_device_number_nothing_to_remove": "الموظف غير مسجل على جهاز البصمة — لا يوجد ما يُحذف"
 }

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { deviceSyncHeaders } from "@/shared/constants";
 import LoadingState from "@/shared/components/LoadingState";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
 import type { DeviceFacePreview, DevicePerson } from "../types";
@@ -64,7 +65,7 @@ const DeviceFaceTab = () => {
         const base64 = await fileToBase64(file);
         await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: deviceSyncHeaders(),
           body: JSON.stringify({ image: base64 }),
         });
         await load();
@@ -81,6 +82,7 @@ const DeviceFaceTab = () => {
       try {
         await fetch(`${DEVICE_SYNC_API}/device/persons/${employeeNumber}/face`, {
           method: "DELETE",
+          headers: deviceSyncHeaders(),
         });
         setViewFace(null);
         await load();

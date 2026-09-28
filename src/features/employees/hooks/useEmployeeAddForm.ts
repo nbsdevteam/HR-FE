@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import type { DbPosition } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
-import { SYNC_API } from "@/shared/constants";
+import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
@@ -13,6 +13,7 @@ import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
 import { errorMessage } from "../utils/errorMessage";
 import { photoFieldError } from "../utils/photoFieldError";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
+import { useNextEmployeeDeviceId } from "./useNextEmployeeDeviceId";
 
 const defaultAddForm: EmployeeAddForm = {
   name: "",
@@ -47,9 +48,6 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
   const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
-  const [nextEmployeeId, setNextEmployeeId] = useState<number | null>(null);
-  const [nextDeviceNo, setNextDeviceNo] = useState<number | string | null>(null);
-  const [loadingNextId, setLoadingNextId] = useState(false);
   const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
   const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
 
@@ -78,6 +76,8 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     // A new employee can be created with a photo already attached.
     ["employees", "employeeAvatars"],
   );
+  const { nextEmployeeId, nextDeviceNo, loadingNextId, fetchNextId, resetNextId } =
+    useNextEmployeeDeviceId(setAddError);
 
   const closeAddTimeoutRef = useRef<number | null>(null);
 
@@ -95,27 +95,11 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
     setDeviceSyncStatus("idle");
-    setNextEmployeeId(null);
-    setNextDeviceNo(null);
+    resetNextId();
     setFacePhotoBase64(null);
     setFacePhotoPreview(null);
     resetLocationOptions();
-  }, [resetLocationOptions]);
-
-  const fetchNextId = useCallback(async () => {
-    setLoadingNextId(true);
-    try {
-      const data = await odooData.fetchNextEmployeeCode();
-      setNextEmployeeId(data?.next_id ?? null);
-      setNextDeviceNo(data?.next_device_no ?? null);
-    } catch {
-      // No client-side guess (MAX+1 can reuse a retired id): surface the error and let the admin retry.
-      setNextEmployeeId(null);
-      setNextDeviceNo(null);
-      setAddError(arabicSource("employees.employee_number_not_specified"));
-    }
-    setLoadingNextId(false);
-  }, []);
+  }, [resetLocationOptions, resetNextId]);
 
   const openAddModal = useCallback(() => {
     setShowAddModal(true);
@@ -197,6 +181,7 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
   const handleAddEmployee = useCallback(async () => {
     if (!addForm.name.trim()) { setAddError(arabicSource("employees.name_required")); return; }
     if (!nextEmployeeId) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
+    if (!nextDeviceNo) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
     if (addForm.joinDate && addForm.joinDate > todayInBaghdad()) {
       setAddError(arabicSource("employees.join_date_cannot_be_in_the_future"));
       return;
@@ -221,25 +206,31 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
       );
       // Odoo may remap the requested number if it was taken by the time create()
       // ran (second admin, stale pre-fetch). The device must always be enrolled
-      // under whatever Odoo actually saved, never the number shown pre-submit.
-      const savedDeviceNo = (createdEmployee as { device_employee_no?: string } | null)?.device_employee_no
-        || String(nextDeviceNo ?? newPersonId);
+      // under whatever Odoo actually saved — never the number requested or shown
+      // pre-submit, and never a person_id fallback (hand-off §1/§3.2/audit B.5/B.1).
+      const savedDeviceNo = (createdEmployee as { device_employee_no?: string } | null)?.device_employee_no || null;
 
-      setDeviceSyncStatus("syncing");
-      try {
-        const syncRes = await fetch(`${SYNC_API}/device/sync-employee`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            employeeNo: savedDeviceNo,
-            name: addForm.name,
-            gender: addForm.gender,
-            facePhoto: facePhotoBase64 || undefined,
-          }),
-        });
-        const syncData = await syncRes.json();
-        setDeviceSyncStatus(syncData.success ? "success" : "error");
-      } catch {
+      if (savedDeviceNo) {
+        setDeviceSyncStatus("syncing");
+        try {
+          const syncRes = await fetch(`${SYNC_API}/device/sync-employee`, {
+            method: "POST",
+            headers: deviceSyncHeaders(),
+            body: JSON.stringify({
+              mode: "create",
+              employeeNo: savedDeviceNo,
+              name: addForm.name,
+              gender: addForm.gender,
+              facePhoto: facePhotoBase64 || undefined,
+            }),
+          });
+          const syncData = await syncRes.json();
+          setDeviceSyncStatus(syncData.success ? "success" : "error");
+        } catch {
+          setDeviceSyncStatus("error");
+        }
+      } else {
+        // Odoo saved the employee without a device number — nothing to enrol.
         setDeviceSyncStatus("error");
       }
 
@@ -295,6 +286,7 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     loadingCountries,
     loadingNextId,
     loadingStates,
+    nextDeviceNo,
     nextEmployeeId,
     openAddModal,
     photoError,

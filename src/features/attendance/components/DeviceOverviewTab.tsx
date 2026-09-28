@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { deviceSyncHeaders } from "@/shared/constants";
 import { LoadingState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
@@ -57,6 +58,7 @@ const DeviceOverviewTab = () => {
     try {
       await fetch(`${DEVICE_SYNC_API}/device/door/${action}`, {
         method: "POST",
+        headers: deviceSyncHeaders(),
       });
     } catch {
       // Device can be offline.

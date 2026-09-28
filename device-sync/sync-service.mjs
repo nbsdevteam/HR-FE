@@ -155,6 +155,63 @@ async function guardDeviceSyncPaused(res, actionLabel) {
   return false;
 }
 
+// ── Odoo JWT auth for every write route under /api/device/* (hand-off §4.4) ──
+// CORS is `*` and the listener binds 0.0.0.0, so without this, anyone on the
+// LAN could enrol, rename or delete a terminal person, or wipe credentials,
+// with no login at all. Verifies the caller's own Odoo bearer token against
+// Odoo (a lightweight, JWT-only endpoint that needs no extra permission),
+// independent of which BACKEND this host runs attendance writes through —
+// the SPA always carries a real Odoo JWT regardless. Deliberately does NOT
+// gate the whole port: the terminal itself posts to
+// /ISAPI/Event/notification/alertStream on this same listener and carries no
+// bearer token.
+const AUTH_CACHE_TTL_MS = 60 * 1000;
+const authCache = new Map(); // token -> { ok, expiresAt }
+
+async function verifyOdooToken(token) {
+  if (!token) return false;
+  const cached = authCache.get(token);
+  if (cached && cached.expiresAt > Date.now()) return cached.ok;
+
+  let ok = false;
+  if (!config.odoo.apiBase) {
+    // No Odoo host configured at all on this box — auth can't be checked.
+    // Fail closed rather than silently accepting every caller.
+    log("⚠️", "ODOO_API_BASE is not set — /api/device/* write routes will reject every request (401)");
+  } else {
+    try {
+      const res = await fetch(`${config.odoo.apiBase.replace(/\/$/, "")}/api/hr/employees/me`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          ...(config.odoo.db ? { "X-Odoo-Database": config.odoo.db } : {}),
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "call", params: {}, id: Date.now() }),
+      });
+      const envelope = await res.json().catch(() => null);
+      const result = envelope?.result ?? envelope;
+      ok = res.ok && !!result && result.success !== false && !envelope?.error;
+    } catch (err) {
+      log("⚠️", `Odoo token verification failed: ${err.message}`);
+      ok = false;
+    }
+  }
+
+  authCache.set(token, { ok, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+  return ok;
+}
+
+async function requireOdooAuth(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!(await verifyOdooToken(token))) {
+    res.status(401).json({ success: false, error: "Unauthorized" });
+    return;
+  }
+  next();
+}
+
 // ── Persist lastSyncTime so PM2 restarts don't lose state (always via Supabase — see note above) ──
 
 async function loadLastSyncTime() {
@@ -528,7 +585,7 @@ function startPushListener() {
   });
 
   // POST /api/device/persons — create a new person
-  app.post("/api/device/persons", async (req, res) => {
+  app.post("/api/device/persons", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `create person`)) return;
       const { employeeNo, name, gender, userType, validFrom, validTo } = req.body;
@@ -541,7 +598,7 @@ function startPushListener() {
   });
 
   // PUT /api/device/persons/:id — update a person
-  app.put("/api/device/persons/:id", async (req, res) => {
+  app.put("/api/device/persons/:id", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `update person #${req.params.id}`)) return;
       const { name, gender, userType, validFrom, validTo } = req.body;
@@ -553,7 +610,7 @@ function startPushListener() {
   });
 
   // DELETE /api/device/persons/:id — delete a person
-  app.delete("/api/device/persons/:id", async (req, res) => {
+  app.delete("/api/device/persons/:id", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `delete person #${req.params.id}`)) return;
       const result = await hik.deletePerson(req.params.id);
@@ -574,7 +631,7 @@ function startPushListener() {
   });
 
   // POST /api/device/persons/:id/face — upload face photo (base64 in body)
-  app.post("/api/device/persons/:id/face", express.raw({ type: "*/*", limit: "5mb" }), async (req, res) => {
+  app.post("/api/device/persons/:id/face", requireOdooAuth, express.raw({ type: "*/*", limit: "5mb" }), async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `upload face for #${req.params.id}`)) return;
       let imageBuffer;
@@ -592,7 +649,7 @@ function startPushListener() {
   });
 
   // DELETE /api/device/persons/:id/face — delete face photo
-  app.delete("/api/device/persons/:id/face", async (req, res) => {
+  app.delete("/api/device/persons/:id/face", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `delete face for #${req.params.id}`)) return;
       const result = await hik.deleteFacePhoto(req.params.id);
@@ -625,7 +682,7 @@ function startPushListener() {
   });
 
   // POST /api/device/door/open — remote door open
-  app.post("/api/device/door/open", async (req, res) => {
+  app.post("/api/device/door/open", requireOdooAuth, async (req, res) => {
     try {
       const result = await hik.remoteDoorOpen();
       res.json({ success: true, result });
@@ -635,7 +692,7 @@ function startPushListener() {
   });
 
   // POST /api/device/door/close — remote door close
-  app.post("/api/device/door/close", async (req, res) => {
+  app.post("/api/device/door/close", requireOdooAuth, async (req, res) => {
     try {
       const result = await hik.remoteDoorClose();
       res.json({ success: true, result });
@@ -648,38 +705,15 @@ function startPushListener() {
   // HR → Device Sync API
   // ══════════════════════════════════════════
 
-  // GET /api/device/next-employee-id — get next available employee ID (max of HR + device + 1)
-  app.get("/api/device/next-employee-id", async (req, res) => {
-    try {
-      if (requireSupabase(res)) return;
-      // Get max from HR system
-      const { data: hrMax } = await db
-        .from("employees")
-        .select("person_id")
-        .order("person_id", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const hrMaxId = hrMax?.person_id || 0;
-
-      // Get max from device
-      let deviceMaxId = 0;
-      try {
-        const users = await hik.fetchAllUsers();
-        for (const u of users) {
-          const num = parseInt(u.employeeNo);
-          if (!isNaN(num) && num > deviceMaxId) deviceMaxId = num;
-        }
-      } catch { /* device offline — use HR max only */ }
-
-      const nextId = Math.max(hrMaxId, deviceMaxId) + 1;
-      res.json({ success: true, nextId });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  });
+  // `GET /api/device/next-employee-id` (max of Supabase-or-terminal + 1) is
+  // retired (hand-off §4.3): device-sync must not allocate device numbers at
+  // all — the SPA gets the authoritative `next_device_no` from Odoo
+  // (`POST /api/hr/employees/next_code`). `next_id` from that same endpoint
+  // is the employee-code allocator, not a device number — do not resurrect
+  // this route pointed at it.
 
   // POST /api/device/remove-credentials/:id — remove person + credentials from device (termination)
-  app.post("/api/device/remove-credentials/:id", async (req, res) => {
+  app.post("/api/device/remove-credentials/:id", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `remove credentials for #${req.params.id}`)) return;
       const empNo = req.params.id;
@@ -717,16 +751,9 @@ function startPushListener() {
         } catch (e) { results.person = `error: ${e.message}`; }
       }
 
-      // Update HR record to clear device link (Supabase-backed management route)
-      if (removePerson) {
-        if (!db) {
-          results.hrUnlink = "skipped: supabase not configured";
-        } else {
-          await db.from("employees")
-            .update({ device_employee_no: null })
-            .eq("device_employee_no", empNo);
-        }
-      }
+      // No longer clears `device_employee_no` on the HR record (hand-off
+      // §4.3): Odoo must keep the number after termination — that is what
+      // makes the never-reuse guarantee (§2) hold after a leaver.
 
       res.json({ success: true, results });
     } catch (err) {
@@ -734,28 +761,57 @@ function startPushListener() {
     }
   });
 
-  // POST /api/device/sync-employee — push an HR employee to the biometric device
-  app.post("/api/device/sync-employee", async (req, res) => {
+  // POST /api/device/sync-employee — push an HR employee to the biometric device.
+  // `mode` distinguishes the Add-employee flow ("create") from the Edit flow
+  // ("update") so a wrong or stale number can never silently rename someone
+  // else's terminal enrolment (hand-off §4.1). Defaults to "create" — the
+  // safer of the two when an older caller omits it.
+  app.post("/api/device/sync-employee", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, "sync-employee")) return;
-      const { employeeNo, name, gender, facePhoto } = req.body;
+      const { employeeNo, name, gender, facePhoto, mode } = req.body;
       if (!employeeNo || !name) {
         return res.status(400).json({ success: false, error: "employeeNo and name are required" });
       }
+      const syncMode = mode === "update" ? "update" : "create";
+
+      // The backend (Odoo, or Supabase under BACKEND=supabase) is the source
+      // of truth for which device numbers exist — never the caller. A number
+      // no backend employee holds must never be pushed to the terminal blind.
+      let backendEmployee = null;
+      try {
+        backendEmployee = await backend.findEmployee(employeeNo);
+      } catch (lookupErr) {
+        log("⚠️", `sync-employee lookup failed for #${employeeNo}: ${lookupErr.message}`);
+      }
+      if (!backendEmployee) {
+        return res.status(404).json({
+          success: false,
+          error_code: "device_number_not_in_odoo",
+          error: `No employee holds device number #${employeeNo}`,
+        });
+      }
 
       // Check if person already exists on device
-      let exists = false;
+      let existingPerson = null;
       try {
-        const person = await hik.getPerson(employeeNo);
-        exists = !!person;
+        existingPerson = await hik.getPerson(employeeNo);
       } catch { /* not found */ }
 
-      if (exists) {
-        // Update existing person
+      if (syncMode === "create" && existingPerson) {
+        // "create" must never fall through to renaming whoever the terminal
+        // already has under this number.
+        return res.status(409).json({
+          success: false,
+          error_code: "device_number_taken",
+          existing_name: existingPerson.name,
+        });
+      }
+
+      if (existingPerson) {
         await hik.updatePerson({ employeeNo, name, gender: gender || "male", userType: "normal" });
         log("✏️", `HR→Device: Updated person #${employeeNo} "${name}"`);
       } else {
-        // Create new person
         await hik.createPerson({ employeeNo, name, gender: gender || "male", userType: "normal" });
         log("🆕", `HR→Device: Created person #${employeeNo} "${name}"`);
       }
@@ -771,7 +827,7 @@ function startPushListener() {
         }
       }
 
-      res.json({ success: true, action: exists ? "updated" : "created" });
+      res.json({ success: true, action: existingPerson ? "updated" : "created" });
     } catch (err) {
       log("❌", `HR→Device sync failed: ${err.message}`);
       res.status(500).json({ success: false, error: err.message });
@@ -779,7 +835,7 @@ function startPushListener() {
   });
 
   // DELETE /api/device/sync-employee/:id — remove employee from device when terminated
-  app.delete("/api/device/sync-employee/:id", async (req, res) => {
+  app.delete("/api/device/sync-employee/:id", requireOdooAuth, async (req, res) => {
     try {
       if (await guardDeviceSyncPaused(res, `sync-employee delete #${req.params.id}`)) return;
       await hik.deletePerson(req.params.id);

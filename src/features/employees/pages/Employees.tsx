@@ -75,6 +75,7 @@ const Employees = () => {
     loadingCountries,
     loadingNextId,
     loadingStates,
+    nextDeviceNo,
     nextEmployeeId,
     onPageChange,
     onPerPageChange,
@@ -216,6 +217,7 @@ const Employees = () => {
               fieldErrors={fieldErrors}
               deviceSyncStatus={deviceSyncStatus}
               nextEmployeeId={nextEmployeeId}
+              nextDeviceNo={nextDeviceNo}
               loadingNextId={loadingNextId}
               facePhotoPreview={facePhotoPreview}
               departmentOptions={dbDepartmentOptions}

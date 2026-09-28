@@ -84,6 +84,14 @@ export type Employee = {
   id: number;
   dbId: string; // actual DB id (TEXT) for Supabase updates
   employeeNumber: string;
+  /**
+   * The Hikvision terminal number, independent of `id`/`employeeNumber`
+   * (person_id) since they diverge post-B.5 (Hikvision employee-number
+   * hand-off §1). `null` means the employee has no device number — not yet
+   * enrolled — and every device call must be skipped, never fall back to
+   * `id`.
+   */
+  deviceEmployeeNo: string | null;
   name: string;
   position: string;
   positionId: string | null;

@@ -22,6 +22,7 @@ type AddEmployeeModalProps = {
   fieldErrors: EmployeeFieldErrors;
   deviceSyncStatus: DeviceSyncStatus;
   nextEmployeeId: number | null;
+  nextDeviceNo: number | string | null;
   loadingNextId: boolean;
   facePhotoPreview: string | null;
   departmentOptions: DbDepartment[];
@@ -59,6 +60,7 @@ const AddEmployeeModal = ({
   fieldErrors,
   deviceSyncStatus,
   nextEmployeeId,
+  nextDeviceNo,
   loadingNextId,
   facePhotoPreview,
   departmentOptions,
@@ -107,7 +109,7 @@ const AddEmployeeModal = ({
       <div className="space-y-4">
         <EmployeeFingerprintSection
           gender={addForm.gender}
-          nextEmployeeId={nextEmployeeId}
+          nextDeviceNo={nextDeviceNo}
           loadingNextId={loadingNextId}
           facePhotoPreview={facePhotoPreview}
           photoError={photoError}
@@ -174,7 +176,7 @@ const AddEmployeeModal = ({
           <Button
             onClick={onAddEmployee}
             loading={addSaving}
-            disabled={!addForm.name.trim() || !nextEmployeeId}
+            disabled={!addForm.name.trim() || !nextEmployeeId || !nextDeviceNo}
             className="flex-1 h-11 shadow-lg shadow-primary/20"
           >
             {!addSaving && (

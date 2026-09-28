@@ -31,6 +31,17 @@ import { baghdadLocalToOdooUtc, HR_BUSINESS_TZ } from "./timezone.mjs";
 
 const EMPLOYEE_CACHE_TTL_MS = 5 * 60 * 1000;
 
+// ── Auto-create toggle for unknown terminal numbers (Hikvision employee-number
+// hand-off §4.2) ── `true` (default, transition period) keeps today's
+// behaviour: every terminal user Odoo doesn't recognize becomes a new
+// onboarding employee under that terminal number — the mechanism that created
+// production's onboarding employees 86-89. `false` (the target, once §3.1's
+// fix has been live a while — see the hand-off's order of work) skips the
+// create entirely and only notifies HR, so a wrong number on the terminal
+// never turns into a duplicate Odoo employee.
+const AUTO_CREATE_UNKNOWN_EMPLOYEES =
+  String(process.env.AUTO_CREATE_UNKNOWN_EMPLOYEES ?? "true").trim().toLowerCase() !== "false";
+
 function floatHoursToHHMMSS(h) {
   if (h === null || h === undefined || h === false) return null;
   const totalMinutes = Math.round(Number(h) * 60);
@@ -179,8 +190,25 @@ export function createBackend(config, ctx) {
   }
 
   async function createEmployee({ employeeNo, name }) {
-    log("🆕", `Unknown employee #${employeeNo} "${name}" — auto-creating in Odoo...`);
     const deviceName = name || `موظف #${employeeNo}`;
+
+    if (!AUTO_CREATE_UNKNOWN_EMPLOYEES) {
+      log("ℹ️", `Unknown terminal user #${employeeNo} "${deviceName}" — not in Odoo (AUTO_CREATE_UNKNOWN_EMPLOYEES=false, not creating)`);
+      try {
+        await odoo.call("/api/hr/notifications/create", {
+          title: `مستخدم مجهول على جهاز البصمة: "${deviceName}" (#${employeeNo})`,
+          body: "هذا الرقم غير موجود في نظام أودو. لم يتم إنشاء موظف تلقائياً — يرجى ربط هذا الرقم بموظف موجود أو إضافته يدوياً.",
+          type: "warning",
+          category: "attendance",
+          entity_type: "device_unknown_user",
+        });
+      } catch (notifErr) {
+        log("⚠️", `Notification create failed (non-critical): ${notifErr.message}`);
+      }
+      return null;
+    }
+
+    log("🆕", `Unknown employee #${employeeNo} "${name}" — auto-creating in Odoo...`);
 
     let created;
     try {
@@ -320,8 +348,10 @@ export function createBackend(config, ctx) {
     for (const user of deviceUsers) {
       const existing = employeeCache.get(user.employeeNo);
       if (!existing) {
-        await createEmployee({ employeeNo: user.employeeNo, name: user.name || `موظف #${user.employeeNo}` });
-        newCount++;
+        // `createEmployee` returns null when AUTO_CREATE_UNKNOWN_EMPLOYEES=false
+        // (notification-only) — only count an employee actually created.
+        const created = await createEmployee({ employeeNo: user.employeeNo, name: user.name || `موظف #${user.employeeNo}` });
+        if (created) newCount++;
         continue;
       }
       const deviceName = user.name || "";

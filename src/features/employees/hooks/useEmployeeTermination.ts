@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { SYNC_API } from "@/shared/constants";
+import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
 import { arabicSource } from "@/i18n/source";
 import type { Employee } from "../types";
 
@@ -9,13 +9,31 @@ export const useEmployeeTermination = (employee: Employee, onSave?: () => void) 
   const [terminationLoading, setTerminationLoading] = useState(false);
   const [terminationResult, setTerminationResult] = useState<string | null>(null);
 
+  const closeAfterResult = useCallback(() => {
+    setTimeout(() => {
+      setShowTerminationDialog(false);
+      setTerminationResult(null);
+      onSave?.();
+    }, 2500);
+  }, [onSave]);
+
   const handleTermination = useCallback(async () => {
     setTerminationLoading(true);
     setTerminationResult(null);
+    // Never `employee.id` (person_id): they diverge post-B.5, and removing
+    // credentials under that number targets whoever holds that terminal slot
+    // instead — for a terminal-first hire that is person #0 (hand-off §3.4).
+    const deviceNo = employee.deviceEmployeeNo;
+    if (!deviceNo) {
+      setTerminationResult(arabicSource("shared.employee_has_no_device_number_nothing_to_remove"));
+      setTerminationLoading(false);
+      closeAfterResult();
+      return;
+    }
     try {
-      const res = await fetch(`${SYNC_API}/device/remove-credentials/${employee.id}`, {
+      const res = await fetch(`${SYNC_API}/device/remove-credentials/${deviceNo}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: deviceSyncHeaders(),
         body: JSON.stringify(terminationOptions),
       });
       const data = await res.json();
@@ -33,12 +51,8 @@ export const useEmployeeTermination = (employee: Employee, onSave?: () => void) 
     }
     setTerminationLoading(false);
     // Close dialog after showing result
-    setTimeout(() => {
-      setShowTerminationDialog(false);
-      setTerminationResult(null);
-      onSave?.();
-    }, 2500);
-  }, [employee, terminationOptions, onSave]);
+    closeAfterResult();
+  }, [closeAfterResult, employee, terminationOptions]);
 
   const handleCloseTerminationDialog = useCallback(() => {
     setShowTerminationDialog(false);

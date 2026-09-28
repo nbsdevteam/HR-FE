@@ -6,7 +6,9 @@ import { labelCls } from "../styles";
 
 type EmployeeFingerprintSectionProps = {
   gender: EmployeeAddForm["gender"];
-  nextEmployeeId: number | null;
+  /** The Hikvision device number Odoo will save — never the employee-code
+   * `nextEmployeeId`, which can differ from it (Hikvision hand-off §3.1). */
+  nextDeviceNo: number | string | null;
   loadingNextId: boolean;
   facePhotoPreview: string | null;
   photoError?: string | null;
@@ -17,7 +19,7 @@ type EmployeeFingerprintSectionProps = {
 
 const EmployeeFingerprintSection = ({
   gender,
-  nextEmployeeId,
+  nextDeviceNo,
   loadingNextId,
   facePhotoPreview,
   photoError = null,
@@ -52,8 +54,8 @@ const EmployeeFingerprintSection = ({
         >
           {loadingNextId ? (
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-          ) : nextEmployeeId ? (
-            `#${nextEmployeeId}`
+          ) : nextDeviceNo ? (
+            `#${nextDeviceNo}`
           ) : (
             "—"
           )}

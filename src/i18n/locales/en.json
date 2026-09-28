@@ -2676,5 +2676,6 @@
   "employees.invalid_photo": "This file isn't a valid image — try a PNG, JPEG, GIF, WEBP, BMP or SVG",
   "employees.photo_too_large": "This image is too large — max. 10 MB",
   "employees.change_photo": "Change photo",
-  "employees.remove_photo": "Remove photo"
+  "employees.remove_photo": "Remove photo",
+  "shared.employee_has_no_device_number_nothing_to_remove": "Employee is not registered on the fingerprint device — nothing to remove"
 }

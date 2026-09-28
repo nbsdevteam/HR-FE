@@ -41,7 +41,11 @@ export const buildEmployeeCreatePayload = (
   national_id: form.nationalId || null,
   status: "active",
   person_id: personId,
-  device_employee_no: String(deviceEmployeeNo ?? personId),
+  // No fallback to `personId` (hand-off §3.2/§1): the device number comes only
+  // from the allocator's `next_device_no`. Omitted (not sent as a bogus value)
+  // when it is missing — Odoo then creates the employee without one, which is
+  // a valid "not yet enrolled" state (§2).
+  ...(deviceEmployeeNo != null ? { device_employee_no: String(deviceEmployeeNo) } : {}),
   gender: form.gender || null,
   manager_id: form.managerId || null,
   department_id: form.departmentId || null,

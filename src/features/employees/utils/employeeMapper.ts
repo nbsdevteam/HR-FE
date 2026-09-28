@@ -26,6 +26,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     id: employee.person_id,
     dbId: employee.id,
     employeeNumber: empNumber(employee.person_id),
+    deviceEmployeeNo: employee.device_employee_no || null,
     name,
     position: employee.position || employee.department || "—",
     positionId: employee.position_id || null,

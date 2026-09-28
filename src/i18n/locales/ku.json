@@ -2676,5 +2676,6 @@
   "employees.invalid_photo": "ئەم فایلە وێنەیەکی دروست نییە — تکایە PNG یان JPEG یان GIF یان WEBP یان BMP یان SVG هەوڵبدە",
   "employees.photo_too_large": "قەبارەی ئەم وێنەیە زۆر گەورەیە — زۆرترین ڕێگەپێدراو 10 مێگابایت",
   "employees.change_photo": "گۆڕینی وێنە",
-  "employees.remove_photo": "لابردنی وێنە"
+  "employees.remove_photo": "لابردنی وێنە",
+  "shared.employee_has_no_device_number_nothing_to_remove": "کارمەند لە ئامێری شوێنپەنجە تۆمار نەکراوە — هیچ شتێک نییە بسڕدرێتەوە"
 }

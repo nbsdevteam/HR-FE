@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { SYNC_API } from "@/shared/constants";
+import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
@@ -195,17 +195,24 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
       if (editData.status === arabicSource("common.finished") && employee.status !== arabicSource("common.finished")) {
         termination.setShowTerminationDialog(true);
       } else if (editData.status !== arabicSource("common.finished")) {
-        // Auto-sync name/info changes to biometric device
-        try {
-          fetch(`${SYNC_API}/device/sync-employee`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              employeeNo: String(employee.id),
-              name: editData.name,
-            }),
-          }).catch(() => { /* device sync is best-effort */ });
-        } catch { /* non-critical */ }
+        // Auto-sync name/info changes to the biometric device — pushed under
+        // `deviceEmployeeNo`, never `employee.id` (person_id): they diverge
+        // post-B.5, and a person_id push renames or creates a stray person on
+        // whatever terminal slot that number happens to hold (hand-off §3.3).
+        // An employee with no device number is not enrolled — skip entirely.
+        if (employee.deviceEmployeeNo) {
+          try {
+            fetch(`${SYNC_API}/device/sync-employee`, {
+              method: "POST",
+              headers: deviceSyncHeaders(),
+              body: JSON.stringify({
+                mode: "update",
+                employeeNo: employee.deviceEmployeeNo,
+                name: editData.name,
+              }),
+            }).catch(() => { /* device sync is best-effort */ });
+          } catch { /* non-critical */ }
+        }
       }
     } catch (e: unknown) {
       // A rejected birth date writes *nothing* — not one field of the patch —
