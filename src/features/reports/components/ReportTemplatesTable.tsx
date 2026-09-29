@@ -4,7 +4,7 @@ import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
 import type { DbReportTemplate } from "@/shared/hooks";
-import { reportTemplatesTableColumns } from "../data";
+import { DEFAULT_REPORT_SORT, reportTemplatesTableColumns } from "../data";
 import { cardCls } from "../styles";
 import type { ReportSortBy, ReportSortDir } from "../types";
 import ReportTemplateRow from "./ReportTemplateRow";
@@ -28,7 +28,7 @@ const ReportTemplatesTable = ({
 }: ReportTemplatesTableProps) => {
   const handleSort = useCallback(
     (key: ReportSortBy): void => {
-      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange, DEFAULT_REPORT_SORT);
     },
     [sortBy, sortDir, onSortByChange, onSortDirChange],
   );

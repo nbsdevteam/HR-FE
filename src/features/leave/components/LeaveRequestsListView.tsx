@@ -9,7 +9,7 @@ import type { DbLeaveRequest, DbLeaveType } from "@/shared/hooks";
 import { leaveCardClass } from "../styles";
 import type { LeaveSortKey } from "../types";
 import LeaveRequestTableRow from "./LeaveRequestTableRow";
-import { leaveData } from "../data";
+import { DEFAULT_LEAVE_SORT, leaveData } from "../data";
 
 type LeaveRequestsListViewProps = {
   requests: DbLeaveRequest[];
@@ -41,7 +41,7 @@ const LeaveRequestsListView = ({
   onFollowUpExcuse,
 }: LeaveRequestsListViewProps) => {
   const handleSort = (key: LeaveSortKey): void => {
-    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+    toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange, DEFAULT_LEAVE_SORT);
   };
 
   return (

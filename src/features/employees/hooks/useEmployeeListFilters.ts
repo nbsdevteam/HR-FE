@@ -5,14 +5,15 @@ import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { toEmployees } from "../utils/employeeMapper";
 import { sortEmployees } from "../utils/employeeSort";
+import { DEFAULT_EMPLOYEE_SORT } from "../data";
 import type { EmployeeSortKey, EmployeeViewMode } from "../types";
 
 export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments: DbDepartment[]) => {
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState(arabicSource("common.all"));
   const [viewMode, setViewMode] = useState<EmployeeViewMode>("list");
-  const [sortBy, setSortBy] = useState<EmployeeSortKey>("name");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<EmployeeSortKey>(DEFAULT_EMPLOYEE_SORT.key);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(DEFAULT_EMPLOYEE_SORT.dir);
   /** Active/Inactive/Suspended/Onboarding/Exited, or "" for no filter (backend §8). */
   const [status, setStatus] = useState<EmployeeStatusCode | "">("");
   const [deviceEnrollmentState, setDeviceEnrollmentState] = useState<DeviceEnrollmentState[]>([]);

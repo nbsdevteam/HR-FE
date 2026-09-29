@@ -1,6 +1,9 @@
 import { arabicSource } from "@/i18n/source";
 import { Calendar, Clock, UserCheck, UserX } from "lucide-react";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
 import type { AttendanceSortKey } from "./types";
+
+export const DEFAULT_ATTENDANCE_SORT: SortDefaults<AttendanceSortKey> = { key: "checkIn", dir: "asc" };
 
 export const attendanceLegendData = [
   { label: arabicSource("common.present"), dot: "bg-emerald-500" },

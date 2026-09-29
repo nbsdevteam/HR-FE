@@ -1,5 +1,8 @@
 import { arabicSource } from "@/i18n/source";
-import { ReadonlyArray } from "./types";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
+import { ReadonlyArray, type EmployeeSortKey } from "./types";
+
+export const DEFAULT_EMPLOYEE_SORT: SortDefaults<EmployeeSortKey> = { key: "name", dir: "asc" };
 
 export const TAPSDATA = {
   INFO: "info",

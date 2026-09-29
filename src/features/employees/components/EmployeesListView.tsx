@@ -13,7 +13,7 @@ import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
-import { EMPLOYEE_COLUMNS } from "../data";
+import { DEFAULT_EMPLOYEE_SORT, EMPLOYEE_COLUMNS } from "../data";
 
 type EmployeesListViewProps = {
   employees: Employee[];
@@ -92,7 +92,7 @@ const EmployeesListView = ({
 
   const handleSort = useCallback(
     (key: EmployeeSortKey): void => {
-      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange, DEFAULT_EMPLOYEE_SORT);
     },
     [sortBy, sortDir, onSortByChange, onSortDirChange],
   );

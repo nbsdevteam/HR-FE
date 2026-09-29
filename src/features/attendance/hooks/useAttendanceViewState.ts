@@ -5,6 +5,7 @@ import type {
   AttendanceSortKey,
   AttendanceViewMode,
 } from "@/features/attendance/types";
+import { DEFAULT_ATTENDANCE_SORT } from "../data";
 
 /**
  * Presentation-only state for the attendance page: which day is shown, the
@@ -20,8 +21,8 @@ export const useAttendanceViewState = () => {
   const [statusFilter, setStatusFilter] = useState<string>(
     arabicSource("common.all"),
   );
-  const [sortBy, setSortBy] = useState<AttendanceSortKey>("checkIn");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<AttendanceSortKey>(DEFAULT_ATTENDANCE_SORT.key);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(DEFAULT_ATTENDANCE_SORT.dir);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null,
   );

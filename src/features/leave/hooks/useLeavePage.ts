@@ -18,6 +18,7 @@ import {
 } from "@/shared/hooks";
 import type { DbLeaveRequest } from "@/shared/hooks";
 import type { LeaveSortKey, LeaveTabId, LeaveViewMode } from "../types";
+import { DEFAULT_LEAVE_SORT } from "../data";
 
 export const useLeavePage = () => {
   const [activeTab, setActiveTab] = useState<LeaveTabId>("requests");
@@ -28,8 +29,8 @@ export const useLeavePage = () => {
   const [viewingAttachmentsFor, setViewingAttachmentsFor] = useState<DbLeaveRequest | null>(null);
   const [followingUpOnExcuse, setFollowingUpOnExcuse] = useState<DbLeaveRequest | null>(null);
   const [viewMode, setViewMode] = useState<LeaveViewMode>("list");
-  const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>("start");
-  const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">("desc");
+  const [leaveSortBy, setLeaveSortBy] = useState<LeaveSortKey>(DEFAULT_LEAVE_SORT.key);
+  const [leaveSortDir, setLeaveSortDir] = useState<"asc" | "desc">(DEFAULT_LEAVE_SORT.dir);
 
   const {
     employees,

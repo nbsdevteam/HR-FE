@@ -9,7 +9,7 @@ import SortableHeaderRow, {
 import { type DbApplicant } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { effectiveScore } from "../utils/recruitmentRanking";
-import { applicantsTableColumns } from "../data";
+import { applicantsTableColumns, DEFAULT_APPLICANT_SORT } from "../data";
 import ApplicantTableRow from "./ApplicantTableRow";
 
 const compareApplicants = (a: DbApplicant, b: DbApplicant, sortBy: string): number => {
@@ -44,8 +44,8 @@ const ApplicantsTable = ({
   onUpdateRating,
   onUpdateStage,
 }: IApplicantsTableProps) => {
-  const [sortBy, setSortBy] = useState("rank");
-  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState(DEFAULT_APPLICANT_SORT.key);
+  const [recSortDir, setRecSortDir] = useState<"asc" | "desc">(DEFAULT_APPLICANT_SORT.dir);
 
   const sortedApplicants = useMemo(() => {
     const list = [...applicants].sort((a, b) => compareApplicants(a, b, sortBy));
@@ -54,7 +54,7 @@ const ApplicantsTable = ({
 
   const handleSort = useCallback(
     (key: string): void => {
-      toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir);
+      toggleSort(key, sortBy, recSortDir, setSortBy, setRecSortDir, DEFAULT_APPLICANT_SORT);
     },
     [sortBy, recSortDir],
   );

@@ -16,6 +16,7 @@ import {
   filterEvaluations,
   sortEvaluations,
 } from "../utils/evaluationList";
+import { DEFAULT_EVALUATION_SORT } from "../data";
 
 export const useEvaluationPage = () => {
   // NOTE: this page is deliberately NOT on `useAsyncList`. That hook owns a
@@ -30,8 +31,8 @@ export const useEvaluationPage = () => {
   const [viewMode, setViewMode] = useState<EvaluationViewMode>("list");
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>(arabicSource("common.all"));
-  const [evalSortBy, setEvalSortBy] = useState<EvaluationSortKey>("period");
-  const [evalSortDir, setEvalSortDir] = useState<"asc" | "desc">("desc");
+  const [evalSortBy, setEvalSortBy] = useState<EvaluationSortKey>(DEFAULT_EVALUATION_SORT.key);
+  const [evalSortDir, setEvalSortDir] = useState<"asc" | "desc">(DEFAULT_EVALUATION_SORT.dir);
 
   const { employees, loading: empLoading } = useEmployees();
 

@@ -11,7 +11,7 @@ import { arabicSource } from "@/i18n/source";
 import { evaluationCardClass } from "../styles";
 import { type DbEvaluation, type EvaluationSortKey } from "../types";
 import EvaluationTableRow from "./EvaluationTableRow";
-import { sortData } from "../data";
+import { DEFAULT_EVALUATION_SORT, sortData } from "../data";
 
 type EvaluationListViewProps = {
   evaluations: DbEvaluation[];
@@ -36,7 +36,7 @@ const EvaluationListView = ({
 }: EvaluationListViewProps) => {
   const handleSort = useCallback(
     (key: EvaluationSortKey): void => {
-      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange);
+      toggleSort(key, sortBy, sortDir, onSortByChange, onSortDirChange, DEFAULT_EVALUATION_SORT);
     },
     [sortBy, sortDir, onSortByChange, onSortDirChange],
   );

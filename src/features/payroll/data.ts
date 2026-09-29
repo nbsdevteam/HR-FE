@@ -1,4 +1,5 @@
 import { arabicSource } from "@/i18n/source";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
 
 export const DAY_HEADERS = [
   { label: arabicSource("common.sunday_2"), dow: 0 },
@@ -33,6 +34,11 @@ export const SHORTFALL_TABLE_HEADINGS = [
   arabicSource("common.shortage"),
   arabicSource("common.status"),
 ];
+
+export const DEFAULT_PAYROLL_SORT: SortDefaults<(typeof sortByData)[number]["key"]> = {
+  key: "employee_name",
+  dir: "asc",
+};
 
 export const sortByData = [
   { label: arabicSource("common.employee"), key: "employee_name" },

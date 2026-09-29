@@ -98,6 +98,7 @@ const Attendance = () => {
       />
 
       <AttendanceFilters
+        viewMode={viewMode}
         searchTerm={searchTerm}
         statusFilter={statusFilter}
         sortBy={sortBy}

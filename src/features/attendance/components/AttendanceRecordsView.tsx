@@ -14,7 +14,7 @@ import type {
 } from "@/features/attendance/types";
 import AttendanceKanbanColumn from "./AttendanceKanbanColumn";
 import AttendanceTableRow from "./AttendanceTableRow";
-import { kanbanColumns } from "../data";
+import { DEFAULT_ATTENDANCE_SORT, kanbanColumns } from "../data";
 
 const ATTENDANCE_ROW_VIRTUALIZATION = { rowHeight: 49 } as const;
 
@@ -89,7 +89,7 @@ const AttendanceRecordsView = ({
 
   const handleSort = useCallback(
     (key: AttendanceSortKey): void => {
-      toggleSort(key, sortBy, sortDir, setSortBy, setSortDir);
+      toggleSort(key, sortBy, sortDir, setSortBy, setSortDir, DEFAULT_ATTENDANCE_SORT);
     },
     [sortBy, sortDir, setSortBy, setSortDir],
   );

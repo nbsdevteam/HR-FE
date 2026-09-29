@@ -4,6 +4,9 @@ import {
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { type DbApplicant } from "@/shared/hooks";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
+
+export const DEFAULT_APPLICANT_SORT: SortDefaults<string> = { key: "rank", dir: "desc" };
 
 export const applicantsTableColumns = [
   { label: "", key: null },

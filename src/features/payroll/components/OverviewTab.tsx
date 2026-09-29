@@ -16,7 +16,7 @@ import {
 } from "../styles";
 import { formatIQD } from "../utils/payrollFormat";
 import PayrollOverviewRow from "./PayrollOverviewRow";
-import { sortByData } from "../data";
+import { DEFAULT_PAYROLL_SORT, sortByData } from "../data";
 
 type PayrollSortKey = (typeof sortByData)[number]["key"];
 
@@ -70,8 +70,8 @@ const OverviewTab = ({
   onPerPageChange,
   onViewPayslip,
 }: OverviewTabProps) => {
-  const [paySortBy, setPaySortBy] = useState<PayrollSortKey>("employee_name");
-  const [paySortDir, setPaySortDir] = useState<"asc" | "desc">("asc");
+  const [paySortBy, setPaySortBy] = useState<PayrollSortKey>(DEFAULT_PAYROLL_SORT.key);
+  const [paySortDir, setPaySortDir] = useState<"asc" | "desc">(DEFAULT_PAYROLL_SORT.dir);
 
   // Sorts only the current page — the server no longer hands the client a
   // full month to sort over (backend §4/§12).
@@ -138,7 +138,7 @@ const OverviewTab = ({
 
   const handleSort = useCallback(
     (key: PayrollSortKey): void => {
-      toggleSort(key, paySortBy, paySortDir, setPaySortBy, setPaySortDir);
+      toggleSort(key, paySortBy, paySortDir, setPaySortBy, setPaySortDir, DEFAULT_PAYROLL_SORT);
     },
     [paySortBy, paySortDir],
   );

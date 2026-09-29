@@ -26,6 +26,7 @@ import { useReportFields } from "../hooks/useReportFields";
 import { useReportGeneration } from "../hooks/useReportGeneration";
 import { useReportPrint } from "../hooks/useReportPrint";
 import { getCurrentMonthRange } from "../utils/dateRange";
+import { DEFAULT_REPORT_SORT } from "../data";
 import ReportFiltersBar from "./ReportFiltersBar";
 import ReportHistoryPanel from "./ReportHistoryPanel";
 import ReportsHeader from "./ReportsHeader";
@@ -48,8 +49,8 @@ const ReportsWorkspace = () => {
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<ReportViewMode>("grid");
-  const [rptSortBy, setRptSortBy] = useState<ReportSortBy>("name");
-  const [rptSortDir, setRptSortDir] = useState<ReportSortDir>("asc");
+  const [rptSortBy, setRptSortBy] = useState<ReportSortBy>(DEFAULT_REPORT_SORT.key);
+  const [rptSortDir, setRptSortDir] = useState<ReportSortDir>(DEFAULT_REPORT_SORT.dir);
 
   const navigate = useNavigate();
   const { templates, loading: templatesLoading } = useReportTemplates();

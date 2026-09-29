@@ -1,4 +1,8 @@
 import { arabicSource } from "@/i18n/source";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
+import type { EvaluationSortKey } from "./types";
+
+export const DEFAULT_EVALUATION_SORT: SortDefaults<EvaluationSortKey> = { key: "period", dir: "desc" };
 
 export const sortData = [
   { label: arabicSource("common.employee"), key: "employee" },

@@ -1,5 +1,9 @@
 import { BarChart3, ClipboardCheck, FileText, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
+import type { ReportSortBy } from "./types";
+
+export const DEFAULT_REPORT_SORT: SortDefaults<ReportSortBy> = { key: "name", dir: "asc" };
 
 export const reportTemplatesTableColumns = [
   { label: arabicSource("reports.report"), key: "name" },

@@ -1,12 +1,13 @@
 import { ArrowUpDown } from "lucide-react";
 import { SearchInput } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { AttendanceSortKey } from "../types";
+import type { AttendanceSortKey, AttendanceViewMode } from "../types";
 import { attendanceStatusFilterOptions, attendanceSortOptions } from "../data";
 import AttendanceSortButton from "./AttendanceSortButton";
 import AttendanceStatusFilterChip from "./AttendanceStatusFilterChip";
 
 type AttendanceFiltersProps = {
+  viewMode: AttendanceViewMode;
   searchTerm: string;
   statusFilter: string;
   sortBy: AttendanceSortKey;
@@ -16,6 +17,7 @@ type AttendanceFiltersProps = {
 };
 
 const AttendanceFilters = ({
+  viewMode,
   searchTerm,
   statusFilter,
   sortBy,
@@ -43,18 +45,21 @@ const AttendanceFilters = ({
         />
       ))}
     </div>
-    <div className="flex items-center gap-1.5 border-s border-border/30 ps-3">
-      <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-      {attendanceSortOptions.map((option) => (
-        <AttendanceSortButton
-          key={option.key}
-          sortKey={option.key}
-          label={option.label}
-          active={sortBy === option.key}
-          onClick={onSortByChange}
-        />
-      ))}
-    </div>
+    {/* The list view sorts through its column headers; kanban has none, so it keeps these. */}
+    {viewMode === "kanban" && (
+      <div className="flex items-center gap-1.5 border-s border-border/30 ps-3">
+        <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+        {attendanceSortOptions.map((option) => (
+          <AttendanceSortButton
+            key={option.key}
+            sortKey={option.key}
+            label={option.label}
+            active={sortBy === option.key}
+            onClick={onSortByChange}
+          />
+        ))}
+      </div>
+    )}
   </div>
 );
 

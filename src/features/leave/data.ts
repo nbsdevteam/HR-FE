@@ -1,4 +1,8 @@
 import { arabicSource } from "@/i18n/source";
+import type { SortDefaults } from "@/shared/components/SortableHeader";
+import type { LeaveSortKey } from "./types";
+
+export const DEFAULT_LEAVE_SORT: SortDefaults<LeaveSortKey> = { key: "start", dir: "desc" };
 
 export const leaveData = [
   { label: arabicSource("common.employee"), key: "employee" },
