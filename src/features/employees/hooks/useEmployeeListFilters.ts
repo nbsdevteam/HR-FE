@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { Employee, EmployeeOption } from "@/features/employees";
-import type { DbDepartment, DbEmployee } from "@/shared/hooks";
+import type { DbDepartment, DbEmployee, DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { toEmployees } from "../utils/employeeMapper";
@@ -13,8 +13,13 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
   const [viewMode, setViewMode] = useState<EmployeeViewMode>("list");
   const [sortBy, setSortBy] = useState<EmployeeSortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  /** Shows archived (soft-deleted) employees alongside active ones — backend §3.4. */
-  const [includeArchived, setIncludeArchived] = useState(false);
+  /** Active/Inactive/Suspended/Onboarding/Exited, or "" for no filter (backend §8). */
+  const [status, setStatus] = useState<EmployeeStatusCode | "">("");
+  const [deviceEnrollmentState, setDeviceEnrollmentState] = useState<DeviceEnrollmentState[]>([]);
+  // Inactive and exited are both archived rows server-side — selecting either
+  // must switch the list to include them, same as the old manual toggle did
+  // (backend §7/§8).
+  const includeArchived = status === "inactive" || status === "exited";
 
   const allEmployees = useMemo(() => toEmployees(dbEmployees), [dbEmployees]);
 
@@ -99,6 +104,7 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
 
   return {
     allEmployees,
+    deviceEnrollmentState,
     deviceSyncedSet,
     employeeOptions,
     filtered,
@@ -109,14 +115,16 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     search,
     selectedDept,
     selectedDeptId,
-    setIncludeArchived,
+    setDeviceEnrollmentState,
     setSearch,
     setSelectedDept,
     setSortBy,
     setSortDir,
+    setStatus,
     setViewMode,
     sortBy,
     sortDir,
+    status,
     viewMode,
   };
 };

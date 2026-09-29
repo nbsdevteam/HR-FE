@@ -51,6 +51,8 @@ export const useEmployeesPage = () => {
     search: listFilters.search,
     departmentId: listFilters.selectedDeptId,
     includeArchived: listFilters.includeArchived,
+    status: listFilters.status,
+    deviceEnrollmentState: listFilters.deviceEnrollmentState,
     // The kanban board groups the whole roster into columns, so it keeps using
     // the full-roster fetch; paging it would hide employees behind a pager the
     // board has nowhere to put.

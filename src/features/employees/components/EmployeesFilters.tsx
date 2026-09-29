@@ -1,29 +1,51 @@
 import { useCallback } from "react";
 import { Filter } from "lucide-react";
-import { SearchInput, Select } from "@/shared/components";
+import { MultiSelect, SearchInput, Select } from "@/shared/components";
+import type { MultiSelectItem } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import type { DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
 
 const SEARCH_INPUT_CLASS =
   "w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none";
+
+const STATUS_OPTIONS = [
+  { value: "active", label: arabicSource("employees.status_active") },
+  { value: "inactive", label: arabicSource("employees.status_inactive") },
+  { value: "suspended", label: arabicSource("employees.status_suspended") },
+  { value: "onboarding", label: arabicSource("employees.status_onboarding") },
+  { value: "exited", label: arabicSource("employees.status_exited") },
+];
+
+const DEVICE_ENROLLMENT_STATE_OPTIONS: MultiSelectItem[] = [
+  { value: "pending", label: arabicSource("employees.device_enrollment_pending") },
+  { value: "partial", label: arabicSource("employees.device_enrollment_partial") },
+  { value: "enrolled", label: arabicSource("employees.device_enrollment_enrolled") },
+  { value: "failed", label: arabicSource("employees.device_enrollment_failed") },
+  { value: "removal_pending", label: arabicSource("employees.device_enrollment_removal_pending") },
+];
 
 type EmployeesFiltersProps = {
   search: string;
   selectedDept: string;
   departments: string[];
-  includeArchived: boolean;
+  status: EmployeeStatusCode | "";
+  deviceEnrollmentState: DeviceEnrollmentState[];
   onSearchChange: (search: string) => void;
   onDepartmentChange: (department: string) => void;
-  onIncludeArchivedChange: (includeArchived: boolean) => void;
+  onStatusChange: (status: EmployeeStatusCode | "") => void;
+  onDeviceEnrollmentStateChange: (states: DeviceEnrollmentState[]) => void;
 };
 
 const EmployeesFilters = ({
   search,
   selectedDept,
   departments,
-  includeArchived,
+  status,
+  deviceEnrollmentState,
   onSearchChange,
   onDepartmentChange,
-  onIncludeArchivedChange,
+  onStatusChange,
+  onDeviceEnrollmentStateChange,
 }: EmployeesFiltersProps) => {
   const handleDepartmentChange = useCallback(
     (value: string): void => {
@@ -32,11 +54,18 @@ const EmployeesFilters = ({
     [onDepartmentChange],
   );
 
-  const handleIncludeArchivedChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>): void => {
-      onIncludeArchivedChange(e.target.checked);
+  const handleStatusChange = useCallback(
+    (value: string): void => {
+      onStatusChange(value as EmployeeStatusCode | "");
     },
-    [onIncludeArchivedChange],
+    [onStatusChange],
+  );
+
+  const handleDeviceEnrollmentStateChange = useCallback(
+    (values: string[]): void => {
+      onDeviceEnrollmentStateChange(values as DeviceEnrollmentState[]);
+    },
+    [onDeviceEnrollmentStateChange],
   );
 
   return (
@@ -60,10 +89,22 @@ const EmployeesFilters = ({
           style={{ height: 38 }}
         />
       </div>
-      {/* <label className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer">
-        <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} />
-        {arabicSource("employees.include_archived_label")}
-      </label> */}
+      <Select
+        value={status}
+        onChange={handleStatusChange}
+        options={STATUS_OPTIONS}
+        blankLabel={arabicSource("common.all")}
+        aria-label={arabicSource("common.status")}
+        className="w-40"
+        style={{ height: 38 }}
+      />
+      <MultiSelect
+        items={DEVICE_ENROLLMENT_STATE_OPTIONS}
+        selectedValues={deviceEnrollmentState}
+        onChange={handleDeviceEnrollmentStateChange}
+        placeholder={arabicSource("employees.device_enrollment_state_filter_label")}
+        className="w-56"
+      />
     </div>
   );
 };

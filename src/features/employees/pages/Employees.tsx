@@ -24,8 +24,11 @@ const EmployeeDetailPanel = lazy(() =>
 
 const Employees = () => {
   const {
+    addDeviceEnrollment,
+    addEnrolling,
     addError,
     addForm,
+    addStep,
     addSaving,
     allEmployees,
     birthDateError,
@@ -47,19 +50,22 @@ const Employees = () => {
     designationOptions,
     designations,
     detailStartsInEditMode,
+    deviceEnrollmentState,
     deviceSyncedSet,
-    deviceSyncStatus,
     dismissCitySuggestions,
     employeeOptions,
     facePhotoPreview,
     fieldErrors,
     filtered,
+    goToStep1,
+    goToStep2,
     handleAddCity,
     handleAddEmployee,
     handleCitySearch,
     handleClearFacePhoto,
     handleCityChange,
     handleCountryChange,
+    handleDeactivateEmployee,
     handleDeleteEmployee,
     handleDetailClose,
     handleDetailSave,
@@ -68,14 +74,11 @@ const Employees = () => {
     handleRestoreEmployee,
     handleSelectEmployee,
     handleStateChange,
-    handleSuspendEmployee,
-    includeArchived,
     kanbanDepts,
     loadingCities,
     loadingCountries,
     loadingNextId,
     loadingStates,
-    nextDeviceNo,
     nextEmployeeId,
     onPageChange,
     onPerPageChange,
@@ -93,16 +96,18 @@ const Employees = () => {
     search,
     selectedDept,
     selectedEmployee,
-    setIncludeArchived,
+    setDeviceEnrollmentState,
     setSearch,
     setSelectedDept,
     setSortBy,
     setSortDir,
+    setStatus,
     setViewMode,
     showAddModal,
     sortBy,
     sortDir,
     states,
+    status,
     totalPages,
     updateAddForm,
     viewMode,
@@ -138,10 +143,12 @@ const Employees = () => {
         search={search}
         selectedDept={selectedDept}
         departments={realDepts}
-        includeArchived={includeArchived}
+        status={status}
+        deviceEnrollmentState={deviceEnrollmentState}
         onSearchChange={setSearch}
         onDepartmentChange={setSelectedDept}
-        onIncludeArchivedChange={setIncludeArchived}
+        onStatusChange={setStatus}
+        onDeviceEnrollmentStateChange={setDeviceEnrollmentState}
       />
 
       <AnimatePresence mode="wait">
@@ -166,7 +173,7 @@ const Employees = () => {
             onSelectEmployee={handleSelectEmployee}
             onEditEmployee={handleEditEmployee}
             onDeleteTargetChange={requestDeleteEmployee}
-            onSuspendEmployee={handleSuspendEmployee}
+            onDeactivateEmployee={handleDeactivateEmployee}
             onRestoreEmployee={handleRestoreEmployee}
             currentEmployeeId={currentEmployeeId}
           />
@@ -210,14 +217,15 @@ const Employees = () => {
           >
             <AddEmployeeModal
               addForm={addForm}
+              addStep={addStep}
               addSaving={addSaving}
+              addEnrolling={addEnrolling}
               addError={addError}
               birthDateError={birthDateError}
               photoError={photoError}
               fieldErrors={fieldErrors}
-              deviceSyncStatus={deviceSyncStatus}
+              addDeviceEnrollment={addDeviceEnrollment}
               nextEmployeeId={nextEmployeeId}
-              nextDeviceNo={nextDeviceNo}
               loadingNextId={loadingNextId}
               facePhotoPreview={facePhotoPreview}
               departmentOptions={dbDepartmentOptions}
@@ -242,6 +250,8 @@ const Employees = () => {
               onDismissCitySuggestions={dismissCitySuggestions}
               onFacePhotoChange={handleFacePhoto}
               onClearFacePhoto={handleClearFacePhoto}
+              onGoToStep1={goToStep1}
+              onGoToStep2={goToStep2}
               onAddEmployee={handleAddEmployee}
               onClose={closeAddModal}
             />

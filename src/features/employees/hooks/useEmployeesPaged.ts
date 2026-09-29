@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { DEFAULT_EMPLOYEE_PAGE_SIZE, type EmployeeListPage } from "@/shared/api/core";
 import { useDebouncedValue } from "@/shared/hooks";
+import type { DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
 import { errorMessage } from "../utils/errorMessage";
 
 const EMPTY_PAGE: EmployeeListPage = {
@@ -20,6 +21,10 @@ type UseEmployeesPagedParams = {
   departmentId: string | null;
   /** Shows archived employees alongside active ones (backend §3.4). */
   includeArchived?: boolean;
+  /** `active`/`inactive`/`suspended`/`onboarding`/`exited`, or `null` for no filter (backend §8). */
+  status?: EmployeeStatusCode | "" | null;
+  /** Empty/`null` for no filter (backend §8). */
+  deviceEnrollmentState?: DeviceEnrollmentState[] | null;
   /** Skip fetching entirely while the list view is not the one on screen. */
   enabled?: boolean;
 };
@@ -32,10 +37,17 @@ type UseEmployeesPagedParams = {
  * page and could not filter the rest. The full-roster `useEmployees` fetch is
  * untouched and still backs the stats, the kanban board and every dropdown.
  */
-export const useEmployeesPaged = ({ search, departmentId, includeArchived = false, enabled = true }: UseEmployeesPagedParams) => {
+export const useEmployeesPaged = ({
+  search,
+  departmentId,
+  includeArchived = false,
+  status = null,
+  deviceEnrollmentState = null,
+  enabled = true,
+}: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
-  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived });
+  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived, status, deviceEnrollmentState });
 
   const debouncedSearch = useDebouncedValue(search);
 
@@ -48,9 +60,11 @@ export const useEmployeesPaged = ({ search, departmentId, includeArchived = fals
   if (
     appliedFilters.search !== debouncedSearch ||
     appliedFilters.departmentId !== departmentId ||
-    appliedFilters.includeArchived !== includeArchived
+    appliedFilters.includeArchived !== includeArchived ||
+    appliedFilters.status !== status ||
+    appliedFilters.deviceEnrollmentState !== deviceEnrollmentState
   ) {
-    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived });
+    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState });
     if (page !== 1) setPage(1);
   }
 
@@ -59,8 +73,10 @@ export const useEmployeesPaged = ({ search, departmentId, includeArchived = fals
   // monotonic request id) guarantees a slow page-2 response can never
   // overwrite the page-3 rows the user has already moved on to.
   const query = useQuery<EmployeeListPage, Error>({
-    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived],
-    queryFn: () => odooData.fetchEmployeesPage({ page, limit: perPage, search: debouncedSearch, departmentId, includeArchived }),
+    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState],
+    queryFn: () => odooData.fetchEmployeesPage({
+      page, limit: perPage, search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState,
+    }),
     enabled,
     placeholderData: keepPreviousData,
   });
