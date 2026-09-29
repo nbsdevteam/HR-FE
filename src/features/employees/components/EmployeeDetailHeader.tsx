@@ -6,13 +6,15 @@ import { arabicSource } from "@/i18n/source";
 type EmployeeDetailHeaderProps = {
   isEditing: boolean;
   saving: boolean;
+  /** Deactivated employees are read-only (backend §5) — Edit is hidden, not just disabled. */
+  hideEdit?: boolean;
   onStartEdit: () => void;
   onSave: () => void;
   onCancelEdit: () => void;
   onClose: () => void;
 };
 
-const EmployeeDetailHeader = ({ isEditing, saving, onStartEdit, onSave, onCancelEdit, onClose }: EmployeeDetailHeaderProps) => (
+const EmployeeDetailHeader = ({ isEditing, saving, hideEdit = false, onStartEdit, onSave, onCancelEdit, onClose }: EmployeeDetailHeaderProps) => (
   <div className="flex items-center justify-between mb-5">
     <h2 className="text-foreground" style={{ fontSize: 20 }}>{arabicSource("common.employee_details")}</h2>
     <div className="flex items-center gap-2">
@@ -34,16 +36,18 @@ const EmployeeDetailHeader = ({ isEditing, saving, onStartEdit, onSave, onCancel
           </Button>
         </>
       ) : (
-        <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          onClick={onStartEdit}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
-          style={{ fontSize: 13 }}
-        >
-          <Edit className="w-4 h-4" />
-          {arabicSource("common.edit")}
-        </motion.button>
+        !hideEdit && (
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={onStartEdit}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
+            style={{ fontSize: 13 }}
+          >
+            <Edit className="w-4 h-4" />
+            {arabicSource("common.edit")}
+          </motion.button>
+        )
       )}
       <Button
         variant="unstyled"

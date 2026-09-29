@@ -5,6 +5,7 @@ import { arabicSource } from "@/i18n/source";
 import type { EmployeeDetailPanelProps } from "../types";
 import { useEmployeeDetailPanel } from "../hooks/useEmployeeDetailPanel";
 import EmployeeDetailHeader from "./EmployeeDetailHeader";
+import EmployeeDeviceCredentialsPanel from "./EmployeeDeviceCredentialsPanel";
 import EmployeeIdentityCard from "./EmployeeIdentityCard";
 import EmployeeDetailTabs from "./EmployeeDetailTabs";
 import EmployeeInfoTab from "./EmployeeInfoTab";
@@ -32,6 +33,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     confirmAddLocationCity,
     creatingDept,
     creatingLocationCity,
+    credentialActions,
     custodies,
     custodiesLoading,
     custodyError,
@@ -146,6 +148,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           <EmployeeDetailHeader
             isEditing={isEditing}
             saving={saving}
+            hideEdit={editData.readOnly}
             onStartEdit={handleStartEdit}
             onSave={handleSave}
             onCancelEdit={handleCancelEdit}
@@ -153,9 +156,11 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           />
           <EmployeeIdentityCard
             editData={editData}
-            isEditing={isEditing}
+            isEditing={isEditing && !editData.readOnly}
             photoError={photoError}
             onPhotoChange={handlePhotoChange}
+            onPushPhotoToDevice={credentialActions.handlePushPhotoToDevice}
+            pushingPhoto={credentialActions.credentialSyncing}
           />
         </div>
 
@@ -179,7 +184,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
             {modalTab === TAPSDATA.INFO && (
               <EmployeeInfoTab
                 editData={editData}
-                isEditing={isEditing}
+                isEditing={isEditing && !editData.readOnly}
                 allDepts={allDepts}
                 departmentId={resolvedDepartmentId}
                 allPositions={allPositions}
@@ -216,6 +221,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                   dismissLocationCitySuggestions
                 }
               />
+            )}
+            {modalTab === TAPSDATA.INFO && (
+              <EmployeeDeviceCredentialsPanel employee={editData} {...credentialActions} />
             )}
 
             {modalTab === TAPSDATA.CUSTODIES && (

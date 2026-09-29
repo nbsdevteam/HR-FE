@@ -1,5 +1,5 @@
-import { Camera, X } from "lucide-react";
-import { NodeAvatar } from "@/shared/components";
+import { Camera, Send, X } from "lucide-react";
+import { NodeAvatar, Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { statusColors } from "../styles";
 import type { Employee } from "../types";
@@ -11,9 +11,19 @@ type EmployeeIdentityCardProps = {
   isEditing?: boolean;
   photoError?: string | null;
   onPhotoChange?: (photo: string) => void;
+  /** Requests `["face"]` via the device_enrollment endpoint (backend §4/§6). */
+  onPushPhotoToDevice?: () => void;
+  pushingPhoto?: boolean;
 };
 
-const EmployeeIdentityCard = ({ editData, isEditing = false, photoError = null, onPhotoChange }: EmployeeIdentityCardProps) => {
+const EmployeeIdentityCard = ({
+  editData,
+  isEditing = false,
+  photoError = null,
+  onPhotoChange,
+  onPushPhotoToDevice,
+  pushingPhoto = false,
+}: EmployeeIdentityCardProps) => {
   const handlePhotoInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -81,6 +91,17 @@ const EmployeeIdentityCard = ({ editData, isEditing = false, photoError = null, 
       </div>
       {isEditing && photoError && (
         <p className="text-destructive mt-2" style={{ fontSize: 12 }}>{photoError}</p>
+      )}
+      {isEditing && editData.photo && editData.deviceEmployeeNo && onPushPhotoToDevice && (
+        <Button
+          variant="outline"
+          icon={Send}
+          onClick={onPushPhotoToDevice}
+          loading={pushingPhoto}
+          className="mt-2 h-8 px-3 text-xs"
+        >
+          {arabicSource("employees.push_photo_to_device")}
+        </Button>
       )}
     </div>
   </div>

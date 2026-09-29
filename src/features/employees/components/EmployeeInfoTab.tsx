@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { motion } from "motion/react";
 import {
   Mail, Wallet, CalendarCheck, CalendarX,
-  Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
+  Fingerprint, Hash, PhoneCall, Smartphone, FileText, ClipboardList, Users,
 } from "lucide-react";
 import { formatCurrency } from "@/shared/utils/currency";
 import { todayInBaghdad } from "@/shared/utils/timezone";
@@ -156,6 +156,10 @@ const EmployeeInfoTab = ({
       <EmployeeInputFieldRow
         icon={Hash} label={arabicSource("common.job_number")} value={editData.employeeNumber}
         inputValue={editData.employeeNumber} isEditing={isEditing} onChange={handleEmployeeNumberChange}
+      />
+      <EmployeeFieldRow
+        icon={Fingerprint} label={arabicSource("employees.device_number")} value={editData.deviceEmployeeNo || "—"}
+        dir="ltr" isEditing={false}
       />
       <EmployeeDepartmentField
         department={editData.department}

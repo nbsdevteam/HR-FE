@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
+import { syncEmployeeToDevice } from "@/shared/api/deviceSync";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
@@ -18,6 +18,7 @@ import { buildEmployeeUpdatePayload } from "../utils/employeeUpdatePayload";
 import { photoFieldError } from "../utils/photoFieldError";
 import { useEmployeeAddressForm } from "./useEmployeeAddressForm";
 import { useEmployeeAttachmentForm } from "./useEmployeeAttachmentForm";
+import { useEmployeeCredentialActions } from "./useEmployeeCredentialActions";
 import { useEmployeeCustodyForm } from "./useEmployeeCustodyForm";
 import { useEmployeeLeaves } from "./useEmployeeLeaves";
 import { useEmployeeTermination } from "./useEmployeeTermination";
@@ -40,6 +41,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
 
   const custodyForm = useEmployeeCustodyForm(employee.dbId);
   const attachmentForm = useEmployeeAttachmentForm(setEditData);
+  const credentialActions = useEmployeeCredentialActions(employee, setEditData);
   const leavesData = useEmployeeLeaves(employee.dbId);
   const termination = useEmployeeTermination(employee, onSave);
   const addressForm = useEmployeeAddressForm(isEditing, editData, setEditData);
@@ -201,17 +203,11 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         // whatever terminal slot that number happens to hold (hand-off §3.3).
         // An employee with no device number is not enrolled — skip entirely.
         if (employee.deviceEmployeeNo) {
-          try {
-            fetch(`${SYNC_API}/device/sync-employee`, {
-              method: "POST",
-              headers: deviceSyncHeaders(),
-              body: JSON.stringify({
-                mode: "update",
-                employeeNo: employee.deviceEmployeeNo,
-                name: editData.name,
-              }),
-            }).catch(() => { /* device sync is best-effort */ });
-          } catch { /* non-critical */ }
+          syncEmployeeToDevice({
+            mode: "update",
+            employeeNo: employee.deviceEmployeeNo,
+            name: editData.name,
+          }).catch(() => { /* device sync is best-effort */ });
         }
       }
     } catch (e: unknown) {
@@ -251,6 +247,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     allPositions,
     birthDateError,
     creatingDept,
+    credentialActions,
     editData,
     fieldErrors,
     handleCancelEdit,
