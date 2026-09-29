@@ -676,6 +676,42 @@ export class HikvisionClient {
     return users[0] || null;
   }
 
+  /** Enrol a card for a person already registered on the device */
+  async enrolCard(employeeNo, cardNo) {
+    const result = await this._postJson("/ISAPI/AccessControl/CardInfo/Record", {
+      CardInfo: {
+        employeeNo: String(employeeNo),
+        cardNo: String(cardNo),
+        cardType: "normalCard",
+      },
+    });
+    this.invalidateCapacityCache();
+    return result;
+  }
+
+  // NOTE: no prior precedent in this codebase for a fingerprint *capture*
+  // flow (the only earlier fingerprint call anywhere is a raw FingerPrint/Delete
+  // in the remove-credentials route) — the ISAPI paths, body shapes, and field
+  // names below (CaptureFingerPrintCond / FingerPrintCond / fingerPrintID) are a
+  // best-faith rendering of a hand-off doc's description, not verified against
+  // a real terminal. Flagging this rather than presenting it as confirmed.
+  /** Capture then download a fingerprint for a person already registered on the device */
+  async enrolFingerprint(employeeNo, fingerPrintID = 1) {
+    const captureResult = await this._postJson("/ISAPI/AccessControl/CaptureFingerPrint", {
+      CaptureFingerPrintCond: {
+        employeeNo: String(employeeNo),
+        fingerPrintID,
+      },
+    });
+    const downloadResult = await this._postJson("/ISAPI/AccessControl/FingerPrintDownload", {
+      FingerPrintCond: {
+        employeeNo: String(employeeNo),
+        fingerPrintID,
+      },
+    });
+    return { captureResult, downloadResult };
+  }
+
   // ══════════════════════════════════════════
   // Face Photo Management
   // ══════════════════════════════════════════

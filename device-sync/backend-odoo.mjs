@@ -179,14 +179,21 @@ export function createBackend(config, ctx) {
   // ══════════════════════════════════════════
   // Employee lookup / auto-provisioning
   // ══════════════════════════════════════════
-  async function findEmployee(employeeNo) {
+  async function findEmployee(employeeNo, { requireActive = false } = {}) {
     await _ensureEmployeeCache();
     let emp = employeeCache.get(String(employeeNo));
-    if (emp) return emp;
-    // Cache miss — could be a very recently created employee; refresh once.
+    if (!emp) {
+      // Cache miss — could be a very recently created employee; refresh once.
+      await _refreshEmployeeCache();
+      return employeeCache.get(String(employeeNo)) || null;
+    }
+    if (!requireActive) return emp;
+    // Cache hit, but the caller is about to grant a device credential — a
+    // status change (e.g. termination) within the TTL window must not stay
+    // masked by a stale cached "active" row. Re-validate against a fresh
+    // fetch instead of trusting the cache blindly.
     await _refreshEmployeeCache();
-    emp = employeeCache.get(String(employeeNo));
-    return emp || null;
+    return employeeCache.get(String(employeeNo)) || emp;
   }
 
   async function createEmployee({ employeeNo, name }) {

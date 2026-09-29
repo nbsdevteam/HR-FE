@@ -659,6 +659,52 @@ function startPushListener() {
     }
   });
 
+  // POST /api/device/persons/:id/card — enrol a card for an active employee
+  app.post("/api/device/persons/:id/card", requireOdooAuth, async (req, res) => {
+    try {
+      if (await guardDeviceSyncPaused(res, `enrol card for #${req.params.id}`)) return;
+      const { cardNo } = req.body;
+      if (!cardNo) return res.status(400).json({ success: false, error: "cardNo is required" });
+
+      let backendEmployee = null;
+      try { backendEmployee = await backend.findEmployee(req.params.id, { requireActive: true }); }
+      catch (e) { log("⚠️", `card enrol lookup failed for #${req.params.id}: ${e.message}`); }
+      if (!backendEmployee) {
+        return res.status(404).json({ success: false, error_code: "device_number_not_in_odoo", error: `No employee holds device number #${req.params.id}` });
+      }
+      if (backendEmployee.hr_status && backendEmployee.hr_status !== "active") {
+        return res.status(409).json({ success: false, error_code: "employee_not_active", error: `Employee #${req.params.id} is not active` });
+      }
+
+      const result = await hik.enrolCard(req.params.id, cardNo);
+      res.json({ success: true, result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // POST /api/device/persons/:id/fingerprint — enrol a fingerprint for an active employee
+  app.post("/api/device/persons/:id/fingerprint", requireOdooAuth, async (req, res) => {
+    try {
+      if (await guardDeviceSyncPaused(res, `enrol fingerprint for #${req.params.id}`)) return;
+
+      let backendEmployee = null;
+      try { backendEmployee = await backend.findEmployee(req.params.id, { requireActive: true }); }
+      catch (e) { log("⚠️", `fingerprint enrol lookup failed for #${req.params.id}: ${e.message}`); }
+      if (!backendEmployee) {
+        return res.status(404).json({ success: false, error_code: "device_number_not_in_odoo", error: `No employee holds device number #${req.params.id}` });
+      }
+      if (backendEmployee.hr_status && backendEmployee.hr_status !== "active") {
+        return res.status(409).json({ success: false, error_code: "employee_not_active", error: `Employee #${req.params.id} is not active` });
+      }
+
+      const result = await hik.enrolFingerprint(req.params.id);
+      res.json({ success: true, result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // GET /api/device/events — search events with filters
   app.get("/api/device/events", async (req, res) => {
     try {
@@ -780,7 +826,7 @@ function startPushListener() {
       // no backend employee holds must never be pushed to the terminal blind.
       let backendEmployee = null;
       try {
-        backendEmployee = await backend.findEmployee(employeeNo);
+        backendEmployee = await backend.findEmployee(employeeNo, { requireActive: true });
       } catch (lookupErr) {
         log("⚠️", `sync-employee lookup failed for #${employeeNo}: ${lookupErr.message}`);
       }
@@ -789,6 +835,13 @@ function startPushListener() {
           success: false,
           error_code: "device_number_not_in_odoo",
           error: `No employee holds device number #${employeeNo}`,
+        });
+      }
+      if (backendEmployee.hr_status && backendEmployee.hr_status !== "active") {
+        return res.status(409).json({
+          success: false,
+          error_code: "employee_not_active",
+          error: `Employee #${employeeNo} is not active`,
         });
       }
 
