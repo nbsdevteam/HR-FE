@@ -67,6 +67,8 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     managerName: manager ? empDisplayName(manager) : arabicSource("common.no_manager"),
     leaves: [],
     attachments: [],
+    readOnly: employee.read_only,
+    deviceEnrollment: employee.device_enrollment,
   };
 };
 

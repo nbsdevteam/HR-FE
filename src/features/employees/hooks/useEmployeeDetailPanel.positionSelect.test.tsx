@@ -52,6 +52,8 @@ const baseEmployee: Employee = {
   managerName: "",
   leaves: [],
   attachments: [],
+  readOnly: false,
+  deviceEnrollment: null,
 };
 
 const designations: DbPosition[] = [

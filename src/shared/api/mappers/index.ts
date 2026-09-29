@@ -2,6 +2,7 @@
  * Map Odoo /api/hr JSON → existing Db* shapes used by pages/hooks.
  */
 export * from "./core";
+export * from "./deviceEnrollment";
 export * from "./attendance";
 export * from "./shifts";
 export * from "./positions";

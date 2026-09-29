@@ -1,5 +1,6 @@
 import type { DbEmployee, DbDepartment, DepartmentTreeNode, DepartmentMetadata } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
+import { mapDeviceEnrollment } from "./deviceEnrollment";
 
 export const mapEmployee = (r: any): DbEmployee => {
   const addressObj = r.address && typeof r.address === "object" ? r.address : null;
@@ -50,6 +51,8 @@ export const mapEmployee = (r: any): DbEmployee => {
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
     photo_version: num(r.photo_version),
+    read_only: bool(r.read_only),
+    device_enrollment: mapDeviceEnrollment(r.device_enrollment),
   };
 }
 

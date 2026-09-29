@@ -1,4 +1,5 @@
 export * from "./core";
+export * from "./deviceEnrollment";
 export * from "./useOdooMutation";
 export * from "./ui";
 export * from "./attendance";

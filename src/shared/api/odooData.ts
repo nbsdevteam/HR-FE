@@ -4,6 +4,7 @@
  */
 export * from "./crud";
 export * from "./core";
+export * from "./deviceEnrollment";
 export * from "./attendance";
 export * from "./shifts";
 export * from "./positions";

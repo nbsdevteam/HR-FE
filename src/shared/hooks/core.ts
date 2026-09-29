@@ -2,6 +2,7 @@ import { useCallback, useMemo, type DependencyList } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { STALE_TIME } from "@/shared/api/queryClient";
+import type { DeviceEnrollment } from "./deviceEnrollment";
 import { useAsyncList } from "./useAsyncList";
 
 /**
@@ -99,6 +100,9 @@ export interface DbEmployee {
    *  (any employee change bumps it), never under-invalidates — safe as a
    *  cache key for a stored avatar. */
   photo_version: number;
+  /** Locked profile — true while the employee is deactivated (backend §5). */
+  read_only: boolean;
+  device_enrollment: DeviceEnrollment | null;
 }
 
 export interface DbDepartment {

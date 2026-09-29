@@ -1,4 +1,6 @@
-import type { DbEmployeeAddress, DbPosition } from "@/shared/hooks";
+import type { DbEmployeeAddress, DbPosition, DeviceEnrollment } from "@/shared/hooks";
+
+export type { DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
 
 export type EmployeeViewMode = "list" | "kanban";
 
@@ -36,9 +38,11 @@ export type EmployeeAddForm = {
   cityId: string;
   residence: string;
   workLocation: WorkLocation;
+  /** Manual entry — no reader hardware integration; sent only to device-sync, never to Odoo (backend §3). */
+  cardNumber: string;
+  /** Capture-on-terminal toggle; no client-side biometric data at all (backend §3/§6). */
+  enrollFingerprint: boolean;
 };
-
-export type DeviceSyncStatus = "idle" | "syncing" | "success" | "error";
 
 export type DeleteEmployeeTarget = {
   id: string;
@@ -128,6 +132,9 @@ export type Employee = {
   managerName: string;
   leaves: LeaveRecord[];
   attachments: Attachment[];
+  /** Locked profile while deactivated — hide Edit/Enrol/Retry, render every tab view-only (backend §5). */
+  readOnly: boolean;
+  deviceEnrollment: DeviceEnrollment | null;
 };
 
 export type EmployeeOption = {
