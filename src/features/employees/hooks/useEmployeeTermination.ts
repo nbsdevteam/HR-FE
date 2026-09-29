@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
+import { removeCredentialsFromDevice } from "@/shared/api/deviceSync";
 import { arabicSource } from "@/i18n/source";
 import type { Employee } from "../types";
 
@@ -31,12 +31,7 @@ export const useEmployeeTermination = (employee: Employee, onSave?: () => void) 
       return;
     }
     try {
-      const res = await fetch(`${SYNC_API}/device/remove-credentials/${deviceNo}`, {
-        method: "POST",
-        headers: deviceSyncHeaders(),
-        body: JSON.stringify(terminationOptions),
-      });
-      const data = await res.json();
+      const data = await removeCredentialsFromDevice(deviceNo, terminationOptions);
       if (data.success) {
         const parts: string[] = [];
         if (data.results?.face === "removed") parts.push(arabicSource("common.face_image"));
