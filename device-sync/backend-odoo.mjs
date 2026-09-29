@@ -219,12 +219,26 @@ export function createBackend(config, ctx) {
 
     let created;
     try {
+      // `source: "device"` is what makes Odoo keep the TERMINAL's number
+      // (lugal_hr ≥ 1.24.0). Without it Odoo allocates a fresh number for
+      // every create — right for an HR hire, wrong here: this person already
+      // exists on the terminal as #employeeNo, and a second number would
+      // split them into two identities and orphan their punches. Older
+      // backends ignore the key and keep the number as before.
       created = await odoo.call("/api/hr/employees/create", {
         name: deviceName,
         device_employee_no: String(employeeNo),
         status: "onboarding",
+        source: "device",
       });
     } catch (err) {
+      if (err.odooResult?.error_code === "device_employee_no_taken") {
+        // Held by an employee this cache does not list — an archived or
+        // exited one the terminal still carries. Never create a second.
+        const holder = err.odooResult.holder || {};
+        log("⚠️", `Terminal #${employeeNo} belongs to Odoo employee ${holder.id} "${holder.name || ""}" (${holder.status || "?"}, active=${holder.active}) — not creating a duplicate`);
+        return null;
+      }
       log("❌", `Auto-create failed for #${employeeNo}: ${err.message}`);
       return null;
     }
@@ -370,7 +384,47 @@ export function createBackend(config, ctx) {
     if (mismatchCount > 0) {
       log("ℹ️", `${mismatchCount} employee(s) have a different name on the device vs. Odoo — review manually (auto-rename needs hr.employees.edit, not granted to this service account)`);
     }
+    await reportDevicePresence(deviceUsers);
     return { newCount, updatedCount: 0 };
+  }
+
+  /**
+   * Tell Odoo which numbers the terminal lists and which enrolled employees
+   * it no longer lists (lugal_hr ≥ 1.24.0, `/api/hr/employees/device_presence`).
+   * Odoo marks a missing enrolled employee "removed from device" — it never
+   * deletes them — and re-enrols them when they reappear.
+   *
+   * Absences are only sent from a roster that looks whole: an empty fetch, or
+   * one missing more than half of the numbered employees (a wrong terminal, a
+   * reset, a paging failure), is logged instead of reported, so a bad read can
+   * never mark the whole company as removed.
+   */
+  async function reportDevicePresence(deviceUsers) {
+    if (!Array.isArray(deviceUsers) || deviceUsers.length === 0) {
+      log("⚠️", "Device roster is empty — presence not reported to Odoo");
+      return;
+    }
+    const onDevice = new Set(deviceUsers.map(u => String(u.employeeNo)));
+    const numbered = new Set();
+    for (const emp of employeeCache.values()) {
+      if (emp.device_employee_no) numbered.add(String(emp.device_employee_no));
+    }
+    const absent = [...numbered].filter(no => !onDevice.has(no));
+    const tooMany = numbered.size >= 4 && absent.length > numbered.size / 2;
+    if (tooMany) {
+      log("⚠️", `${absent.length}/${numbered.size} Odoo employees are missing from this terminal — looks like the wrong device or a partial roster; absences NOT reported`);
+    }
+    try {
+      const res = await odoo.call("/api/hr/employees/device_presence", {
+        present: [...onDevice],
+        absent: tooMany ? [] : absent,
+      });
+      const changed = Object.keys(res?.changed || {}).length;
+      if (changed) log("📋", `Device presence: ${changed} employee enrolment state(s) updated in Odoo`);
+    } catch (err) {
+      // An older backend has no such route; attendance must not depend on it.
+      log("⚠️", `Device presence report failed (non-critical): ${err.message}`);
+    }
   }
 
   // ══════════════════════════════════════════
