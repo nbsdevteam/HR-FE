@@ -3,7 +3,7 @@ import { Filter } from "lucide-react";
 import { MultiSelect, SearchInput, Select } from "@/shared/components";
 import type { MultiSelectItem } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
+import type { DeviceEnrollmentState, EmployeeOriginFilter, EmployeeStatusCode } from "@/shared/hooks";
 
 const SEARCH_INPUT_CLASS =
   "w-full h-11 ps-10 pe-4 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none";
@@ -22,6 +22,13 @@ const DEVICE_ENROLLMENT_STATE_OPTIONS: MultiSelectItem[] = [
   { value: "enrolled", label: arabicSource("employees.device_enrollment_enrolled") },
   { value: "failed", label: arabicSource("employees.device_enrollment_failed") },
   { value: "removal_pending", label: arabicSource("employees.device_enrollment_removal_pending") },
+  { value: "removal_failed", label: arabicSource("employees.device_enrollment_removal_failed") },
+  { value: "removed", label: arabicSource("employees.device_enrollment_removed") },
+];
+
+const ORIGIN_OPTIONS = [
+  { value: "hr_info_pending", label: arabicSource("employees.origin_hr_info_pending") },
+  { value: "device", label: arabicSource("employees.origin_device") },
 ];
 
 type EmployeesFiltersProps = {
@@ -30,10 +37,12 @@ type EmployeesFiltersProps = {
   departments: string[];
   status: EmployeeStatusCode | "";
   deviceEnrollmentState: DeviceEnrollmentState[];
+  origin: EmployeeOriginFilter;
   onSearchChange: (search: string) => void;
   onDepartmentChange: (department: string) => void;
   onStatusChange: (status: EmployeeStatusCode | "") => void;
   onDeviceEnrollmentStateChange: (states: DeviceEnrollmentState[]) => void;
+  onOriginChange: (origin: EmployeeOriginFilter) => void;
 };
 
 const EmployeesFilters = ({
@@ -42,10 +51,12 @@ const EmployeesFilters = ({
   departments,
   status,
   deviceEnrollmentState,
+  origin,
   onSearchChange,
   onDepartmentChange,
   onStatusChange,
   onDeviceEnrollmentStateChange,
+  onOriginChange,
 }: EmployeesFiltersProps) => {
   const handleDepartmentChange = useCallback(
     (value: string): void => {
@@ -66,6 +77,13 @@ const EmployeesFilters = ({
       onDeviceEnrollmentStateChange(values as DeviceEnrollmentState[]);
     },
     [onDeviceEnrollmentStateChange],
+  );
+
+  const handleOriginChange = useCallback(
+    (value: string): void => {
+      onOriginChange(value as EmployeeOriginFilter);
+    },
+    [onOriginChange],
   );
 
   return (
@@ -104,6 +122,15 @@ const EmployeesFilters = ({
         onChange={handleDeviceEnrollmentStateChange}
         placeholder={arabicSource("employees.device_enrollment_state_filter_label")}
         className="w-56"
+      />
+      <Select
+        value={origin}
+        onChange={handleOriginChange}
+        options={ORIGIN_OPTIONS}
+        blankLabel={arabicSource("common.all")}
+        aria-label={arabicSource("employees.origin_filter_label")}
+        className="w-60"
+        style={{ height: 38 }}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { DEFAULT_EMPLOYEE_PAGE_SIZE, type EmployeeListPage } from "@/shared/api/core";
 import { useDebouncedValue } from "@/shared/hooks";
-import type { DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
+import type { DeviceEnrollmentState, EmployeeOriginFilter, EmployeeStatusCode } from "@/shared/hooks";
 import { errorMessage } from "../utils/errorMessage";
 
 const EMPTY_PAGE: EmployeeListPage = {
@@ -25,6 +25,8 @@ type UseEmployeesPagedParams = {
   status?: EmployeeStatusCode | "" | null;
   /** Empty/`null` for no filter (backend §8). */
   deviceEnrollmentState?: DeviceEnrollmentState[] | null;
+  /** Device-origin / pending-HR-information records; empty/`null` for no filter. */
+  origin?: EmployeeOriginFilter | null;
   /** Skip fetching entirely while the list view is not the one on screen. */
   enabled?: boolean;
 };
@@ -43,11 +45,12 @@ export const useEmployeesPaged = ({
   includeArchived = false,
   status = null,
   deviceEnrollmentState = null,
+  origin = null,
   enabled = true,
 }: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
-  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived, status, deviceEnrollmentState });
+  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived, status, deviceEnrollmentState, origin });
 
   const debouncedSearch = useDebouncedValue(search);
 
@@ -62,9 +65,10 @@ export const useEmployeesPaged = ({
     appliedFilters.departmentId !== departmentId ||
     appliedFilters.includeArchived !== includeArchived ||
     appliedFilters.status !== status ||
-    appliedFilters.deviceEnrollmentState !== deviceEnrollmentState
+    appliedFilters.deviceEnrollmentState !== deviceEnrollmentState ||
+    appliedFilters.origin !== origin
   ) {
-    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState });
+    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin });
     if (page !== 1) setPage(1);
   }
 
@@ -73,9 +77,9 @@ export const useEmployeesPaged = ({
   // monotonic request id) guarantees a slow page-2 response can never
   // overwrite the page-3 rows the user has already moved on to.
   const query = useQuery<EmployeeListPage, Error>({
-    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState],
+    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin],
     queryFn: () => odooData.fetchEmployeesPage({
-      page, limit: perPage, search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState,
+      page, limit: perPage, search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin,
     }),
     enabled,
     placeholderData: keepPreviousData,

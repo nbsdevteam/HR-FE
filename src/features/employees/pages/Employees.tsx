@@ -52,6 +52,7 @@ const Employees = () => {
     detailStartsInEditMode,
     deviceEnrollmentState,
     deviceSyncedSet,
+    origin,
     dismissCitySuggestions,
     employeeOptions,
     facePhotoPreview,
@@ -97,6 +98,7 @@ const Employees = () => {
     selectedDept,
     selectedEmployee,
     setDeviceEnrollmentState,
+    setOrigin,
     setSearch,
     setSelectedDept,
     setSortBy,
@@ -145,10 +147,12 @@ const Employees = () => {
         departments={realDepts}
         status={status}
         deviceEnrollmentState={deviceEnrollmentState}
+        origin={origin}
         onSearchChange={setSearch}
         onDepartmentChange={setSelectedDept}
         onStatusChange={setStatus}
         onDeviceEnrollmentStateChange={setDeviceEnrollmentState}
+        onOriginChange={setOrigin}
       />
 
       <AnimatePresence mode="wait">

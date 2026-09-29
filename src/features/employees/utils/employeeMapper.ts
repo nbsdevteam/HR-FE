@@ -69,6 +69,11 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     attachments: [],
     readOnly: employee.read_only,
     deviceEnrollment: employee.device_enrollment,
+    deviceEnrollmentState: employee.device_enrollment_state,
+    source: employee.source,
+    hrInfoPending: employee.hr_info_pending,
+    hrInfoMissing: employee.hr_info_missing,
+    deviceRemovedAt: employee.device_removed_at,
   };
 };
 

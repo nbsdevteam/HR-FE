@@ -23,5 +23,7 @@ export const mapDeviceEnrollment = (r: unknown): DeviceEnrollment | null => {
     last_error: (raw.last_error as string) ?? null,
     attempts: num(raw.attempts),
     updated_at: (raw.updated_at as string) ?? null,
+    removed_by: raw.removed_by === "device" || raw.removed_by === "hr" ? raw.removed_by : null,
+    removed_at: (raw.removed_at as string) ?? null,
   };
 };

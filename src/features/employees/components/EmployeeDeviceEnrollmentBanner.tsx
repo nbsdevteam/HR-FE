@@ -1,7 +1,8 @@
-import { AlertCircle, CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
-import { arabicSource } from "@/i18n/source";
+import { AlertCircle, CheckCircle2, Clock, Loader2, UserMinus, XCircle, type LucideIcon } from "lucide-react";
+import { arabicSource, type ArabicSourceKey } from "@/i18n/source";
 import { Button } from "@/shared/components";
 import type { DeviceEnrollment } from "../types";
+import { deviceSyncErrorMessage } from "../utils/deviceSyncErrorMessage";
 
 type EmployeeDeviceEnrollmentBannerProps = {
   enrollment: DeviceEnrollment | null;
@@ -11,15 +12,26 @@ type EmployeeDeviceEnrollmentBannerProps = {
   retrying?: boolean;
 };
 
-const TONE_CLASS: Record<string, string> = {
-  enrolled: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-  partial: "border-amber-500/30 bg-amber-500/10 text-amber-400",
-  failed: "border-red-500/30 bg-red-500/10 text-red-400",
-  removal_pending: "border-blue-500/30 bg-blue-500/10 text-blue-400",
-  pending: "border-blue-500/30 bg-blue-500/10 text-blue-400",
+const BLUE = "border-blue-500/30 bg-blue-500/10 text-blue-400";
+const RED = "border-red-500/30 bg-red-500/10 text-red-400";
+
+type BannerState = { tone: string; icon: LucideIcon; message: ArabicSourceKey; spin?: boolean };
+
+/** The doc's state→message table (§5), plus the removal states (§7) and a device-side removal. */
+const BANNER_STATES: Record<string, BannerState> = {
+  syncing: { tone: BLUE, icon: Loader2, message: "employees.device_enrollment_syncing", spin: true },
+  enrolled: { tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400", icon: CheckCircle2, message: "employees.device_enrollment_enrolled" },
+  partial: { tone: "border-amber-500/30 bg-amber-500/10 text-amber-400", icon: AlertCircle, message: "employees.device_enrollment_partial" },
+  failed: { tone: RED, icon: XCircle, message: "employees.device_enrollment_failed" },
+  pending: { tone: BLUE, icon: Clock, message: "employees.device_enrollment_pending" },
+  removal_pending: { tone: BLUE, icon: Clock, message: "employees.device_enrollment_removal_pending" },
+  removal_failed: { tone: RED, icon: XCircle, message: "employees.device_enrollment_removal_failed" },
+  removed: { tone: "border-muted-foreground/20 bg-muted/10 text-muted-foreground", icon: UserMinus, message: "employees.device_enrollment_removed" },
 };
 
-/** The doc's state→message table (§5): enrolled/partial/failed/pending, plus removal_pending (§7). */
+/** `removed_at` arrives as `+03:00` ISO — already Baghdad wall-clock, so no conversion. */
+const baghdadStamp = (iso: string): string => iso.slice(0, 16).replace("T", " ");
+
 const EmployeeDeviceEnrollmentBanner = ({
   enrollment,
   syncing = false,
@@ -29,23 +41,22 @@ const EmployeeDeviceEnrollmentBanner = ({
   if (!syncing && !enrollment) return null;
 
   const state = syncing ? "syncing" : (enrollment?.state ?? "pending");
+  // `untracked` is a person enrolled before tracking existed — nothing to report.
+  if (state === "untracked") return null;
+  const banner = BANNER_STATES[state] ?? BANNER_STATES.pending;
+  const Icon = banner.icon;
+  const removedOnDevice = state === "removed" && enrollment?.removed_by === "device";
   const showRetry = !syncing && onRetry && (enrollment?.retry_required || state === "partial" || state === "failed");
 
   return (
-    <div className={`flex items-center gap-2 p-3 rounded-lg border ${state === "syncing" ? "border-blue-500/30 bg-blue-500/10 text-blue-400" : (TONE_CLASS[state] || TONE_CLASS.pending)}`}>
-      {state === "syncing" && <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />}
-      {state === "enrolled" && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
-      {state === "partial" && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
-      {state === "failed" && <XCircle className="w-4 h-4 flex-shrink-0" />}
-      {(state === "pending" || state === "removal_pending") && <Clock className="w-4 h-4 flex-shrink-0" />}
+    <div className={`flex items-center gap-2 p-3 rounded-lg border ${banner.tone}`}>
+      <Icon className={`w-4 h-4 flex-shrink-0${banner.spin ? " animate-spin" : ""}`} />
       <span className="text-sm flex-1">
-        {state === "syncing" && arabicSource("employees.device_enrollment_syncing")}
-        {state === "enrolled" && arabicSource("employees.device_enrollment_enrolled")}
-        {state === "partial" && arabicSource("employees.device_enrollment_partial")}
-        {state === "failed" && arabicSource("employees.device_enrollment_failed")}
-        {state === "removal_pending" && arabicSource("employees.device_enrollment_removal_pending")}
-        {state === "pending" && arabicSource("employees.device_enrollment_pending")}
-        {enrollment?.last_error && ` — ${enrollment.last_error}`}
+        {arabicSource(removedOnDevice ? "employees.device_enrollment_removed_on_device" : banner.message)}
+        {state === "removed" && enrollment?.removed_at && (
+          <span dir="ltr"> · {baghdadStamp(enrollment.removed_at)}</span>
+        )}
+        {enrollment?.last_error && ` — ${deviceSyncErrorMessage(enrollment.last_error)}`}
       </span>
       {showRetry && (
         <Button variant="outline" onClick={onRetry} loading={retrying} className="h-8 px-3 text-xs">

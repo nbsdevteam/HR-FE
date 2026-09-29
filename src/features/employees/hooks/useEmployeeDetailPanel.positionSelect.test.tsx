@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { DbPosition } from "@/shared/hooks";
@@ -54,6 +54,11 @@ const baseEmployee: Employee = {
   attachments: [],
   readOnly: false,
   deviceEnrollment: null,
+  deviceEnrollmentState: "untracked",
+  source: "hr",
+  hrInfoPending: false,
+  hrInfoMissing: [],
+  deviceRemovedAt: null,
 };
 
 const designations: DbPosition[] = [

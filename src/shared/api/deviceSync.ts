@@ -27,9 +27,13 @@ export type SyncEmployeeToDeviceParams = {
   facePhoto?: string | null;
 };
 
-/** `POST /api/device/sync-employee` — pushes the person + optional face photo (backend §6.1). */
+/**
+ * `POST /api/device/sync-employee` — pushes the person + optional face photo (backend §6.1).
+ * A `create` refused because the terminal already has someone under the
+ * number answers 409 `device_number_taken` with that person's `existing_name`.
+ */
 export const syncEmployeeToDevice = (params: SyncEmployeeToDeviceParams) =>
-  deviceSyncPost<{ action?: "created" | "updated" }>("/device/sync-employee", {
+  deviceSyncPost<{ action?: "created" | "updated"; existing_name?: string }>("/device/sync-employee", {
     ...params,
     facePhoto: params.facePhoto ?? undefined,
   });

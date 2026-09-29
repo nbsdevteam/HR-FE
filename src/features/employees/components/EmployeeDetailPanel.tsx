@@ -1,11 +1,12 @@
 import { useCallback } from "react";
-import { AnimatePresence, type HTMLMotionProps } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { ModalOverlay } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { EmployeeDetailPanelProps } from "../types";
 import { useEmployeeDetailPanel } from "../hooks/useEmployeeDetailPanel";
 import EmployeeDetailHeader from "./EmployeeDetailHeader";
 import EmployeeDeviceCredentialsPanel from "./EmployeeDeviceCredentialsPanel";
+import EmployeeDeviceOriginPanel from "./EmployeeDeviceOriginPanel";
 import EmployeeIdentityCard from "./EmployeeIdentityCard";
 import EmployeeDetailTabs from "./EmployeeDetailTabs";
 import EmployeeInfoTab from "./EmployeeInfoTab";
@@ -23,7 +24,7 @@ import {
 /** Full-height sheet: opaque scrim + a panel sliding in from the start edge. */
 
 const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
-  const { onClose, allEmployees = [] } = props;
+  const { onClose, onSave, allEmployees = [] } = props;
   const {
     addingNewDept,
     allDepts,
@@ -83,6 +84,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     saveError,
     saving,
     setAddingNewDept,
+    setEditData,
     setIsEditing,
     setModalTab,
     setNewAttachment,
@@ -132,6 +134,10 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
   const handleToggleAddAttachment = useCallback((): void => {
     setShowAddAttachment((prev) => !prev);
   }, [setShowAddAttachment]);
+
+  const handleDeviceMapped = useCallback((): void => {
+    onSave?.();
+  }, [onSave]);
 
   return (
     <>
@@ -224,6 +230,9 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
             )}
             {modalTab === TAPSDATA.INFO && (
               <EmployeeDeviceCredentialsPanel employee={editData} {...credentialActions} />
+            )}
+            {modalTab === TAPSDATA.INFO && (
+              <EmployeeDeviceOriginPanel employee={editData} setEditData={setEditData} onMapped={handleDeviceMapped} />
             )}
 
             {modalTab === TAPSDATA.CUSTODIES && (

@@ -2,7 +2,7 @@ import { useCallback, useMemo, type DependencyList } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as odooData from "@/shared/api/odooData";
 import { STALE_TIME } from "@/shared/api/queryClient";
-import type { DeviceEnrollment } from "./deviceEnrollment";
+import type { DeviceEnrollment, EmployeeSource } from "./deviceEnrollment";
 import { useAsyncList } from "./useAsyncList";
 
 /**
@@ -103,6 +103,16 @@ export interface DbEmployee {
   /** Locked profile — true while the employee is deactivated (backend §5). */
   read_only: boolean;
   device_enrollment: DeviceEnrollment | null;
+  /** In the list payload too (the full `device_enrollment` block is detail-only). */
+  device_enrollment_state: string;
+  /** `device` rows were created by device-sync for a person the terminal had first. */
+  source: EmployeeSource;
+  /** A device-origin record HR has not completed yet. */
+  hr_info_pending: boolean;
+  /** Which essential fields are still empty: `department`, `position`, `joining_date`. */
+  hr_info_missing: string[];
+  /** When the terminal dropped the person on its own (+03:00), else null. */
+  device_removed_at: string | null;
 }
 
 export interface DbDepartment {

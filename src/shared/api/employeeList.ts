@@ -1,7 +1,7 @@
 import { hrCall } from "./client";
 import { mapEmployee } from "./mappers";
 import { eid } from "./httpHelpers";
-import type { DbEmployee, DeviceEnrollmentState, EmployeeStatusCode } from "../hooks";
+import type { DbEmployee, DeviceEnrollmentState, EmployeeOriginFilter, EmployeeStatusCode } from "../hooks";
 
 export type EmployeeListParams = {
   /** 1-based. The backend derives `offset` as `(page - 1) * limit` (backend §1). */
@@ -15,6 +15,10 @@ export type EmployeeListParams = {
   includeArchived?: boolean;
   /** Filter by enrolment state — `pending`/`partial`/`failed`/etc (backend §7/§8). */
   deviceEnrollmentState?: DeviceEnrollmentState[] | null;
+  /** Device-origin records, or only the ones HR has not completed (backend lugal_hr ≥ 1.24.0). */
+  origin?: EmployeeOriginFilter | null;
+  /** `false` ⇒ only employees with no terminal identity yet — the device-mapping picker's candidates. */
+  hasDeviceNumber?: boolean | null;
 };
 
 export type EmployeeDeleteResult = {
@@ -73,6 +77,9 @@ export const fetchEmployeesPage = async (params: EmployeeListParams = {}): Promi
   if (params.status) body.status = params.status;
   if (params.includeArchived) body.include_archived = true;
   if (params.deviceEnrollmentState?.length) body.device_enrollment_state = params.deviceEnrollmentState;
+  if (params.origin === "hr_info_pending") body.hr_info_pending = true;
+  if (params.origin === "device") body.source = "device";
+  if (params.hasDeviceNumber != null) body.has_device_number = params.hasDeviceNumber;
 
   const data = await hrCall<RawEmployeeListPage | unknown[]>("/api/hr/employees/list", body);
   const rows = Array.isArray(data) ? data : (data?.items ?? []);

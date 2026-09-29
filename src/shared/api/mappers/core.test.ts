@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mapDepartment, mapDepartmentTree, mapDepartmentMetadata } from "./core";
+import { mapDepartment, mapDepartmentTree, mapDepartmentMetadata, mapEmployee } from "./core";
+import { mapDeviceEnrollment } from "./deviceEnrollment";
 
 describe("mapDepartment", () => {
   it("keeps the existing Arabic-preferred `name` while exposing name_en/name_ar separately", () => {
@@ -75,5 +76,48 @@ describe("mapDepartmentMetadata", () => {
     expect(metadata.canCreate).toBe(true);
     expect(metadata.canEdit).toBe(false);
     expect(metadata.canDelete).toBe(false);
+  });
+});
+
+describe("mapEmployee device-origin fields", () => {
+  it("carries source, the pending-HR flag, missing fields and the device removal time", () => {
+    const emp = mapEmployee({
+      id: 9,
+      name: "Terminal Person",
+      device_employee_no: "1042",
+      device_enrollment_state: "removed",
+      source: "device",
+      hr_info_pending: true,
+      hr_info_missing: ["department", "joining_date"],
+      device_removed_at: "2026-09-29T14:05:00+03:00",
+    });
+
+    expect(emp.source).toBe("device");
+    expect(emp.hr_info_pending).toBe(true);
+    expect(emp.hr_info_missing).toEqual(["department", "joining_date"]);
+    expect(emp.device_enrollment_state).toBe("removed");
+    expect(emp.device_removed_at).toBe("2026-09-29T14:05:00+03:00");
+  });
+
+  it("reads a pre-1.24.0 payload as an HR-created, complete, untracked record", () => {
+    const emp = mapEmployee({ id: 3, name: "Old Payload", source: "something-else" });
+
+    expect(emp.source).toBe("hr");
+    expect(emp.hr_info_pending).toBe(false);
+    expect(emp.hr_info_missing).toEqual([]);
+    expect(emp.device_enrollment_state).toBe("untracked");
+    expect(emp.device_removed_at).toBeNull();
+  });
+});
+
+describe("mapDeviceEnrollment removal fields", () => {
+  it("keeps who removed the person and when, and drops an unknown remover", () => {
+    const byDevice = mapDeviceEnrollment({ state: "removed", removed_by: "device", removed_at: "2026-09-29T14:05:00+03:00" });
+    expect(byDevice?.removed_by).toBe("device");
+    expect(byDevice?.removed_at).toBe("2026-09-29T14:05:00+03:00");
+
+    const unknown = mapDeviceEnrollment({ state: "removed", removed_by: "someone" });
+    expect(unknown?.removed_by).toBeNull();
+    expect(unknown?.removed_at).toBeNull();
   });
 });

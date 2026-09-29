@@ -1,7 +1,6 @@
 import { memo, useCallback } from "react";
 import { motion } from "motion/react";
 import {
-  AlertCircle,
   ArchiveRestore,
   Edit,
   Eye,
@@ -19,6 +18,8 @@ import { arabicSource } from "@/i18n/source";
 import { usePermissions } from "@/shared/auth/permissions";
 import { statusColors } from "../styles";
 import type { DeleteEmployeeTarget } from "../types";
+import EmployeeDeviceStatusBadge from "./EmployeeDeviceStatusBadge";
+import EmployeeOriginBadges from "./EmployeeOriginBadges";
 
 type EmployeesTableRowProps = {
   emp: Employee;
@@ -101,6 +102,7 @@ const EmployeesTableRow = ({
             <p className="text-muted-foreground" style={{ fontSize: 12 }}>
               {emp.email}
             </p>
+            <EmployeeOriginBadges source={emp.source} hrInfoPending={emp.hrInfoPending} className="mt-1" />
           </div>
         </div>
       </td>
@@ -137,31 +139,11 @@ const EmployeesTableRow = ({
         </StatusBadge>
       </td>
       <td className="px-4 py-3">
-        {isPending ? (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400"
-            style={{ fontSize: 11 }}
-          >
-            <AlertCircle className="w-3 h-3" />{" "}
-            {arabicSource("employees.missing_data")}
-          </span>
-        ) : isDeviceSynced ? (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-            style={{ fontSize: 11 }}
-          >
-            <Fingerprint className="w-3 h-3" />{" "}
-            {arabicSource("employees.registered")}
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-muted-foreground/20 bg-muted/10 text-muted-foreground"
-            style={{ fontSize: 11 }}
-          >
-            <Fingerprint className="w-3 h-3" />{" "}
-            {arabicSource("employees.is_not_registered")}
-          </span>
-        )}
+        <EmployeeDeviceStatusBadge
+          isPending={isPending}
+          isDeviceSynced={isDeviceSynced}
+          enrollmentState={emp.deviceEnrollmentState}
+        />
       </td>
       <td
         className="px-4 py-3 text-muted-foreground"

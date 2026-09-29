@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { Employee, EmployeeOption } from "@/features/employees";
-import type { DbDepartment, DbEmployee, DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
+import type { DbDepartment, DbEmployee, DeviceEnrollmentState, EmployeeOriginFilter, EmployeeStatusCode } from "@/shared/hooks";
 import { empDisplayName } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { toEmployees } from "../utils/employeeMapper";
@@ -17,6 +17,8 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
   /** Active/Inactive/Suspended/Onboarding/Exited, or "" for no filter (backend §8). */
   const [status, setStatus] = useState<EmployeeStatusCode | "">("");
   const [deviceEnrollmentState, setDeviceEnrollmentState] = useState<DeviceEnrollmentState[]>([]);
+  /** Hikvision-origin records, or only those still pending HR information; "" for all. */
+  const [origin, setOrigin] = useState<EmployeeOriginFilter>("");
   // Inactive and exited are both archived rows server-side — selecting either
   // must switch the list to include them, same as the old manual toggle did
   // (backend §7/§8).
@@ -111,12 +113,14 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     filtered,
     includeArchived,
     kanbanDepts,
+    origin,
     pendingEmployees,
     realDepts,
     search,
     selectedDept,
     selectedDeptId,
     setDeviceEnrollmentState,
+    setOrigin,
     setSearch,
     setSelectedDept,
     setSortBy,

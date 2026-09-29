@@ -8,6 +8,7 @@ import { formatCurrency } from "@/shared/utils/currency";
 import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { statusColors } from "../styles";
+import EmployeeOriginBadges from "./EmployeeOriginBadges";
 
 type EmployeeKanbanTileProps = {
   emp: Employee;
@@ -54,6 +55,7 @@ const EmployeeKanbanTile = ({ emp, index, accent, dbEmp, onSelectEmployee }: Emp
         <div className="px-3 pt-7 pb-2.5 text-center">
           <p className="text-foreground truncate" style={{ fontSize: 12 }}>{emp.name}</p>
           <p className="text-muted-foreground truncate mt-0.5" style={{ fontSize: 10 }}>{emp.position}</p>
+          <EmployeeOriginBadges source={emp.source} hrInfoPending={emp.hrInfoPending} compact className="justify-center mt-1.5" />
           <div className="flex items-center justify-center gap-2 mt-2">
             <span className={`px-1.5 py-0.5 rounded border ${getStatusColor(emp.status, statusColors)}`} style={{ fontSize: 9 }}>{translateBackendCode(emp.status, employeeStatusKeys)}</span>
             {dbEmp?.device_employee_no ? (

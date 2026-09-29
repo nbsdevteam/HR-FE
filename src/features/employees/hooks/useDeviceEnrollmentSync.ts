@@ -7,7 +7,7 @@ import {
   syncEmployeeToDevice,
 } from "@/shared/api/deviceSync";
 import type { DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentReportResults } from "@/shared/hooks";
-import { errorMessage } from "../utils/errorMessage";
+import { deviceSyncFailure, deviceSyncThrown } from "../utils/deviceSyncErrorMessage";
 
 export type EnrollmentInput = {
   dbId: string;
@@ -54,7 +54,7 @@ export const useDeviceEnrollmentSync = () => {
         });
         results.person = syncRes.success ? "synced" : "failed";
         if (input.credentials.includes("face")) results.face = syncRes.success ? "synced" : "failed";
-        if (!syncRes.success) firstError ??= syncRes.error;
+        if (!syncRes.success) firstError ??= deviceSyncFailure(syncRes);
       }
 
       if (input.credentials.includes("card")) {
@@ -63,17 +63,17 @@ export const useDeviceEnrollmentSync = () => {
         } else {
           const cardRes = await enrolCardOnDevice(input.deviceEmployeeNo, input.cardNo);
           results.card = cardRes.success ? "synced" : "failed";
-          if (!cardRes.success) firstError ??= cardRes.error;
+          if (!cardRes.success) firstError ??= deviceSyncFailure(cardRes);
         }
       }
 
       if (input.credentials.includes("fingerprint")) {
         const fpRes = await enrolFingerprintOnDevice(input.deviceEmployeeNo);
         results.fingerprint = fpRes.success ? "synced" : "failed";
-        if (!fpRes.success) firstError ??= fpRes.error;
+        if (!fpRes.success) firstError ??= deviceSyncFailure(fpRes);
       }
     } catch (e: unknown) {
-      firstError ??= errorMessage(e);
+      firstError ??= deviceSyncThrown(e);
     }
 
     let deviceEnrollment: DeviceEnrollment | null = null;
@@ -117,9 +117,9 @@ export const useDeviceRemovalSync = () => {
         removePerson: true,
       });
       removed = !!res.success;
-      if (!removed) error = res.error;
+      if (!removed) error = deviceSyncFailure(res);
     } catch (e: unknown) {
-      error = errorMessage(e);
+      error = deviceSyncThrown(e);
     }
 
     let deviceEnrollment: DeviceEnrollment | null = null;

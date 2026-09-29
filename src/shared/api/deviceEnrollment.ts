@@ -1,7 +1,8 @@
 import { hrCall } from "./client";
-import { mapDeviceEnrollment } from "./mappers";
+import { mapDeviceEnrollment, mapEmployee } from "./mappers";
+import { num } from "./mappers/mapHelpers";
 import { eid } from "./httpHelpers";
-import type { DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentReportResults } from "../hooks";
+import type { DbEmployee, DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentReportResults } from "../hooks";
 
 /**
  * `POST .../device_enrollment` with no body — re-asks only for whatever
@@ -36,4 +37,43 @@ export const reportDeviceEnrollment = async (
 ): Promise<DeviceEnrollment | null> => {
   const data = await hrCall<unknown>(`/api/hr/employees/${eid(employeeId)}/device_enrollment/report`, body);
   return mapDeviceEnrollment(data);
+}
+
+/**
+ * `POST .../update {"hr_info_complete": true}` — HR confirms a device-origin
+ * record is complete. The flag also clears on its own once department,
+ * position and joining date are all set (backend lugal_hr ≥ 1.24.0).
+ */
+export const markHrInfoComplete = async (employeeId: string | number): Promise<DbEmployee> => {
+  const data = await hrCall<unknown>(`/api/hr/employees/${eid(employeeId)}/update`, { hr_info_complete: true });
+  return mapEmployee(data);
+}
+
+export type DeviceMappingResult = {
+  /** The HR employee that now holds the terminal identity. */
+  employee: DbEmployee;
+  /** The device-origin record, now archived and read-only. */
+  mappedFrom: string;
+  moved: { punches: number; deviceEvents: number };
+};
+
+/**
+ * `POST .../device_mapping {"target_employee_id"}` — moves the terminal number
+ * and the punches that arrived under it from a device-origin record to the
+ * existing employee HR chose. Never matched by name; the target must be
+ * active with no device number of its own (backend lugal_hr ≥ 1.24.0).
+ */
+export const mapDevicePersonToEmployee = async (
+  employeeId: string | number,
+  targetEmployeeId: string | number,
+): Promise<DeviceMappingResult> => {
+  const data = await hrCall<Record<string, unknown>>(`/api/hr/employees/${eid(employeeId)}/device_mapping`, {
+    target_employee_id: eid(targetEmployeeId),
+  });
+  const moved = (data?.moved ?? {}) as Record<string, unknown>;
+  return {
+    employee: mapEmployee(data),
+    mappedFrom: String(data?.mapped_from ?? employeeId),
+    moved: { punches: num(moved.punches), deviceEvents: num(moved.device_events) },
+  };
 }

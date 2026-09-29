@@ -1,6 +1,6 @@
-import type { DbEmployeeAddress, DbPosition, DeviceEnrollment } from "@/shared/hooks";
+import type { DbEmployeeAddress, DbPosition, DeviceEnrollment, EmployeeSource } from "@/shared/hooks";
 
-export type { DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentState, EmployeeStatusCode } from "@/shared/hooks";
+export type { DeviceCredentialKind, DeviceEnrollment, DeviceEnrollmentState, EmployeeOriginFilter, EmployeeSource, EmployeeStatusCode } from "@/shared/hooks";
 
 export type EmployeeViewMode = "list" | "kanban";
 
@@ -135,6 +135,16 @@ export type Employee = {
   /** Locked profile while deactivated — hide Edit/Enrol/Retry, render every tab view-only (backend §5). */
   readOnly: boolean;
   deviceEnrollment: DeviceEnrollment | null;
+  /** List-payload enrolment state (`device_enrollment` itself is detail-only). */
+  deviceEnrollmentState: string;
+  /** `device`: created by device-sync for a person the terminal had first. */
+  source: EmployeeSource;
+  /** A device-origin record HR has not completed yet. */
+  hrInfoPending: boolean;
+  /** Essential fields still empty: `department`, `position`, `joining_date`. */
+  hrInfoMissing: string[];
+  /** When the terminal dropped the person on its own (+03:00). */
+  deviceRemovedAt: string | null;
 };
 
 export type EmployeeOption = {

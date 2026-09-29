@@ -53,6 +53,11 @@ export const mapEmployee = (r: any): DbEmployee => {
     photo_version: num(r.photo_version),
     read_only: bool(r.read_only),
     device_enrollment: mapDeviceEnrollment(r.device_enrollment),
+    device_enrollment_state: r.device_enrollment_state || "untracked",
+    source: r.source === "device" || r.source === "import" ? r.source : "hr",
+    hr_info_pending: bool(r.hr_info_pending),
+    hr_info_missing: Array.isArray(r.hr_info_missing) ? r.hr_info_missing : [],
+    device_removed_at: r.device_removed_at || null,
   };
 }
 
