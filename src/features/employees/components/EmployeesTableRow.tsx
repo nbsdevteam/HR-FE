@@ -7,6 +7,7 @@ import {
   Eye,
   Fingerprint,
   Trash2,
+  UserX,
 } from "lucide-react";
 import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
@@ -29,8 +30,8 @@ type EmployeesTableRowProps = {
   onSelectEmployee: (employee: Employee) => void;
   onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
-  onSuspendEmployee: (employeeId: string) => void;
-  onRestoreEmployee: (employeeId: string) => void;
+  onDeactivateEmployee: (employee: Employee) => void;
+  onRestoreEmployee: (employee: Employee) => void;
 };
 
 const EmployeesTableRow = ({
@@ -43,7 +44,7 @@ const EmployeesTableRow = ({
   onSelectEmployee,
   onEditEmployee,
   onDeleteTargetChange,
-  onSuspendEmployee,
+  onDeactivateEmployee,
   onRestoreEmployee,
 }: EmployeesTableRowProps) => {
   const { hasPermission } = usePermissions();
@@ -66,13 +67,13 @@ const EmployeesTableRow = ({
     if (dbEmp) onDeleteTargetChange({ id: dbEmp.id, name: emp.name });
   }, [onDeleteTargetChange, dbEmp, emp.name]);
 
-  // const handleSuspendClick = useCallback(() => {
-  //   if (dbEmp) onSuspendEmployee(dbEmp.id);
-  // }, [onSuspendEmployee, dbEmp]);
+  const handleDeactivateClick = useCallback(() => {
+    onDeactivateEmployee(emp);
+  }, [onDeactivateEmployee, emp]);
 
   const handleRestoreClick = useCallback(() => {
-    if (dbEmp) onRestoreEmployee(dbEmp.id);
-  }, [onRestoreEmployee, dbEmp]);
+    onRestoreEmployee(emp);
+  }, [onRestoreEmployee, emp]);
 
   return (
     <motion.tr
@@ -209,17 +210,18 @@ const EmployeesTableRow = ({
               iconClassName="w-4 h-4 text-muted-foreground"
             />
           )}
-          {/* {dbEmp && canDeactivate && !isArchived && !isSelf && (
+          {dbEmp && canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"
               size="unstyled"
               rounded="rounded"
-              onClick={handleSuspendClick}
+              onClick={handleDeactivateClick}
               className="p-1.5 hover:bg-secondary"
-              icon={PauseCircle}
+              icon={UserX}
               iconClassName="w-4 h-4 text-muted-foreground"
+              title={arabicSource("employees.deactivate_employee")}
             />
-          )} */}
+          )}
           {dbEmp && canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"

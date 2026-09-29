@@ -37,8 +37,8 @@ type EmployeesListViewProps = {
   onSelectEmployee: (employee: Employee) => void;
   onEditEmployee: (employee: Employee) => void;
   onDeleteTargetChange: (target: DeleteEmployeeTarget) => void;
-  onSuspendEmployee: (employeeId: string) => void;
-  onRestoreEmployee: (employeeId: string) => void;
+  onDeactivateEmployee: (employee: Employee) => void;
+  onRestoreEmployee: (employee: Employee) => void;
   currentEmployeeId: string | null;
 };
 
@@ -62,7 +62,7 @@ const EmployeesListView = ({
   onSelectEmployee,
   onEditEmployee,
   onDeleteTargetChange,
-  onSuspendEmployee,
+  onDeactivateEmployee,
   onRestoreEmployee,
   currentEmployeeId,
 }: EmployeesListViewProps) => {
@@ -114,7 +114,7 @@ const EmployeesListView = ({
           onSelectEmployee={onSelectEmployee}
           onEditEmployee={onEditEmployee}
           onDeleteTargetChange={onDeleteTargetChange}
-          onSuspendEmployee={onSuspendEmployee}
+          onDeactivateEmployee={onDeactivateEmployee}
           onRestoreEmployee={onRestoreEmployee}
         />
       );
@@ -127,7 +127,7 @@ const EmployeesListView = ({
       onSelectEmployee,
       onEditEmployee,
       onDeleteTargetChange,
-      onSuspendEmployee,
+      onDeactivateEmployee,
       onRestoreEmployee,
     ],
   );
