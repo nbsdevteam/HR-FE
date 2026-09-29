@@ -1,19 +1,23 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import type { DbPosition } from "@/shared/hooks";
+import type { DbPosition, DeviceEnrollment } from "@/shared/hooks";
 import * as odooData from "@/shared/api/odooData";
-import { deviceSyncHeaders, SYNC_API } from "@/shared/constants";
+import { mapEmployee } from "@/shared/api/mappers";
 import { todayInBaghdad } from "@/shared/utils/timezone";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { useIsArabicLanguage } from "@/i18n/useLocalizedName";
-import type { DeviceSyncStatus, EmployeeAddForm } from "../types";
+import type { EmployeeAddForm } from "../types";
 import { birthDateFieldError } from "../utils/birthDate";
 import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
 import { errorMessage } from "../utils/errorMessage";
 import { photoFieldError } from "../utils/photoFieldError";
+import { useDeviceEnrollmentSync } from "./useDeviceEnrollmentSync";
+import { useEmployeeAddFacePhoto } from "./useEmployeeAddFacePhoto";
 import { useEmployeeLocationOptions } from "./useEmployeeLocationOptions";
-import { useNextEmployeeDeviceId } from "./useNextEmployeeDeviceId";
+import { useNextEmployeeCode } from "./useNextEmployeeCode";
+
+export type AddEmployeeStep = 1 | 2;
 
 const defaultAddForm: EmployeeAddForm = {
   name: "",
@@ -37,20 +41,28 @@ const defaultAddForm: EmployeeAddForm = {
   cityId: "",
   residence: "",
   workLocation: "local",
+  cardNumber: "",
+  enrollFingerprint: false,
 };
 
 export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => void) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState<EmployeeAddForm>(defaultAddForm);
+  const [addStep, setAddStep] = useState<AddEmployeeStep>(1);
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
-  const [photoError, setPhotoError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<EmployeeFieldErrors>(NO_EMPLOYEE_FIELD_ERRORS);
-  const [deviceSyncStatus, setDeviceSyncStatus] = useState<DeviceSyncStatus>("idle");
-  const [facePhotoBase64, setFacePhotoBase64] = useState<string | null>(null);
-  const [facePhotoPreview, setFacePhotoPreview] = useState<string | null>(null);
+  const [addDeviceEnrollment, setAddDeviceEnrollment] = useState<DeviceEnrollment | null>(null);
 
+  const {
+    photoError,
+    setPhotoError,
+    facePhotoBase64,
+    facePhotoPreview,
+    handleClearFacePhoto,
+    handleFacePhoto,
+  } = useEmployeeAddFacePhoto();
   const {
     countries,
     states,
@@ -76,8 +88,8 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     // A new employee can be created with a photo already attached.
     ["employees", "employeeAvatars"],
   );
-  const { nextEmployeeId, nextDeviceNo, loadingNextId, fetchNextId, resetNextId } =
-    useNextEmployeeDeviceId(setAddError);
+  const { nextEmployeeId, loadingNextId, fetchNextId, resetNextId } = useNextEmployeeCode(setAddError);
+  const { syncing: addEnrolling, runEnrollment } = useDeviceEnrollmentSync();
 
   const closeAddTimeoutRef = useRef<number | null>(null);
 
@@ -90,16 +102,16 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
 
   const resetAddForm = useCallback(() => {
     setAddForm(defaultAddForm);
+    setAddStep(1);
     setAddError(null);
     setBirthDateError(null);
     setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
-    setDeviceSyncStatus("idle");
+    setAddDeviceEnrollment(null);
     resetNextId();
-    setFacePhotoBase64(null);
-    setFacePhotoPreview(null);
+    handleClearFacePhoto();
     resetLocationOptions();
-  }, [resetLocationOptions, resetNextId]);
+  }, [handleClearFacePhoto, resetLocationOptions, resetNextId]);
 
   const openAddModal = useCallback(() => {
     setShowAddModal(true);
@@ -161,77 +173,63 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     [requestAddCity, addForm.stateId],
   );
 
-  const handleClearFacePhoto = useCallback(() => {
-    setFacePhotoPreview(null);
-    setFacePhotoBase64(null);
-    setPhotoError(null);
-  }, []);
-
-  const handleFacePhoto = useCallback((file: File) => {
-    setPhotoError(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setFacePhotoPreview(result);
-      setFacePhotoBase64(result.split(",")[1] || "");
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  const handleAddEmployee = useCallback(async () => {
+  /** Re-runs step 1's own guards before advancing — step 2 never opens on an invalid step-1 form. */
+  const goToStep2 = useCallback(() => {
     if (!addForm.name.trim()) { setAddError(arabicSource("employees.name_required")); return; }
     if (!nextEmployeeId) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
-    if (!nextDeviceNo) { setAddError(arabicSource("employees.employee_number_not_specified")); return; }
     if (addForm.joinDate && addForm.joinDate > todayInBaghdad()) {
       setAddError(arabicSource("employees.join_date_cannot_be_in_the_future"));
       return;
     }
-    // The picker is already capped at today; this catches a typed-in date and
-    // keeps `birth_date_in_future` a backstop rather than a round trip.
     if (addForm.birthDate && addForm.birthDate > todayInBaghdad()) {
       setBirthDateError(arabicSource("employees.birth_date_cannot_be_in_the_future"));
       return;
     }
+    setAddError(null);
+    setAddStep(2);
+  }, [addForm.name, addForm.joinDate, addForm.birthDate, nextEmployeeId]);
+
+  const goToStep1 = useCallback(() => {
+    setAddStep(1);
+  }, []);
+
+  const handleAddEmployee = useCallback(async () => {
     setAddSaving(true);
     setAddError(null);
-    setBirthDateError(null);
-    setPhotoError(null);
     setFieldErrors(NO_EMPLOYEE_FIELD_ERRORS);
 
     try {
-      const newPersonId = nextEmployeeId;
+      const newPersonId = nextEmployeeId as number;
+      const cardNumber = addForm.cardNumber.trim();
+      const deviceCredentials = [
+        ...(facePhotoBase64 ? (["face"] as const) : []),
+        ...(cardNumber ? (["card"] as const) : []),
+        ...(addForm.enrollFingerprint ? (["fingerprint"] as const) : []),
+      ];
 
-      const createdEmployee = await createEmployeeMutation.mutateAsync(
-        buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview, nextDeviceNo),
+      const createdEmployeeRaw = await createEmployeeMutation.mutateAsync(
+        buildEmployeeCreatePayload(addForm, newPersonId, facePhotoPreview, deviceCredentials),
       );
-      // Odoo may remap the requested number if it was taken by the time create()
-      // ran (second admin, stale pre-fetch). The device must always be enrolled
-      // under whatever Odoo actually saved — never the number requested or shown
-      // pre-submit, and never a person_id fallback (hand-off §1/§3.2/audit B.5/B.1).
-      const savedDeviceNo = (createdEmployee as { device_employee_no?: string } | null)?.device_employee_no || null;
+      // Odoo allocates the device number and echoes it back on the response —
+      // the device must always be enrolled under whatever Odoo actually saved,
+      // never a number computed or shown pre-submit (hand-off §1/§2).
+      const created = mapEmployee(createdEmployeeRaw);
+      const savedDeviceNo = created.device_employee_no;
+      const enrollment = created.device_enrollment;
+      setAddDeviceEnrollment(enrollment);
 
-      if (savedDeviceNo) {
-        setDeviceSyncStatus("syncing");
-        try {
-          const syncRes = await fetch(`${SYNC_API}/device/sync-employee`, {
-            method: "POST",
-            headers: deviceSyncHeaders(),
-            body: JSON.stringify({
-              mode: "create",
-              employeeNo: savedDeviceNo,
-              name: addForm.name,
-              gender: addForm.gender,
-              facePhoto: facePhotoBase64 || undefined,
-            }),
-          });
-          const syncData = await syncRes.json();
-          setDeviceSyncStatus(syncData.success ? "success" : "error");
-        } catch {
-          setDeviceSyncStatus("error");
-        }
-      } else {
-        // Odoo saved the employee without a device number — nothing to enrol.
-        setDeviceSyncStatus("error");
+      if (savedDeviceNo && enrollment && enrollment.pending.length > 0) {
+        const outcome = await runEnrollment({
+          dbId: created.id,
+          deviceEmployeeNo: savedDeviceNo,
+          mode: enrollment.mode === "update" ? "update" : "create",
+          credentials: enrollment.pending,
+          name: addForm.name,
+          gender: addForm.gender,
+          facePhotoBase64,
+          cardNo: cardNumber || null,
+        });
+        if (outcome.deviceEnrollment) setAddDeviceEnrollment(outcome.deviceEnrollment);
       }
 
       refetch();
@@ -249,7 +247,7 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
       else setAddError(errorMessage(error));
     }
     setAddSaving(false);
-  }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextDeviceNo, nextEmployeeId, refetch, resetAddForm]);
+  }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm, runEnrollment]);
 
   useEffect(() => {
     return () => {
@@ -258,8 +256,11 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
   }, []);
 
   return {
+    addDeviceEnrollment,
+    addEnrolling,
     addError,
     addForm,
+    addStep,
     birthDateError,
     addSaving,
     cities,
@@ -270,10 +271,11 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     creatingCity,
     cityCreateError,
     designationOptions,
-    deviceSyncStatus,
     dismissCitySuggestions,
     facePhotoPreview,
     fieldErrors,
+    goToStep1,
+    goToStep2,
     handleAddCity,
     handleAddEmployee,
     handleCitySearch,
@@ -286,7 +288,6 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
     loadingCountries,
     loadingNextId,
     loadingStates,
-    nextDeviceNo,
     nextEmployeeId,
     openAddModal,
     photoError,

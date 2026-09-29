@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { DatePicker, PositiveNumberInput } from "@/shared/components";
+import { DatePicker, PositiveNumberInput, Select } from "@/shared/components";
 import type { DbDepartment, DbPosition } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import { todayInBaghdad } from "@/shared/utils/timezone";
@@ -35,6 +35,11 @@ const EmployeeCoreFields = ({
   fieldErrors,
   onFormChange,
 }: EmployeeCoreFieldsProps) => {
+  const handleGenderChange = useCallback(
+    (value: string): void => onFormChange({ gender: value as "male" | "female" }),
+    [onFormChange],
+  );
+
   const handleNationalIdChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void =>
       onFormChange({ nationalId: e.target.value }),
@@ -92,6 +97,15 @@ const EmployeeCoreFields = ({
 
   return (
     <div className="grid grid-cols-2 gap-3">
+      <Select
+        label={arabicSource("employees.gender")}
+        value={addForm.gender}
+        onChange={handleGenderChange}
+        options={[
+          { value: "male", label: arabicSource("common.male") },
+          { value: "female", label: arabicSource("common.female") },
+        ]}
+      />
       <LabeledInput
         label={arabicSource("common.id_number")}
         type="text"

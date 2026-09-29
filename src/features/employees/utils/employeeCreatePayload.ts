@@ -1,4 +1,4 @@
-import type { EmployeeAddForm } from "../types";
+import type { DeviceCredentialKind, EmployeeAddForm } from "../types";
 
 /**
  * The backend takes address as a single nested object (§3 of the address
@@ -23,7 +23,7 @@ export const buildEmployeeCreatePayload = (
   form: EmployeeAddForm,
   personId: number,
   photo?: string | null,
-  deviceEmployeeNo?: number | string | null,
+  deviceCredentials?: DeviceCredentialKind[],
 ): Record<string, unknown> => ({
   name: form.name,
   // Optional: the data URL captured by the face-photo picker, if the user
@@ -41,11 +41,11 @@ export const buildEmployeeCreatePayload = (
   national_id: form.nationalId || null,
   status: "active",
   person_id: personId,
-  // No fallback to `personId` (hand-off §3.2/§1): the device number comes only
-  // from the allocator's `next_device_no`. Omitted (not sent as a bogus value)
-  // when it is missing — Odoo then creates the employee without one, which is
-  // a valid "not yet enrolled" state (§2).
-  ...(deviceEmployeeNo != null ? { device_employee_no: String(deviceEmployeeNo) } : {}),
+  // Odoo allocates the device number itself and returns it in the create
+  // response — the SPA never computes or sends one (hand-off §1/§2).
+  // `device_credentials` is only the requested set (face/card/fingerprint);
+  // Odoo never receives the card number or a fingerprint template itself.
+  ...(deviceCredentials && deviceCredentials.length > 0 ? { device_credentials: deviceCredentials } : {}),
   gender: form.gender || null,
   manager_id: form.managerId || null,
   department_id: form.departmentId || null,

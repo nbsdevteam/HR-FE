@@ -1,36 +1,20 @@
-import { Fingerprint, Loader2, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
-import { Select } from "@/shared/components";
-import type { EmployeeAddForm } from "../types";
 import { labelCls } from "../styles";
 
-type EmployeeFingerprintSectionProps = {
-  gender: EmployeeAddForm["gender"];
-  /** The Hikvision device number Odoo will save — never the employee-code
-   * `nextEmployeeId`, which can differ from it (Hikvision hand-off §3.1). */
-  nextDeviceNo: number | string | null;
-  loadingNextId: boolean;
+type EmployeePhotoPickerProps = {
   facePhotoPreview: string | null;
   photoError?: string | null;
-  onFormChange: (updates: Partial<EmployeeAddForm>) => void;
   onFacePhotoChange: (file: File) => void;
   onClearFacePhoto: () => void;
 };
 
-const EmployeeFingerprintSection = ({
-  gender,
-  nextDeviceNo,
-  loadingNextId,
+const EmployeePhotoPicker = ({
   facePhotoPreview,
   photoError = null,
-  onFormChange,
   onFacePhotoChange,
   onClearFacePhoto,
-}: EmployeeFingerprintSectionProps) => {
-  const handleGenderChange = (value: string): void => {
-    onFormChange({ gender: value as "male" | "female" });
-  };
-
+}: EmployeePhotoPickerProps) => {
   const handleFacePhotoInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) onFacePhotoChange(file);
@@ -38,43 +22,7 @@ const EmployeeFingerprintSection = ({
   };
 
   return (
-  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-    <p className="text-xs text-primary mb-3 flex items-center gap-1.5">
-      <Fingerprint className="w-3.5 h-3.5" />{" "}
-      {arabicSource("employees.fingerprint_device_data_mandatory")}
-    </p>
-    <div className="grid grid-cols-2 gap-3">
-      <div>
-        <label className={labelCls} style={{ fontSize: 12 }}>
-          {arabicSource("employees.employee_number")}
-        </label>
-        <div
-          className="w-full h-11 px-4 rounded-lg border border-border bg-muted/30 text-foreground flex items-center font-mono"
-          dir="ltr"
-        >
-          {loadingNextId ? (
-            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-          ) : nextDeviceNo ? (
-            `#${nextDeviceNo}`
-          ) : (
-            "—"
-          )}
-          <span className="text-muted-foreground text-[10px] ms-2">
-            {arabicSource("employees.automatic")}
-          </span>
-        </div>
-      </div>
-      <Select
-        label={arabicSource("employees.gender")}
-        value={gender}
-        onChange={handleGenderChange}
-        options={[
-          { value: "male", label: arabicSource("common.male") },
-          { value: "female", label: arabicSource("common.female") },
-        ]}
-      />
-    </div>
-    <div className="mt-3">
+    <div>
       <label className={labelCls} style={{ fontSize: 12 }}>
         {arabicSource("common.face_image")}{" "}
         <span className="text-muted-foreground">
@@ -118,8 +66,7 @@ const EmployeeFingerprintSection = ({
         <p className="text-destructive mt-1.5" style={{ fontSize: 12 }}>{photoError}</p>
       )}
     </div>
-  </div>
   );
 };
 
-export default EmployeeFingerprintSection;
+export default EmployeePhotoPicker;
