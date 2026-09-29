@@ -20,4 +20,6 @@ export type ExitChecklistLine = {
   checklist_item_id: string;
   is_completed: boolean;
   completed_at?: string | null;
+  /** Whether the signed-in user may tick it now (backend `can_toggle`). */
+  can_toggle?: boolean;
 };

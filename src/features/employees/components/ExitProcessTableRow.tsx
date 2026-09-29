@@ -24,7 +24,9 @@ const ExitProcessTableRow = ({ process: p, index: i, emp, exitTypeLabels, status
   return (
     <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
       className="border-b border-border/20 hover:bg-muted/10 transition-colors">
-      <Td>{emp ? empDisplayName(emp) : "—"}</Td>
+      {/* A completed exit archives the employee, dropping them from the
+          active-employee map — the API's own name keeps the row readable. */}
+      <Td>{emp ? empDisplayName(emp) : p.employee_name || "—"}</Td>
       <Td muted>{exitTypeLabels[p.exit_type] || p.exit_type}</Td>
       <Td muted dir="ltr">{p.exit_date}</Td>
       <Td dir="ltr">

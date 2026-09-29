@@ -105,6 +105,14 @@ export const createExitProcess = (payload: Record<string, unknown>) =>
 export const updateExitProcess = exitProcesses?.update;
 export const updateExitChecklistLine = exitChecklist?.update;
 
+/**
+ * Move an End of Service process to one of its `allowed_transitions`. The
+ * backend runs the side effects itself — clearance notifications, and on
+ * `completed` the employee exit and custody returns — in one transaction.
+ */
+export const transitionExitProcess = (id: string | number, status: string) =>
+  hrCall<unknown>(`/api/hr/exit/${eid(id)}/transition`, { status });
+
 export const fetchCustodies = (
   employeeId?: string | number,
 ): Promise<DbCustody[]> => {

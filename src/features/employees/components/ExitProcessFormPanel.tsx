@@ -10,9 +10,12 @@ import { arabicSource } from "@/i18n/source";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
 
-/** Employees who have already left cannot start a new exit process. */
-const isNotAlreadyFinished = (e: DbEmployee): boolean =>
-  e.status !== arabicSource("common.finished");
+/**
+ * Employees who have already left cannot start a new exit process. `status`
+ * is the backend code (`exited`), never the Arabic label this used to compare
+ * against — which matched nobody, so the filter never filtered.
+ */
+const isNotAlreadyFinished = (e: DbEmployee): boolean => e.status !== "exited";
 
 export type ExitFormData = {
   employee_id: string;

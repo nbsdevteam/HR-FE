@@ -1,3 +1,5 @@
+import { arabicSource } from "@/i18n/source";
+
 const SECTION_LABELS: Record<string, string> = {
   dashboard: "لوحة التحكم",
   employees: "الموظفون",
@@ -29,6 +31,9 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 const ACTION_LABELS: Record<string, string> = {
+  // hr.lifecycle.clearance_<team>: the End of Service clearance teams.
+  clearance_finance: arabicSource("settings.permission_clearance_finance"),
+  clearance_it: arabicSource("settings.permission_clearance_it"),
   list: "عرض القائمة",
   view: "عرض التفاصيل",
   create: "إنشاء",

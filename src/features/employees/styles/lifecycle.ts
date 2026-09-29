@@ -61,6 +61,9 @@ export const defaultExitTypeLabels: Record<string, string> = {
   retirement: arabicSource("lifecycle.retired"),
   mutual: arabicSource("lifecycle.mutual_agreement"),
   death: arabicSource("lifecycle.death"),
+  // Accepted by the backend for rows that predate the six types; not offered
+  // by the configured dropdown, but a stored row still gets a label.
+  other: arabicSource("common.other"),
 };
 
 export const defaultChecklistCategoryLabels: Record<string, string> = {

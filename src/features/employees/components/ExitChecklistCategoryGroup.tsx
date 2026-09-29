@@ -25,6 +25,7 @@ const ExitChecklistCategoryGroup = ({
           itemName={itemNameById.get(c.checklist_item_id) || ""}
           isCompleted={c.is_completed}
           completedAt={c.completed_at}
+          canToggle={c.can_toggle === true}
           onToggle={onChecklistToggle}
         />
       ))}

@@ -16,11 +16,18 @@ import {
   defaultLifecycleStatusColors,
   defaultLifecycleStatusLabels,
 } from "../styles/lifecycle";
-import type { EmployeeMap, LifecycleTabId } from "../types/lifecycle";
+import { lifecycleTabs, type EmployeeMap, type LifecycleTabId } from "../types/lifecycle";
 import { parseKeyLabelMap } from "../utils/lifecycleConfig";
 
+/** `?tab=exit` — how a clearance notification's link lands on its tab. */
+const initialTab = (): LifecycleTabId => {
+  if (typeof window === "undefined") return "contracts";
+  const requested = new URLSearchParams(window.location.search).get("tab");
+  return lifecycleTabs.some(tab => tab.id === requested) ? (requested as LifecycleTabId) : "contracts";
+};
+
 export const useLifecyclePage = () => {
-  const [activeTab, setActiveTab] = useState<LifecycleTabId>("contracts");
+  const [activeTab, setActiveTab] = useState<LifecycleTabId>(initialTab);
   const [search, setSearch] = useState("");
 
   const { employees, loading: empLoading } = useEmployees();

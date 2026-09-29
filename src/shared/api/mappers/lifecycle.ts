@@ -111,11 +111,36 @@ export const mapExitProcess = (r: any): DbExitProcess => {
     eos_amount: r.eos_amount ?? null,
     eos_currency: r.eos_currency || "IQD",
     final_settlement_amount: r.final_settlement_amount ?? null,
-    status: r.status || "initiated",
+    // The backend always sends one of its five stages; "initiated" was a
+    // Supabase-era stage Odoo never had, so it is no longer invented here.
+    status: r.status || "in_progress",
     approved_by: r.approved_by || null,
+    approved_by_user_name: r.approved_by_user_name || "",
+    approved_at: r.approved_at || null,
     notes: r.notes || null,
     created_at: r.created_at || empty,
     updated_at: r.updated_at || empty,
+    employee_name: r.employee_name || "",
+    employee_active: r.employee_active !== false,
+    editable: bool(r.editable),
+    allowed_transitions: Array.isArray(r.allowed_transitions) ? r.allowed_transitions : [],
+    transition_blockers:
+      r.transition_blockers && typeof r.transition_blockers === "object" ? r.transition_blockers : {},
+    clearance_started_at: r.clearance_started_at || null,
+    settlement_started_at: r.settlement_started_at || null,
+    completed_at: r.completed_at || null,
+    cancelled_at: r.cancelled_at || null,
+    clearance_notifications:
+      r.clearance_notifications && typeof r.clearance_notifications === "object"
+        ? r.clearance_notifications
+        : {},
+    esign: {
+      required: bool(r.esign?.required),
+      state: r.esign?.state || "not_required",
+      res_model: r.esign?.res_model || "",
+      res_id: r.esign?.res_id || false,
+      signed_at: r.esign?.signed_at || null,
+    },
   };
 }
 
@@ -129,6 +154,8 @@ export const mapExitChecklistLine = (r: any): DbExitChecklist => {
     completed_at: r.completed_at || null,
     notes: r.notes || null,
     created_at: r.created_at || empty,
+    clearance_team: r.clearance_team || "",
+    can_toggle: bool(r.can_toggle),
   };
 }
 

@@ -80,35 +80,9 @@ export interface DbExitChecklistItem {
   created_at: string;
 }
 
-export interface DbExitProcess {
-  id: string;
-  employee_id: string;
-  exit_type: string;
-  exit_date: string;
-  last_working_day: string | null;
-  reason: string | null;
-  notice_date: string | null;
-  notice_period_days: number | null;
-  eos_amount: number | null;
-  eos_currency: string;
-  final_settlement_amount: number | null;
-  status: string;
-  approved_by: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DbExitChecklist {
-  id: string;
-  exit_process_id: string;
-  checklist_item_id: string;
-  is_completed: boolean;
-  completed_by: string | null;
-  completed_at: string | null;
-  notes: string | null;
-  created_at: string;
-}
+export type {
+  DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitEsign, ExitStatus,
+} from "./exitProcessTypes";
 
 export interface DbCustody {
   id: string;
