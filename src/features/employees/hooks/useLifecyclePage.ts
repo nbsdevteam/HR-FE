@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useEmployees,
   empDisplayName,
@@ -29,6 +29,7 @@ const initialTab = (): LifecycleTabId => {
 export const useLifecyclePage = () => {
   const [activeTab, setActiveTab] = useState<LifecycleTabId>(initialTab);
   const [search, setSearch] = useState("");
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const { employees, loading: empLoading } = useEmployees();
   const { types: contractTypes } = useContractTypes();
@@ -89,7 +90,17 @@ export const useLifecyclePage = () => {
     return daysLeft <= probationAlertDays && daysLeft >= 0;
   }), [contracts, probationAlertDays]);
 
-  const loading = empLoading || contractsLoading || docsLoading || exitLoading;
+  const fetching = empLoading || contractsLoading || docsLoading || exitLoading;
+
+  // The shared list hooks report `loading` for every background refetch too, and
+  // a mutation (checklist toggle, save edit) invalidates them. Swapping the page
+  // for the loader then would unmount the tabs and drop the open detail view, so
+  // the loader is only for the first load.
+  useEffect(() => {
+    if (!fetching) setHasLoaded(true);
+  }, [fetching]);
+
+  const loading = fetching && !hasLoaded;
 
   return {
     activeContracts,
