@@ -7,9 +7,7 @@ import Pagination from "@/shared/components/Pagination";
 import SortableHeaderRow, {
   toggleSort,
 } from "@/shared/components/SortableHeader";
-import { indexBy } from "@/shared/utils/collections";
 import type { Employee } from "@/features/employees";
-import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
 import type { DeleteEmployeeTarget, EmployeeSortKey } from "../types";
 import EmployeesTableRow from "./EmployeesTableRow";
@@ -17,8 +15,6 @@ import { DEFAULT_EMPLOYEE_SORT, EMPLOYEE_COLUMNS } from "../data";
 
 type EmployeesListViewProps = {
   employees: Employee[];
-  dbEmployees: DbEmployee[];
-  deviceSyncedSet: Set<number>;
   pendingEmployees: Set<number>;
   sortBy: EmployeeSortKey;
   sortDir: "asc" | "desc";
@@ -44,8 +40,6 @@ type EmployeesListViewProps = {
 
 const EmployeesListView = ({
   employees,
-  dbEmployees,
-  deviceSyncedSet,
   pendingEmployees,
   sortBy,
   sortDir,
@@ -66,11 +60,6 @@ const EmployeesListView = ({
   onRestoreEmployee,
   currentEmployeeId,
 }: EmployeesListViewProps) => {
-  const dbEmpByPersonId = useMemo(
-    () => indexBy(dbEmployees, (e) => e.person_id),
-    [dbEmployees],
-  );
-
   const emptyRow = useMemo(
     () => (
       <tr>
@@ -99,18 +88,17 @@ const EmployeesListView = ({
 
   const renderEmployeeRow = useCallback(
     (emp: Employee, i: number) => {
-      const dbEmp = dbEmpByPersonId.get(emp.id);
+      // Everything comes from the page row itself: the active-only roster has
+      // no entry for an archived employee, so looking the row up there showed
+      // their device number as "—" and "not registered".
       return (
         <EmployeesTableRow
           key={emp.dbId}
           emp={emp}
-          dbEmp={dbEmp}
           index={i}
           isPending={pendingEmployees.has(emp.id)}
-          isDeviceSynced={deviceSyncedSet.has(emp.id)}
-          isSelf={Boolean(
-            dbEmp && currentEmployeeId && dbEmp.id === currentEmployeeId,
-          )}
+          isDeviceSynced={Boolean(emp.deviceEmployeeNo)}
+          isSelf={Boolean(currentEmployeeId && emp.dbId === currentEmployeeId)}
           onSelectEmployee={onSelectEmployee}
           onEditEmployee={onEditEmployee}
           onDeleteTargetChange={onDeleteTargetChange}
@@ -120,9 +108,7 @@ const EmployeesListView = ({
       );
     },
     [
-      dbEmpByPersonId,
       pendingEmployees,
-      deviceSyncedSet,
       currentEmployeeId,
       onSelectEmployee,
       onEditEmployee,

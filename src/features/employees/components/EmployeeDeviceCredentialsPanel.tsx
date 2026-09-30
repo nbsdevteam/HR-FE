@@ -17,6 +17,7 @@ type EmployeeDeviceCredentialsPanelProps = {
   handleEnrolCard: () => void;
   handleEnrolFingerprint: () => void;
   handleRetryEnrollment: () => void;
+  handleRetryRemoval: () => void;
 };
 
 const EmployeeDeviceCredentialsPanel = ({
@@ -30,6 +31,7 @@ const EmployeeDeviceCredentialsPanel = ({
   handleEnrolCard,
   handleEnrolFingerprint,
   handleRetryEnrollment,
+  handleRetryRemoval,
 }: EmployeeDeviceCredentialsPanelProps) => {
   const handleCardNumberChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setCardNumberDraft(e.target.value);
@@ -43,13 +45,17 @@ const EmployeeDeviceCredentialsPanel = ({
 
   const enrollment = employee.deviceEnrollment;
   const showRetry = Boolean(enrollment?.retry_required || enrollment?.state === "partial" || enrollment?.state === "failed");
+  // A failed removal is retried by removing again — allowed on the locked
+  // profile, since taking the person off the terminal is what the lock is for.
+  const retryRemoval = enrollment?.action === "remove";
+  const onRetry = retryRemoval ? handleRetryRemoval : employee.readOnly ? undefined : handleRetryEnrollment;
 
   return (
     <div className="px-6 pb-4 space-y-3">
       <EmployeeDeviceEnrollmentBanner
         enrollment={enrollment}
         syncing={credentialSyncing}
-        onRetry={showRetry && !employee.readOnly ? handleRetryEnrollment : undefined}
+        onRetry={showRetry ? onRetry : undefined}
         retrying={credentialSyncing}
       />
       {credentialError && (

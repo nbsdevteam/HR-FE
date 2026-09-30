@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Button, NodeAvatar, StatusBadge } from "@/shared/components";
 import type { Employee } from "@/features/employees";
-import type { DbEmployee } from "@/shared/hooks";
 import { formatCurrency } from "@/shared/utils/currency";
 import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
@@ -23,7 +22,6 @@ import EmployeeOriginBadges from "./EmployeeOriginBadges";
 
 type EmployeesTableRowProps = {
   emp: Employee;
-  dbEmp: DbEmployee | undefined;
   index: number;
   isPending: boolean;
   isDeviceSynced: boolean;
@@ -37,7 +35,6 @@ type EmployeesTableRowProps = {
 
 const EmployeesTableRow = ({
   emp,
-  dbEmp,
   index,
   isPending,
   isDeviceSynced,
@@ -53,8 +50,11 @@ const EmployeesTableRow = ({
   const canDeactivate =
     hasPermission("hr.employees.deactivate") ||
     hasPermission("hr.employees.delete");
-  const deviceNo = dbEmp?.device_employee_no;
-  const isArchived = dbEmp ? !dbEmp.is_active : false;
+  // From the row itself: an archived (inactive/exited) employee is not in the
+  // active roster, so a roster lookup showed their number as "—" and hid the
+  // Restore button.
+  const deviceNo = emp.deviceEmployeeNo;
+  const isArchived = !emp.isActive;
 
   const handleSelect = useCallback(
     () => onSelectEmployee(emp),
@@ -65,8 +65,8 @@ const EmployeesTableRow = ({
     [onEditEmployee, emp],
   );
   const handleDeleteTargetChange = useCallback(() => {
-    if (dbEmp) onDeleteTargetChange({ id: dbEmp.id, name: emp.name });
-  }, [onDeleteTargetChange, dbEmp, emp.name]);
+    onDeleteTargetChange({ id: emp.dbId, name: emp.name });
+  }, [onDeleteTargetChange, emp.dbId, emp.name]);
 
   const handleDeactivateClick = useCallback(() => {
     onDeactivateEmployee(emp);
@@ -170,7 +170,7 @@ const EmployeesTableRow = ({
             icon={Eye}
             iconClassName="w-4 h-4 text-muted-foreground"
           />
-          {canEdit && (
+          {canEdit && !emp.readOnly && (
             <Button
               variant="unstyled"
               size="unstyled"
@@ -181,7 +181,7 @@ const EmployeesTableRow = ({
               iconClassName="w-4 h-4 text-muted-foreground"
             />
           )}
-          {dbEmp && canDeactivate && isArchived && (
+          {canDeactivate && isArchived && (
             <Button
               variant="unstyled"
               size="unstyled"
@@ -192,7 +192,7 @@ const EmployeesTableRow = ({
               iconClassName="w-4 h-4 text-muted-foreground"
             />
           )}
-          {dbEmp && canDeactivate && !isArchived && !isSelf && (
+          {canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"
               size="unstyled"
@@ -204,7 +204,7 @@ const EmployeesTableRow = ({
               title={arabicSource("employees.deactivate_employee")}
             />
           )}
-          {dbEmp && canDeactivate && !isArchived && !isSelf && (
+          {canDeactivate && !isArchived && !isSelf && (
             <Button
               variant="unstyled"
               size="unstyled"

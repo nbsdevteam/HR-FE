@@ -110,6 +110,7 @@ export type Employee = {
   /** ISO `YYYY-MM-DD`, or "" when no birth date is on file. */
   birthDate: string;
   endDate: string | null;
+  /** The backend's `hr_status` code: `active`, `onboarding`, `suspended`, `inactive` or `exited`. */
   status: string;
   salary: number;
   currency: string;
@@ -134,6 +135,8 @@ export type Employee = {
   attachments: Attachment[];
   /** Locked profile while deactivated — hide Edit/Enrol/Retry, render every tab view-only (backend §5). */
   readOnly: boolean;
+  /** `false` once archived (`inactive`/`exited`) — such rows are absent from the active roster. */
+  isActive: boolean;
   deviceEnrollment: DeviceEnrollment | null;
   /** List-payload enrolment state (`device_enrollment` itself is detail-only). */
   deviceEnrollmentState: string;

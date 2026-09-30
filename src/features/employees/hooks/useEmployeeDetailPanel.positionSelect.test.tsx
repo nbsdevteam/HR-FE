@@ -53,6 +53,7 @@ const baseEmployee: Employee = {
   leaves: [],
   attachments: [],
   readOnly: false,
+  isActive: true,
   deviceEnrollment: null,
   deviceEnrollmentState: "untracked",
   source: "hr",

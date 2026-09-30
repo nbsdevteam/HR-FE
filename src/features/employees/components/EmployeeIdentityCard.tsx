@@ -1,6 +1,8 @@
 import { Camera, Send, X } from "lucide-react";
 import { NodeAvatar, Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
+import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
+import { getStatusColor } from "@/shared/utils/statusColors";
 import { statusColors } from "../styles";
 import type { Employee } from "../types";
 
@@ -82,8 +84,8 @@ const EmployeeIdentityCard = ({
       <h3 className="text-foreground truncate" style={{ fontSize: 18 }}>{editData.name}</h3>
       <p className="text-muted-foreground mt-0.5" style={{ fontSize: 14 }}>{editData.position}</p>
       <div className="flex items-center gap-2 mt-2">
-        <span className={`px-2.5 py-0.5 rounded-md border ${statusColors[editData.status]}`} style={{ fontSize: 11 }}>
-          {editData.status}
+        <span className={`px-2.5 py-0.5 rounded-md border ${getStatusColor(editData.status, statusColors)}`} style={{ fontSize: 11 }}>
+          {translateBackendCode(editData.status, employeeStatusKeys)}
         </span>
         <span className="text-muted-foreground px-2 py-0.5 rounded-md bg-muted/20" style={{ fontSize: 11 }} dir="ltr">
           {editData.employeeNumber}

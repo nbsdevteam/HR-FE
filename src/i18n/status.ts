@@ -13,6 +13,11 @@ export const employeeStatusKeys: TranslationKeyMap = {
   [arabicSource("common.finished")]: "common.finished",
   pending: "common.pending",
   [arabicSource("common.pending")]: "common.pending",
+  // Odoo's `hr_status` codes (lugal_hr ≥ 1.22.0).
+  onboarding: "employees.status_onboarding",
+  suspended: "employees.status_suspended",
+  inactive: "employees.status_inactive",
+  exited: "employees.status_exited",
 };
 
 /**

@@ -13,12 +13,6 @@ export const buildManagerIndex = (allEmployees: readonly DbEmployee[]): ManagerI
 export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Employee => {
   const name = empDisplayName(employee);
   const joinDate = employee.join_date || (employee.created_at ? employee.created_at.substring(0, 10) : "");
-  const statusMap: Record<string, string> = {
-    [arabicSource("common.is_active")]: arabicSource("common.is_active"),
-    [arabicSource("common.leave")]: arabicSource("common.leave"),
-    [arabicSource("common.finished")]: arabicSource("common.finished"),
-    [arabicSource("common.pending")]: arabicSource("common.pending"),
-  } as const;
   const manager = employee.manager_id ? managerIndex.get(employee.manager_id) : null;
   const addr = employee.address_raw && typeof employee.address_raw === "object" ? employee.address_raw : null;
 
@@ -45,7 +39,10 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     // "" rather than a placeholder: the edit form binds a date input to this.
     birthDate: employee.birth_date || "",
     endDate: employee.end_date || null,
-    status: (statusMap[employee.status || arabicSource("common.is_active")] || arabicSource("common.is_active")) as Employee["status"],
+    // The code as sent. It used to be looked up in a table of Supabase-era
+    // Arabic labels, which no Odoo code matches — so every employee,
+    // inactive and suspended included, rendered as "Active".
+    status: employee.status || "active",
     salary: employee.monthly_salary || 0,
     currency: employee.currency || "IQD",
     photo: employee.profile_picture || "",
@@ -68,6 +65,7 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     leaves: [],
     attachments: [],
     readOnly: employee.read_only,
+    isActive: employee.is_active,
     deviceEnrollment: employee.device_enrollment,
     deviceEnrollmentState: employee.device_enrollment_state,
     source: employee.source,

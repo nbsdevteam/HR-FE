@@ -159,8 +159,6 @@ const Employees = () => {
         {viewMode === "list" ? (
           <EmployeesListView
             employees={pagedEmployees}
-            dbEmployees={dbEmployees}
-            deviceSyncedSet={deviceSyncedSet}
             pendingEmployees={pendingEmployees}
             sortBy={sortBy}
             sortDir={sortDir}

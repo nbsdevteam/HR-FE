@@ -96,6 +96,16 @@ export const fetchHrDashboard = async (params?: {
   return hrCall("/api/hr/dashboard", body);
 }
 
+/**
+ * `/api/hr/employees/<id>` — the detail payload. Only it carries the
+ * `device_enrollment` block (the list sends just `device_enrollment_state`),
+ * archived employees included.
+ */
+export const fetchEmployee = async (employeeId: string | number): Promise<DbEmployee> => {
+  const data = await hrCall<unknown>(`/api/hr/employees/${eid(employeeId)}`, {});
+  return mapEmployee(data);
+}
+
 /** Current user's linked hr.employee (JWT only; does not require hr.employees.list). */
 export const fetchCurrentEmployee = async (): Promise<DbEmployee> => {
   const data = await hrCall<any>("/api/hr/employees/me", {});

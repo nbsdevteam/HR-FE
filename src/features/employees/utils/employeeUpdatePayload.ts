@@ -42,7 +42,10 @@ export const buildEmployeeUpdatePayload = (
   monthly_salary: editData.salary,
   join_date: editData.startDate || null,
   end_date: editData.endDate || null,
-  status: editData.status,
+  // No `status`: the form has no status control, so the value was only ever
+  // the stale copy loaded with the panel — and while it was mapped to "Active"
+  // for everyone, every save reactivated a suspended, onboarding or exited
+  // employee. Status changes go through set_status / deactivate / restore.
   department_id: resolvedDepartmentId,
   designation_id: resolvedPositionId,
   address: buildAddressPayload(editData),

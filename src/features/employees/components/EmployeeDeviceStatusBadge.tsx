@@ -1,4 +1,4 @@
-import { AlertCircle, Fingerprint, UserMinus, type LucideIcon } from "lucide-react";
+import { AlertCircle, Clock, Fingerprint, UserMinus, XCircle, type LucideIcon } from "lucide-react";
 import { arabicSource, type ArabicSourceKey } from "@/i18n/source";
 
 type EmployeeDeviceStatusBadgeProps = {
@@ -11,6 +11,8 @@ type EmployeeDeviceStatusBadgeProps = {
 type Badge = { tone: string; icon: LucideIcon; label: ArabicSourceKey };
 
 const MISSING_DATA: Badge = { tone: "border-amber-500/30 bg-amber-500/10 text-amber-400", icon: AlertCircle, label: "employees.missing_data" };
+const REMOVAL_PENDING: Badge = { tone: "border-blue-500/30 bg-blue-500/10 text-blue-400", icon: Clock, label: "employees.device_enrollment_removal_pending" };
+const REMOVAL_FAILED: Badge = { tone: "border-red-500/30 bg-red-500/10 text-red-400", icon: XCircle, label: "employees.device_enrollment_removal_failed" };
 const REMOVED: Badge = { tone: "border-red-500/30 bg-red-500/10 text-red-400", icon: UserMinus, label: "employees.device_enrollment_removed" };
 const REGISTERED: Badge = { tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400", icon: Fingerprint, label: "employees.registered" };
 const NOT_REGISTERED: Badge = { tone: "border-muted-foreground/20 bg-muted/10 text-muted-foreground", icon: Fingerprint, label: "employees.is_not_registered" };
@@ -18,6 +20,9 @@ const NOT_REGISTERED: Badge = { tone: "border-muted-foreground/20 bg-muted/10 te
 const pickBadge = ({ isPending, isDeviceSynced, enrollmentState }: EmployeeDeviceStatusBadgeProps): Badge => {
   if (isPending) return MISSING_DATA;
   if (enrollmentState === "removed") return REMOVED;
+  // Deactivated but not (yet) off the terminal — still able to punch in.
+  if (enrollmentState === "removal_failed") return REMOVAL_FAILED;
+  if (enrollmentState === "removal_pending") return REMOVAL_PENDING;
   return isDeviceSynced ? REGISTERED : NOT_REGISTERED;
 };
 

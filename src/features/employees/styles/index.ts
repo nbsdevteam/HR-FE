@@ -18,12 +18,17 @@ export const accentColors = [
   "#E74C3C",
 ];
 
-/** Arabic employee-status labels mapped onto the shared badge tones. */
+/** Employee-status codes (and the legacy Arabic labels) mapped onto the shared badge tones. */
 export const statusColors: Record<string, string> = {
   [arabicSource("common.is_active")]: STATUS_TONES.success,
   [arabicSource("common.leave")]: STATUS_TONES.accent,
   [arabicSource("common.finished")]: STATUS_TONES.danger,
   [arabicSource("common.pending")]: STATUS_TONES.warning,
+  active: STATUS_TONES.success,
+  onboarding: STATUS_TONES.info,
+  suspended: STATUS_TONES.warning,
+  inactive: STATUS_TONES.neutral,
+  exited: STATUS_TONES.danger,
 };
 
 export const inputCls =
