@@ -7,6 +7,8 @@ import type {
   DbExitProcess,
   DbExitChecklist,
   DbCustody,
+  ExitClearanceSection,
+  ExitSignature,
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
@@ -98,6 +100,36 @@ export const mapExitChecklistItem = (r: any): DbExitChecklistItem => {
   };
 }
 
+export const mapExitSignature = (r: any): ExitSignature => {
+  return {
+    id: sid(r.id),
+    sequence: num(r.sequence),
+    signer_role: r.signer_role || "",
+    signer_name: r.signer_name || "",
+    state: r.state || "pending",
+    sent_at: r.sent_at || null,
+    decided_at: r.decided_at || null,
+    can_sign: bool(r.can_sign),
+    can_resend: bool(r.can_resend),
+  };
+}
+
+export const mapExitClearanceSection = (r: any): ExitClearanceSection => {
+  return {
+    id: sid(r.id),
+    category: r.category || "",
+    state: r.state || "pending_approval",
+    approved_by_name: r.approved_by_name || "",
+    approved_at: r.approved_at || null,
+    completed_at: r.completed_at || null,
+    approver_count: typeof r.approver_count === "number" ? r.approver_count : null,
+    can_approve: bool(r.can_approve),
+    signatures: Array.isArray(r.signatures)
+      ? r.signatures.map(mapExitSignature).sort((a: ExitSignature, b: ExitSignature) => a.sequence - b.sequence)
+      : [],
+  };
+}
+
 export const mapExitProcess = (r: any): DbExitProcess => {
   return {
     id: sid(r.id),
@@ -141,6 +173,9 @@ export const mapExitProcess = (r: any): DbExitProcess => {
       res_id: r.esign?.res_id || false,
       signed_at: r.esign?.signed_at || null,
     },
+    clearance_sections: Array.isArray(r.clearance_sections)
+      ? r.clearance_sections.map(mapExitClearanceSection)
+      : [],
   };
 }
 

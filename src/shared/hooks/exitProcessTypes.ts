@@ -22,6 +22,43 @@ export interface ExitClearanceNotifications {
   employee?: { inbox: boolean; has_login: boolean; email: string };
 }
 
+/** A clearance section's stage (backend `clearance_sections[].state`). */
+export type ExitSectionState =
+  | "pending_approval" | "approved" | "signing" | "completed" | "rejected" | "cancelled";
+
+/** One signer's stage (backend `clearance_sections[].signatures[].state`). */
+export type ExitSignatureState =
+  | "pending" | "sent" | "viewed" | "signed" | "rejected" | "expired" | "revoked";
+
+export type ExitSignerRole = "hr_manager" | "finance_supervisor" | "it_approver" | "employee";
+
+/** One ordered signer on a clearance section; `can_*` are the backend's verdict for the caller. */
+export interface ExitSignature {
+  id: string;
+  sequence: number;
+  signer_role: string;
+  signer_name: string;
+  state: ExitSignatureState;
+  sent_at: string | null;
+  decided_at: string | null;
+  can_sign: boolean;
+  can_resend: boolean;
+}
+
+/** An approval + ordered signatures gate over one governed checklist category. */
+export interface ExitClearanceSection {
+  id: string;
+  category: string;
+  state: ExitSectionState;
+  approved_by_name: string;
+  approved_at: string | null;
+  completed_at: string | null;
+  /** Holders of the category's approver permission; 0 means the section can never be approved. */
+  approver_count: number | null;
+  can_approve: boolean;
+  signatures: ExitSignature[];
+}
+
 export interface DbExitProcess {
   id: string;
   employee_id: string;
@@ -55,6 +92,8 @@ export interface DbExitProcess {
   cancelled_at: string | null;
   clearance_notifications: ExitClearanceNotifications;
   esign: ExitEsign;
+  /** Empty until the backend's clearance governance is switched on. */
+  clearance_sections: ExitClearanceSection[];
 }
 
 export interface DbExitChecklist {

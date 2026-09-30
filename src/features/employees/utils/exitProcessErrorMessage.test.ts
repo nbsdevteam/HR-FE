@@ -17,6 +17,9 @@ describe("exitProcessErrorMessage", () => {
       ["open_exit_process_exists", "lifecycle.exit_error_open_exists"],
       ["exit_already_completed", "lifecycle.exit_error_already_completed"],
       ["esign_not_signed", "lifecycle.exit_error_esign_not_signed"],
+      ["clearance_section_governs_item", "lifecycle.exit_error_section_governs_item"],
+      ["signature_out_of_order", "lifecycle.exit_error_signature_out_of_order"],
+      ["signature_already_decided", "lifecycle.exit_error_signature_already_decided"],
     ];
     for (const [code, key] of cases) {
       expect(exitProcessErrorMessage(apiError(code), "lifecycle.exit_error_update_failed"))

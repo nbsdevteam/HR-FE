@@ -5,6 +5,7 @@ import { Button } from "@/shared/components";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess, type ExitStatus } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
+import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
 import ExitChecklistCategoryGroup from "./ExitChecklistCategoryGroup";
 import ExitClearanceNotice from "./ExitClearanceNotice";
@@ -24,6 +25,7 @@ type ExitProcessDetailViewProps = {
   cardCls: string;
   inputCls: string;
   busy: boolean;
+  clearanceActions: ExitClearanceActions;
   onBack: () => void;
   onTransition: (processId: string, status: ExitStatus) => void;
   onEditSave: (processId: string, payload: ExitEditPayload) => Promise<boolean>;
@@ -32,7 +34,7 @@ type ExitProcessDetailViewProps = {
 
 const ExitProcessDetailView = ({
   proc, emp, checklist, exitItems, categoryLabels, exitTypeLabels, statusLabels, statusColors, cardCls,
-  inputCls, busy, onBack, onTransition, onEditSave, onChecklistToggle,
+  inputCls, busy, clearanceActions, onBack, onTransition, onEditSave, onChecklistToggle,
 }: ExitProcessDetailViewProps) => {
   const [editing, setEditing] = useState(false);
 
@@ -59,6 +61,11 @@ const ExitProcessDetailView = ({
       .map(([cat, catLabel]) => ({ cat, catLabel, items: byCategory.get(cat) ?? [] }))
       .filter(group => group.items.length > 0);
   }, [categoryLabels, checklist, exitItemById]);
+
+  const sectionByCategory = useMemo(
+    () => new Map(proc.clearance_sections.map(section => [section.category, section])),
+    [proc.clearance_sections],
+  );
 
   const handleTransition = useCallback((target: ExitStatus): void => {
     onTransition(proc.id, target);
@@ -136,6 +143,8 @@ const ExitProcessDetailView = ({
             catLabel={catLabel}
             items={items}
             itemNameById={itemNameById}
+            section={sectionByCategory.get(cat)}
+            clearanceActions={clearanceActions}
             onChecklistToggle={onChecklistToggle}
           />
         ))}

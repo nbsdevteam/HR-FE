@@ -18,6 +18,9 @@ const EXIT_ERROR_KEYS: Record<string, ArabicSourceKey> = {
   employee_already_exited: "lifecycle.exit_error_employee_already_exited",
   exit_checklist_closed: "lifecycle.exit_error_checklist_closed",
   exit_not_found: "lifecycle.exit_error_not_found",
+  clearance_section_governs_item: "lifecycle.exit_error_section_governs_item",
+  signature_out_of_order: "lifecycle.exit_error_signature_out_of_order",
+  signature_already_decided: "lifecycle.exit_error_signature_already_decided",
 };
 
 /** The backend's `error_code` on a failed exit call, if it sent one. */

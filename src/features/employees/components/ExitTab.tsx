@@ -11,6 +11,7 @@ import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/pa
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
+import { useExitClearanceActions } from "../hooks/useExitClearanceActions";
 import { useExitProcessActions } from "../hooks/useExitProcessActions";
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";
 import ExitProcessTableRow from "./ExitProcessTableRow";
@@ -47,6 +48,7 @@ const ExitTab = ({
   // Fetch checklist for selected process
   const { checklist } = useExitChecklist(selectedProcess || undefined);
   const { busy, createExit, transition, saveEdit, toggleChecklist } = useExitProcessActions(setSelectedProcess);
+  const clearanceActions = useExitClearanceActions();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleCreate = useCallback(async () => {
@@ -148,6 +150,7 @@ const ExitTab = ({
         cardCls={cardCls}
         inputCls={inputCls}
         busy={busy}
+        clearanceActions={clearanceActions}
         onBack={closeDetail}
         onTransition={handleTransition}
         onEditSave={handleEditSave}

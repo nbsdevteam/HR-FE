@@ -113,6 +113,27 @@ export const updateExitChecklistLine = exitChecklist?.update;
 export const transitionExitProcess = (id: string | number, status: string) =>
   hrCall<unknown>(`/api/hr/exit/${eid(id)}/transition`, { status });
 
+// ─── Clearance sections: approval + ordered signatures ───────────────
+// Who may act is the backend's call (`can_approve` / `can_sign`); a refused
+// call comes back with an `error_code` the exit error map already handles.
+
+export const approveClearanceSection = (sectionId: string | number, comment?: string) =>
+  hrCall<unknown>(`/api/hr/exit/clearance/${eid(sectionId)}/approve`, { comment });
+
+export const rejectClearanceSection = (sectionId: string | number, comment: string) =>
+  hrCall<unknown>(`/api/hr/exit/clearance/${eid(sectionId)}/reject`, { comment });
+
+export const signExitSignature = (
+  signatureId: string | number,
+  payload: { typed_name: string; notes?: string },
+) => hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/sign`, payload);
+
+export const rejectExitSignature = (signatureId: string | number, reason: string) =>
+  hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/reject`, { reason });
+
+export const resendExitSignature = (signatureId: string | number) =>
+  hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/resend`, {});
+
 export const fetchCustodies = (
   employeeId?: string | number,
 ): Promise<DbCustody[]> => {
