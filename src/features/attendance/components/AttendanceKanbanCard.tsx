@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { motion } from "motion/react";
-import { Timer } from "lucide-react";
+import { ArrowRight, Timer } from "lucide-react";
 import { NodeAvatar } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { AttendanceRow } from "../types";
@@ -49,7 +49,7 @@ const AttendanceKanbanCard = ({ record, index, onSelectEmployee }: AttendanceKan
       <div className="flex items-center justify-between text-muted-foreground" style={{ fontSize: 11 }}>
         <div className="flex items-center gap-1">
           <span className="text-emerald-400/80" dir="ltr">{record.checkIn}</span>
-          <span className="text-muted-foreground/30">→</span>
+          <ArrowRight className="w-3 h-3 text-muted-foreground/30" aria-hidden="true" />
           <span className={record.autoCheckout ? "text-amber-400/80" : "text-blue-400/80"} dir="ltr">{record.checkOut}</span>
           {record.autoCheckout && <Timer className="w-2.5 h-2.5 text-amber-400/50" />}
         </div>

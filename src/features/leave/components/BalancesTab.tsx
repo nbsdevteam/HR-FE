@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, Search } from "lucide-react";
 import {
   resolveLeaveEntitlement,
   type DbLeaveType,
@@ -94,7 +94,7 @@ const BalancesTab = ({
           onClick={handleBackToList}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           {arabicSource("leave.return_to_the_list_of_employees")}
         </button>
 

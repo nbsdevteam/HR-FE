@@ -44,7 +44,7 @@ const MonthlySummaryView = ({ stats, monthLabel, records, onPrev, onNext }: Mont
           size="icon"
           rounded="rounded-lg"
           className="hover:bg-muted/30"
-          icon={ChevronRight}
+          icon={ChevronLeft}
           iconClassName="w-5 h-5 text-muted-foreground"
         />
         <h3 className="text-foreground text-lg">{monthLabel}</h3>
@@ -54,7 +54,7 @@ const MonthlySummaryView = ({ stats, monthLabel, records, onPrev, onNext }: Mont
           size="icon"
           rounded="rounded-lg"
           className="hover:bg-muted/30"
-          icon={ChevronLeft}
+          icon={ChevronRight}
           iconClassName="w-5 h-5 text-muted-foreground"
         />
       </div>

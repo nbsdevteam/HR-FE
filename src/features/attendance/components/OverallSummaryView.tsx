@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Calendar, CalendarDays, Clock, Award } from "lucide-react";
+import { ArrowRight, Calendar, CalendarDays, Clock, Award } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
 import { formatWorkHours } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -51,7 +51,7 @@ const OverallSummaryView = ({ stats, breakdown }: OverallSummaryViewProps) => {
       {/* Date range */}
       <div className={`${cardCls} px-4 py-3 flex items-center justify-between`}>
         <span className="text-muted-foreground" style={{ fontSize: 12 }}>{arabicSource("attendance.data_period")}</span>
-        <span className="text-foreground font-mono" style={{ fontSize: 13 }}>{stats.firstDate} → {stats.lastDate}</span>
+        <span className="text-foreground font-mono inline-flex items-center gap-1.5" style={{ fontSize: 13 }}>{stats.firstDate} <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> {stats.lastDate}</span>
       </div>
 
       {/* Monthly breakdown table */}

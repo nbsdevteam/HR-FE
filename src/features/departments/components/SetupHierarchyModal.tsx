@@ -1,4 +1,4 @@
-import { Briefcase, Crown } from "lucide-react";
+import { ArrowRight, Briefcase, Crown } from "lucide-react";
 import { Modal, ModalFooterActions } from "@/shared/components";
 import type { DbEmployee } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
@@ -59,7 +59,12 @@ const SetupHierarchyModal = ({ dbEmployees, saving, onClose, onSetup }: SetupHie
                 <OrgPreviewNode
                   title={arabicSource("common.chief_executive_officer_ceo")}
                   subtitle={rootEmployeeCount > 0
-                    ? `← ${rootEmployeeCount} ${arabicSource("hierarchy.current_employee")}`
+                    ? (
+                      <span className="inline-flex items-center gap-1">
+                        <ArrowRight className="w-2.5 h-2.5" aria-hidden="true" />
+                        {rootEmployeeCount} {arabicSource("hierarchy.current_employee")}
+                      </span>
+                    )
                     : arabicSource("common.no_subordinates")}
                 />
                 <OrgPreviewNode

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { ChevronRight, ClipboardList, LogOut, Pencil } from "lucide-react";
+import { ChevronLeft, ClipboardList, LogOut, Pencil } from "lucide-react";
 import { Button } from "@/shared/components";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess, type ExitStatus } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
@@ -82,7 +82,7 @@ const ExitProcessDetailView = ({
   return (
     <div className="space-y-4">
       <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer">
-        <ChevronRight className="w-4 h-4" /> {arabicSource("lifecycle.return")}
+        <ChevronLeft className="w-4 h-4" /> {arabicSource("lifecycle.return")}
       </button>
 
       <div className="flex items-center gap-4">

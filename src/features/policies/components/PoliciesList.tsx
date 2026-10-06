@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import EmptyState from "@/shared/components/EmptyState";
 import { arabicSource } from "@/i18n/source";
 import { scrollContentToTop } from "@/shared/utils/scrollToTop";
@@ -87,7 +87,7 @@ const PoliciesList = ({
             onClick={handlePrevPage}
             className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
           >
-            ‹
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <span className="text-sm text-foreground">
             {currentPage} / {totalPages}
@@ -98,7 +98,7 @@ const PoliciesList = ({
             onClick={handleNextPage}
             className="px-3 py-1.5 rounded-md border border-border text-sm disabled:opacity-40 cursor-pointer hover:bg-muted/30"
           >
-            ›
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>

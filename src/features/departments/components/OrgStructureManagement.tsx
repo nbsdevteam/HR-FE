@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { useDepartmentMetadata } from "@/shared/hooks";
 import type { OrgStructureTab } from "../types";
@@ -35,7 +35,7 @@ const OrgStructureManagement = ({ onBack }: OrgStructureManagementProps) => {
           onClick={onBack}
           className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-1 cursor-pointer"
         >
-          <ArrowRight className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
           {arabicSource("org_structure.back_to_hierarchy")}
         </button>
         <h1 className="text-gradient-gold">

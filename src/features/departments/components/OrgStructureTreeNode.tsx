@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ChevronDown, ChevronLeft, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, Users } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { DepartmentTreeNode } from "@/shared/hooks";
 
@@ -32,7 +32,7 @@ const OrgStructureTreeNode = ({ node, depth, expandedIds, onToggleExpand }: OrgS
             className="p-0.5 rounded hover:bg-muted/40 text-muted-foreground shrink-0 cursor-pointer"
             aria-label={isExpanded ? arabicSource("org_structure.collapse") : arabicSource("org_structure.expand")}
           >
-            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         ) : (
           <span className="w-5 shrink-0" />

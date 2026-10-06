@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { AnimatePresence } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ConfirmDeleteModal, Toast } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useReportTemplateMetadata } from "@/shared/hooks";
@@ -42,7 +42,7 @@ const ReportConfigManagement = ({ onBack }: ReportConfigManagementProps) => {
       <div className="flex items-center justify-between">
         <div>
           <button type="button" onClick={onBack} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-1 cursor-pointer">
-            <ArrowRight className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
             {arabicSource("reports.back_to_reports")}
           </button>
           <h1 className="text-gradient-gold">{arabicSource("reports.configurations_title")}</h1>

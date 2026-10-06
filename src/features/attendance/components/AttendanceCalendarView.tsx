@@ -110,7 +110,7 @@ const AttendanceCalendarView = ({
           <Button
             variant="ghost"
             size="sm"
-            icon={ChevronRight}
+            icon={ChevronLeft}
             onClick={onPrev}
           >
             {arabicSource("attendance.previous")}
@@ -122,7 +122,7 @@ const AttendanceCalendarView = ({
           <Button
             variant="ghost"
             size="sm"
-            icon={ChevronLeft}
+            icon={ChevronRight}
             iconPosition="trailing"
             onClick={onNext}
           >

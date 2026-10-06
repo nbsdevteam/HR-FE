@@ -1,5 +1,5 @@
 import { useCallback, type ChangeEvent } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Button, LoadingState, StatusBadge } from "@/shared/components";
 import type { HrPermissionsSchema } from "../api/permissionsAdmin";
@@ -45,7 +45,7 @@ const PermissionEditorPanel = ({ userId, schema, showToast, onBack, onSaved }: T
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
-        <Button variant="ghost" size="sm" icon={ArrowRight} onClick={onBack}>
+        <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={onBack}>
           {arabicSource("settings.roles_permissions_back_to_directory")}
         </Button>
         {detail.has_individual_overrides && (

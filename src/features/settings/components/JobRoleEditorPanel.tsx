@@ -1,5 +1,5 @@
 import { useCallback, useState, type ChangeEvent } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { Button, ConfirmDeleteModal, InputField, LoadingState } from "@/shared/components";
 import type { HrPermissionsSchema, HrRoleListItem } from "../api/permissionsAdmin";
@@ -72,7 +72,7 @@ const JobRoleEditorPanel = ({ role, schema, canManage, showToast, onBack, onSave
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" icon={ArrowRight} onClick={onBack}>
+        <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={onBack}>
           {arabicSource("settings.roles_permissions_back_to_directory")}
         </Button>
       </div>
