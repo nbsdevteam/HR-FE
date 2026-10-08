@@ -2817,5 +2817,6 @@
   "lifecycle.exit_error_section_governs_item": "ئەم بڕگەیە لەلایەن بەشی پاکانەوە تەواو دەبێت و بە دەست ناگۆڕدرێت",
   "lifecycle.exit_error_signature_out_of_order": "پێویستە واژۆکانی پێشوو تەواو بن",
   "lifecycle.exit_error_signature_already_decided": "ئەم واژۆیە پێشتر یەکلا کراوەتەوە",
-  "lifecycle.exit_error_clearance_action_failed": "نەتوانرا کاری پاکانە ئەنجام بدرێت"
+  "lifecycle.exit_error_clearance_action_failed": "نەتوانرا کاری پاکانە ئەنجام بدرێت",
+  "devicemanagement.status_unknown": "دۆخ نەزانراوە"
 }

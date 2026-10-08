@@ -2817,5 +2817,6 @@
   "lifecycle.exit_error_section_governs_item": "هذا البند يُنجزه قسم الإخلاء ولا يمكن تعديله يدوياً",
   "lifecycle.exit_error_signature_out_of_order": "لا يمكن التوقيع قبل اكتمال التواقيع السابقة",
   "lifecycle.exit_error_signature_already_decided": "تم البتّ في هذا التوقيع مسبقاً",
-  "lifecycle.exit_error_clearance_action_failed": "تعذر تنفيذ إجراء الإخلاء"
+  "lifecycle.exit_error_clearance_action_failed": "تعذر تنفيذ إجراء الإخلاء",
+  "devicemanagement.status_unknown": "الحالة غير معروفة"
 }

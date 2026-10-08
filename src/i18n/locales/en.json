@@ -2817,5 +2817,6 @@
   "lifecycle.exit_error_section_governs_item": "This item is completed by its clearance section and cannot be ticked by hand",
   "lifecycle.exit_error_signature_out_of_order": "Earlier signatures must be completed first",
   "lifecycle.exit_error_signature_already_decided": "This signature has already been decided",
-  "lifecycle.exit_error_clearance_action_failed": "Could not complete the clearance action"
+  "lifecycle.exit_error_clearance_action_failed": "Could not complete the clearance action",
+  "devicemanagement.status_unknown": "Status unknown"
 }
