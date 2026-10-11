@@ -17,13 +17,17 @@ const REMOVED: Badge = { tone: "border-red-500/30 bg-red-500/10 text-red-400", i
 const REGISTERED: Badge = { tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400", icon: Fingerprint, label: "employees.registered" };
 const NOT_REGISTERED: Badge = { tone: "border-muted-foreground/20 bg-muted/10 text-muted-foreground", icon: Fingerprint, label: "employees.is_not_registered" };
 
-const pickBadge = ({ isPending, isDeviceSynced, enrollmentState }: EmployeeDeviceStatusBadgeProps): Badge => {
+const pickBadge = ({ isPending, enrollmentState }: EmployeeDeviceStatusBadgeProps): Badge => {
   if (isPending) return MISSING_DATA;
   if (enrollmentState === "removed") return REMOVED;
   // Deactivated but not (yet) off the terminal — still able to punch in.
   if (enrollmentState === "removal_failed") return REMOVAL_FAILED;
   if (enrollmentState === "removal_pending") return REMOVAL_PENDING;
-  return isDeviceSynced ? REGISTERED : NOT_REGISTERED;
+  if (enrollmentState === "pending") return { tone: "border-blue-500/30 bg-blue-500/10 text-blue-400", icon: Clock, label: "employees.device_enrollment_pending" };
+  if (enrollmentState === "failed") return { tone: "border-red-500/30 bg-red-500/10 text-red-400", icon: XCircle, label: "employees.device_enrollment_failed" };
+  if (enrollmentState === "partial") return { tone: "border-amber-500/30 bg-amber-500/10 text-amber-400", icon: AlertCircle, label: "employees.device_enrollment_partial" };
+  // A reserved number is not evidence that the terminal enrolled the person.
+  return enrollmentState === "enrolled" ? REGISTERED : NOT_REGISTERED;
 };
 
 const EmployeeDeviceStatusBadge = (props: EmployeeDeviceStatusBadgeProps) => {

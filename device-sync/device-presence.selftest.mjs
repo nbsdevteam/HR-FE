@@ -87,5 +87,21 @@ assert.equal(created, null);
 assert.equal(pathsCalled("/api/hr/employees/create").length, 1, "tried once");
 assert.ok(logs.some(l => l.includes("belongs to Odoo employee 55")));
 
+// 6. A retried import reuses the holder without announcing a new employee.
+reset();
+createReply = { success: true, data: { ...emp(174, "81"), created: false } };
+const reused = await backend.createEmployee({ employeeNo: "81", name: "Abdulrahman" });
+assert.equal(reused.id, 174);
+assert.equal(pathsCalled("/api/hr/employees/create").length, 1);
+assert.equal(pathsCalled("/api/hr/notifications/create").length, 0);
+
+// 7. An old backend must not attach real punches to a newly allocated number.
+reset();
+createReply = { success: true, data: emp(93, "4460") };
+const mismatched = await backend.createEmployee({ employeeNo: "81", name: "Abdulrahman" });
+assert.equal(mismatched, null);
+assert.ok(logs.some(l => l.includes("identity mismatch")));
+assert.equal(pathsCalled("/api/hr/notifications/create").length, 0);
+
 server.close();
-console.log("device-presence selftest: 5 scenarios passed");
+console.log("device-presence selftest: 7 scenarios passed");
