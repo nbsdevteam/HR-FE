@@ -36,6 +36,8 @@ const ACTION_LABELS: Record<string, string> = {
   clearance_it: arabicSource("settings.permission_clearance_it"),
   clearance_admin: arabicSource("settings.permission_clearance_admin"),
   clearance_custody: arabicSource("settings.permission_clearance_custody"),
+  approve: arabicSource("settings.permission_approve"),
+  approve_termination: arabicSource("settings.permission_approve_termination"),
   list: "عرض القائمة",
   view: "عرض التفاصيل",
   create: "إنشاء",

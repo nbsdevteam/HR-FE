@@ -17,6 +17,7 @@ export * from "./leaveExcuse";
 export * from "./leaveExcuseQueue";
 export * from "./lifecycle";
 export * from "./employeeLifecycle";
+export * from "./exitApproval";
 export * from "./recruitment";
 export * from "./performance";
 export * from "./reporting";

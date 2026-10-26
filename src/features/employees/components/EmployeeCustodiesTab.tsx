@@ -8,7 +8,10 @@ import EmployeeCustodyCard from "./EmployeeCustodyCard";
 import TabAddToggleHeader from "./shared/TabAddToggleHeader";
 import TabShellEmptyState from "./shared/TabShellEmptyState";
 
-type NewCustody = { item: string; description: string; dateReceived: string; serialNumber: string; status: CustodyStatus; notes: string };
+type NewCustody = {
+  item: string; description: string; dateReceived: string; serialNumber: string; status: CustodyStatus; notes: string;
+  valueAmount: string; valueCurrency: string;
+};
 
 type EmployeeCustodiesTabProps = {
   custodies: Custody[];

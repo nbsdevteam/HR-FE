@@ -25,6 +25,15 @@ const EXIT_ERROR_KEYS: Record<string, ArabicSourceKey> = {
   exit_checklist_not_started: "lifecycle.exit_error_checklist_not_started",
   // Custody must be recorded returned/damaged/lost first; completion never changes it.
   custody_not_returned: "lifecycle.exit_error_custody_not_returned",
+  // Approval stage, settlement statement and the final approval.
+  approval_required: "lifecycle.exit_error_approval_required",
+  approval_pending: "lifecycle.exit_error_approval_pending",
+  approval_not_pending: "lifecycle.exit_error_approval_not_pending",
+  approval_own_exit: "lifecycle.exit_error_approval_own_exit",
+  second_person_required: "lifecycle.exit_error_second_person_required",
+  not_step_approver: "lifecycle.exit_error_not_step_approver",
+  reject_reason_required: "lifecycle.exit_error_reject_reason_required",
+  use_exit_approval: "lifecycle.exit_error_use_exit_approval",
 };
 
 /** The backend's `error_code` on a failed exit call, if it sent one. */

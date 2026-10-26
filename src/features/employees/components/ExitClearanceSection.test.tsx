@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import type { DbExitChecklistItem, DbExitProcess } from "@/shared/hooks";
 import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
+import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
 import ExitProcessDetailView from "./ExitProcessDetailView";
 
@@ -49,6 +50,15 @@ const itSection = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const noopDecisionActions = (): ExitDecisionActions => ({
+  approve: vi.fn().mockResolvedValue(true),
+  reject: vi.fn().mockResolvedValue(true),
+  recalculate: vi.fn().mockResolvedValue(true),
+  confirmSettlement: vi.fn().mockResolvedValue(true),
+  reopenSettlement: vi.fn().mockResolvedValue(true),
+  issueLink: vi.fn().mockResolvedValue(true),
+});
+
 const renderView = (proc: DbExitProcess, clearanceActions: ExitClearanceActions = noopActions()) => {
   render(
     <ExitProcessDetailView
@@ -64,6 +74,7 @@ const renderView = (proc: DbExitProcess, clearanceActions: ExitClearanceActions 
       inputCls=""
       busy={false}
       clearanceActions={clearanceActions}
+      decisionActions={noopDecisionActions()}
       onBack={vi.fn()}
       onTransition={vi.fn()}
       onEditSave={vi.fn().mockResolvedValue(true)}

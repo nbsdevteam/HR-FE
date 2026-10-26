@@ -5,6 +5,9 @@ import type { CustodyStatus } from "../types";
 /** Ordered so `<select>`/badge lists render active first, terminal states last. */
 export const CUSTODY_STATUS_KEYS: readonly CustodyStatus[] = ["active", "returned", "damaged", "lost"];
 
+/** Currencies a custody value can be recorded in; amounts are never converted between them. */
+export const CUSTODY_CURRENCIES = ["IQD", "USD", "EUR"] as const;
+
 export const custodyStatusLabels: Record<CustodyStatus, string> = {
   active: arabicSource("shared.custody_status_active"),
   returned: arabicSource("shared.custody_status_returned"),

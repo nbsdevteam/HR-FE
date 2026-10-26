@@ -5,13 +5,14 @@ import { useSearchParams } from "react-router";
 import { Button, DataTable, EmptyState, TableHeaderRow } from "@/shared/components";
 import {
   useExitChecklist,
+  useMyTasks,
   type DbEmployee, type DbExitProcess, type DbExitChecklistItem, type ExitStatus,
 } from "@/shared/hooks";
-import { calculateEOS, DEFAULT_EOS_CONFIG } from "@/features/payroll/services/payslip-engine";
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
 import { useExitClearanceActions } from "../hooks/useExitClearanceActions";
+import { useExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { useExitProcessActions } from "../hooks/useExitProcessActions";
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";
 import ExitProcessTableRow from "./ExitProcessTableRow";
@@ -52,25 +53,15 @@ const ExitTab = ({
   const { checklist } = useExitChecklist(selectedProcess || undefined);
   const { busy, createExit, transition, saveEdit, toggleChecklist } = useExitProcessActions(setSelectedProcess);
   const clearanceActions = useExitClearanceActions();
+  const decisionActions = useExitDecisionActions();
+  const { tasks } = useMyTasks();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleCreate = useCallback(async () => {
     if (!formData.employee_id || !formData.exit_date) return;
 
-    // The benefits estimate is still computed here and stays editable on the
-    // process; the backend stores what it is sent.
-    const emp = empMap[formData.employee_id];
-    let eosAmount = 0;
-    if (emp?.join_date && emp?.monthly_salary) {
-      eosAmount = calculateEOS(
-        emp.join_date,
-        emp.monthly_salary,
-        emp.currency || "IQD",
-        DEFAULT_EOS_CONFIG,
-        formData.exit_date,
-      )?.amount ?? 0;
-    }
-
+    // The benefits and settlement amounts are the server's: entering settlement
+    // calculates the statement, and `/exit/create` ignores any amount sent.
     // Backend auto-creates checklist lines from active checklist items.
     const created = await createExit({
       employee_id: formData.employee_id,
@@ -79,13 +70,12 @@ const ExitTab = ({
       last_working_day: formData.last_working_day || formData.exit_date,
       reason: formData.reason || null,
       notice_date: formData.notice_date || null,
-      eos_amount: eosAmount,
     });
     if (created) {
       setShowForm(false);
       setFormData(EMPTY_EXIT_FORM);
     }
-  }, [formData, empMap, createExit]);
+  }, [formData, createExit]);
 
   const handleTransition = useCallback((processId: string, status: ExitStatus): void => {
     void transition(processId, status);
@@ -165,6 +155,8 @@ const ExitTab = ({
         inputCls={inputCls}
         busy={busy}
         clearanceActions={clearanceActions}
+        decisionActions={decisionActions}
+        canDecideApproval={tasks.some(task => task.exit_id === proc.id && task.action === "approve_exit")}
         onBack={closeDetail}
         onTransition={handleTransition}
         onEditSave={handleEditSave}

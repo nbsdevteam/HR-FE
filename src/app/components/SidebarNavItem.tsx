@@ -8,6 +8,8 @@ export type SidebarMenuItem = {
   icon: LucideIcon;
   path: string;
   routeKeys: string[];
+  /** Shown to every signed-in user, whatever their route permissions (My tasks). */
+  alwaysVisible?: boolean;
 };
 
 type SidebarNavItemProps = {

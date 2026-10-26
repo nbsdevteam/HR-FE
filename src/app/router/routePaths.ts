@@ -17,6 +17,7 @@ export const ROUTE_SEGMENT = {
   recruitment: "recruitment",
   training: "training",
   lifecycle: "lifecycle",
+  myTasks: "my-tasks",
   reports: "reports",
   audit: "audit",
   devices: "devices",

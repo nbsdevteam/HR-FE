@@ -69,6 +69,9 @@ export type Custody = {
   status: CustodyStatus;
   notes: string;
   returnDate: string | null;
+  /** What a lost or damaged item is deducted at in the settlement; null when none is on file. */
+  valueAmount: number | null;
+  valueCurrency: string;
 };
 
 export type LeaveRecord = {

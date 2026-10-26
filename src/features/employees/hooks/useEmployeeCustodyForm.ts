@@ -14,10 +14,14 @@ type NewCustody = {
   serialNumber: string;
   status: CustodyStatus;
   notes: string;
+  /** Typed as text; sent as a number only when filled in. */
+  valueAmount: string;
+  valueCurrency: string;
 };
 
 const emptyNewCustody = (): NewCustody => ({
   item: "", description: "", dateReceived: todayStr(), serialNumber: "", status: "active", notes: "",
+  valueAmount: "", valueCurrency: "IQD",
 });
 
 export const useEmployeeCustodyForm = (employeeId: string) => {
@@ -70,6 +74,9 @@ export const useEmployeeCustodyForm = (employeeId: string) => {
         serial_number: newCustody.serialNumber.trim(),
         status: newCustody.status,
         notes: newCustody.notes.trim(),
+        ...(newCustody.valueAmount.trim()
+          ? { value_amount: Math.max(0, Number(newCustody.valueAmount) || 0), value_currency: newCustody.valueCurrency }
+          : {}),
       });
       await reloadCustodies();
       setNewCustody(emptyNewCustody());

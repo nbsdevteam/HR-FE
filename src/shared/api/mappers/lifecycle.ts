@@ -12,6 +12,7 @@ import type {
   ExitWarnings,
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
+import { mapExitApproval, mapExitSettlement, mapExitSigningLink } from "./exitApproval";
 
 export const mapDocumentType = (r: any): DbDocumentType => {
   return {
@@ -193,6 +194,10 @@ export const mapExitProcess = (r: any): DbExitProcess => {
       ? r.clearance_sections.map(mapExitClearanceSection)
       : [],
     warnings: mapExitWarnings(r.warnings),
+    approval: mapExitApproval(r.approval),
+    approval_submitted_at: r.approval_submitted_at || null,
+    settlement: mapExitSettlement(r.settlement),
+    signature: mapExitSigningLink(r.signature),
   };
 }
 
@@ -222,6 +227,8 @@ export const mapCustody = (r: any): DbCustody => {
     serial_number: r.serial_number || empty,
     date_received: r.date_received || null,
     return_date: r.return_date || null,
+    value_amount: r.value_amount ?? null,
+    value_currency: r.value_currency || "IQD",
     status: r.status || "active",
     notes: r.notes || empty,
     created_at: r.created_at || empty,

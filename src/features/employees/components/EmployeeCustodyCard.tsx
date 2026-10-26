@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-import { Calendar, Hash, Laptop, StickyNote } from "lucide-react";
+import { Banknote, Calendar, Hash, Laptop, StickyNote } from "lucide-react";
+import { formatNumber } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import { DatePicker, StatusBadge } from "@/shared/components";
 import type { Custody, CustodyStatus } from "../types";
@@ -70,6 +71,13 @@ const EmployeeCustodyCard = ({ custody, isEditing, onDelete, onUpdate }: Employe
       <RecordMetaItem icon={Calendar} label={arabicSource("shared.received_date")} value={custody.dateReceived} />
       {custody.serialNumber && (
         <RecordMetaItem icon={Hash} value={custody.serialNumber} />
+      )}
+      {custody.valueAmount !== null && (
+        <RecordMetaItem
+          icon={Banknote}
+          label={arabicSource("employees.custody_value_amount")}
+          value={`${formatNumber(custody.valueAmount)} ${custody.valueCurrency}`}
+        />
       )}
       {custody.status === "returned" && (
         isEditing ? (

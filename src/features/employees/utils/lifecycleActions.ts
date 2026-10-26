@@ -12,11 +12,16 @@ export const canEditEndOfService = (actions: readonly string[]): boolean => acti
 /** A stage code as the user reads it; an unknown stage shows as sent. */
 export const exitStageLabel = (stage: string): string => defaultLifecycleStatusLabels[stage] ?? stage;
 
-/** Who an open stage waits on, as the backend names it; an unknown value shows as sent. */
+/**
+ * Who an open stage waits on, as the backend names it. During approval it is the
+ * current step's name, which is data, so an unknown value shows as sent.
+ */
 const WAITING_ON_KEYS: Record<string, ArabicSourceKey> = {
   HR: "common.human_resources",
   "Clearance teams": "lifecycle.exit_waiting_clearance_teams",
   Finance: "common.finance",
+  "Employee signature": "lifecycle.exit_waiting_employee_signature",
+  "HR manager final approval": "lifecycle.exit_waiting_hr_final",
 };
 
 export const waitingOnKey = (waitingOn: string): ArabicSourceKey | undefined => WAITING_ON_KEYS[waitingOn];

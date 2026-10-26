@@ -82,7 +82,8 @@ export interface DbExitChecklistItem {
 
 export type {
   DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitClearanceSection, ExitEsign,
-  ExitOpenLoans, ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
+  ExitApproval, ExitApprovalStep, ExitApprovalStepState, ExitSettlement, ExitSettlementLine,
+  ExitSettlementWarning, ExitSigningLink, ExitSigningLinkState, ExitOpenLoans, ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
   ExitWarnings,
 } from "./exitProcessTypes";
 
@@ -96,6 +97,9 @@ export interface DbCustody {
   serial_number: string;
   date_received: string | null;
   return_date: string | null;
+  /** What a lost or damaged item is deducted at in the settlement. */
+  value_amount: number | null;
+  value_currency: string;
   status: string;
   notes: string;
   created_at: string;

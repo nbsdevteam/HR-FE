@@ -4,6 +4,7 @@ import { arabicSource } from "@/i18n/source";
 import type { DbExitChecklistItem, DbExitProcess } from "@/shared/hooks";
 import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
+import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
 import ExitProcessDetailView from "./ExitProcessDetailView";
 
@@ -45,6 +46,15 @@ const noopActions = (): ExitClearanceActions => ({
   resend: vi.fn().mockResolvedValue(true),
 });
 
+const noopDecisionActions = (): ExitDecisionActions => ({
+  approve: vi.fn().mockResolvedValue(true),
+  reject: vi.fn().mockResolvedValue(true),
+  recalculate: vi.fn().mockResolvedValue(true),
+  confirmSettlement: vi.fn().mockResolvedValue(true),
+  reopenSettlement: vi.fn().mockResolvedValue(true),
+  issueLink: vi.fn().mockResolvedValue(true),
+});
+
 const renderView = (proc: DbExitProcess, overrides: Record<string, unknown> = {}) => {
   const props = {
     proc,
@@ -63,6 +73,7 @@ const renderView = (proc: DbExitProcess, overrides: Record<string, unknown> = {}
     onTransition: vi.fn(),
     onEditSave: vi.fn().mockResolvedValue(true),
     onChecklistToggle: vi.fn(),
+    decisionActions: noopDecisionActions(),
     ...overrides,
   };
   render(<ExitProcessDetailView {...props} />);
@@ -115,9 +126,18 @@ describe("ExitProcessDetailView", () => {
       exit_type: "resignation",
       exit_date: "2026-10-15",
       last_working_day: "2026-10-14",
-      eos_amount: 1500000,
-      eos_currency: "IQD",
     }));
+  });
+
+  it("never sends the amounts the settlement writes, and has no editable money fields", () => {
+    const props = renderView(baseProcess());
+    fireEvent.click(screen.getByText(arabicSource("common.edit")));
+    expect(document.querySelectorAll('input[type="number"]')).toHaveLength(1); // notice period only
+    fireEvent.click(screen.getByText(arabicSource("common.save_changes")));
+    const payload = props.onEditSave.mock.calls[0][1] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty("eos_amount");
+    expect(payload).not.toHaveProperty("eos_currency");
+    expect(payload).not.toHaveProperty("final_settlement_amount");
   });
 
   it("keeps the employee name after the employee is archived", () => {
@@ -141,9 +161,9 @@ describe("ExitProcessDetailView", () => {
     expect(screen.getByText(arabicSource("lifecycle.exit_esign_pending"))).toBeTruthy();
   });
 
-  it("shows open loans while settling, as a reference balance only", () => {
+  it("warns about open loans before settlement, with the remaining balance per currency", () => {
     renderView(baseProcess({
-      status: "settlement",
+      status: "clearance",
       warnings: [{ code: "open_loans", count: 2, loan_ids: [4, 9], remaining: { IQD: 500000 } }],
     }));
     const warning = document.querySelector('[data-exit-open-loans="2"]');
@@ -152,16 +172,11 @@ describe("ExitProcessDetailView", () => {
     expect(screen.getByText(arabicSource("lifecycle.exit_open_loans_note"))).toBeTruthy();
   });
 
-  it("does not show open loans before settlement or when there are none", () => {
+  it("does not show the open-loans warning once settlement starts, where loans are statement lines", () => {
     renderView(baseProcess({
-      status: "clearance",
+      status: "settlement",
       warnings: [{ code: "open_loans", count: 1, loan_ids: [4], remaining: { IQD: 1 } }],
     }));
     expect(document.querySelector("[data-exit-open-loans]")).toBeNull();
-  });
-
-  it("labels the typed settlement amounts as not a verified calculation", () => {
-    renderView(baseProcess());
-    expect(document.querySelector("[data-exit-settlement-disclaimer]")).toBeTruthy();
   });
 });

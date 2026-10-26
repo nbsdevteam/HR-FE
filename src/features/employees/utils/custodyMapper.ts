@@ -15,6 +15,8 @@ export const toCustody = (row: DbCustody): Custody => ({
   status: toCustodyStatus(row.status),
   notes: row.notes,
   returnDate: row.return_date,
+  valueAmount: row.value_amount,
+  valueCurrency: row.value_currency,
 });
 
 export const toCustodies = (rows: readonly DbCustody[]): Custody[] => rows.map(toCustody);

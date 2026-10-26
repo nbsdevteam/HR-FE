@@ -1,18 +1,13 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import { EMPLOYEE_LIFECYCLE_KEY, type ExitStatus } from "@/shared/hooks";
+import type { ExitStatus } from "@/shared/hooks";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert, localizedConfirm } from "@/i18n/native";
 import type { HrApiError } from "@/shared/api/client";
 import type { ExitEditPayload } from "../components/ExitProcessEditPanel";
+import { EXIT_COMPLETION_QUERY_KEYS, EXIT_QUERY_KEYS } from "../utils/exitQueryKeys";
 import { exitErrorCode, exitProcessErrorMessage } from "../utils/exitProcessErrorMessage";
-
-// The profile's lifecycle summary reads the exit block, so every exit write refreshes it.
-const EXIT_KEYS = ["exitProcesses", "exitChecklist", EMPLOYEE_LIFECYCLE_KEY];
-// Completion archives the employee and updates their contract status server-side,
-// so the roster and contracts refetch too instead of patching either locally.
-const COMPLETION_KEYS = [...EXIT_KEYS, "employees", "contracts"];
 
 type Variables = { id: string; payload: Record<string, unknown> };
 
@@ -27,20 +22,20 @@ export const useExitProcessActions = (onOpenProcess: (processId: string) => void
 
   const createMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createExitProcess(payload),
-    EXIT_KEYS,
+    EXIT_QUERY_KEYS,
   );
   const updateMutation = useOdooMutation(
     (variables: Variables) => odooData.updateExitProcess(variables.id, variables.payload),
-    EXIT_KEYS,
+    EXIT_QUERY_KEYS,
   );
   const transitionMutation = useOdooMutation(
     (variables: { id: string; status: ExitStatus }) =>
       odooData.transitionExitProcess(variables.id, variables.status),
-    COMPLETION_KEYS,
+    EXIT_COMPLETION_QUERY_KEYS,
   );
   const checklistMutation = useOdooMutation(
     (variables: Variables) => odooData.updateExitChecklistLine(variables.id, variables.payload),
-    EXIT_KEYS,
+    EXIT_QUERY_KEYS,
   );
 
   /** Resolves true when created; offers the open process on a duplicate. */

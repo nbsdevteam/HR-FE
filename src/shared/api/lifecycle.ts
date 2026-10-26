@@ -12,6 +12,9 @@ import {
   mapApprovalWorkflow,
   mapApprovalRequest,
   mapEmployeeLifecycle,
+  mapExitSettlement,
+  mapExitSigningLink,
+  mapMyTask,
 } from "./mappers";
 import type {
   DbDocumentType,
@@ -23,7 +26,10 @@ import type {
   DbExitChecklist,
   DbCustody,
   EmployeeLifecycleSummary,
+  ExitSettlement,
+  ExitSigningLink,
 } from "../hooks";
+import type { MyTask } from "../hooks/myTasksTypes";
 import { items, eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
 
@@ -114,6 +120,56 @@ export const updateExitChecklistLine = exitChecklist?.update;
  */
 export const transitionExitProcess = (id: string | number, status: string) =>
   hrCall<unknown>(`/api/hr/exit/${eid(id)}/transition`, { status });
+
+// ─── Approval, settlement statement and signing link ─────────────────
+// Every action answers with the serialized process, so the lists refetch rather
+// than patch. Who may act is the backend's call; a refusal carries an `error_code`.
+
+/** One process with its checklist; teams get the redacted view. */
+export const fetchExit = async (
+  id: string | number,
+): Promise<{ process: DbExitProcess; checklist: DbExitChecklist[] }> => {
+  const row = await hrCall<any>(`/api/hr/exit/${eid(id)}/get`, {});
+  return {
+    process: mapExitProcess(row),
+    checklist: Array.isArray(row?.checklist) ? row.checklist.map(mapExitChecklistLine) : [],
+  };
+};
+
+export const approveExit = (id: string | number, comment?: string) =>
+  hrCall<unknown>(`/api/hr/exit/${eid(id)}/approve`, { comment });
+
+export const rejectExit = (id: string | number, comment: string) =>
+  hrCall<unknown>(`/api/hr/exit/${eid(id)}/reject`, { comment });
+
+/**
+ * The settlement statement. Before settlement `estimate` is a not-saved preview;
+ * `recalculate: true` rebuilds a statement Finance has not confirmed yet.
+ */
+export const fetchExitSettlement = async (
+  id: string | number,
+  opts: { recalculate?: boolean } = {},
+): Promise<{ statement: ExitSettlement | null; estimate: ExitSettlement | null }> => {
+  const data = await hrCall<any>(`/api/hr/exit/${eid(id)}/settlement`, opts.recalculate ? { recalculate: true } : {});
+  return { statement: mapExitSettlement(data?.statement), estimate: mapExitSettlement(data?.estimate) };
+};
+
+export const confirmExitSettlement = (id: string | number) =>
+  hrCall<unknown>(`/api/hr/exit/${eid(id)}/settlement/confirm`, {});
+
+export const reopenExitSettlement = (id: string | number) =>
+  hrCall<unknown>(`/api/hr/exit/${eid(id)}/settlement/reopen`, {});
+
+/** A new signing link; the previous one stops working. */
+export const issueExitSignature = async (id: string | number): Promise<ExitSigningLink | null> => {
+  const data = await hrCall<any>(`/api/hr/exit/${eid(id)}/signature/issue`, {});
+  return mapExitSigningLink(data?.signature ?? data);
+};
+
+export const fetchMyTasks = async (): Promise<MyTask[]> => {
+  const rows = await items<any>("/api/hr/my_tasks", {});
+  return rows.map(mapMyTask);
+};
 
 // ─── Clearance sections: approval + ordered signatures ───────────────
 // Who may act is the backend's call (`can_approve` / `can_sign`); a refused

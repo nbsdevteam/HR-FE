@@ -22,7 +22,7 @@ const SidebarNav = ({
   const { canSeeRoute } = usePermissions();
 
   const visibleItems = useMemo(
-    () => menuItems.filter((item) => item.routeKeys.some(canSeeRoute)),
+    () => menuItems.filter((item) => item.alwaysVisible || item.routeKeys.some(canSeeRoute)),
     [canSeeRoute],
   );
 

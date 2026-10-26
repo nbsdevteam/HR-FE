@@ -5,7 +5,7 @@
  */
 
 /** End of Service stages, exactly as `lugal.hr.exit.process.status` stores them. */
-export type ExitStatus = "in_progress" | "clearance" | "settlement" | "completed" | "cancelled";
+export type ExitStatus = "in_progress" | "approval" | "clearance" | "settlement" | "completed" | "cancelled";
 
 /** The e-sign slot on an exit process (backend `esign`). */
 export interface ExitEsign {
@@ -59,6 +59,82 @@ export interface ExitClearanceSection {
   signatures: ExitSignature[];
 }
 
+/** One step of the End of Service approval chain (backend `approval.steps[]`). */
+export type ExitApprovalStepState = "approved" | "rejected" | "skipped" | "pending" | "waiting" | "not_reached";
+
+export interface ExitApprovalStep {
+  sequence: number;
+  name: string;
+  approver_type: string;
+  approver_permission: string;
+  state: ExitApprovalStepState;
+  acted_by_name: string;
+  acted_at: string | null;
+  comment: string;
+  /** Who can act on the pending step. */
+  waiting_for: { id: string; name: string }[];
+}
+
+/** The approval stage of a process; null on the process until it is submitted. */
+export interface ExitApproval {
+  request_id: string;
+  status: string;
+  workflow_name: string;
+  submitted_by_name: string;
+  submitted_at: string | null;
+  decided_at: string | null;
+  /** Why the last decision sent the process back to in progress. */
+  rejection_reason: string;
+  current_step: { sequence: number; name: string; approver_type: string } | null;
+  steps: ExitApprovalStep[];
+}
+
+/** One line of the server-calculated settlement; `loan` and `custody` lines are negative. */
+export interface ExitSettlementLine {
+  code: string;
+  label: string;
+  amount: number;
+  currency: string;
+  basis: string | null;
+}
+
+export interface ExitSettlementWarning {
+  code: string;
+  custody_id: string | null;
+  item: string;
+}
+
+/** The settlement statement the server calculates, Finance confirms and the employee signs. */
+export interface ExitSettlement {
+  lines: ExitSettlementLine[];
+  /** Per currency; amounts are never converted between currencies. */
+  totals: Record<string, number>;
+  warnings: ExitSettlementWarning[];
+  computed_at: string | null;
+  confirmed: boolean;
+  confirmed_by_name: string;
+  confirmed_at: string | null;
+}
+
+export type ExitSigningLinkState = "sent" | "viewed" | "signed" | "rejected" | "expired" | "revoked";
+
+/** The leaving employee's one-time signing link. `path`/`url` are the credential, sent to HR only. */
+export interface ExitSigningLink {
+  id: string;
+  state: ExitSigningLinkState;
+  sent_at: string | null;
+  expires_at: string | null;
+  emailed_to: string;
+  first_viewed_at: string | null;
+  view_count: number;
+  decided_at: string | null;
+  typed_name: string;
+  decision_notes: string;
+  path: string | null;
+  /** Absolute link; empty when the server has no public base URL, so callers fall back to the origin. */
+  url: string | null;
+}
+
 /** Loans still open for the leaving employee (backend `warnings.open_loans`). */
 export interface ExitOpenLoans {
   count: number;
@@ -108,6 +184,12 @@ export interface DbExitProcess {
   /** Empty until the backend's clearance governance is switched on. */
   clearance_sections: ExitClearanceSection[];
   warnings: ExitWarnings;
+  approval: ExitApproval | null;
+  approval_submitted_at: string | null;
+  /** Null until settlement; the server calculates it, the browser never does. */
+  settlement: ExitSettlement | null;
+  /** Null until a signing link exists. */
+  signature: ExitSigningLink | null;
 }
 
 export interface DbExitChecklist {

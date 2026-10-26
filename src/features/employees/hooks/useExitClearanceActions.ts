@@ -3,9 +3,10 @@ import * as odooData from "@/shared/api/odooData";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { localizedAlert } from "@/i18n/native";
 import { exitProcessErrorMessage } from "../utils/exitProcessErrorMessage";
+import { EXIT_QUERY_KEYS } from "../utils/exitQueryKeys";
 
 // Every decision can move the section, the process blockers and the e-sign summary.
-const CLEARANCE_KEYS = ["exitProcesses", "exitChecklist"];
+const CLEARANCE_KEYS = EXIT_QUERY_KEYS;
 
 /** Each action resolves true when the backend accepted it, so a dialog knows to close. */
 export type ExitClearanceActions = {

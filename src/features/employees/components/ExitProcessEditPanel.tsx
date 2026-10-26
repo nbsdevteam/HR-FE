@@ -2,12 +2,14 @@ import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 import { DatePicker, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitProcess } from "@/shared/hooks";
-import { EXIT_CURRENCY_OPTIONS } from "../utils/exitStages";
-import ExitSettlementDisclaimer from "./ExitSettlementDisclaimer";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
 
-/** The details `/api/hr/exit/<id>/update` accepts while the process is open. */
+/**
+ * The details `/api/hr/exit/<id>/update` accepts while the process is open. The
+ * amounts are not among them: `eos_amount`, `eos_currency` and
+ * `final_settlement_amount` are written by the server's settlement only.
+ */
 export type ExitEditPayload = {
   exit_type: string;
   exit_date: string;
@@ -15,9 +17,6 @@ export type ExitEditPayload = {
   notice_date: string;
   notice_period_days: number;
   reason: string;
-  eos_amount: number;
-  eos_currency: string;
-  final_settlement_amount: number;
   notes: string;
 };
 
@@ -38,9 +37,6 @@ const fromProcess = (proc: DbExitProcess): ExitEditPayload => ({
   notice_date: proc.notice_date || "",
   notice_period_days: proc.notice_period_days ?? 0,
   reason: proc.reason || "",
-  eos_amount: proc.eos_amount ?? 0,
-  eos_currency: proc.eos_currency || "IQD",
-  final_settlement_amount: proc.final_settlement_amount ?? 0,
   notes: proc.notes || "",
 });
 
@@ -59,8 +55,6 @@ const ExitProcessEditPanel = ({
       ? options
       : [...options, { value: proc.exit_type, label: proc.exit_type }];
   }, [exitTypeLabels, proc.exit_type]);
-
-  const currencyOptions = useMemo(() => EXIT_CURRENCY_OPTIONS.map(c => ({ value: c, label: c })), []);
 
   const handleSave = useCallback((): void => {
     onSave(form);
@@ -83,15 +77,6 @@ const ExitProcessEditPanel = ({
   };
   const handleReasonChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setForm(p => ({ ...p, reason: e.target.value }));
-  };
-  const handleEosAmountChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setForm(p => ({ ...p, eos_amount: toAmount(e.target.value) }));
-  };
-  const handleCurrencyChange = (value: string): void => {
-    setForm(p => ({ ...p, eos_currency: value }));
-  };
-  const handleFinalSettlementChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setForm(p => ({ ...p, final_settlement_amount: toAmount(e.target.value) }));
   };
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
     setForm(p => ({ ...p, notes: e.target.value }));
@@ -129,21 +114,6 @@ const ExitProcessEditPanel = ({
       <div>
         <FormFieldLabel>{arabicSource("common.the_reason")}</FormFieldLabel>
         <input value={form.reason} onChange={handleReasonChange} className={inputCls} />
-      </div>
-      <div>
-        <FormFieldLabel>{arabicSource("lifecycle.end_of_service_benefits")}</FormFieldLabel>
-        <input type="number" min={0} value={form.eos_amount} onChange={handleEosAmountChange} className={inputCls} dir="ltr" />
-      </div>
-      <div>
-        <FormFieldLabel>{arabicSource("lifecycle.exit_eos_currency")}</FormFieldLabel>
-        <Select value={form.eos_currency} onChange={handleCurrencyChange} options={currencyOptions} className={inputCls} />
-      </div>
-      <div>
-        <FormFieldLabel>{arabicSource("lifecycle.exit_final_settlement_amount")}</FormFieldLabel>
-        <input type="number" min={0} value={form.final_settlement_amount} onChange={handleFinalSettlementChange} className={inputCls} dir="ltr" />
-      </div>
-      <div className="md:col-span-3">
-        <ExitSettlementDisclaimer />
       </div>
       <div className="md:col-span-3">
         <FormFieldLabel>{arabicSource("common.notes")}</FormFieldLabel>

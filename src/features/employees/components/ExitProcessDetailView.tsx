@@ -2,18 +2,25 @@ import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { ChevronLeft, ClipboardList, LogOut, Pencil } from "lucide-react";
 import { Button } from "@/shared/components";
+import { usePermissions } from "@/shared/auth/permissions";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess, type ExitStatus } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import { arabicSource } from "@/i18n/source";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
+import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
+import ExitApprovalPanel from "./ExitApprovalPanel";
 import ExitChecklistCategoryGroup from "./ExitChecklistCategoryGroup";
 import ExitClearanceNotice from "./ExitClearanceNotice";
 import ExitOpenLoansWarning from "./ExitOpenLoansWarning";
 import ExitProcessEditPanel, { type ExitEditPayload } from "./ExitProcessEditPanel";
 import ExitProcessSummaryCards from "./ExitProcessSummaryCards";
-import ExitSettlementDisclaimer from "./ExitSettlementDisclaimer";
+import ExitSettlementPanel from "./ExitSettlementPanel";
+import ExitSigningPanel from "./ExitSigningPanel";
 import ExitStageActions from "./ExitStageActions";
+
+/** Before settlement the loans are a warning; from settlement on they are `loan` lines in the statement. */
+const OPEN_LOANS_WARNING_STAGES: readonly string[] = ["in_progress", "approval", "clearance"];
 
 type ExitProcessDetailViewProps = {
   proc: DbExitProcess;
@@ -28,6 +35,10 @@ type ExitProcessDetailViewProps = {
   inputCls: string;
   busy: boolean;
   clearanceActions: ExitClearanceActions;
+  /** The approval, settlement and signing-link actions; the panels are inert without them. */
+  decisionActions: ExitDecisionActions;
+  /** The backend lists this process in the user's My tasks as an approval to decide. */
+  canDecideApproval?: boolean;
   onBack: () => void;
   onTransition: (processId: string, status: ExitStatus) => void;
   onEditSave: (processId: string, payload: ExitEditPayload) => Promise<boolean>;
@@ -36,9 +47,12 @@ type ExitProcessDetailViewProps = {
 
 const ExitProcessDetailView = ({
   proc, emp, checklist, exitItems, categoryLabels, exitTypeLabels, statusLabels, statusColors, cardCls,
-  inputCls, busy, clearanceActions, onBack, onTransition, onEditSave, onChecklistToggle,
+  inputCls, busy, clearanceActions, decisionActions, canDecideApproval = false, onBack, onTransition, onEditSave, onChecklistToggle,
 }: ExitProcessDetailViewProps) => {
   const [editing, setEditing] = useState(false);
+  const { hasPermission } = usePermissions();
+  const canConfirmSettlement = hasPermission("hr.lifecycle.clearance_finance");
+  const canEditProcess = hasPermission("hr.lifecycle.edit");
 
   const completedCount = useMemo(() => checklist.filter(c => c.is_completed).length, [checklist]);
 
@@ -124,11 +138,23 @@ const ExitProcessDetailView = ({
       </AnimatePresence>
 
       <ExitProcessSummaryCards proc={proc} completedCount={completedCount} totalCount={checklist.length} cardCls={cardCls} />
-      <ExitSettlementDisclaimer />
 
-      {proc.status === "settlement" && proc.warnings.open_loans && (
+      {OPEN_LOANS_WARNING_STAGES.includes(proc.status) && proc.warnings.open_loans && (
         <ExitOpenLoansWarning loans={proc.warnings.open_loans} />
       )}
+
+      <ExitApprovalPanel proc={proc} canDecide={canDecideApproval} actions={decisionActions} cardCls={cardCls} />
+
+      <ExitSettlementPanel
+        proc={proc}
+        canConfirm={canConfirmSettlement}
+        canRecalculate={canConfirmSettlement || canEditProcess}
+        canPreview={canEditProcess}
+        actions={decisionActions}
+        cardCls={cardCls}
+      />
+
+      <ExitSigningPanel proc={proc} canIssue={canEditProcess} actions={decisionActions} cardCls={cardCls} />
 
       <ExitClearanceNotice proc={proc} cardCls={cardCls} />
 

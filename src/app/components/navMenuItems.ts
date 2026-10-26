@@ -1,7 +1,7 @@
 import {
   Home, Users, CalendarDays, Wallet, ClipboardCheck, AlertTriangle,
   FileText, GitBranch, UserPlus, GraduationCap, Clock, BarChart3,
-  Settings, Shield, Briefcase, Fingerprint,
+  Settings, Shield, Briefcase, Fingerprint, ListChecks,
 } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import { ROUTE_SEGMENT } from "@/app/router/routePaths";
@@ -25,6 +25,7 @@ export const menuItems: SidebarMenuItem[] = [
   { id: "recruitment", label: arabicSource("common.recruitment"), icon: UserPlus, path: `/${ROUTE_SEGMENT.recruitment}`, routeKeys: ["hr.recruitment"] },
   { id: "training", label: arabicSource("common.training_and_development"), icon: GraduationCap, path: `/${ROUTE_SEGMENT.training}`, routeKeys: ["hr.training"] },
   { id: "lifecycle", label: arabicSource("common.employee_life_cycle"), icon: Briefcase, path: `/${ROUTE_SEGMENT.lifecycle}`, routeKeys: ["hr.lifecycle"] },
+  { id: "my-tasks", label: arabicSource("lifecycle.my_tasks_title"), icon: ListChecks, path: `/${ROUTE_SEGMENT.myTasks}`, routeKeys: [], alwaysVisible: true },
   { id: "reports", label: arabicSource("common.reports"), icon: BarChart3, path: `/${ROUTE_SEGMENT.reports}`, routeKeys: ["hr.reports"] },
   { id: "devices", label: arabicSource("common.fingerprint_devices"), icon: Fingerprint, path: `/${ROUTE_SEGMENT.devices}`, routeKeys: ["hr.devices"] },
   { id: "audit", label: arabicSource("shared.records_and_notices"), icon: Shield, path: `/${ROUTE_SEGMENT.audit}`, routeKeys: ["hr.audit", "hr.documents", "hr.notes"] },

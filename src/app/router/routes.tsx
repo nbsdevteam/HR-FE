@@ -16,7 +16,7 @@ import { isStaleChunkError, reloadForStaleChunk } from "./staleChunkReload";
  * Vite can still statically split it into its own chunk — wrapping it in this
  * helper doesn't change that.
  */
-const lazyRoute = (importFn: () => Promise<{ default: ComponentType }>, routeKeys: string[]) => ({
+const lazyRoute = (importFn: () => Promise<{ default: ComponentType }>, routeKeys: string[] | null) => ({
   lazy: async () => {
     let module: { default: ComponentType };
     try {
@@ -32,6 +32,9 @@ const lazyRoute = (importFn: () => Promise<{ default: ComponentType }>, routeKey
       throw error;
     }
     const Page = module.default;
+    // `null` is a page every signed-in user may open (My tasks); the backend
+    // still decides which tasks each person gets.
+    if (!routeKeys) return { Component: Page };
     const Guarded = () => (
       <RequireHrRoute routeKeys={routeKeys}>
         <Page />
@@ -99,6 +102,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTE_SEGMENT.lifecycle,
         ...lazyRoute(() => import("@/features/employees/pages/Lifecycle"), ["hr.lifecycle"]),
+      },
+      {
+        path: ROUTE_SEGMENT.myTasks,
+        ...lazyRoute(() => import("@/features/employees/pages/MyTasks"), null),
       },
       {
         path: ROUTE_SEGMENT.audit,

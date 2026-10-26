@@ -23,6 +23,14 @@ describe("exitProcessErrorMessage", () => {
       ["exit_checklist_not_started", "lifecycle.exit_error_checklist_not_started"],
       ["exit_checklist_closed", "lifecycle.exit_error_checklist_closed"],
       ["custody_not_returned", "lifecycle.exit_error_custody_not_returned"],
+      ["approval_required", "lifecycle.exit_error_approval_required"],
+      ["approval_pending", "lifecycle.exit_error_approval_pending"],
+      ["approval_not_pending", "lifecycle.exit_error_approval_not_pending"],
+      ["approval_own_exit", "lifecycle.exit_error_approval_own_exit"],
+      ["second_person_required", "lifecycle.exit_error_second_person_required"],
+      ["not_step_approver", "lifecycle.exit_error_not_step_approver"],
+      ["reject_reason_required", "lifecycle.exit_error_reject_reason_required"],
+      ["use_exit_approval", "lifecycle.exit_error_use_exit_approval"],
     ];
     for (const [code, key] of cases) {
       expect(exitProcessErrorMessage(apiError(code), "lifecycle.exit_error_update_failed"))

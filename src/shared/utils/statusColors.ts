@@ -109,6 +109,7 @@ export const STATUS_COLORS: Record<string, string> = {
 
   renewed: STATUS_TONES.info,
   clearance: STATUS_TONES.info,
+  approval: STATUS_TONES.accent,
   scheduled: STATUS_TONES.info,
 
   settlement: STATUS_TONES.purple,
