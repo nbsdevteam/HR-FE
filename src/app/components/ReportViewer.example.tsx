@@ -6,7 +6,7 @@
  * Copy this pattern to your actual report components.
  */
 
-import { useReportTitle } from "../lib/useDocumentTitle";
+import { useReportTitle } from "@/shared/utils/useDocumentTitle";
 import { useState, useEffect } from "react";
 
 interface ReportTemplate {

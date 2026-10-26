@@ -2847,5 +2847,7 @@
   "lifecycle.exit_open_loans_note": "The remaining balance is shown for reference only; it is not calculated or deducted in this phase",
   "lifecycle.exit_settlement_unverified": "Benefit and settlement amounts are entered manually and are not a verified calculation",
   "settings.permission_clearance_admin": "Clearance — Admin team",
-  "settings.permission_clearance_custody": "Clearance — Custodies team"
+  "settings.permission_clearance_custody": "Clearance — Custodies team",
+  "settings.category_kpi": "KPIs",
+  "settings.category_risk": "Risk"
 }

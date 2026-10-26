@@ -2847,5 +2847,7 @@
   "lifecycle.exit_open_loans_note": "ماوەی ماوە تەنیا بۆ پیشاندانە؛ لەم قۆناغەدا هەژمار ناکرێت و لە یەکلاکردنەوە ناپێوەدەکرێت",
   "lifecycle.exit_settlement_unverified": "بڕی مافەکان و یەکلاکردنەوە بە دەست دەنووسرێن و هەژمارێکی سەلمێنراو نین",
   "settings.permission_clearance_admin": "پاکانە — تیمی بەڕێوەبردن",
-  "settings.permission_clearance_custody": "پاکانە — تیمی ئەمانەتەکان"
+  "settings.permission_clearance_custody": "پاکانە — تیمی ئەمانەتەکان",
+  "settings.category_kpi": "ئاماژەکانی ئەدا",
+  "settings.category_risk": "هەڵسەنگاندنی مەترسی"
 }

@@ -2770,5 +2770,7 @@
   "المبلغ المتبقي للعرض فقط؛ لا يُحتسب ولا يُخصم من التسوية في هذه المرحلة": "lifecycle.exit_open_loans_note",
   "مبالغ المستحقات والتسوية تُدخل يدوياً وليست احتساباً موثقاً من الخادم": "lifecycle.exit_settlement_unverified",
   "إخلاء الطرف — فريق الإدارة": "settings.permission_clearance_admin",
-  "إخلاء الطرف — فريق العهد": "settings.permission_clearance_custody"
+  "إخلاء الطرف — فريق العهد": "settings.permission_clearance_custody",
+  "مؤشرات الأداء": "settings.category_kpi",
+  "إدارة المخاطر": "settings.category_risk"
 }

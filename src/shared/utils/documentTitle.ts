@@ -3,7 +3,7 @@
  * This ensures each report/page saves with a proper filename when printing to PDF.
  */
 
-import i18n from "../i18n";
+import i18n from "@/i18n";
 
 const DEFAULT_TITLE_KEY = "shared.human_resources_system";
 const REPORT_TITLE_ATTR = "data-report-title";

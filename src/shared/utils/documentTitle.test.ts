@@ -10,8 +10,8 @@ import {
   getCurrentCustomTitle,
   printWithReportTitle,
 } from "./documentTitle";
-import { syncDocumentLocale } from "../i18n";
-import i18n from "../i18n";
+import { syncDocumentLocale } from "@/i18n";
+import i18n from "@/i18n";
 
 describe("documentTitle utilities", () => {
   let originalTitle: string;
@@ -20,12 +20,9 @@ describe("documentTitle utilities", () => {
     // Save original title
     originalTitle = document.title;
     // Mock i18n.t to return predictable values
-    vi.spyOn(i18n, "t").mockImplementation((key: string) => {
-      if (key === "shared.human_resources_system") {
-        return "Human Resources System";
-      }
-      return key;
-    });
+    const translate = (key: string): string =>
+      key === "shared.human_resources_system" ? "Human Resources System" : key;
+    vi.spyOn(i18n, "t").mockImplementation(translate as unknown as typeof i18n.t);
   });
 
   afterEach(() => {
