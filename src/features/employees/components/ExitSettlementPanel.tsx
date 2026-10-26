@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Calculator, Lock, LockOpen, RefreshCw } from "lucide-react";
+import { Calculator, LockOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/components";
 import * as odooData from "@/shared/api/odooData";
 import { formatDateTime } from "@/i18n/format";
@@ -12,8 +12,8 @@ import ExitSettlementStatement from "./ExitSettlementStatement";
 
 type ExitSettlementPanelProps = {
   proc: DbExitProcess;
-  /** Finance (`hr.lifecycle.clearance_finance`) confirms and reopens the statement. */
-  canConfirm: boolean;
+  /** The backend lists `reopen_settlement` for the user; Confirm is a button on the Now panel's row. */
+  canReopen: boolean;
   /** Finance or HR may rebuild a statement that is not confirmed yet. */
   canRecalculate: boolean;
   /** HR may preview the estimate before settlement starts. */
@@ -28,7 +28,7 @@ type ExitSettlementPanelProps = {
  * nothing here edits or computes an amount. Before settlement, HR can read a
  * not-saved estimate.
  */
-const ExitSettlementPanel = ({ proc, canConfirm, canRecalculate, canPreview, actions, cardCls }: ExitSettlementPanelProps) => {
+const ExitSettlementPanel = ({ proc, canReopen, canRecalculate, canPreview, actions, cardCls }: ExitSettlementPanelProps) => {
   const [busy, setBusy] = useState(false);
   const [estimate, setEstimate] = useState<ExitSettlement | null>(null);
   const { settlement } = proc;
@@ -40,7 +40,6 @@ const ExitSettlementPanel = ({ proc, canConfirm, canRecalculate, canPreview, act
     setBusy(false);
   }, []);
 
-  const handleConfirm = useCallback((): Promise<void> => run(() => actions.confirmSettlement(proc.id)), [actions, proc.id, run]);
   const handleReopen = useCallback((): Promise<void> => run(() => actions.reopenSettlement(proc.id)), [actions, proc.id, run]);
   const handleRecalculate = useCallback((): Promise<void> => run(() => actions.recalculate(proc.id)), [actions, proc.id, run]);
 
@@ -85,17 +84,12 @@ const ExitSettlementPanel = ({ proc, canConfirm, canRecalculate, canPreview, act
       )}
       {settlement && open && (
         <div className="flex flex-wrap gap-2">
-          {!settlement.confirmed && canConfirm && (
-            <Button variant="success" size="sm" icon={Lock} loading={busy} onClick={handleConfirm} data-exit-settlement-confirm>
-              {arabicSource("lifecycle.exit_settlement_confirm")}
-            </Button>
-          )}
           {!settlement.confirmed && canRecalculate && (
             <Button variant="outline" size="sm" icon={RefreshCw} disabled={busy} onClick={handleRecalculate} data-exit-settlement-recalculate>
               {arabicSource("lifecycle.exit_settlement_recalculate")}
             </Button>
           )}
-          {settlement.confirmed && canConfirm && (
+          {settlement.confirmed && canReopen && (
             <Button variant="outline" size="sm" icon={LockOpen} loading={busy} onClick={handleReopen} data-exit-settlement-reopen>
               {arabicSource("lifecycle.exit_settlement_reopen")}
             </Button>

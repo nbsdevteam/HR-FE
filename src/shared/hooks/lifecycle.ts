@@ -84,7 +84,8 @@ export type {
   DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitClearanceSection, ExitEsign,
   ExitApproval, ExitApprovalStep, ExitApprovalStepState, ExitSettlement, ExitSettlementLine,
   ExitSettlementWarning, ExitSigningLink, ExitSigningLinkState, ExitOpenLoans, ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
-  ExitWarnings,
+  ExitWarnings, ExitProgress, ExitProgressOwner, ExitProgressPerson, ExitProgressStage, ExitProgressStageKey,
+  ExitProgressStageState, ExitRequiredItem, ExitWaitingOn,
 } from "./exitProcessTypes";
 
 export interface DbCustody {

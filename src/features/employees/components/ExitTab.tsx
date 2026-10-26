@@ -14,9 +14,12 @@ import type { EmployeeMap } from "../types/lifecycle";
 import { useExitClearanceActions } from "../hooks/useExitClearanceActions";
 import { useExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { useExitProcessActions } from "../hooks/useExitProcessActions";
+import { useExitProcessFilter } from "../hooks/useExitProcessFilter";
+import ExitProcessCard from "./ExitProcessCard";
 import ExitProcessFormPanel, { type ExitFormData } from "./ExitProcessFormPanel";
 import ExitProcessTableRow from "./ExitProcessTableRow";
 import ExitProcessDetailView from "./ExitProcessDetailView";
+import ExitStageFilterBar from "./ExitStageFilterBar";
 import type { ExitEditPayload } from "./ExitProcessEditPanel";
 
 const EMPTY_EXIT_FORM: ExitFormData = {
@@ -55,6 +58,7 @@ const ExitTab = ({
   const clearanceActions = useExitClearanceActions();
   const decisionActions = useExitDecisionActions();
   const { tasks } = useMyTasks();
+  const { counts, filter, selectFilter, tasksByExit, visible } = useExitProcessFilter(processes, tasks);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleCreate = useCallback(async () => {
@@ -112,10 +116,30 @@ const ExitTab = ({
         exitTypeLabels={exitTypeLabels}
         statusLabels={statusLabels}
         statusColors={statusColors}
+        categoryLabels={checklistCategoryLabels}
+        task={tasksByExit.get(p.id) ?? null}
         onView={openDetail}
       />
     ),
-    [empMap, exitTypeLabels, statusLabels, statusColors, openDetail],
+    [empMap, exitTypeLabels, statusLabels, statusColors, checklistCategoryLabels, tasksByExit, openDetail],
+  );
+
+  const renderExitProcessCard = useCallback(
+    (p: DbExitProcess) => (
+      <ExitProcessCard
+        key={p.id}
+        process={p}
+        emp={empMap[p.employee_id]}
+        exitTypeLabels={exitTypeLabels}
+        statusLabels={statusLabels}
+        statusColors={statusColors}
+        categoryLabels={checklistCategoryLabels}
+        task={tasksByExit.get(p.id) ?? null}
+        cardCls={cardCls}
+        onView={openDetail}
+      />
+    ),
+    [empMap, exitTypeLabels, statusLabels, statusColors, checklistCategoryLabels, tasksByExit, openDetail],
   );
 
   // Start End of Service for the employee an Employees action was refused for.
@@ -156,7 +180,6 @@ const ExitTab = ({
         busy={busy}
         clearanceActions={clearanceActions}
         decisionActions={decisionActions}
-        canDecideApproval={tasks.some(task => task.exit_id === proc.id && task.action === "approve_exit")}
         onBack={closeDetail}
         onTransition={handleTransition}
         onEditSave={handleEditSave}
@@ -164,6 +187,8 @@ const ExitTab = ({
       />
     );
   }
+
+  const emptyMessage = arabicSource(processes.length === 0 ? "lifecycle.no_termination_procedures" : "lifecycle.exit_progress_no_matches");
 
   return (
     <div className="space-y-4">
@@ -191,14 +216,19 @@ const ExitTab = ({
         )}
       </AnimatePresence>
 
+      <ExitStageFilterBar filter={filter} counts={counts} statusLabels={statusLabels} onSelect={selectFilter} />
+
       {/* Exit Processes List */}
       <DataTable
-        wrapperClassName={cardCls}
-        items={processes}
-        header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("lifecycle.termination_type"), arabicSource("lifecycle.termination_date"), arabicSource("lifecycle.n_kh_receivables"), arabicSource("common.status"), arabicSource("common.width")]} />}
+        wrapperClassName={`${cardCls} hidden md:block`}
+        items={visible}
+        header={<TableHeaderRow headings={[arabicSource("common.employee"), arabicSource("common.status"), arabicSource("employees.lifecycle_waiting_on"), arabicSource("lifecycle.exit_progress_next"), arabicSource("lifecycle.exit_progress_in_stage")]} />}
         renderRow={renderExitProcessRow}
-        emptyRow={<tr><td colSpan={6}><EmptyState icon={UserX} message={arabicSource("lifecycle.no_termination_procedures")} /></td></tr>}
+        emptyRow={<tr><td colSpan={5}><EmptyState icon={UserX} message={emptyMessage} /></td></tr>}
       />
+      <div className="space-y-3 md:hidden">
+        {visible.length === 0 ? <EmptyState icon={UserX} message={emptyMessage} /> : visible.map(renderExitProcessCard)}
+      </div>
     </div>
   );
 };

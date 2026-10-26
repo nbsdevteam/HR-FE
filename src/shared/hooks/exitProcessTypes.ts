@@ -148,6 +148,60 @@ export interface ExitWarnings {
   open_loans: ExitOpenLoans | null;
 }
 
+/** The five stages `progress.stages` always lists, in this order. */
+export type ExitProgressStageKey = "in_progress" | "approval" | "clearance" | "settlement" | "completed";
+
+/** How one stage is drawn; `cancelled` and `not_reached` only appear on a cancelled process. */
+export type ExitProgressStageState = "done" | "current" | "todo" | "skipped" | "cancelled" | "not_reached";
+
+export interface ExitProgressStage {
+  key: string;
+  state: ExitProgressStageState;
+}
+
+/** The owners the backend names; an unknown owner shows as sent. */
+export type ExitProgressOwner =
+  | "hr" | "it" | "finance" | "admin" | "custodies" | "approver" | "employee" | "hr_manager";
+
+export interface ExitProgressPerson {
+  id: string;
+  name: string;
+}
+
+/** Someone the process waits on now; `people` is filled only for the open approval step. */
+export interface ExitWaitingOn {
+  owner: string;
+  people: ExitProgressPerson[];
+}
+
+/** One thing left in the current stage (backend `progress.still_required[]`). */
+export interface ExitRequiredItem {
+  code: string;
+  owner: string;
+  label: string;
+  label_ar: string;
+  /** The checklist line, for `clearance_item`. */
+  line_id: string | null;
+  /** The custody record, for `custody_item`. */
+  custody_id: string | null;
+  /** Code-specific extra: a rejection reason, or the signing link's state. */
+  detail: string;
+  people: ExitProgressPerson[];
+}
+
+/** Where the process stands and what is left, worked out by the backend and rendered as sent. */
+export interface ExitProgress {
+  stages: ExitProgressStage[];
+  percent: number;
+  waiting_on: ExitWaitingOn[];
+  still_required: ExitRequiredItem[];
+  /** `still_required[0]`, or null when nothing is left. */
+  next: ExitRequiredItem | null;
+  /** When the current stage began, an ISO datetime with a +03:00 offset. */
+  since: string | null;
+  days_in_stage: number | null;
+}
+
 export interface DbExitProcess {
   id: string;
   employee_id: string;
@@ -190,6 +244,9 @@ export interface DbExitProcess {
   settlement: ExitSettlement | null;
   /** Null until a signing link exists. */
   signature: ExitSigningLink | null;
+  progress: ExitProgress;
+  /** The buttons the backend lets the signed-in user press (`submit`, `approve`, `complete`, ...). */
+  my_actions: string[];
 }
 
 export interface DbExitChecklist {

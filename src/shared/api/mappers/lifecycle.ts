@@ -13,6 +13,7 @@ import type {
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 import { mapExitApproval, mapExitSettlement, mapExitSigningLink } from "./exitApproval";
+import { mapExitProgress } from "./exitProgress";
 
 export const mapDocumentType = (r: any): DbDocumentType => {
   return {
@@ -198,6 +199,8 @@ export const mapExitProcess = (r: any): DbExitProcess => {
     approval_submitted_at: r.approval_submitted_at || null,
     settlement: mapExitSettlement(r.settlement),
     signature: mapExitSigningLink(r.signature),
+    progress: mapExitProgress(r.progress),
+    my_actions: Array.isArray(r.my_actions) ? r.my_actions.map(String) : [],
   };
 }
 

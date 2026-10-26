@@ -1,32 +1,7 @@
 import type { ArabicSourceKey } from "@/i18n/source";
 import type {
-  ExitApprovalStepState, ExitEsign, ExitSectionState, ExitSignatureState, ExitSigningLinkState, ExitStatus,
+  ExitApprovalStepState, ExitEsign, ExitSectionState, ExitSignatureState, ExitSigningLinkState,
 } from "@/shared/hooks";
-
-/** The shared Button variants a stage button uses. */
-export type ExitStageVariant = "info" | "warning" | "success" | "destructive";
-
-/**
- * Labels for the moves the backend offers. Which moves exist, and when, is the
- * backend's `allowed_transitions` — nothing here decides the state machine.
- */
-export const EXIT_TRANSITION_LABEL_KEYS: Record<ExitStatus, ArabicSourceKey> = {
-  in_progress: "common.my_neighbor",
-  approval: "lifecycle.exit_submit_for_approval",
-  clearance: "lifecycle.exit_start_clearance",
-  settlement: "lifecycle.exit_to_settlement",
-  completed: "lifecycle.exit_complete_process",
-  cancelled: "lifecycle.exit_cancel_process",
-};
-
-export const EXIT_TRANSITION_VARIANTS: Record<ExitStatus, ExitStageVariant> = {
-  in_progress: "warning",
-  approval: "info",
-  clearance: "info",
-  settlement: "warning",
-  completed: "success",
-  cancelled: "destructive",
-};
 
 /** Why an allowed move is still held (backend `transition_blockers`). */
 export const EXIT_BLOCKER_KEYS: Record<string, ArabicSourceKey> = {

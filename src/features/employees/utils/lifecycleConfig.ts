@@ -1,3 +1,8 @@
+/**
+ * Parses a `key:label,key:label` setting. Configured labels are merged onto the
+ * defaults, so a setting that omits a stage or team still shows that one by name
+ * instead of as a raw key.
+ */
 export const parseKeyLabelMap = (
   configStr: string,
   defaults: Record<string, string>,
@@ -10,5 +15,5 @@ export const parseKeyLabelMap = (
     if (key && label) map[key] = label;
   });
 
-  return Object.keys(map).length > 0 ? map : defaults;
+  return Object.keys(map).length > 0 ? { ...defaults, ...map } : defaults;
 };

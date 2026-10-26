@@ -1,23 +1,20 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { ChevronLeft, ClipboardList, LogOut, Pencil } from "lucide-react";
-import { Button } from "@/shared/components";
 import { usePermissions } from "@/shared/auth/permissions";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess, type ExitStatus } from "@/shared/hooks";
-import { indexBy } from "@/shared/utils/collections";
-import { arabicSource } from "@/i18n/source";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
+import { useExitChecklistView } from "../hooks/useExitChecklistView";
 import type { ExitChecklistLine } from "../types/lifecycle";
-import ExitApprovalPanel from "./ExitApprovalPanel";
-import ExitChecklistCategoryGroup from "./ExitChecklistCategoryGroup";
+import { exitStageDates } from "../utils/exitProgress";
 import ExitClearanceNotice from "./ExitClearanceNotice";
+import ExitNowPanel from "./ExitNowPanel";
 import ExitOpenLoansWarning from "./ExitOpenLoansWarning";
 import ExitProcessEditPanel, { type ExitEditPayload } from "./ExitProcessEditPanel";
+import ExitProcessHeader from "./ExitProcessHeader";
+import ExitProcessStageSections from "./ExitProcessStageSections";
 import ExitProcessSummaryCards from "./ExitProcessSummaryCards";
-import ExitSettlementPanel from "./ExitSettlementPanel";
-import ExitSigningPanel from "./ExitSigningPanel";
-import ExitStageActions from "./ExitStageActions";
+import ExitProgressStepper from "./ExitProgressStepper";
 
 /** Before settlement the loans are a warning; from settlement on they are `loan` lines in the statement. */
 const OPEN_LOANS_WARNING_STAGES: readonly string[] = ["in_progress", "approval", "clearance"];
@@ -37,91 +34,51 @@ type ExitProcessDetailViewProps = {
   clearanceActions: ExitClearanceActions;
   /** The approval, settlement and signing-link actions; the panels are inert without them. */
   decisionActions: ExitDecisionActions;
-  /** The backend lists this process in the user's My tasks as an approval to decide. */
-  canDecideApproval?: boolean;
   onBack: () => void;
   onTransition: (processId: string, status: ExitStatus) => void;
   onEditSave: (processId: string, payload: ExitEditPayload) => Promise<boolean>;
   onChecklistToggle: (checklistId: string, completed: boolean) => void;
 };
 
+/**
+ * One End of Service: the stepper and the Now panel say where it stands and what
+ * is left, then the stages follow in order. Buttons are the backend's `my_actions`.
+ */
 const ExitProcessDetailView = ({
   proc, emp, checklist, exitItems, categoryLabels, exitTypeLabels, statusLabels, statusColors, cardCls,
-  inputCls, busy, clearanceActions, decisionActions, canDecideApproval = false, onBack, onTransition, onEditSave, onChecklistToggle,
+  inputCls, busy, clearanceActions, decisionActions, onBack, onTransition, onEditSave, onChecklistToggle,
 }: ExitProcessDetailViewProps) => {
   const [editing, setEditing] = useState(false);
   const { hasPermission } = usePermissions();
-  const canConfirmSettlement = hasPermission("hr.lifecycle.clearance_finance");
-  const canEditProcess = hasPermission("hr.lifecycle.edit");
+  const canRecalculate = hasPermission("hr.lifecycle.clearance_finance") || hasPermission("hr.lifecycle.edit");
 
-  const completedCount = useMemo(() => checklist.filter(c => c.is_completed).length, [checklist]);
-
-  const exitItemById = useMemo(() => indexBy(exitItems, i => i.id), [exitItems]);
-
-  const itemNameById = useMemo(
-    () => new Map(exitItems.map(i => [i.id, i.name_ar])),
-    [exitItems],
-  );
-
-  /** One grouping pass over the checklist instead of a full filter per category. */
-  const categorizedChecklist = useMemo(() => {
-    const byCategory = new Map<string, ExitChecklistLine[]>();
-    for (const line of checklist) {
-      const category = exitItemById.get(line.checklist_item_id)?.category;
-      if (!category) continue;
-      const bucket = byCategory.get(category);
-      if (bucket) bucket.push(line);
-      else byCategory.set(category, [line]);
-    }
-    return Object.entries(categoryLabels)
-      .map(([cat, catLabel]) => ({ cat, catLabel, items: byCategory.get(cat) ?? [] }))
-      .filter(group => group.items.length > 0);
-  }, [categoryLabels, checklist, exitItemById]);
-
-  const sectionByCategory = useMemo(
-    () => new Map(proc.clearance_sections.map(section => [section.category, section])),
-    [proc.clearance_sections],
-  );
-
-  const handleTransition = useCallback((target: ExitStatus): void => {
-    onTransition(proc.id, target);
-  }, [onTransition, proc.id]);
+  const checklistView = useExitChecklistView(proc, checklist, exitItems, categoryLabels);
 
   const handleEditOpen = useCallback((): void => setEditing(true), []);
   const handleEditCancel = useCallback((): void => setEditing(false), []);
   const handleEditSave = useCallback(async (payload: ExitEditPayload): Promise<void> => {
     if (await onEditSave(proc.id, payload)) setEditing(false);
   }, [onEditSave, proc.id]);
+  const handleCancelProcess = useCallback((): void => {
+    onTransition(proc.id, "cancelled");
+  }, [onTransition, proc.id]);
 
   const employeeName = emp ? empDisplayName(emp) : proc.employee_name || "—";
 
   return (
     <div className="space-y-4">
-      <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer">
-        <ChevronLeft className="w-4 h-4" /> {arabicSource("lifecycle.return")}
-      </button>
-
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-          <LogOut className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-          <h2 className="text-foreground" dir="auto">{employeeName}</h2>
-          <p className="text-muted-foreground" style={{ fontSize: 13 }}>
-            {exitTypeLabels[proc.exit_type] || proc.exit_type} — {proc.exit_date}
-          </p>
-        </div>
-        <div className="ms-auto flex items-center gap-2">
-          {proc.editable && !editing && (
-            <Button variant="outline" size="sm" icon={Pencil} onClick={handleEditOpen}>
-              {arabicSource("common.edit")}
-            </Button>
-          )}
-          <span className={`px-3 py-1 rounded-md border ${statusColors[proc.status] || ""}`} style={{ fontSize: 12 }} data-exit-status={proc.status}>
-            {statusLabels[proc.status] || proc.status}
-          </span>
-        </div>
-      </div>
+      <ExitProcessHeader
+        proc={proc}
+        employeeName={employeeName}
+        exitTypeLabel={exitTypeLabels[proc.exit_type] || proc.exit_type}
+        statusLabel={statusLabels[proc.status] || proc.status}
+        statusColor={statusColors[proc.status] || ""}
+        editing={editing}
+        busy={busy}
+        onBack={onBack}
+        onEditOpen={handleEditOpen}
+        onCancel={handleCancelProcess}
+      />
 
       <AnimatePresence>
         {editing && (
@@ -137,51 +94,43 @@ const ExitProcessDetailView = ({
         )}
       </AnimatePresence>
 
-      <ExitProcessSummaryCards proc={proc} completedCount={completedCount} totalCount={checklist.length} cardCls={cardCls} />
+      <ExitProgressStepper
+        stages={proc.progress.stages}
+        statusLabels={statusLabels}
+        size="lg"
+        daysInStage={proc.progress.days_in_stage}
+        dates={exitStageDates(proc)}
+      />
+
+      <ExitNowPanel
+        proc={proc}
+        statusLabels={statusLabels}
+        categoryLabels={categoryLabels}
+        toggleableLineIds={checklistView.toggleableLineIds}
+        busy={busy}
+        decisionActions={decisionActions}
+        cardCls={cardCls}
+        onTransition={onTransition}
+        onChecklistToggle={onChecklistToggle}
+      />
+
+      <ExitProcessSummaryCards proc={proc} cardCls={cardCls} />
 
       {OPEN_LOANS_WARNING_STAGES.includes(proc.status) && proc.warnings.open_loans && (
         <ExitOpenLoansWarning loans={proc.warnings.open_loans} />
       )}
 
-      <ExitApprovalPanel proc={proc} canDecide={canDecideApproval} actions={decisionActions} cardCls={cardCls} />
-
-      <ExitSettlementPanel
-        proc={proc}
-        canConfirm={canConfirmSettlement}
-        canRecalculate={canConfirmSettlement || canEditProcess}
-        canPreview={canEditProcess}
-        actions={decisionActions}
-        cardCls={cardCls}
-      />
-
-      <ExitSigningPanel proc={proc} canIssue={canEditProcess} actions={decisionActions} cardCls={cardCls} />
-
       <ExitClearanceNotice proc={proc} cardCls={cardCls} />
 
-      <ExitStageActions
-        allowedTransitions={proc.allowed_transitions}
-        transitionBlockers={proc.transition_blockers}
-        busy={busy}
-        onTransition={handleTransition}
+      <ExitProcessStageSections
+        proc={proc}
+        checklistView={checklistView}
+        clearanceActions={clearanceActions}
+        decisionActions={decisionActions}
+        canRecalculate={canRecalculate}
+        onChecklistToggle={onChecklistToggle}
+        cardCls={cardCls}
       />
-
-      <div className={`${cardCls} p-5`}>
-        <h3 className="text-foreground mb-4 flex items-center gap-2">
-          <ClipboardList className="w-5 h-5 text-primary" />
-          {arabicSource("lifecycle.disclaimer_list")}
-        </h3>
-        {categorizedChecklist.map(({ cat, catLabel, items }) => (
-          <ExitChecklistCategoryGroup
-            key={cat}
-            catLabel={catLabel}
-            items={items}
-            itemNameById={itemNameById}
-            section={sectionByCategory.get(cat)}
-            clearanceActions={clearanceActions}
-            onChecklistToggle={onChecklistToggle}
-          />
-        ))}
-      </div>
     </div>
   );
 };

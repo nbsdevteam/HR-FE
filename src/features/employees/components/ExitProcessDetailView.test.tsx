@@ -6,6 +6,7 @@ import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
+import { progressAt } from "../utils/exitProgress.fixtures";
 import ExitProcessDetailView from "./ExitProcessDetailView";
 
 const baseProcess = (overrides: Record<string, unknown> = {}): DbExitProcess =>
@@ -25,6 +26,8 @@ const baseProcess = (overrides: Record<string, unknown> = {}): DbExitProcess =>
     transition_blockers: {},
     esign: { required: false, state: "not_required" },
     clearance_notifications: {},
+    progress: progressAt("in_progress"),
+    my_actions: [],
     ...overrides,
   });
 
@@ -80,45 +83,35 @@ const renderView = (proc: DbExitProcess, overrides: Record<string, unknown> = {}
   return props;
 };
 
-const transitionButton = (target: string) =>
-  document.querySelector(`[data-exit-transition="${target}"]`) as HTMLButtonElement | null;
-
 describe("ExitProcessDetailView", () => {
-  it("offers exactly the backend's allowed transitions, cancel last", () => {
-    const props = renderView(baseProcess());
-    const buttons = [...document.querySelectorAll("[data-exit-transition]")]
-      .map(b => b.getAttribute("data-exit-transition"));
-    expect(buttons).toEqual(["clearance", "cancelled"]);
-
-    fireEvent.click(transitionButton("clearance")!);
-    expect(props.onTransition).toHaveBeenCalledWith("7", "clearance");
-    // The old hardcoded Disclaimer button sent "clearance" from any label; the
-    // label is now the stage it starts.
-    expect(screen.getByText(arabicSource("lifecycle.exit_start_clearance"))).toBeTruthy();
+  it("leads with the stepper and the Now panel", () => {
+    renderView(baseProcess({ status: "clearance", progress: progressAt("clearance") }));
+    expect(document.querySelector('[data-exit-stepper="lg"]')).toBeTruthy();
+    expect(document.querySelector('[data-exit-stage="clearance"]')?.getAttribute("data-exit-stage-state")).toBe("current");
+    expect(document.querySelector('[data-exit-now="clearance"]')).toBeTruthy();
   });
 
-  it("disables a gated move and says why", () => {
-    renderView(baseProcess({
-      status: "clearance",
-      allowed_transitions: ["settlement", "cancelled"],
-      transition_blockers: { settlement: ["clearance_checklist_incomplete"] },
-    }));
-    expect(transitionButton("settlement")!.disabled).toBe(true);
-    expect(transitionButton("cancelled")!.disabled).toBe(false);
-    expect(screen.getByText(arabicSource("lifecycle.exit_blocked_checklist"))).toBeTruthy();
+  it("offers Cancel only when the backend lists it, and sends the cancelled move", () => {
+    const { onTransition } = renderView(baseProcess({ my_actions: ["edit", "cancel"] }));
+    fireEvent.click(document.querySelector("[data-exit-cancel]") as HTMLElement);
+    expect(onTransition).toHaveBeenCalledWith("7", "cancelled");
   });
 
-  it("shows no stage buttons and no edit once completed", () => {
-    renderView(baseProcess({ status: "completed", editable: false, allowed_transitions: [] }));
-    // Positive evidence the completed process really rendered...
-    expect(document.querySelector('[data-exit-status="completed"]')).toBeTruthy();
-    // ...and that it carries neither stage buttons nor an edit action.
+  it("builds no stage buttons from allowed_transitions", () => {
+    renderView(baseProcess());
     expect(document.querySelectorAll("[data-exit-transition]").length).toBe(0);
+    expect(document.querySelector("[data-exit-cancel]")).toBeNull();
+  });
+
+  it("shows no edit and no Now rows once completed", () => {
+    renderView(baseProcess({ status: "completed", editable: false, my_actions: [], progress: progressAt("completed") }));
+    expect(document.querySelector('[data-exit-status="completed"]')).toBeTruthy();
     expect(screen.queryByText(arabicSource("common.edit"))).toBeNull();
+    expect(document.querySelectorAll("[data-exit-required]").length).toBe(0);
   });
 
   it("edits the open process through the update payload", async () => {
-    const props = renderView(baseProcess());
+    const props = renderView(baseProcess({ my_actions: ["edit"] }));
     fireEvent.click(screen.getByText(arabicSource("common.edit")));
     expect(screen.getByText(arabicSource("lifecycle.exit_edit_details"))).toBeTruthy();
     fireEvent.click(screen.getByText(arabicSource("common.save_changes")));
@@ -130,7 +123,7 @@ describe("ExitProcessDetailView", () => {
   });
 
   it("never sends the amounts the settlement writes, and has no editable money fields", () => {
-    const props = renderView(baseProcess());
+    const props = renderView(baseProcess({ my_actions: ["edit"] }));
     fireEvent.click(screen.getByText(arabicSource("common.edit")));
     expect(document.querySelectorAll('input[type="number"]')).toHaveLength(1); // notice period only
     fireEvent.click(screen.getByText(arabicSource("common.save_changes")));
@@ -146,7 +139,7 @@ describe("ExitProcessDetailView", () => {
   });
 
   it("lets a user tick only the lines the backend says they may", () => {
-    const props = renderView(baseProcess());
+    const props = renderView(baseProcess({ status: "clearance", progress: progressAt("clearance") }));
     const finance = screen.getByLabelText("التسوية") as HTMLButtonElement;
     const itLine = screen.getByLabelText("الحاسوب") as HTMLButtonElement;
     expect(finance.disabled).toBe(false);
@@ -155,8 +148,15 @@ describe("ExitProcessDetailView", () => {
     expect(props.onChecklistToggle).toHaveBeenCalledWith("10", true);
   });
 
+  it("folds a finished stage to its summary and greys one not reached", () => {
+    renderView(baseProcess({ status: "clearance", progress: progressAt("clearance") }));
+    const states = [...document.querySelectorAll("[data-exit-section-state]")].map(s => s.getAttribute("data-exit-section-state"));
+    // approval (done), clearance (current), settlement and final approval (not started)
+    expect(states).toEqual(["done", "current", "todo", "todo"]);
+  });
+
   it("shows the e-sign state from the process", () => {
-    renderView(baseProcess({ status: "clearance", esign: { required: true, state: "pending" } }));
+    renderView(baseProcess({ status: "clearance", esign: { required: true, state: "pending" }, progress: progressAt("clearance") }));
     expect(document.querySelector('[data-exit-esign="pending"]')).toBeTruthy();
     expect(screen.getByText(arabicSource("lifecycle.exit_esign_pending"))).toBeTruthy();
   });
@@ -164,6 +164,7 @@ describe("ExitProcessDetailView", () => {
   it("warns about open loans before settlement, with the remaining balance per currency", () => {
     renderView(baseProcess({
       status: "clearance",
+      progress: progressAt("clearance"),
       warnings: [{ code: "open_loans", count: 2, loan_ids: [4, 9], remaining: { IQD: 500000 } }],
     }));
     const warning = document.querySelector('[data-exit-open-loans="2"]');
@@ -175,6 +176,7 @@ describe("ExitProcessDetailView", () => {
   it("does not show the open-loans warning once settlement starts, where loans are statement lines", () => {
     renderView(baseProcess({
       status: "settlement",
+      progress: progressAt("settlement"),
       warnings: [{ code: "open_loans", count: 1, loan_ids: [4], remaining: { IQD: 1 } }],
     }));
     expect(document.querySelector("[data-exit-open-loans]")).toBeNull();

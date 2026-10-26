@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { arabicSource } from "@/i18n/source";
 import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
 import type { DbExitProcess } from "@/shared/hooks";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
@@ -34,40 +33,24 @@ const approval = {
 
 describe("ExitApprovalPanel", () => {
   it("lists the steps in order with their state, who acted and who the pending step waits for", () => {
-    render(<ExitApprovalPanel proc={proc({ approval })} canDecide={false} actions={actions()} cardCls="" />);
+    render(<ExitApprovalPanel proc={proc({ approval })} cardCls="" />);
 
     const steps = Array.from(document.querySelectorAll("[data-approval-step]"));
     expect(steps.map(step => step.getAttribute("data-approval-state"))).toEqual(["approved", "pending", "not_reached"]);
     expect(screen.getByText("Omar")).toBeTruthy();
     expect(screen.getByText("Layla")).toBeTruthy();
+  });
+
+  it("has no decision buttons: Approve and Reject are on the Now panel's row", () => {
+    render(<ExitApprovalPanel proc={proc({ approval, my_actions: ["approve", "reject"] })} cardCls="" />);
     expect(document.querySelector("[data-exit-approve]")).toBeNull();
-  });
-
-  it("offers Approve and Reject only to someone the backend lists as the approver", () => {
-    render(<ExitApprovalPanel proc={proc({ approval })} canDecide actions={actions()} cardCls="" />);
-    expect(document.querySelector("[data-exit-approve]")).toBeTruthy();
-    expect(document.querySelector("[data-exit-reject]")).toBeTruthy();
-  });
-
-  it("requires a reason to reject and sends it", async () => {
-    const decide = actions();
-    render(<ExitApprovalPanel proc={proc({ approval })} canDecide actions={decide} cardCls="" />);
-
-    fireEvent.click(document.querySelector("[data-exit-reject]") as HTMLElement);
-    const confirm = screen.getAllByText(arabicSource("lifecycle.exit_approval_reject")).at(-1) as HTMLElement;
-    expect((confirm.closest("button") as HTMLButtonElement).disabled).toBe(true);
-
-    fireEvent.change(document.querySelector("[data-exit-decision-comment]") as HTMLTextAreaElement, { target: { value: "Missing paperwork" } });
-    fireEvent.click(confirm);
-    await waitFor(() => expect(decide.reject).toHaveBeenCalledWith("7", "Missing paperwork"));
+    expect(document.querySelector("[data-exit-reject]")).toBeNull();
   });
 
   it("shows why a rejected process went back to in progress", () => {
     render(
       <ExitApprovalPanel
         proc={proc({ status: "in_progress", approval: { ...approval, status: "rejected", rejection_reason: "Wrong exit date" } })}
-        canDecide={false}
-        actions={actions()}
         cardCls=""
       />,
     );
@@ -75,7 +58,7 @@ describe("ExitApprovalPanel", () => {
   });
 
   it("renders nothing before the process is submitted", () => {
-    const { container } = render(<ExitApprovalPanel proc={proc({ approval: null })} canDecide actions={actions()} cardCls="" />);
+    const { container } = render(<ExitApprovalPanel proc={proc({ approval: null })} cardCls="" />);
     expect(container.textContent).toBe("");
   });
 });
@@ -93,7 +76,7 @@ const settlement = {
 
 describe("ExitSettlementPanel", () => {
   const panel = (p: DbExitProcess, over: Partial<Parameters<typeof ExitSettlementPanel>[0]> = {}) =>
-    render(<ExitSettlementPanel proc={p} canConfirm canRecalculate canPreview actions={actions()} cardCls="" {...over} />);
+    render(<ExitSettlementPanel proc={p} canReopen canRecalculate canPreview actions={actions()} cardCls="" {...over} />);
 
   it("shows the server's lines, deductions and per-currency totals, never converted", () => {
     panel(proc({ status: "settlement", settlement }));
@@ -105,26 +88,25 @@ describe("ExitSettlementPanel", () => {
     expect(document.querySelector('[data-settlement-warning="custody_value_missing"]')?.textContent).toContain("Phone");
   });
 
-  it("lets Finance confirm an open statement, and reopen a confirmed one", async () => {
+  it("reopens a confirmed statement, and has no confirm button (it is on the Now panel's row)", async () => {
     const decide = actions();
     const { rerender } = panel(proc({ status: "settlement", settlement }), { actions: decide });
-    fireEvent.click(document.querySelector("[data-exit-settlement-confirm]") as HTMLElement);
-    await waitFor(() => expect(decide.confirmSettlement).toHaveBeenCalledWith("7"));
+    expect(document.querySelector("[data-exit-settlement-confirm]")).toBeNull();
+    expect(document.querySelector("[data-exit-settlement-recalculate]")).toBeTruthy();
 
     rerender(
       <ExitSettlementPanel
         proc={proc({ status: "settlement", settlement: { ...settlement, confirmed: true, confirmed_by_name: "Finance Lead" } })}
-        canConfirm canRecalculate canPreview actions={decide} cardCls=""
+        canReopen canRecalculate canPreview actions={decide} cardCls=""
       />,
     );
-    expect(document.querySelector("[data-exit-settlement-confirm]")).toBeNull();
     fireEvent.click(document.querySelector("[data-exit-settlement-reopen]") as HTMLElement);
     await waitFor(() => expect(decide.reopenSettlement).toHaveBeenCalledWith("7"));
   });
 
-  it("hides the confirm action from anyone who is not Finance", () => {
-    panel(proc({ status: "settlement", settlement }), { canConfirm: false, canRecalculate: false });
-    expect(document.querySelector("[data-exit-settlement-confirm]")).toBeNull();
+  it("hides reopen and recalculate from anyone the backend does not allow", () => {
+    panel(proc({ status: "settlement", settlement: { ...settlement, confirmed: true } }), { canReopen: false, canRecalculate: false });
+    expect(document.querySelector("[data-exit-settlement-reopen]")).toBeNull();
     expect(document.querySelector("[data-exit-settlement-recalculate]")).toBeNull();
   });
 

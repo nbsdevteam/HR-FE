@@ -6,6 +6,7 @@ import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
 import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
+import { progressAt } from "../utils/exitProgress.fixtures";
 import ExitProcessDetailView from "./ExitProcessDetailView";
 
 const clearanceProcess = (overrides: Record<string, unknown> = {}): DbExitProcess =>
@@ -19,6 +20,7 @@ const clearanceProcess = (overrides: Record<string, unknown> = {}): DbExitProces
     editable: true,
     allowed_transitions: ["settlement", "cancelled"],
     transition_blockers: {},
+    progress: progressAt("clearance"),
     ...overrides,
   });
 
