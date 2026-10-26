@@ -15,6 +15,7 @@ const actions = (): ExitDecisionActions => ({
   confirmSettlement: vi.fn().mockResolvedValue(true),
   reopenSettlement: vi.fn().mockResolvedValue(true),
   issueLink: vi.fn().mockResolvedValue(true),
+  setCustodyStatus: vi.fn().mockResolvedValue(true),
 });
 
 const proc = (overrides: Record<string, unknown> = {}): DbExitProcess =>

@@ -95,11 +95,28 @@ export const requiredItemText = (item: ExitRequiredItem, lang: AppLanguage): str
   }
 };
 
-/** Steps that wait for everything before them; shown held while something precedes them. */
-const SEQUENTIAL_CODES: ReadonlySet<string> = new Set(["move_to_settlement", "employee_signature", "final_approval"]);
+/**
+ * What a step waits on, among the items listed before it. Moving to settlement waits
+ * for everything in clearance. In settlement the steps run in order — confirm, then
+ * the employee signs, then the final approval — while custody returns run beside
+ * them, so a custody item never holds one.
+ */
+const HELD_BY_CODES: Record<string, ReadonlySet<string> | "any"> = {
+  move_to_settlement: "any",
+  employee_signature: new Set(["confirm_settlement"]),
+  final_approval: new Set(["confirm_settlement", "employee_signature"]),
+};
 
-export const isHeldRequiredItem = (item: ExitRequiredItem, index: number): boolean =>
-  index > 0 && SEQUENTIAL_CODES.has(item.code);
+export const isHeldRequiredItem = (item: ExitRequiredItem, index: number, required: readonly ExitRequiredItem[]): boolean => {
+  const heldBy = HELD_BY_CODES[item.code];
+  if (!heldBy) return false;
+  const before = required.slice(0, index);
+  return heldBy === "any" ? before.length > 0 : before.some(earlier => heldBy.has(earlier.code));
+};
+
+/** Approval steps are listed one per remaining step; only the first is the one deciding now. */
+export const isCurrentApprovalStep = (item: ExitRequiredItem, index: number, required: readonly ExitRequiredItem[]): boolean =>
+  item.code === "approval_step" && required.findIndex(candidate => candidate.code === "approval_step") === index;
 
 /** What a row's button does; the backend's `my_actions` decides whether the button exists at all. */
 export type ExitRowAction = "submit" | "approve" | "reject" | "tick" | "start_settlement" | "confirm" | "issue" | "complete";
@@ -110,11 +127,15 @@ export type ExitRowActionSpec = {
   variant: "info" | "success" | "destructive" | "warning" | "outline";
 };
 
-/** `canTick` is whether the signed-in user may tick this checklist line by hand now. */
+/**
+ * `canTick` is whether the signed-in user may tick this checklist line by hand now;
+ * `isCurrentStep` is whether this is the first approval step, the only one `approve`
+ * and `reject` act on.
+ */
 export const exitRowActions = (
   item: ExitRequiredItem,
   myActions: readonly string[],
-  canTick: boolean,
+  { canTick, isCurrentStep }: { canTick: boolean; isCurrentStep: boolean },
 ): ExitRowActionSpec[] => {
   const specs: ExitRowActionSpec[] = [];
   const allowed = (action: string): boolean => myActions.includes(action);
@@ -123,6 +144,7 @@ export const exitRowActions = (
       if (allowed("submit")) specs.push({ action: "submit", labelKey: "lifecycle.exit_submit_for_approval", variant: "info" });
       break;
     case "approval_step":
+      if (!isCurrentStep) break;
       if (allowed("approve")) specs.push({ action: "approve", labelKey: "lifecycle.exit_approval_approve", variant: "success" });
       if (allowed("reject")) specs.push({ action: "reject", labelKey: "lifecycle.exit_approval_reject", variant: "destructive" });
       break;

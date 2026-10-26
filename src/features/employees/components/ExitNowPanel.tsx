@@ -1,13 +1,14 @@
 import { memo, useCallback, useState } from "react";
 import { Ban, CheckCircle2, Target } from "lucide-react";
+import { usePermissions } from "@/shared/auth/permissions";
 import { formatDate } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitProcess, ExitRequiredItem, ExitStatus } from "@/shared/hooks";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
-import { isHeldRequiredItem, type ExitRowAction } from "../utils/exitProgress";
+import type { CustodyStatus } from "../types";
+import { isCurrentApprovalStep, isHeldRequiredItem, type ExitRowAction } from "../utils/exitProgress";
 import ExitDecisionDialog from "./ExitDecisionDialog";
 import ExitRequiredItemRow from "./ExitRequiredItemRow";
-import ExitStageBlockerNote from "./ExitStageBlockerNote";
 import ExitWaitingOnChips from "./ExitWaitingOnChips";
 
 type ExitNowPanelProps = {
@@ -42,11 +43,11 @@ const ExitNowPanel = ({
 }: ExitNowPanelProps) => {
   const [dialog, setDialog] = useState<DecisionKind | null>(null);
   const [acting, setActing] = useState(false);
+  const { hasPermission } = usePermissions();
   const { progress, my_actions: myActions } = proc;
   const closedAt = proc.status === "completed" ? proc.completed_at : proc.status === "cancelled" ? proc.cancelled_at : null;
   const isClosed = proc.status === "completed" || proc.status === "cancelled";
-  // Why a move is still held that the rows above do not say: unconfirmed clearance approvals, an unsigned e-sign.
-  const blockerCodes = Array.from(new Set(Object.values(proc.transition_blockers).flat()));
+  const canEditCustody = hasPermission("hr.lifecycle.edit");
 
   const handleDialogClose = useCallback((): void => setDialog(null), []);
 
@@ -64,6 +65,10 @@ const ExitNowPanel = ({
     if (action === "issue") return void run(() => decisionActions.issueLink(proc.id));
     if (action === "tick" && item.line_id) onChecklistToggle(item.line_id, true);
   }, [decisionActions, onChecklistToggle, onTransition, proc.id, run]);
+
+  const handleCustodyStatus = useCallback((custodyId: string, status: CustodyStatus): void => {
+    void run(() => decisionActions.setCustodyStatus(custodyId, status));
+  }, [decisionActions, run]);
 
   const handleDecision = useCallback(async (comment: string): Promise<void> => {
     setActing(true);
@@ -97,19 +102,19 @@ const ExitNowPanel = ({
             <ExitRequiredItemRow
               key={`${index}-${item.code}-${item.line_id ?? item.custody_id ?? ""}`}
               item={item}
-              held={isHeldRequiredItem(item, index)}
+              held={isHeldRequiredItem(item, index, progress.still_required)}
               canTick={item.line_id !== null && toggleableLineIds.has(item.line_id)}
+              isCurrentStep={isCurrentApprovalStep(item, index, progress.still_required)}
+              canEditCustody={canEditCustody}
               myActions={myActions}
               categoryLabels={categoryLabels}
               busy={busy || acting}
               onAction={handleAction}
+              onCustodyStatus={handleCustodyStatus}
             />
           ))}
         </ul>
       )}
-      {!isClosed && blockerCodes.map(code => (
-        <ExitStageBlockerNote key={code} code={code} />
-      ))}
       {dialog && (
         <ExitDecisionDialog
           title={dialog === "reject" ? arabicSource("lifecycle.exit_approval_reject_title") : arabicSource("lifecycle.exit_approval_approve_title")}

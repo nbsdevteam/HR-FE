@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { localizedAlert } from "@/i18n/native";
+import type { CustodyStatus } from "../types";
 import { exitProcessErrorMessage } from "../utils/exitProcessErrorMessage";
 import { EXIT_QUERY_KEYS } from "../utils/exitQueryKeys";
 
@@ -13,11 +14,13 @@ export type ExitDecisionActions = {
   confirmSettlement: (exitId: string) => Promise<boolean>;
   reopenSettlement: (exitId: string) => Promise<boolean>;
   issueLink: (exitId: string) => Promise<boolean>;
+  /** Records a leaving employee's custody item as returned, damaged or lost. */
+  setCustodyStatus: (custodyId: string, status: CustodyStatus) => Promise<boolean>;
 };
 
 /**
  * The approval decisions, the settlement statement's lifecycle (recalculate,
- * confirm, reopen) and a new signing link. Who may act, and in which order, is
+ * confirm, reopen), a new signing link and a custody item's status. Who may act, and in which order, is
  * enforced by the backend; this only sends the request and reports its
  * `error_code` as a localized alert.
  */
@@ -44,6 +47,11 @@ export const useExitDecisionActions = (): ExitDecisionActions => {
   );
   const issueLinkMutation = useOdooMutation(
     (id: string) => odooData.issueExitSignature(id),
+    EXIT_QUERY_KEYS,
+  );
+
+  const custodyStatusMutation = useOdooMutation(
+    (variables: { id: string; status: CustodyStatus }) => odooData.updateCustody(variables.id, { status: variables.status }),
     EXIT_QUERY_KEYS,
   );
 
@@ -82,8 +90,13 @@ export const useExitDecisionActions = (): ExitDecisionActions => {
     [attempt, issueLinkMutation.mutateAsync],
   );
 
+  const setCustodyStatus = useCallback(
+    (id: string, status: CustodyStatus) => attempt(() => custodyStatusMutation.mutateAsync({ id, status })),
+    [attempt, custodyStatusMutation.mutateAsync],
+  );
+
   return useMemo(
-    () => ({ approve, reject, recalculate, confirmSettlement, reopenSettlement, issueLink }),
-    [approve, reject, recalculate, confirmSettlement, reopenSettlement, issueLink],
+    () => ({ approve, reject, recalculate, confirmSettlement, reopenSettlement, issueLink, setCustodyStatus }),
+    [approve, reject, recalculate, confirmSettlement, reopenSettlement, issueLink, setCustodyStatus],
   );
 };

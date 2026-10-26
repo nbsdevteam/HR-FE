@@ -14,6 +14,7 @@ const bundle = (): MyTaskActionsBundle => ({
     confirmSettlement: vi.fn().mockResolvedValue(true),
     reopenSettlement: vi.fn().mockResolvedValue(true),
     issueLink: vi.fn().mockResolvedValue(true),
+    setCustodyStatus: vi.fn().mockResolvedValue(true),
   },
   openExit: vi.fn(),
   toggleChecklist: vi.fn().mockResolvedValue(undefined),

@@ -10,6 +10,7 @@ import {
   exitRowActions,
   exitStageState,
   exitWaitingOnLabel,
+  isCurrentApprovalStep,
   isHeldRequiredItem,
   requiredItemText,
   taskFor,
@@ -80,25 +81,58 @@ describe("owner labels", () => {
 });
 
 describe("held items and row actions", () => {
-  it("holds a sequential step behind anything listed before it", () => {
-    expect(isHeldRequiredItem(item({ code: "move_to_settlement" }), 0)).toBe(false);
-    expect(isHeldRequiredItem(item({ code: "move_to_settlement" }), 2)).toBe(true);
-    // Finance can confirm while custody is still out, so confirm is never held.
-    expect(isHeldRequiredItem(item({ code: "confirm_settlement" }), 1)).toBe(false);
+  const held = (list: Record<string, unknown>[], index: number): boolean => {
+    const required = list.map(over => item(over));
+    return isHeldRequiredItem(required[index], index, required);
+  };
+  const none = { canTick: false, isCurrentStep: false };
+
+  it("holds Move to settlement behind anything listed before it", () => {
+    expect(held([{ code: "move_to_settlement" }], 0)).toBe(false);
+    expect(held([{ code: "clearance_item" }, { code: "custody_item" }, { code: "move_to_settlement" }], 2)).toBe(true);
+  });
+
+  it("holds the signature only behind confirm, not behind custody, which runs beside the settlement steps", () => {
+    const custody = { code: "custody_item", owner: "custodies" };
+    expect(held([custody, { code: "employee_signature" }], 1)).toBe(false);
+    expect(held([{ code: "confirm_settlement" }, { code: "employee_signature" }], 1)).toBe(true);
+    expect(held([custody, { code: "confirm_settlement" }, { code: "employee_signature" }], 2)).toBe(true);
+  });
+
+  it("holds the final approval behind confirm or the signature, never behind custody alone, and never holds confirm", () => {
+    const custody = { code: "custody_item", owner: "custodies" };
+    expect(held([custody, { code: "final_approval" }], 1)).toBe(false);
+    expect(held([{ code: "employee_signature" }, { code: "final_approval" }], 1)).toBe(true);
+    // Finance can confirm while custody is still out.
+    expect(held([custody, { code: "confirm_settlement" }], 1)).toBe(false);
+  });
+
+  it("marks only the first approval step as the current one", () => {
+    const steps = [
+      item({ code: "approval_step", label: "Direct Manager" }),
+      item({ code: "approval_step", label: "HR Manager" }),
+    ];
+    expect(steps.map((step, i) => isCurrentApprovalStep(step, i, steps))).toEqual([true, false]);
+    expect(isCurrentApprovalStep(item({ code: "clearance_item" }), 0, [item({ code: "clearance_item" })])).toBe(false);
+  });
+
+  it("offers Approve and Reject on the current approval step only", () => {
+    const step = item({ code: "approval_step" });
+    expect(exitRowActions(step, ["approve", "reject"], { canTick: false, isCurrentStep: true }).map(s => s.action)).toEqual(["approve", "reject"]);
+    expect(exitRowActions(step, ["approve", "reject"], none)).toEqual([]);
   });
 
   it("offers a button only when the backend's my_actions lists it", () => {
     const move = item({ code: "move_to_settlement", owner: "hr" });
-    expect(exitRowActions(move, [], false)).toEqual([]);
-    expect(exitRowActions(move, ["start_settlement"], false).map(s => s.action)).toEqual(["start_settlement"]);
-    expect(exitRowActions(item({ code: "approval_step" }), ["approve", "reject"], false).map(s => s.action)).toEqual(["approve", "reject"]);
-    expect(exitRowActions(item({ code: "final_approval" }), ["complete"], false).map(s => s.action)).toEqual(["complete"]);
+    expect(exitRowActions(move, [], none)).toEqual([]);
+    expect(exitRowActions(move, ["start_settlement"], none).map(s => s.action)).toEqual(["start_settlement"]);
+    expect(exitRowActions(item({ code: "final_approval" }), ["complete"], none).map(s => s.action)).toEqual(["complete"]);
   });
 
   it("offers Mark done only on a checklist line the user may tick", () => {
     const line = item({ line_id: 812 });
-    expect(exitRowActions(line, ["edit"], false)).toEqual([]);
-    expect(exitRowActions(line, [], true).map(s => s.action)).toEqual(["tick"]);
+    expect(exitRowActions(line, ["edit"], none)).toEqual([]);
+    expect(exitRowActions(line, [], { canTick: true, isCurrentStep: false }).map(s => s.action)).toEqual(["tick"]);
   });
 });
 

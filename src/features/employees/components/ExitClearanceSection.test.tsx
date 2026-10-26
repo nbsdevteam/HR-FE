@@ -59,6 +59,7 @@ const noopDecisionActions = (): ExitDecisionActions => ({
   confirmSettlement: vi.fn().mockResolvedValue(true),
   reopenSettlement: vi.fn().mockResolvedValue(true),
   issueLink: vi.fn().mockResolvedValue(true),
+  setCustodyStatus: vi.fn().mockResolvedValue(true),
 });
 
 const renderView = (proc: DbExitProcess, clearanceActions: ExitClearanceActions = noopActions()) => {
@@ -176,13 +177,5 @@ describe("clearance sections", () => {
     const actions = renderView(withSection(signingSection()));
     fireEvent.click(screen.getByText(arabicSource("lifecycle.exit_clr_resend")));
     await waitFor(() => expect(actions.resend).toHaveBeenCalledWith("22"));
-  });
-
-  it("explains the two settlement blockers the clearance gates add", () => {
-    renderView(clearanceProcess({
-      transition_blockers: { settlement: ["clearance_approval_incomplete", "clearance_signatures_incomplete"] },
-    }));
-    expect(screen.getByText(arabicSource("lifecycle.exit_blocked_clearance_approval"))).toBeTruthy();
-    expect(screen.getByText(arabicSource("lifecycle.exit_blocked_clearance_signatures"))).toBeTruthy();
   });
 });

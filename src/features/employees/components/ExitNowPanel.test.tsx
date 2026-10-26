@@ -7,6 +7,11 @@ import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { progressAt } from "../utils/exitProgress.fixtures";
 import ExitNowPanel from "./ExitNowPanel";
 
+const grantedPermissions = new Set<string>();
+vi.mock("@/shared/auth/permissions", () => ({
+  usePermissions: () => ({ hasPermission: (key: string) => grantedPermissions.has(key) }),
+}));
+
 const decisionActions = (): ExitDecisionActions => ({
   approve: vi.fn().mockResolvedValue(true),
   reject: vi.fn().mockResolvedValue(true),
@@ -14,6 +19,7 @@ const decisionActions = (): ExitDecisionActions => ({
   confirmSettlement: vi.fn().mockResolvedValue(true),
   reopenSettlement: vi.fn().mockResolvedValue(true),
   issueLink: vi.fn().mockResolvedValue(true),
+  setCustodyStatus: vi.fn().mockResolvedValue(true),
 });
 
 const proc = (status: string, progress: Record<string, unknown>, my_actions: string[] = [], extra: Record<string, unknown> = {}): DbExitProcess =>
@@ -127,9 +133,66 @@ describe("ExitNowPanel, approval and closed processes", () => {
     await waitFor(() => expect(props.decisionActions.reject).toHaveBeenCalledWith("7", "Missing paperwork"));
   });
 
+  it("puts Approve and Reject on the first approval step only, with two steps listed", () => {
+    renderPanel(proc("approval", {
+      waiting_on: approval.waiting_on,
+      still_required: [
+        approval.still_required[0],
+        { code: "approval_step", owner: "approver", label: "HR Manager", people: [] },
+      ],
+    }, ["approve", "reject"]));
+
+    const rows = [...document.querySelectorAll('[data-exit-required="approval_step"]')];
+    expect(rows).toHaveLength(2);
+    expect([...rows[0].querySelectorAll("[data-exit-row-action]")].map(b => b.getAttribute("data-exit-row-action"))).toEqual(["approve", "reject"]);
+    expect(rows[1].querySelectorAll("[data-exit-row-action]")).toHaveLength(0);
+  });
+
   it("shows only the closing date for a completed or cancelled process", () => {
     renderPanel(proc("completed", {}, [], { completed_at: "2026-11-01T09:00:00+03:00" }));
     expect(screen.getByText(arabicSource("lifecycle.exit_progress_completed_on"), { exact: false })).toBeTruthy();
     expect(rowCodes()).toEqual([]);
+  });
+});
+
+describe("ExitNowPanel, settlement order and custody", () => {
+  const custody = { code: "custody_item", owner: "custodies", label: "Work phone", custody_id: 77 };
+  const settlementRows = [
+    custody,
+    { code: "confirm_settlement", owner: "finance" },
+    { code: "employee_signature", owner: "employee", detail: "not_sent" },
+    { code: "final_approval", owner: "hr_manager" },
+  ];
+  const held = (code: string) => document.querySelector(`[data-exit-required="${code}"]`)?.hasAttribute("data-exit-held");
+
+  it("holds the signature behind confirm, not behind custody, and holds nothing for custody or confirm", () => {
+    renderPanel(proc("settlement", { still_required: settlementRows }));
+    expect(held("custody_item")).toBe(false);
+    expect(held("confirm_settlement")).toBe(false);
+    expect(held("employee_signature")).toBe(true);
+    expect(held("final_approval")).toBe(true);
+  });
+
+  it("does not hold the signature when only custody precedes it", () => {
+    renderPanel(proc("settlement", { still_required: [custody, settlementRows[2]] }));
+    expect(held("employee_signature")).toBe(false);
+  });
+
+  it("gives the custody row a Returned / Damaged / Lost dropdown to users with hr.lifecycle.edit, and sends the choice", async () => {
+    grantedPermissions.add("hr.lifecycle.edit");
+    const props = renderPanel(proc("settlement", { still_required: [custody] }));
+    const select = document.querySelector('[data-exit-custody-status="77"]') as HTMLSelectElement;
+    expect([...select.options].map(o => o.value)).toEqual(["", "returned", "damaged", "lost"]);
+
+    fireEvent.change(select, { target: { value: "lost" } });
+    await waitFor(() => expect(props.decisionActions.setCustodyStatus).toHaveBeenCalledWith("77", "lost"));
+    grantedPermissions.clear();
+  });
+
+  it("hides the custody dropdown from users without hr.lifecycle.edit", () => {
+    grantedPermissions.clear();
+    renderPanel(proc("settlement", { still_required: [custody] }, ["edit"]));
+    expect(document.querySelector("[data-exit-custody-status]")).toBeNull();
+    expect(document.querySelector('[data-exit-required="custody_item"]')).toBeTruthy();
   });
 });
