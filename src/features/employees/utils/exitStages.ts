@@ -30,6 +30,7 @@ export const EXIT_BLOCKER_KEYS: Record<string, ArabicSourceKey> = {
   esign_not_signed: "lifecycle.exit_blocked_esign",
   clearance_approval_incomplete: "lifecycle.exit_blocked_clearance_approval",
   clearance_signatures_incomplete: "lifecycle.exit_blocked_clearance_signatures",
+  custody_not_returned: "lifecycle.exit_blocked_custody",
 };
 
 export const EXIT_ESIGN_STATE_KEYS: Record<ExitEsign["state"], ArabicSourceKey> = {

@@ -58,6 +58,8 @@ export const mapEmployee = (r: any): DbEmployee => {
     hr_info_pending: bool(r.hr_info_pending),
     hr_info_missing: Array.isArray(r.hr_info_missing) ? r.hr_info_missing : [],
     device_removed_at: r.device_removed_at || null,
+    exit_id: sornull(r.exit_id),
+    exit_stage: r.exit_stage || null,
   };
 }
 

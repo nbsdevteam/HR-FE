@@ -82,7 +82,8 @@ export interface DbExitChecklistItem {
 
 export type {
   DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitClearanceSection, ExitEsign,
-  ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
+  ExitOpenLoans, ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
+  ExitWarnings,
 } from "./exitProcessTypes";
 
 export interface DbCustody {

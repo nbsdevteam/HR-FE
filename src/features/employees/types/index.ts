@@ -49,6 +49,9 @@ export type DeleteEmployeeTarget = {
   name: string;
 };
 
+/** Hands a refused action to End of Service; true when the error was one of those redirects. */
+export type ExitRedirectRequester = (error: unknown, employeeId: string, employeeName: string) => boolean;
+
 /** Counts returned by an `employee_in_use` refusal — direct reports / managed departments (backend §3.2). */
 export type EmployeeInUseGuard = {
   reportCount: number;
@@ -148,6 +151,10 @@ export type Employee = {
   hrInfoMissing: string[];
   /** When the terminal dropped the person on its own (+03:00). */
   deviceRemovedAt: string | null;
+  /** The open End of Service process, or null — what the Leaving chip and filter read. */
+  exitId: string | null;
+  /** The backend's stage for that process (`in_progress`, `clearance`, `settlement`). */
+  exitStage: string | null;
 };
 
 export type EmployeeOption = {
@@ -168,6 +175,7 @@ export type PositionOption = {
 
 export type EmployeeDetailModalTab =
   | "info"
+  | "lifecycle"
   | "custodies"
   | "leaves"
   | "attachments";
@@ -180,6 +188,8 @@ export type EmployeeDetailPanelProps = {
   dbDepartments?: DepartmentOption[];
   designations?: DbPosition[];
   startInEditMode?: boolean;
+  /** Hands an update the backend refused with `use_end_of_service` / `exit_process_open` to End of Service. */
+  onExitRedirect?: ExitRedirectRequester;
 };
 
 export interface ReadonlyArray {

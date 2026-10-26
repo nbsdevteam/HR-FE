@@ -19,6 +19,8 @@ export type EmployeeListParams = {
   origin?: EmployeeOriginFilter | null;
   /** `false` ⇒ only employees with no terminal identity yet — the device-mapping picker's candidates. */
   hasDeviceNumber?: boolean | null;
+  /** Only employees with an open End of Service process (backend lifecycle Phase 1). */
+  leaving?: boolean;
 };
 
 export type EmployeeDeleteResult = {
@@ -80,6 +82,7 @@ export const fetchEmployeesPage = async (params: EmployeeListParams = {}): Promi
   if (params.origin === "hr_info_pending") body.hr_info_pending = true;
   if (params.origin === "device") body.source = "device";
   if (params.hasDeviceNumber != null) body.has_device_number = params.hasDeviceNumber;
+  if (params.leaving) body.leaving = true;
 
   const data = await hrCall<RawEmployeeListPage | unknown[]>("/api/hr/employees/list", body);
   const rows = Array.isArray(data) ? data : (data?.items ?? []);

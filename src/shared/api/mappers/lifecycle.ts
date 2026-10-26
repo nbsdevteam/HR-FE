@@ -9,6 +9,7 @@ import type {
   DbCustody,
   ExitClearanceSection,
   ExitSignature,
+  ExitWarnings,
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
 
@@ -130,6 +131,20 @@ export const mapExitClearanceSection = (r: any): ExitClearanceSection => {
   };
 }
 
+export const mapExitWarnings = (r: any): ExitWarnings => {
+  const loans = r?.open_loans;
+  const remaining: Record<string, number> = {};
+  if (loans?.remaining && typeof loans.remaining === "object") {
+    for (const [currency, amount] of Object.entries(loans.remaining)) remaining[currency] = num(amount);
+  }
+  const count = num(loans?.count);
+  return {
+    open_loans: count > 0
+      ? { count, loan_ids: Array.isArray(loans.loan_ids) ? loans.loan_ids.map(sid) : [], remaining }
+      : null,
+  };
+}
+
 export const mapExitProcess = (r: any): DbExitProcess => {
   return {
     id: sid(r.id),
@@ -176,6 +191,7 @@ export const mapExitProcess = (r: any): DbExitProcess => {
     clearance_sections: Array.isArray(r.clearance_sections)
       ? r.clearance_sections.map(mapExitClearanceSection)
       : [],
+    warnings: mapExitWarnings(r.warnings),
   };
 }
 

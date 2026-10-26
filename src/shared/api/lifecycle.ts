@@ -11,6 +11,7 @@ import {
   mapIssue,
   mapApprovalWorkflow,
   mapApprovalRequest,
+  mapEmployeeLifecycle,
 } from "./mappers";
 import type {
   DbDocumentType,
@@ -21,6 +22,7 @@ import type {
   DbExitProcess,
   DbExitChecklist,
   DbCustody,
+  EmployeeLifecycleSummary,
 } from "../hooks";
 import { items, eid } from "./httpHelpers";
 import { crudFactory, fetchList, withEid } from "./crud";
@@ -133,6 +135,18 @@ export const rejectExitSignature = (signatureId: string | number, reason: string
 
 export const resendExitSignature = (signatureId: string | number) =>
   hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/resend`, {});
+
+/**
+ * The backend-owned lifecycle summary for one employee: current contract and
+ * history, document and custody counts, the End of Service block, the actions
+ * the caller may take, and a timeline. Needs `hr.lifecycle.view`.
+ */
+export const fetchEmployeeLifecycle = async (
+  employeeId: string | number,
+): Promise<EmployeeLifecycleSummary> => {
+  const data = await hrCall<unknown>(`/api/hr/employees/${eid(employeeId)}/lifecycle`, {});
+  return mapEmployeeLifecycle(data);
+};
 
 export const fetchCustodies = (
   employeeId?: string | number,

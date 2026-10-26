@@ -60,6 +60,8 @@ const baseEmployee: Employee = {
   hrInfoPending: false,
   hrInfoMissing: [],
   deviceRemovedAt: null,
+  exitId: null,
+  exitStage: null,
 };
 
 const designations: DbPosition[] = [

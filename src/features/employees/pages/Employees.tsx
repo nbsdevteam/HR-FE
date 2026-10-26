@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import { arabicSource } from "@/i18n/source";
-import { ConfirmDeleteModal } from "@/shared/components";
 import { useCommandIntent } from "@/app/components/command-palette/CommandIntentContext";
+import EmployeeActionDialogs from "../components/EmployeeActionDialogs";
+import EmployeeDeleteConfirm from "../components/EmployeeDeleteConfirm";
 import EmployeesFilters from "../components/EmployeesFilters";
 import EmployeesHeader from "../components/EmployeesHeader";
 import EmployeesListView from "../components/EmployeesListView";
@@ -36,7 +37,9 @@ const Employees = () => {
     citySuggestions,
     closeAddModal,
     closeDeleteModal,
+    closeExitRedirect,
     confirmAddCity,
+    confirmExitRedirect,
     countries,
     creatingCity,
     cityCreateError,
@@ -55,6 +58,7 @@ const Employees = () => {
     origin,
     dismissCitySuggestions,
     employeeOptions,
+    exitRedirectTarget,
     facePhotoPreview,
     fieldErrors,
     filtered,
@@ -72,10 +76,13 @@ const Employees = () => {
     handleDetailSave,
     handleEditEmployee,
     handleFacePhoto,
+    handleRehireClose,
+    handleRehireSubmit,
     handleRestoreEmployee,
     handleSelectEmployee,
     handleStateChange,
     kanbanDepts,
+    leavingOnly,
     loadingCities,
     loadingCountries,
     loadingNextId,
@@ -93,11 +100,15 @@ const Employees = () => {
     pendingEmployees,
     perPage,
     realDepts,
+    rehire,
+    rehireSaving,
     requestDeleteEmployee,
+    requestExitRedirect,
     search,
     selectedDept,
     selectedEmployee,
     setDeviceEnrollmentState,
+    setLeavingOnly,
     setOrigin,
     setSearch,
     setSelectedDept,
@@ -148,11 +159,13 @@ const Employees = () => {
         status={status}
         deviceEnrollmentState={deviceEnrollmentState}
         origin={origin}
+        leavingOnly={leavingOnly}
         onSearchChange={setSearch}
         onDepartmentChange={setSelectedDept}
         onStatusChange={setStatus}
         onDeviceEnrollmentStateChange={setDeviceEnrollmentState}
         onOriginChange={setOrigin}
+        onLeavingOnlyChange={setLeavingOnly}
       />
 
       <AnimatePresence mode="wait">
@@ -207,6 +220,7 @@ const Employees = () => {
               dbDepartments={dbDepartmentOptions}
               designations={designations}
               startInEditMode={detailStartsInEditMode}
+              onExitRedirect={requestExitRedirect}
             />
           </Suspense>
         )}
@@ -261,33 +275,23 @@ const Employees = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {deleteConfirm && (
-          <ConfirmDeleteModal
-            title={arabicSource("employees.confirm_deletion")}
-            message={
-              deleteGuard ? (
-                <>
-                  {arabicSource("employees.in_use_message_prefix")}{" "}
-                  <span className="text-foreground font-medium">{deleteConfirm.name}</span>{" "}
-                  {arabicSource("employees.in_use_message_middle")} {deleteGuard.reportCount} {arabicSource("employees.reports_suffix")}, {deleteGuard.departmentCount} {arabicSource("employees.departments_suffix")}
-                </>
-              ) : (
-                <>
-                  {arabicSource("employees.are_you_sure_you_want_to_delete_the_employee")}{" "}
-                  <span className="text-foreground font-medium">{deleteConfirm.name}</span>
-                  {arabicSource("employees.all_his_data_will_be_deleted_from_the_system_and_he_will_be_remo")}
-                </>
-              )
-            }
-            confirmLabel={deleteGuard ? arabicSource("employees.force_delete_action") : arabicSource("employees.delete_employee")}
-            loadingLabel={arabicSource("employees.deleting")}
-            loading={deleting}
-            onConfirm={handleDeleteEmployee}
-            onClose={closeDeleteModal}
-          />
-        )}
-      </AnimatePresence>
+      <EmployeeDeleteConfirm
+        target={deleteConfirm}
+        guard={deleteGuard}
+        deleting={deleting}
+        onConfirm={handleDeleteEmployee}
+        onClose={closeDeleteModal}
+      />
+
+      <EmployeeActionDialogs
+        exitRedirectTarget={exitRedirectTarget}
+        rehire={rehire}
+        rehireSaving={rehireSaving}
+        onExitRedirectConfirm={confirmExitRedirect}
+        onExitRedirectClose={closeExitRedirect}
+        onRehireSubmit={handleRehireSubmit}
+        onRehireClose={handleRehireClose}
+      />
     </div>
   );
 };

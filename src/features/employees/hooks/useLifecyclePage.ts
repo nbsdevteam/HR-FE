@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import {
   useEmployees,
   empDisplayName,
@@ -20,10 +21,12 @@ import { lifecycleTabs, type EmployeeMap, type LifecycleTabId } from "../types/l
 import { parseKeyLabelMap } from "../utils/lifecycleConfig";
 
 /** `?tab=exit` — how a clearance notification's link lands on its tab. */
+const requestedTab = (requested: string | null): LifecycleTabId | null =>
+  lifecycleTabs.find(tab => tab.id === requested)?.id ?? null;
+
 const initialTab = (): LifecycleTabId => {
   if (typeof window === "undefined") return "contracts";
-  const requested = new URLSearchParams(window.location.search).get("tab");
-  return lifecycleTabs.some(tab => tab.id === requested) ? (requested as LifecycleTabId) : "contracts";
+  return requestedTab(new URLSearchParams(window.location.search).get("tab")) ?? "contracts";
 };
 
 export const useLifecyclePage = () => {
@@ -31,6 +34,7 @@ export const useLifecyclePage = () => {
   const [search, setSearch] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
 
+  const [searchParams] = useSearchParams();
   const { employees, loading: empLoading } = useEmployees();
   const { types: contractTypes } = useContractTypes();
   const { contracts, loading: contractsLoading, refetch: refetchContracts } = useEmployeeContracts();
@@ -91,6 +95,14 @@ export const useLifecyclePage = () => {
   }), [contracts, probationAlertDays]);
 
   const fetching = empLoading || contractsLoading || docsLoading || exitLoading;
+
+  // The page can already be open when a redirect from Employees (or a contract
+  // Terminate) lands on `?tab=exit&...`, so the param is followed, not just read once.
+  const tabParam = searchParams.get("tab");
+  useEffect(() => {
+    const tab = requestedTab(tabParam);
+    if (tab) setActiveTab(tab);
+  }, [tabParam]);
 
   // The shared list hooks report `loading` for every background refetch too, and
   // a mutation (checklist toggle, save edit) invalidates them. Swapping the page

@@ -20,6 +20,9 @@ describe("exitProcessErrorMessage", () => {
       ["clearance_section_governs_item", "lifecycle.exit_error_section_governs_item"],
       ["signature_out_of_order", "lifecycle.exit_error_signature_out_of_order"],
       ["signature_already_decided", "lifecycle.exit_error_signature_already_decided"],
+      ["exit_checklist_not_started", "lifecycle.exit_error_checklist_not_started"],
+      ["exit_checklist_closed", "lifecycle.exit_error_checklist_closed"],
+      ["custody_not_returned", "lifecycle.exit_error_custody_not_returned"],
     ];
     for (const [code, key] of cases) {
       expect(exitProcessErrorMessage(apiError(code), "lifecycle.exit_error_update_failed"))

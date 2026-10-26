@@ -1,4 +1,4 @@
-import { CalendarCheck, Laptop, Paperclip, User } from "lucide-react";
+import { CalendarCheck, Laptop, LogOut, Paperclip, User } from "lucide-react";
 import { arabicSource } from "@/i18n/source";
 import type { EmployeeDetailModalTab } from "../types";
 import EmployeeDetailTabButton from "./EmployeeDetailTabButton";
@@ -8,15 +8,20 @@ type EmployeeDetailTabsProps = {
   custodiesCount: number;
   leavesCount: number;
   attachmentsCount: number;
+  /** The Life cycle tab needs `hr.lifecycle.view`; without it the tab is not offered. */
+  showLifecycle: boolean;
   onSelect: (tab: EmployeeDetailModalTab) => void;
 };
 
-const EmployeeDetailTabs = ({ modalTab, custodiesCount, leavesCount, attachmentsCount, onSelect }: EmployeeDetailTabsProps) => {
+const EmployeeDetailTabs = ({ modalTab, custodiesCount, leavesCount, attachmentsCount, showLifecycle, onSelect }: EmployeeDetailTabsProps) => {
   const tabs = [
     { key: "info" as const, label: arabicSource("shared.information"), icon: User, count: null },
     { key: "custodies" as const, label: arabicSource("shared.receivables"), icon: Laptop, count: custodiesCount },
     { key: "leaves" as const, label: arabicSource("common.vacations"), icon: CalendarCheck, count: leavesCount },
     { key: "attachments" as const, label: arabicSource("shared.attachments"), icon: Paperclip, count: attachmentsCount },
+    ...(showLifecycle
+      ? [{ key: "lifecycle" as const, label: arabicSource("common.employee_life_cycle"), icon: LogOut, count: null }]
+      : []),
   ];
 
   return (

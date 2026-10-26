@@ -21,6 +21,10 @@ const EXIT_ERROR_KEYS: Record<string, ArabicSourceKey> = {
   clearance_section_governs_item: "lifecycle.exit_error_section_governs_item",
   signature_out_of_order: "lifecycle.exit_error_signature_out_of_order",
   signature_already_decided: "lifecycle.exit_error_signature_already_decided",
+  // The checklist opens with clearance and freezes at settlement.
+  exit_checklist_not_started: "lifecycle.exit_error_checklist_not_started",
+  // Custody must be recorded returned/damaged/lost first; completion never changes it.
+  custody_not_returned: "lifecycle.exit_error_custody_not_returned",
 };
 
 /** The backend's `error_code` on a failed exit call, if it sent one. */

@@ -8,6 +8,7 @@ import { formatCurrency } from "@/shared/utils/currency";
 import { getStatusColor } from "@/shared/utils/statusColors";
 import { employeeStatusKeys, translateBackendCode } from "@/i18n/status";
 import { statusColors } from "../styles";
+import EmployeeLeavingBadge from "./EmployeeLeavingBadge";
 import EmployeeOriginBadges from "./EmployeeOriginBadges";
 
 type EmployeeKanbanTileProps = {
@@ -58,6 +59,7 @@ const EmployeeKanbanTile = ({ emp, index, accent, dbEmp, onSelectEmployee }: Emp
           <EmployeeOriginBadges source={emp.source} hrInfoPending={emp.hrInfoPending} compact className="justify-center mt-1.5" />
           <div className="flex items-center justify-center gap-2 mt-2">
             <span className={`px-1.5 py-0.5 rounded border ${getStatusColor(emp.status, statusColors)}`} style={{ fontSize: 9 }}>{translateBackendCode(emp.status, employeeStatusKeys)}</span>
+            <EmployeeLeavingBadge exitId={emp.exitId} exitStage={emp.exitStage} compact />
             {dbEmp?.device_employee_no ? (
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted/20 border border-border/20 font-mono text-muted-foreground" style={{ fontSize: 8 }}>
                 <Fingerprint className="w-2.5 h-2.5 text-primary/50" />

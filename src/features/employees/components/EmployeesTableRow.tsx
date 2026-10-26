@@ -18,6 +18,7 @@ import { usePermissions } from "@/shared/auth/permissions";
 import { statusColors } from "../styles";
 import type { DeleteEmployeeTarget } from "../types";
 import EmployeeDeviceStatusBadge from "./EmployeeDeviceStatusBadge";
+import EmployeeLeavingBadge from "./EmployeeLeavingBadge";
 import EmployeeOriginBadges from "./EmployeeOriginBadges";
 
 type EmployeesTableRowProps = {
@@ -134,9 +135,12 @@ const EmployeesTableRow = ({
         {emp.position}
       </td>
       <td className="px-4 py-3">
-        <StatusBadge colorClassName={getStatusColor(emp.status, statusColors)}>
-          {translateBackendCode(emp.status, employeeStatusKeys)}
-        </StatusBadge>
+        <div className="flex flex-wrap items-center gap-1">
+          <StatusBadge colorClassName={getStatusColor(emp.status, statusColors)}>
+            {translateBackendCode(emp.status, employeeStatusKeys)}
+          </StatusBadge>
+          <EmployeeLeavingBadge exitId={emp.exitId} exitStage={emp.exitStage} />
+        </div>
       </td>
       <td className="px-4 py-3">
         <EmployeeDeviceStatusBadge

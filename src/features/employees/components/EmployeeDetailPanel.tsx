@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { ModalOverlay } from "@/shared/components";
-import { arabicSource } from "@/i18n/source";
+import { usePermissions } from "@/shared/auth/permissions";
 import type { EmployeeDetailPanelProps } from "../types";
 import { useEmployeeDetailPanel } from "../hooks/useEmployeeDetailPanel";
 import EmployeeDetailHeader from "./EmployeeDetailHeader";
@@ -12,6 +12,8 @@ import EmployeeDetailTabs from "./EmployeeDetailTabs";
 import EmployeeInfoTab from "./EmployeeInfoTab";
 import EmployeeCustodiesTab from "./EmployeeCustodiesTab";
 import EmployeeLeavesTab from "./EmployeeLeavesTab";
+import EmployeeLifecycleTab from "./EmployeeLifecycleTab";
+import EmployeeSaveErrorBanner from "./EmployeeSaveErrorBanner";
 import EmployeeAttachmentsTab from "./EmployeeAttachmentsTab";
 import EmployeeTerminationDialog from "./EmployeeTerminationDialog";
 import { TAPSDATA } from "../data";
@@ -100,6 +102,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
     terminationOptions,
     terminationResult,
   } = useEmployeeDetailPanel(props);
+  const { hasPermission } = usePermissions();
 
   const handleNewCustodyChange = useCallback(
     (patch: Partial<typeof newCustody>) =>
@@ -170,19 +173,13 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
           />
         </div>
 
-        {saveError && (
-          <div
-            className="shrink-0 mx-6 mt-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive"
-            style={{ fontSize: 13 }}
-          >
-            {arabicSource("shared.error_saving")} {saveError}
-          </div>
-        )}
+        {saveError && <EmployeeSaveErrorBanner message={saveError} />}
         <EmployeeDetailTabs
           modalTab={modalTab}
           custodiesCount={custodies.length}
           leavesCount={leaves.length}
           attachmentsCount={editData.attachments.length}
+          showLifecycle={hasPermission("hr.lifecycle.view")}
           onSelect={setModalTab}
         />
         <div className="flex-1 overflow-y-auto">
@@ -259,6 +256,7 @@ const EmployeeDetailPanel = (props: EmployeeDetailPanelProps) => {
                 error={leaveError}
               />
             )}
+            {modalTab === TAPSDATA.LIFECYCLE && <EmployeeLifecycleTab employeeId={editData.dbId} />}
             {modalTab === TAPSDATA.ATTACHMENTS && (
               <EmployeeAttachmentsTab
                 attachments={editData.attachments}

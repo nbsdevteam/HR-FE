@@ -34,6 +34,8 @@ const ACTION_LABELS: Record<string, string> = {
   // hr.lifecycle.clearance_<team>: the End of Service clearance teams.
   clearance_finance: arabicSource("settings.permission_clearance_finance"),
   clearance_it: arabicSource("settings.permission_clearance_it"),
+  clearance_admin: arabicSource("settings.permission_clearance_admin"),
+  clearance_custody: arabicSource("settings.permission_clearance_custody"),
   list: "عرض القائمة",
   view: "عرض التفاصيل",
   create: "إنشاء",

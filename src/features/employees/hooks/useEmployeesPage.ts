@@ -9,6 +9,7 @@ import { useEmployeeDeleteFlow } from "./useEmployeeDeleteFlow";
 import { useEmployeeListFilters } from "./useEmployeeListFilters";
 import { useEmployeeStatusActions } from "./useEmployeeStatusActions";
 import { useEmployeesPaged } from "./useEmployeesPaged";
+import { useExitRedirect } from "./useExitRedirect";
 
 /** Detail-only fields the lean `/employees/list` endpoint never echoes back, so a
  * post-save refetch would otherwise redisplay them as blank even though the save
@@ -54,6 +55,7 @@ export const useEmployeesPage = () => {
     status: listFilters.status,
     deviceEnrollmentState: listFilters.deviceEnrollmentState,
     origin: listFilters.origin,
+    leaving: listFilters.leavingOnly,
     // The kanban board groups the whole roster into columns, so it keeps using
     // the full-roster fetch; paging it would hide employees behind a pager the
     // board has nowhere to put.
@@ -68,8 +70,9 @@ export const useEmployeesPage = () => {
   }, [refetch, paged.refetchPage]);
 
   const addFormState = useEmployeeAddForm(designations, refetchAll);
-  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll, currentEmployeeId);
-  const statusActions = useEmployeeStatusActions(refetchAll);
+  const exitRedirect = useExitRedirect();
+  const deleteFlow = useEmployeeDeleteFlow(dbEmployees, refetchAll, exitRedirect.requestRedirect, currentEmployeeId);
+  const statusActions = useEmployeeStatusActions(refetchAll, exitRedirect.requestRedirect);
 
   // The table only ever holds one page of ids — cheap to fetch on every page
   // change. The kanban board renders the whole roster at once, so its avatar
@@ -139,6 +142,10 @@ export const useEmployeesPage = () => {
     ...listFilters,
     ...paged,
     ...statusActions,
+    closeExitRedirect: exitRedirect.closeRedirect,
+    confirmExitRedirect: exitRedirect.confirmRedirect,
+    exitRedirectTarget: exitRedirect.redirectTarget,
+    requestExitRedirect: exitRedirect.requestRedirect,
     pagedEmployees,
     allEmployees,
     filtered,

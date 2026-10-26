@@ -9,6 +9,7 @@ export const TAPSDATA = {
   CUSTODIES: "custodies",
   LEAVES: "leaves",
   ATTACHMENTS: "attachments",
+  LIFECYCLE: "lifecycle",
 };
 
 export const EMPLOYEE_COLUMNS: ReadonlyArray[] = [

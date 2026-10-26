@@ -1,8 +1,9 @@
 import { hrCall } from "./client";
-import { mapEmployee, mapDepartment, mapDepartmentTree, mapDepartmentMetadata } from "./mappers";
+import { mapEmployee, mapEmployeeContract, mapDepartment, mapDepartmentTree, mapDepartmentMetadata } from "./mappers";
 import { sid, num } from "./mappers/mapHelpers";
 import type {
   DbEmployee,
+  DbEmployeeContract,
   DbDepartment,
   DepartmentTreeNode,
   DepartmentTreeResult,
@@ -205,10 +206,38 @@ export const deleteEmployee = async (
   });
 }
 
-/** Un-archives an employee: `active = true`, `status = 'active'`, clears `end_date` (backend §3.3). */
-export const restoreEmployee = async (employeeId: string | number): Promise<DbEmployee> => {
-  const row = await hrCall<any>(`/api/hr/employees/${eid(employeeId)}/restore`, {});
-  return mapEmployee(row);
+/** The contract a rehire creates; `start_date` is the only field the backend requires. */
+export type RehireContractInput = {
+  start_date: string;
+  end_date?: string | null;
+  contract_type_id?: string | number | null;
+};
+
+/** A restored employee, plus the new contract when the restore was a rehire. */
+export type EmployeeRestoreResult = DbEmployee & { contract: DbEmployeeContract | null };
+
+/**
+ * Un-archives an employee: `active = true`, `status = 'active'`, clears `end_date` (backend §3.3).
+ * After a completed End of Service the backend answers `use_rehire` until a new
+ * `contract.start_date` is supplied — send it as `contract` and the new contract
+ * comes back on the result.
+ */
+export const restoreEmployee = async (
+  employeeId: string | number,
+  opts: { contract?: RehireContractInput } = {},
+): Promise<EmployeeRestoreResult> => {
+  const contract = opts.contract
+    ? {
+        start_date: opts.contract.start_date,
+        ...(opts.contract.end_date ? { end_date: opts.contract.end_date } : {}),
+        ...(opts.contract.contract_type_id ? { contract_type_id: eid(opts.contract.contract_type_id) } : {}),
+      }
+    : undefined;
+  const row = await hrCall<any>(`/api/hr/employees/${eid(employeeId)}/restore`, contract ? { contract } : {});
+  return {
+    ...mapEmployee(row),
+    contract: row?.contract && typeof row.contract === "object" ? mapEmployeeContract(row.contract) : null,
+  };
 }
 
 export const updateDepartment = async (

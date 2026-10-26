@@ -72,6 +72,8 @@ export const toEmployee = (employee: DbEmployee, managerIndex: ManagerIndex): Em
     hrInfoPending: employee.hr_info_pending,
     hrInfoMissing: employee.hr_info_missing,
     deviceRemovedAt: employee.device_removed_at,
+    exitId: employee.exit_id,
+    exitStage: employee.exit_stage,
   };
 };
 

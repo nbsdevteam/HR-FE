@@ -58,3 +58,18 @@ describe("EmployeesTableRow for a deactivated employee", () => {
     expect(screen.getByText(arabicSource("employees.registered"))).toBeInTheDocument();
   });
 });
+
+describe("EmployeesTableRow for an employee who is leaving", () => {
+  it("shows the Leaving chip from the backend exit fields, with the stage as its tooltip", () => {
+    row({ status: "active", active: true, exit_id: 12, exit_stage: "clearance" });
+
+    const chip = screen.getByText(arabicSource("employees.leaving_badge"));
+    expect(chip.closest("[data-exit-stage]")?.getAttribute("data-exit-stage")).toBe("clearance");
+  });
+
+  it("shows no Leaving chip without an open End of Service", () => {
+    row({ status: "active", active: true });
+
+    expect(screen.queryByText(arabicSource("employees.leaving_badge"))).toBeNull();
+  });
+});

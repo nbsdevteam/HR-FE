@@ -27,6 +27,8 @@ type UseEmployeesPagedParams = {
   deviceEnrollmentState?: DeviceEnrollmentState[] | null;
   /** Device-origin / pending-HR-information records; empty/`null` for no filter. */
   origin?: EmployeeOriginFilter | null;
+  /** Only employees with an open End of Service process (the backend's `leaving` filter). */
+  leaving?: boolean;
   /** Skip fetching entirely while the list view is not the one on screen. */
   enabled?: boolean;
 };
@@ -46,11 +48,12 @@ export const useEmployeesPaged = ({
   status = null,
   deviceEnrollmentState = null,
   origin = null,
+  leaving = false,
   enabled = true,
 }: UseEmployeesPagedParams) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_EMPLOYEE_PAGE_SIZE);
-  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived, status, deviceEnrollmentState, origin });
+  const [appliedFilters, setAppliedFilters] = useState({ search, departmentId, includeArchived, status, deviceEnrollmentState, origin, leaving });
 
   const debouncedSearch = useDebouncedValue(search);
 
@@ -66,9 +69,10 @@ export const useEmployeesPaged = ({
     appliedFilters.includeArchived !== includeArchived ||
     appliedFilters.status !== status ||
     appliedFilters.deviceEnrollmentState !== deviceEnrollmentState ||
-    appliedFilters.origin !== origin
+    appliedFilters.origin !== origin ||
+    appliedFilters.leaving !== leaving
   ) {
-    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin });
+    setAppliedFilters({ search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin, leaving });
     if (page !== 1) setPage(1);
   }
 
@@ -77,9 +81,9 @@ export const useEmployeesPaged = ({
   // monotonic request id) guarantees a slow page-2 response can never
   // overwrite the page-3 rows the user has already moved on to.
   const query = useQuery<EmployeeListPage, Error>({
-    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin],
+    queryKey: ["employeesPaged", page, perPage, debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin, leaving],
     queryFn: () => odooData.fetchEmployeesPage({
-      page, limit: perPage, search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin,
+      page, limit: perPage, search: debouncedSearch, departmentId, includeArchived, status, deviceEnrollmentState, origin, leaving,
     }),
     enabled,
     placeholderData: keepPreviousData,

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
-import type { ExitStatus } from "@/shared/hooks";
+import { EMPLOYEE_LIFECYCLE_KEY, type ExitStatus } from "@/shared/hooks";
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert, localizedConfirm } from "@/i18n/native";
@@ -8,9 +8,11 @@ import type { HrApiError } from "@/shared/api/client";
 import type { ExitEditPayload } from "../components/ExitProcessEditPanel";
 import { exitErrorCode, exitProcessErrorMessage } from "../utils/exitProcessErrorMessage";
 
-// Completion archives the employee server-side, so the roster refetches too.
-const EXIT_KEYS = ["exitProcesses", "exitChecklist"];
-const COMPLETION_KEYS = [...EXIT_KEYS, "employees"];
+// The profile's lifecycle summary reads the exit block, so every exit write refreshes it.
+const EXIT_KEYS = ["exitProcesses", "exitChecklist", EMPLOYEE_LIFECYCLE_KEY];
+// Completion archives the employee and updates their contract status server-side,
+// so the roster and contracts refetch too instead of patching either locally.
+const COMPLETION_KEYS = [...EXIT_KEYS, "employees", "contracts"];
 
 type Variables = { id: string; payload: Record<string, unknown> };
 

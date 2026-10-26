@@ -8,6 +8,7 @@ import { arabicSource } from "@/i18n/source";
 import type { HrApiError } from "@/shared/api/client";
 import type { DeleteEmployeeTarget, EmployeeInUseGuard } from "../types";
 import { errorMessage } from "../utils/errorMessage";
+import type { ExitRedirectRequester } from "../types";
 
 /**
  * Archive flow for the employee list/kanban delete button (backend §3). The
@@ -17,10 +18,16 @@ import { errorMessage } from "../utils/errorMessage";
  * re-arms the same target with the returned counts so the confirm modal can
  * re-prompt for `force: true`; `me.id` never reaches this flow at all, since
  * the caller is expected to withhold the action for their own row.
+ *
+ * An employee with HR history cannot be archived here: the backend answers
+ * `use_end_of_service` (or `exit_process_open` when one is already running) and
+ * `requestExitRedirect` hands the user to End of Service. `force: true` does not
+ * waive either refusal.
  */
 export const useEmployeeDeleteFlow = (
   dbEmployees: DbEmployee[],
   refetch: () => void,
+  requestExitRedirect: ExitRedirectRequester,
   currentEmployeeId?: string | null,
 ) => {
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteEmployeeTarget | null>(null);
@@ -65,7 +72,10 @@ export const useEmployeeDeleteFlow = (
       setDeleteGuard(null);
     } catch (error: unknown) {
       const apiError = error as HrApiError | undefined;
-      if (apiError?.code === "employee_in_use") {
+      if (requestExitRedirect(error, deleteConfirm.id, deleteConfirm.name)) {
+        setDeleteConfirm(null);
+        setDeleteGuard(null);
+      } else if (apiError?.code === "employee_in_use") {
         setDeleteGuard({
           reportCount: Number(apiError.details?.report_count) || 0,
           departmentCount: Number(apiError.details?.department_count) || 0,
@@ -77,7 +87,7 @@ export const useEmployeeDeleteFlow = (
       }
     }
     setDeleting(false);
-  }, [dbEmployees, deleteConfirm, deleteEmployeeMutation.mutateAsync, deleteGuard, refetch]);
+  }, [dbEmployees, deleteConfirm, deleteEmployeeMutation.mutateAsync, deleteGuard, refetch, requestExitRedirect]);
 
   const closeDeleteModal = useCallback(() => {
     setDeleteConfirm(null);

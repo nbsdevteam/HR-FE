@@ -113,6 +113,10 @@ export interface DbEmployee {
   hr_info_missing: string[];
   /** When the terminal dropped the person on its own (+03:00), else null. */
   device_removed_at: string | null;
+  /** The open End of Service process, or null — the list payload carries it for the Leaving chip. */
+  exit_id: string | null;
+  /** That process's backend stage (`in_progress`, `clearance`, `settlement`), or null. */
+  exit_stage: string | null;
 }
 
 export interface DbDepartment {

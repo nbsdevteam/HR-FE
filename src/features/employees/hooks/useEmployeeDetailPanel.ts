@@ -26,7 +26,7 @@ import { useEmployeeTermination } from "./useEmployeeTermination";
 const positionLabel = (p: { id: string; title_ar: string; title_en: string | null }): string =>
   p.title_ar || p.title_en || p.id;
 
-export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], dbDepartments = [], designations = [], startInEditMode = false }: EmployeeDetailPanelProps) => {
+export const useEmployeeDetailPanel = ({ employee, onSave, onExitRedirect, allEmployees = [], dbDepartments = [], designations = [], startInEditMode = false }: EmployeeDetailPanelProps) => {
   const [modalTab, setModalTab] = useState<EmployeeDetailModalTab>("info");
   const [isEditing, setIsEditing] = useState(startInEditMode);
   const [editData, setEditData] = useState<Employee>({ ...employee });
@@ -211,6 +211,9 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
         }
       }
     } catch (e: unknown) {
+      // An employee with HR history leaves through End of Service, so an update
+      // to `exited` is refused rather than failed: the page opens that flow.
+      if (onExitRedirect?.(e, editData.dbId, editData.name)) return;
       // A rejected birth date writes *nothing* — not one field of the patch —
       // so the message has to point at the input that has to be fixed and
       // resubmitted, rather than reading as a generic save failure.
@@ -229,7 +232,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, allEmployees = [], db
     } finally {
       setSaving(false);
     }
-  }, [editData, employee, onSave, resolvedDepartmentId, resolvedPositionId, termination.setShowTerminationDialog, updateEmployeeMutation.mutateAsync]);
+  }, [editData, employee, onExitRedirect, onSave, resolvedDepartmentId, resolvedPositionId, termination.setShowTerminationDialog, updateEmployeeMutation.mutateAsync]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);

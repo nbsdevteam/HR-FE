@@ -4,6 +4,7 @@ import { Plus, Briefcase } from "lucide-react";
 import * as odooData from "@/shared/api/odooData";
 import { Button, DataTable, EmptyState, SearchInput, TableHeaderRow } from "@/shared/components";
 import {
+  EMPLOYEE_LIFECYCLE_KEY,
   empDisplayName,
   type DbContractType,
   type DbEmployee,
@@ -12,6 +13,7 @@ import {
 import { useOdooMutation } from "@/shared/hooks/useOdooMutation";
 import { arabicSource } from "@/i18n/source";
 import { localizedAlert } from "@/i18n/native";
+import { useExitRedirect } from "../hooks/useExitRedirect";
 import { errorMessage } from "../utils/errorMessage";
 import {
   lifecycleCardClass as cardCls,
@@ -20,6 +22,7 @@ import {
 import type { EmployeeMap } from "../types/lifecycle";
 import ContractFormPanel, { type ContractFormData } from "./ContractFormPanel";
 import ContractTableRow from "./ContractTableRow";
+import ExitRedirectDialog from "./ExitRedirectDialog";
 
 const CONTRACTS_TABLE_HEADINGS = [
   arabicSource("common.employee"),
@@ -71,14 +74,16 @@ const ContractsTab = ({
     useState<ContractFormData>(EMPTY_CONTRACT_FORM);
   const [saving, setSaving] = useState(false);
 
+  const { closeRedirect, confirmRedirect, redirectTarget, requestRedirect } = useExitRedirect();
+  // A contract change can move the employee's lifecycle summary (current contract, exit actions).
   const createContractMutation = useOdooMutation(
     (payload: Record<string, unknown>) => odooData.createContract(payload),
-    "contracts",
+    ["contracts", EMPLOYEE_LIFECYCLE_KEY],
   );
   const updateContractMutation = useOdooMutation(
     (variables: { id: string; payload: Record<string, unknown> }) =>
       odooData.updateContract(variables.id, variables.payload),
-    "contracts",
+    ["contracts", EMPLOYEE_LIFECYCLE_KEY],
   );
 
   const contractTypeById = useMemo(
@@ -145,16 +150,22 @@ const ContractsTab = ({
     [updateContractMutation.mutateAsync],
   );
 
+  // Terminating the contract of someone with HR history is refused with
+  // `use_end_of_service` (or `exit_process_open`): End of Service is the exit path.
   const handleTerminate = useCallback(
     async (contractId: string) => {
+      const contract = contracts.find((c) => c.id === contractId);
       try {
         await updateContractMutation.mutateAsync({ id: contractId, payload: { status: "terminated" } });
       } catch (e) {
+        const employeeId = contract?.employee_id ?? "";
+        const employee = empMap[employeeId];
+        if (requestRedirect(e, employeeId, employee ? empDisplayName(employee) : "")) return;
         console.error(e);
         localizedAlert("خطأ في إنهاء العقد " + errorMessage(e));
       }
     },
-    [updateContractMutation.mutateAsync],
+    [contracts, empMap, requestRedirect, updateContractMutation.mutateAsync],
   );
 
   const closeForm = useCallback(() => setShowForm(false), []);
@@ -232,6 +243,12 @@ const ContractsTab = ({
           </tr>
         }
       />
+
+      <AnimatePresence>
+        {redirectTarget && (
+          <ExitRedirectDialog target={redirectTarget} onConfirm={confirmRedirect} onClose={closeRedirect} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

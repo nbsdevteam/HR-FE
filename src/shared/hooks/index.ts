@@ -16,6 +16,7 @@ export * from "./leaveExcuseQueue";
 export * from "./leaveExcuseTypes";
 export * from "./leaveLinks";
 export * from "./lifecycle";
+export * from "./employeeLifecycle";
 export * from "./recruitment";
 export * from "./performance";
 export * from "./reporting";

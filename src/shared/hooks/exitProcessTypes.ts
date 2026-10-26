@@ -59,6 +59,19 @@ export interface ExitClearanceSection {
   signatures: ExitSignature[];
 }
 
+/** Loans still open for the leaving employee (backend `warnings.open_loans`). */
+export interface ExitOpenLoans {
+  count: number;
+  loan_ids: string[];
+  /** Outstanding balance per currency — shown, never calculated or deducted (Phase 1). */
+  remaining: Record<string, number>;
+}
+
+/** Settlement-time warnings on an exit process (backend `serialize_exit_process.warnings`). */
+export interface ExitWarnings {
+  open_loans: ExitOpenLoans | null;
+}
+
 export interface DbExitProcess {
   id: string;
   employee_id: string;
@@ -94,6 +107,7 @@ export interface DbExitProcess {
   esign: ExitEsign;
   /** Empty until the backend's clearance governance is switched on. */
   clearance_sections: ExitClearanceSection[];
+  warnings: ExitWarnings;
 }
 
 export interface DbExitChecklist {

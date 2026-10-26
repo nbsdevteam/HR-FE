@@ -19,6 +19,8 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
   const [deviceEnrollmentState, setDeviceEnrollmentState] = useState<DeviceEnrollmentState[]>([]);
   /** Hikvision-origin records, or only those still pending HR information; "" for all. */
   const [origin, setOrigin] = useState<EmployeeOriginFilter>("");
+  /** Only employees with an open End of Service process — the backend's `leaving` filter. */
+  const [leavingOnly, setLeavingOnly] = useState(false);
   // Inactive and exited are both archived rows server-side — selecting either
   // must switch the list to include them, same as the old manual toggle did
   // (backend §7/§8).
@@ -95,10 +97,11 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
         emp.position.toLowerCase().includes(normalizedSearch) ||
         emp.employeeNumber.toLowerCase().includes(normalizedSearch);
       const matchDept = selectedDept === arabicSource("common.all") || emp.department === selectedDept;
-      return matchSearch && matchDept;
+      const matchLeaving = !leavingOnly || Boolean(emp.exitId);
+      return matchSearch && matchDept && matchLeaving;
     });
     return sortEmployees(list, sortBy, sortDir);
-  }, [allEmployees, search, selectedDept, sortBy, sortDir]);
+  }, [allEmployees, search, selectedDept, leavingOnly, sortBy, sortDir]);
 
   const kanbanDepts = useMemo(
     () => realDepts.filter(dept => dept !== arabicSource("common.all")),
@@ -113,6 +116,7 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     filtered,
     includeArchived,
     kanbanDepts,
+    leavingOnly,
     origin,
     pendingEmployees,
     realDepts,
@@ -120,6 +124,7 @@ export const useEmployeeListFilters = (dbEmployees: DbEmployee[], dbDepartments:
     selectedDept,
     selectedDeptId,
     setDeviceEnrollmentState,
+    setLeavingOnly,
     setOrigin,
     setSearch,
     setSelectedDept,

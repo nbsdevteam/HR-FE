@@ -26,6 +26,9 @@ const EMPTY_EXIT_FORM: ExitFormData = {
 /** `?exit=<id>` — the deep link the clearance notifications carry. */
 const EXIT_PARAM = "exit";
 
+/** `?start=<employeeId>` — opens the new End of Service form for that employee. */
+const START_PARAM = "start";
+
 const ExitTab = ({
   processes, exitItems, empMap, employees, employeeLabels,
   exitTypeLabels, statusLabels, statusColors, checklistCategoryLabels,
@@ -124,6 +127,17 @@ const ExitTab = ({
     ),
     [empMap, exitTypeLabels, statusLabels, statusColors, openDetail],
   );
+
+  // Start End of Service for the employee an Employees action was refused for.
+  useEffect(() => {
+    const employeeId = searchParams.get(START_PARAM);
+    if (!employeeId) return;
+    setFormData({ ...EMPTY_EXIT_FORM, employee_id: employeeId });
+    setShowForm(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete(START_PARAM);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   // Open the process a notification links to, once the list has it.
   useEffect(() => {

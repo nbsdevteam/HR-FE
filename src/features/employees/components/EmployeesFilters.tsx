@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Filter } from "lucide-react";
-import { MultiSelect, SearchInput, Select } from "@/shared/components";
+import { FilterChip, MultiSelect, SearchInput, Select } from "@/shared/components";
 import type { MultiSelectItem } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DeviceEnrollmentState, EmployeeOriginFilter, EmployeeStatusCode } from "@/shared/hooks";
@@ -38,11 +38,13 @@ type EmployeesFiltersProps = {
   status: EmployeeStatusCode | "";
   deviceEnrollmentState: DeviceEnrollmentState[];
   origin: EmployeeOriginFilter;
+  leavingOnly: boolean;
   onSearchChange: (search: string) => void;
   onDepartmentChange: (department: string) => void;
   onStatusChange: (status: EmployeeStatusCode | "") => void;
   onDeviceEnrollmentStateChange: (states: DeviceEnrollmentState[]) => void;
   onOriginChange: (origin: EmployeeOriginFilter) => void;
+  onLeavingOnlyChange: (leavingOnly: boolean) => void;
 };
 
 const EmployeesFilters = ({
@@ -52,11 +54,13 @@ const EmployeesFilters = ({
   status,
   deviceEnrollmentState,
   origin,
+  leavingOnly,
   onSearchChange,
   onDepartmentChange,
   onStatusChange,
   onDeviceEnrollmentStateChange,
   onOriginChange,
+  onLeavingOnlyChange,
 }: EmployeesFiltersProps) => {
   const handleDepartmentChange = useCallback(
     (value: string): void => {
@@ -85,6 +89,10 @@ const EmployeesFilters = ({
     },
     [onOriginChange],
   );
+
+  const handleLeavingToggle = useCallback((): void => {
+    onLeavingOnlyChange(!leavingOnly);
+  }, [leavingOnly, onLeavingOnlyChange]);
 
   return (
     <div className="flex flex-wrap items-center gap-4">
@@ -131,6 +139,14 @@ const EmployeesFilters = ({
         aria-label={arabicSource("employees.origin_filter_label")}
         className="w-60"
         style={{ height: 38 }}
+      />
+      <FilterChip
+        label={arabicSource("employees.leaving_filter_label")}
+        active={leavingOnly}
+        onClick={handleLeavingToggle}
+        fontSize={13}
+        padding="px-4 h-[38px]"
+        rounded="rounded-lg"
       />
     </div>
   );

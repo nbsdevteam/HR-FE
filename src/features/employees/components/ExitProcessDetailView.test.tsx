@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitChecklistItem, DbExitProcess } from "@/shared/hooks";
 import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
@@ -139,5 +139,29 @@ describe("ExitProcessDetailView", () => {
     renderView(baseProcess({ status: "clearance", esign: { required: true, state: "pending" } }));
     expect(document.querySelector('[data-exit-esign="pending"]')).toBeTruthy();
     expect(screen.getByText(arabicSource("lifecycle.exit_esign_pending"))).toBeTruthy();
+  });
+
+  it("shows open loans while settling, as a reference balance only", () => {
+    renderView(baseProcess({
+      status: "settlement",
+      warnings: { open_loans: { count: 2, loan_ids: [4, 9], remaining: { IQD: 500000 } } },
+    }));
+    const warning = document.querySelector('[data-exit-open-loans="2"]');
+    expect(warning).toBeTruthy();
+    expect(warning?.textContent).toContain("IQD");
+    expect(screen.getByText(arabicSource("lifecycle.exit_open_loans_note"))).toBeTruthy();
+  });
+
+  it("does not show open loans before settlement or when there are none", () => {
+    renderView(baseProcess({
+      status: "clearance",
+      warnings: { open_loans: { count: 1, loan_ids: [4], remaining: { IQD: 1 } } },
+    }));
+    expect(document.querySelector("[data-exit-open-loans]")).toBeNull();
+  });
+
+  it("labels the typed settlement amounts as not a verified calculation", () => {
+    renderView(baseProcess());
+    expect(document.querySelector("[data-exit-settlement-disclaimer]")).toBeTruthy();
   });
 });

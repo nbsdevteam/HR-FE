@@ -3,6 +3,7 @@ import { DatePicker, Select } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitProcess } from "@/shared/hooks";
 import { EXIT_CURRENCY_OPTIONS } from "../utils/exitStages";
+import ExitSettlementDisclaimer from "./ExitSettlementDisclaimer";
 import FormFieldLabel from "./FormFieldLabel";
 import ExpandFormCard from "./shared/ExpandFormCard";
 
@@ -140,6 +141,9 @@ const ExitProcessEditPanel = ({
       <div>
         <FormFieldLabel>{arabicSource("lifecycle.exit_final_settlement_amount")}</FormFieldLabel>
         <input type="number" min={0} value={form.final_settlement_amount} onChange={handleFinalSettlementChange} className={inputCls} dir="ltr" />
+      </div>
+      <div className="md:col-span-3">
+        <ExitSettlementDisclaimer />
       </div>
       <div className="md:col-span-3">
         <FormFieldLabel>{arabicSource("common.notes")}</FormFieldLabel>

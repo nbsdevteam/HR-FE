@@ -9,8 +9,10 @@ import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
 import ExitChecklistCategoryGroup from "./ExitChecklistCategoryGroup";
 import ExitClearanceNotice from "./ExitClearanceNotice";
+import ExitOpenLoansWarning from "./ExitOpenLoansWarning";
 import ExitProcessEditPanel, { type ExitEditPayload } from "./ExitProcessEditPanel";
 import ExitProcessSummaryCards from "./ExitProcessSummaryCards";
+import ExitSettlementDisclaimer from "./ExitSettlementDisclaimer";
 import ExitStageActions from "./ExitStageActions";
 
 type ExitProcessDetailViewProps = {
@@ -122,6 +124,11 @@ const ExitProcessDetailView = ({
       </AnimatePresence>
 
       <ExitProcessSummaryCards proc={proc} completedCount={completedCount} totalCount={checklist.length} cardCls={cardCls} />
+      <ExitSettlementDisclaimer />
+
+      {proc.status === "settlement" && proc.warnings.open_loans && (
+        <ExitOpenLoansWarning loans={proc.warnings.open_loans} />
+      )}
 
       <ExitClearanceNotice proc={proc} cardCls={cardCls} />
 
