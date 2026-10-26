@@ -2772,5 +2772,8 @@
   "إخلاء الطرف — فريق الإدارة": "settings.permission_clearance_admin",
   "إخلاء الطرف — فريق العهد": "settings.permission_clearance_custody",
   "مؤشرات الأداء": "settings.category_kpi",
-  "إدارة المخاطر": "settings.category_risk"
+  "إدارة المخاطر": "settings.category_risk",
+  "بمرفقات": "employees.lifecycle_with_attachment",
+  "غير مُعادة بعد": "employees.lifecycle_custody_outstanding",
+  "فرق إخلاء الطرف": "lifecycle.exit_waiting_clearance_teams"
 }

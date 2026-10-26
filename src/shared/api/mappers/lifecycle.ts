@@ -131,8 +131,9 @@ export const mapExitClearanceSection = (r: any): ExitClearanceSection => {
   };
 }
 
+/** `warnings` is `[]` or entries like `{ code: "open_loans", count, loan_ids, remaining }`. */
 export const mapExitWarnings = (r: any): ExitWarnings => {
-  const loans = r?.open_loans;
+  const loans = Array.isArray(r) ? r.find((w: any) => w?.code === "open_loans") : r?.open_loans;
   const remaining: Record<string, number> = {};
   if (loans?.remaining && typeof loans.remaining === "object") {
     for (const [currency, amount] of Object.entries(loans.remaining)) remaining[currency] = num(amount);

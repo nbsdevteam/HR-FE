@@ -130,10 +130,10 @@ export const odooLogout = async () => {
   clearAuthSession();
 }
 
-export const hrCall = async <T = unknown>(
+const hrRequest = async (
   path: string,
-  params: Record<string, unknown> = {},
-): Promise<T> => {
+  params: Record<string, unknown>,
+): Promise<any> => {
   if (!API_BASE_CONFIGURED) {
     throw new Error("VITE_API_BASE is not configured");
   }
@@ -161,7 +161,25 @@ export const hrCall = async <T = unknown>(
     error.details = result as Record<string, unknown>;
     throw error;
   }
+  return result;
+}
+
+export const hrCall = async <T = unknown>(
+  path: string,
+  params: Record<string, unknown> = {},
+): Promise<T> => {
+  const result = await hrRequest(path, params);
   // Some auth endpoints return tokens at top level
   if (result?.data !== undefined) return result.data as T;
   return result as T;
 }
+
+/**
+ * Like `hrCall` but returns the whole success envelope. For the few responses
+ * that carry something beside `data` — a rehire's new `contract` sits at the
+ * top level next to the serialized employee.
+ */
+export const hrCallEnvelope = async <T = Record<string, unknown>>(
+  path: string,
+  params: Record<string, unknown> = {},
+): Promise<T> => (await hrRequest(path, params)) as T;

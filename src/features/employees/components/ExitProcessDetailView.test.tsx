@@ -144,7 +144,7 @@ describe("ExitProcessDetailView", () => {
   it("shows open loans while settling, as a reference balance only", () => {
     renderView(baseProcess({
       status: "settlement",
-      warnings: { open_loans: { count: 2, loan_ids: [4, 9], remaining: { IQD: 500000 } } },
+      warnings: [{ code: "open_loans", count: 2, loan_ids: [4, 9], remaining: { IQD: 500000 } }],
     }));
     const warning = document.querySelector('[data-exit-open-loans="2"]');
     expect(warning).toBeTruthy();
@@ -155,7 +155,7 @@ describe("ExitProcessDetailView", () => {
   it("does not show open loans before settlement or when there are none", () => {
     renderView(baseProcess({
       status: "clearance",
-      warnings: { open_loans: { count: 1, loan_ids: [4], remaining: { IQD: 1 } } },
+      warnings: [{ code: "open_loans", count: 1, loan_ids: [4], remaining: { IQD: 1 } }],
     }));
     expect(document.querySelector("[data-exit-open-loans]")).toBeNull();
   });

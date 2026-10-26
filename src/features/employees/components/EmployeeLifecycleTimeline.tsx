@@ -14,7 +14,7 @@ const EmployeeLifecycleTimeline = ({ entries }: EmployeeLifecycleTimelineProps) 
     ) : (
       <ol>
         {entries.map(entry => (
-          <EmployeeLifecycleTimelineItem key={entry.id} entry={entry} />
+          <EmployeeLifecycleTimelineItem key={`${entry.stage}-${entry.at}`} entry={entry} />
         ))}
       </ol>
     )}

@@ -1,10 +1,11 @@
 /**
  * The per-employee lifecycle summary (`POST /api/hr/employees/<id>/lifecycle`).
  * One backend read that both the Employees profile and the Life cycle screen
- * build from, so neither keeps its own copy of contract or exit state.
+ * build from, so neither keeps its own copy of contract or exit state. It
+ * covers one employee only; organization-wide totals stay on the list endpoints.
  */
 
-/** A contract row on the summary — the current one or an entry of the history. */
+/** A contract row on the summary: `current` is the latest active one, the rest are `history`. */
 export interface LifecycleContract {
   id: string;
   contract_number: string | null;
@@ -17,33 +18,33 @@ export interface LifecycleContract {
   salary_currency: string;
 }
 
-/** The open End of Service on the summary; the backend's stage and blockers stay authoritative. */
+/** The End of Service process on the summary; the backend's stage and blockers stay authoritative. */
 export interface LifecycleExit {
   id: string;
   /** The process stage (`in_progress`, `clearance`, `settlement`, ...). */
   stage: string;
+  /** ISO datetime with a +03:00 offset. */
   since: string | null;
-  /** A stage label, not an assigned person, until the later phases add named owners. */
-  waiting_on: string;
+  /** `HR`, `Clearance teams` or `Finance` while open, null once closed. A stage label, not an assigned person. */
+  waiting_on: string | null;
+  /** Every code the backend holds a move back with, flattened from its `transition_blockers` shape. */
   blockers: string[];
 }
 
+/** One stage the process reached, `at` an ISO datetime with a +03:00 offset. */
 export interface LifecycleTimelineEntry {
-  id: string;
-  kind: string;
-  at: string | null;
-  title: string;
-  detail: string;
+  stage: string;
+  at: string;
 }
 
 export interface EmployeeLifecycleSummary {
   employee: { id: string; name: string; status: string };
   contract: { current: LifecycleContract | null; history: LifecycleContract[] };
-  /** Counts by state, as the backend names them (e.g. `total`, `expiring_soon`). */
-  documents: Record<string, number>;
-  custody: Record<string, number>;
+  /** Counts, not rows. */
+  documents: { total: number; with_attachment: number };
+  custody: { total: number; outstanding: number };
   exit: LifecycleExit | null;
-  /** Action codes the backend offers the caller, e.g. a start or edit End of Service. */
+  /** Exact codes the caller may act on: `start_exit`, `edit_exit`; empty when neither applies. */
   actions: string[];
   timeline: LifecycleTimelineEntry[];
 }

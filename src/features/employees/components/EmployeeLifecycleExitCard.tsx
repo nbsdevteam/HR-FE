@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import { LogOut, Pencil, Plus } from "lucide-react";
 import { Button } from "@/shared/components";
 import type { LifecycleExit } from "@/shared/hooks";
+import { formatDateTime } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
-import { exitStageLabel } from "../utils/lifecycleActions";
+import { exitStageLabel, waitingOnKey } from "../utils/lifecycleActions";
 import ExitStageBlockerNote from "./ExitStageBlockerNote";
 
 type EmployeeLifecycleExitCardProps = {
@@ -20,6 +21,7 @@ type EmployeeLifecycleExitCardProps = {
  * label, not an assigned person, until the later phases add named owners.
  */
 const EmployeeLifecycleExitCard = ({ exit, canStart, canEdit, onStart, onOpen }: EmployeeLifecycleExitCardProps) => {
+  const waitingKey = exit?.waiting_on ? waitingOnKey(exit.waiting_on) : undefined;
   const handleOpen = useCallback((): void => {
     if (exit) onOpen(exit.id);
   }, [exit, onOpen]);
@@ -51,13 +53,13 @@ const EmployeeLifecycleExitCard = ({ exit, canStart, canEdit, onStart, onOpen }:
           {exit.since && (
             <p className="text-foreground">
               <span className="text-muted-foreground">{arabicSource("employees.lifecycle_since")}: </span>
-              <span dir="ltr">{exit.since}</span>
+              <span dir="ltr">{formatDateTime(exit.since, { timeZone: "Asia/Baghdad" })}</span>
             </p>
           )}
           {exit.waiting_on && (
             <p className="text-foreground">
               <span className="text-muted-foreground">{arabicSource("employees.lifecycle_waiting_on")}: </span>
-              {exitStageLabel(exit.waiting_on)}
+              {waitingKey ? arabicSource(waitingKey) : exit.waiting_on}
             </p>
           )}
           {exit.blockers.map(code => (

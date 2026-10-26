@@ -2849,5 +2849,8 @@
   "settings.permission_clearance_admin": "پاکانە — تیمی بەڕێوەبردن",
   "settings.permission_clearance_custody": "پاکانە — تیمی ئەمانەتەکان",
   "settings.category_kpi": "ئاماژەکانی ئەدا",
-  "settings.category_risk": "هەڵسەنگاندنی مەترسی"
+  "settings.category_risk": "هەڵسەنگاندنی مەترسی",
+  "employees.lifecycle_with_attachment": "بە هاوپێچەوە",
+  "employees.lifecycle_custody_outstanding": "هێشتا نەگەڕاوەتەوە",
+  "lifecycle.exit_waiting_clearance_teams": "تیمەکانی پاکانە"
 }

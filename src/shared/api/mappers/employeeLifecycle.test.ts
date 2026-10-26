@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapEmployeeLifecycle, mapLifecycleActions } from "./employeeLifecycle";
+import { mapEmployeeLifecycle } from "./employeeLifecycle";
 import { mapEmployee } from "./core";
 import { mapExitProcess } from "./lifecycle";
 
@@ -8,40 +8,52 @@ describe("mapEmployeeLifecycle", () => {
     const summary = mapEmployeeLifecycle({
       employee: { id: 7, name: "Suraj", status: "active" },
       contract: {
-        current: { id: 3, contract_number: "C-3", start_date: "2026-01-01", status: "active" },
+        current: { id: 3, contract_number: "C-3", contract_type_name: "Permanent", start_date: "2026-01-01", status: "active" },
         history: [{ id: 2, status: "expired", start_date: "2025-01-01", end_date: "2025-12-31" }],
       },
-      documents: { total: 4, expiring_soon: 1 },
-      custody: { active: 2, returned: 1 },
-      exit: { id: 12, stage: "clearance", since: "2026-09-01", waiting_on: "clearance", blockers: ["custody_not_returned"] },
-      actions: ["edit_end_of_service"],
-      timeline: [{ id: 1, type: "contract", date: "2026-01-01", title: "Contract started" }],
+      documents: { total: 4, with_attachment: 3 },
+      custody: { total: 5, outstanding: 2 },
+      exit: {
+        id: 12, status: "clearance", since: "2026-09-01T09:00:00+03:00", waiting_on: "Clearance teams",
+        blockers: { settlement: ["custody_not_returned", "clearance_checklist_incomplete"], completed: ["custody_not_returned"] },
+      },
+      actions: ["edit_exit"],
+      timeline: [{ stage: "in_progress", at: "2026-08-30T09:00:00+03:00" }, { stage: "clearance", at: "2026-09-01T09:00:00+03:00" }],
     });
 
     expect(summary.employee).toEqual({ id: "7", name: "Suraj", status: "active" });
-    expect(summary.contract.current?.contract_number).toBe("C-3");
+    expect(summary.contract.current).toMatchObject({ contract_number: "C-3", contract_type_name: "Permanent" });
     expect(summary.contract.history).toHaveLength(1);
-    expect(summary.documents).toEqual({ total: 4, expiring_soon: 1 });
+    expect(summary.documents).toEqual({ total: 4, with_attachment: 3 });
+    expect(summary.custody).toEqual({ total: 5, outstanding: 2 });
     expect(summary.exit).toEqual({
-      id: "12", stage: "clearance", since: "2026-09-01", waiting_on: "clearance", blockers: ["custody_not_returned"],
+      id: "12",
+      stage: "clearance",
+      since: "2026-09-01T09:00:00+03:00",
+      waiting_on: "Clearance teams",
+      blockers: ["custody_not_returned", "clearance_checklist_incomplete"],
     });
-    expect(summary.actions).toEqual(["edit_end_of_service"]);
-    expect(summary.timeline[0]).toMatchObject({ kind: "contract", at: "2026-01-01", title: "Contract started" });
+    expect(summary.actions).toEqual(["edit_exit"]);
+    expect(summary.timeline).toEqual([
+      { stage: "in_progress", at: "2026-08-30T09:00:00+03:00" },
+      { stage: "clearance", at: "2026-09-01T09:00:00+03:00" },
+    ]);
   });
 
-  it("has no exit and no contract when the backend sends none", () => {
-    const summary = mapEmployeeLifecycle({ employee: { id: 7 }, contract: { current: null, history: [] }, exit: null });
+  it("has no exit, no contract and no actions when the backend sends none", () => {
+    const summary = mapEmployeeLifecycle({
+      employee: { id: 7 }, contract: { current: null, history: [] }, exit: null, actions: [], timeline: [],
+    });
     expect(summary.exit).toBeNull();
     expect(summary.contract.current).toBeNull();
     expect(summary.actions).toEqual([]);
+    expect(summary.documents).toEqual({ total: 0, with_attachment: 0 });
   });
-});
 
-describe("mapLifecycleActions", () => {
-  it("accepts a code list, flagged objects and a code map, keeping only offered actions", () => {
-    expect(mapLifecycleActions(["start_end_of_service"])).toEqual(["start_end_of_service"]);
-    expect(mapLifecycleActions([{ code: "a", enabled: true }, { code: "b", enabled: false }])).toEqual(["a"]);
-    expect(mapLifecycleActions({ start_end_of_service: true, edit_end_of_service: false })).toEqual(["start_end_of_service"]);
+  it("has no waiting_on once the process is closed", () => {
+    const summary = mapEmployeeLifecycle({ exit: { id: 12, status: "completed", waiting_on: null, blockers: {} } });
+    expect(summary.exit?.waiting_on).toBeNull();
+    expect(summary.exit?.blockers).toEqual([]);
   });
 });
 
@@ -59,13 +71,14 @@ describe("list payload exit fields", () => {
 describe("exit process warnings", () => {
   it("keeps open loans with the remaining balance per currency", () => {
     const proc = mapExitProcess({
-      id: 1, employee_id: 5, warnings: { open_loans: { count: 2, loan_ids: [4, 9], remaining: { IQD: 500000, USD: 120 } } },
+      id: 1, employee_id: 5, warnings: [{ code: "open_loans", count: 2, loan_ids: [4, 9], remaining: { IQD: 500000, USD: 120 } }],
     });
     expect(proc.warnings.open_loans).toEqual({ count: 2, loan_ids: ["4", "9"], remaining: { IQD: 500000, USD: 120 } });
   });
 
   it("has no open loans block when there are none", () => {
     expect(mapExitProcess({ id: 1, employee_id: 5 }).warnings.open_loans).toBeNull();
-    expect(mapExitProcess({ id: 1, employee_id: 5, warnings: { open_loans: { count: 0 } } }).warnings.open_loans).toBeNull();
+    expect(mapExitProcess({ id: 1, employee_id: 5, warnings: [] }).warnings.open_loans).toBeNull();
+    expect(mapExitProcess({ id: 1, employee_id: 5, warnings: [{ code: "other" }] }).warnings.open_loans).toBeNull();
   });
 });

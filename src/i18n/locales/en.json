@@ -2849,5 +2849,8 @@
   "settings.permission_clearance_admin": "Clearance — Admin team",
   "settings.permission_clearance_custody": "Clearance — Custodies team",
   "settings.category_kpi": "KPIs",
-  "settings.category_risk": "Risk"
+  "settings.category_risk": "Risk",
+  "employees.lifecycle_with_attachment": "With attachment",
+  "employees.lifecycle_custody_outstanding": "Outstanding",
+  "lifecycle.exit_waiting_clearance_teams": "Clearance teams"
 }

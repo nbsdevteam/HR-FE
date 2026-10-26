@@ -1,4 +1,4 @@
-import { hrCall } from "./client";
+import { hrCall, hrCallEnvelope } from "./client";
 import { mapEmployee, mapEmployeeContract, mapDepartment, mapDepartmentTree, mapDepartmentMetadata } from "./mappers";
 import { sid, num } from "./mappers/mapHelpers";
 import type {
@@ -233,10 +233,15 @@ export const restoreEmployee = async (
         ...(opts.contract.contract_type_id ? { contract_type_id: eid(opts.contract.contract_type_id) } : {}),
       }
     : undefined;
-  const row = await hrCall<any>(`/api/hr/employees/${eid(employeeId)}/restore`, contract ? { contract } : {});
+  // The new contract is the envelope's top-level `contract`, beside `data` (the employee).
+  const envelope = await hrCallEnvelope<{ data?: unknown; contract?: unknown }>(
+    `/api/hr/employees/${eid(employeeId)}/restore`,
+    contract ? { contract } : {},
+  );
+  const row = envelope.data ?? envelope;
   return {
     ...mapEmployee(row),
-    contract: row?.contract && typeof row.contract === "object" ? mapEmployeeContract(row.contract) : null,
+    contract: envelope.contract && typeof envelope.contract === "object" ? mapEmployeeContract(envelope.contract) : null,
   };
 }
 
