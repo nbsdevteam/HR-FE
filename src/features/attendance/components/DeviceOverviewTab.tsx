@@ -3,12 +3,13 @@ import { deviceSyncHeaders } from "@/shared/constants";
 import { LoadingState } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
 import { useAsyncList } from "@/shared/hooks/useAsyncList";
-import type { DeviceCapacity, DeviceInfo } from "../types";
+import type { DeviceCapacity, DeviceConnectionStatus, DeviceInfo } from "../types";
 import { DEVICE_SYNC_API } from "../utils/deviceManagement";
 import DeviceCapacitySection from "./DeviceCapacitySection";
 import DeviceInfoCard from "./DeviceInfoCard";
 
 interface DeviceOverview {
+  status: DeviceConnectionStatus;
   info: DeviceInfo | null;
   capacity: DeviceCapacity | null;
   network: any;
@@ -17,6 +18,7 @@ interface DeviceOverview {
 }
 
 const EMPTY_OVERVIEW: DeviceOverview = {
+  status: "unknown",
   info: null,
   capacity: null,
   network: null,
@@ -28,19 +30,23 @@ const loadDeviceOverview = async (): Promise<DeviceOverview> => {
   try {
     const response = await fetch(`${DEVICE_SYNC_API}/device/info`);
     const data = await response.json();
-    if (data.success) {
-      return {
-        info: data.info,
-        capacity: data.capacity,
-        network: data.network,
-        door: data.door,
-        deviceIp: data.deviceIp || data.network?.ipAddress || "",
-      };
+    if (!data?.success) {
+      // The bridge answered but could not reach the terminal.
+      return { ...EMPTY_OVERVIEW, status: "offline" };
     }
+    return {
+      status: "online",
+      info: data.info,
+      capacity: data.capacity,
+      network: data.network,
+      door: data.door,
+      deviceIp: data.deviceIp || data.network?.ipAddress || "",
+    };
   } catch {
-    // Device can be offline.
+    // Network failure or a non-JSON body (e.g. an empty proxy 500): the bridge
+    // never answered, so the terminal's state is unknown rather than offline.
+    return EMPTY_OVERVIEW;
   }
-  return EMPTY_OVERVIEW;
 };
 
 const DeviceOverviewTab = () => {
@@ -79,6 +85,7 @@ const DeviceOverviewTab = () => {
   return (
     <div className="space-y-6">
       <DeviceInfoCard
+        status={overview.status}
         info={overview.info}
         network={overview.network}
         door={overview.door}

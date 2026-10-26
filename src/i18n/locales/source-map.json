@@ -2775,5 +2775,6 @@
   "إدارة المخاطر": "settings.category_risk",
   "بمرفقات": "employees.lifecycle_with_attachment",
   "غير مُعادة بعد": "employees.lifecycle_custody_outstanding",
-  "فرق إخلاء الطرف": "lifecycle.exit_waiting_clearance_teams"
+  "فرق إخلاء الطرف": "lifecycle.exit_waiting_clearance_teams",
+  "الحالة غير معروفة": "devicemanagement.status_unknown"
 }

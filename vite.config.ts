@@ -64,13 +64,19 @@ export default defineConfig(({ mode }) => {
   },
   preview: {
     allowedHosts: ['hr.nooralnibras.com'],
-    // Same-origin public path for remote testers (India → hr.nooralnibras.com)
-    // Browser calls /device-api/*; preview proxies to the Iraq device-sync :8089.
+    // Public traffic (hr.nooralnibras.com → nginx → :5177) reaches this proxy with
+    // no auth. The bridge's person, face, event and sync reads have none either,
+    // and its write routes (door, person, face, card, fingerprint, credentials)
+    // accept any HR login — they do not check that the caller is HR staff.
+    // So expose only the read-only device overview, GET only — every other
+    // /device-api path is deliberately left unproxied. Never widen this to a
+    // catch-all. Set VITE_DEVICE_TARGET in .env.production to the bridge host.
     proxy: {
-      '/device-api': {
+      '^/device-api/device/info(\\?.*)?$': {
         target: deviceTarget,
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/device-api/, '/api'),
+        bypass: (req) => (req.method === 'GET' ? undefined : false),
       },
     },
   },

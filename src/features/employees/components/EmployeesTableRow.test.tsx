@@ -73,3 +73,17 @@ describe("EmployeesTableRow for an employee who is leaving", () => {
     expect(screen.queryByText(arabicSource("employees.leaving_badge"))).toBeNull();
   });
 });
+
+describe("employee enrollment evidence", () => {
+  it.each([
+    ["pending", "employees.device_enrollment_pending"],
+    ["failed", "employees.device_enrollment_failed"],
+    ["partial", "employees.device_enrollment_partial"],
+    ["untracked", "employees.is_not_registered"],
+  ] as const)("does not call a reserved number registered when %s", (state, label) => {
+    row({ status: "onboarding", device_enrollment_state: state });
+    expect(screen.getByText("#4447")).toBeInTheDocument();
+    expect(screen.getByText(arabicSource(label))).toBeInTheDocument();
+    expect(screen.queryByText(arabicSource("employees.registered"))).toBeNull();
+  });
+});

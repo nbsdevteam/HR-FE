@@ -2,11 +2,12 @@ import { useMemo } from "react";
 import { HardDrive, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/components";
 import { arabicSource } from "@/i18n/source";
-import type { DeviceInfo } from "../types";
+import type { DeviceConnectionStatus, DeviceInfo } from "../types";
 import DeviceStatusBadge from "./DeviceStatusBadge";
 import DeviceInfoField from "./DeviceInfoField";
 
 type DeviceInfoCardProps = {
+  status: DeviceConnectionStatus;
   info: DeviceInfo | null;
   network: any;
   door: any;
@@ -14,7 +15,7 @@ type DeviceInfoCardProps = {
   onRefresh: () => void;
 };
 
-const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: DeviceInfoCardProps) => {
+const DeviceInfoCard = ({ status, info, network, door, deviceIp, onRefresh }: DeviceInfoCardProps) => {
   const infoFields = useMemo(() => [
     { label: arabicSource("devicemanagement.device_name"), value: info?.deviceName },
     { label: arabicSource("devicemanagement.model"), value: info?.model },
@@ -37,7 +38,7 @@ const DeviceInfoCard = ({ info, network, door, deviceIp, onRefresh }: DeviceInfo
           {arabicSource("devicemanagement.device_information")}
         </h3>
         <div className="flex items-center gap-2">
-          <DeviceStatusBadge active={!!info} />
+          <DeviceStatusBadge status={status} />
           <Button
             onClick={onRefresh}
             variant="unstyled"

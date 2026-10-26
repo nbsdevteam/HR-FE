@@ -2852,5 +2852,6 @@
   "settings.category_risk": "هەڵسەنگاندنی مەترسی",
   "employees.lifecycle_with_attachment": "بە هاوپێچەوە",
   "employees.lifecycle_custody_outstanding": "هێشتا نەگەڕاوەتەوە",
-  "lifecycle.exit_waiting_clearance_teams": "تیمەکانی پاکانە"
+  "lifecycle.exit_waiting_clearance_teams": "تیمەکانی پاکانە",
+  "devicemanagement.status_unknown": "دۆخ نەزانراوە"
 }

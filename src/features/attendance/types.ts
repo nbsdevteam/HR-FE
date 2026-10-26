@@ -83,6 +83,12 @@ export type DeviceInfo = {
   macAddress: string;
 };
 
+/**
+ * `offline`: the sync bridge answered but could not reach the terminal.
+ * `unknown`: the bridge itself could not be reached, so nothing is known.
+ */
+export type DeviceConnectionStatus = "online" | "offline" | "unknown";
+
 export type DeviceCapacity = {
   person: { used: number; total: number };
   face: { used: number; total: number };

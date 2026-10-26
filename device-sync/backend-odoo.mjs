@@ -244,8 +244,16 @@ export function createBackend(config, ctx) {
     }
 
     const emp = normalizeEmployee(created);
+    if (String(created.device_employee_no || "") !== String(employeeNo)) {
+      log("❌", `Import identity mismatch for terminal #${employeeNo}: Odoo returned #${created.device_employee_no}; refusing to map attendance`);
+      return null;
+    }
     employeeCache.set(String(employeeNo), emp);
     if (emp.employee_code) employeeCache.set(emp.employee_code, emp);
+    if (created.created === false) {
+      log("ℹ️", `Terminal #${employeeNo} already maps to Odoo employee ${emp.id}; reused existing record`);
+      return emp;
+    }
 
     try {
       await odoo.call("/api/hr/notifications/create", {

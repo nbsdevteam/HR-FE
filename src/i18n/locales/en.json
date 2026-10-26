@@ -2852,5 +2852,6 @@
   "settings.category_risk": "Risk",
   "employees.lifecycle_with_attachment": "With attachment",
   "employees.lifecycle_custody_outstanding": "Outstanding",
-  "lifecycle.exit_waiting_clearance_teams": "Clearance teams"
+  "lifecycle.exit_waiting_clearance_teams": "Clearance teams",
+  "devicemanagement.status_unknown": "Status unknown"
 }
