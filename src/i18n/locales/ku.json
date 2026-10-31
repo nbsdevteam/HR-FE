@@ -2977,5 +2977,9 @@
   "lifecycle.exit_req_move_to_settlement": "گواستنەوە بۆ یەکلاکردنەوە",
   "lifecycle.exit_req_confirm_settlement": "دارایی یەکلاکردنەوەکە پشتڕاست دەکاتەوە",
   "lifecycle.exit_req_employee_signature": "کارمەند کەشفی یەکلاکردنەوە ئیمزا دەکات",
-  "lifecycle.exit_sig_not_sent": "بەستەرەکە هێشتا نەنێردراوە"
+  "lifecycle.exit_sig_not_sent": "بەستەرەکە هێشتا نەنێردراوە",
+  "payroll.import_saved_count": "{{count}} تۆمار پاشەکەوت کرا",
+  "payroll.import_failed_count": "{{count}} تۆمار پاشەکەوت نەکرا",
+  "payroll.import_failed_unlisted": "و {{count}} تۆماری تر کە پیشان نەدراون",
+  "payroll.import_request_failed": "پاشەکەوتکردن وەستا: {{error}}"
 }

@@ -2900,5 +2900,9 @@
   "الانتقال إلى التسوية": "lifecycle.exit_req_move_to_settlement",
   "اعتماد التسوية من المالية": "lifecycle.exit_req_confirm_settlement",
   "توقيع الموظف على كشف التسوية": "lifecycle.exit_req_employee_signature",
-  "لم يُرسل الرابط بعد": "lifecycle.exit_sig_not_sent"
+  "لم يُرسل الرابط بعد": "lifecycle.exit_sig_not_sent",
+  "تم حفظ {{count}} سجل": "payroll.import_saved_count",
+  "تعذّر حفظ {{count}} سجل": "payroll.import_failed_count",
+  "و {{count}} سجل آخر لم يُعرض": "payroll.import_failed_unlisted",
+  "توقف الحفظ: {{error}}": "payroll.import_request_failed"
 }

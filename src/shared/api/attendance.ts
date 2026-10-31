@@ -164,8 +164,28 @@ export const upsertAttendance = async (payload: Record<string, unknown>) => {
   return hrCall("/api/hr/attendance/upsert", params);
 };
 
+/** One row the backend refused. `index` is the 0-based position in the `records` that were sent. */
+export type AttendanceImportFailedRow = {
+  index: number;
+  /** Reason, cut to 200 characters by the backend. */
+  error: string;
+};
+
+/**
+ * `data` of `/api/hr/attendance/import`. Each row is saved or refused on its
+ * own: `processed` counts the rows that were saved, `errors` the ones that
+ * were not, and `failed_rows` names (at most 100 of) them.
+ */
+export type AttendanceImportResult = {
+  processed: number;
+  upserted: number;
+  errors: number;
+  failed_rows?: AttendanceImportFailedRow[];
+  items?: unknown[];
+};
+
 export const importAttendance = async (records: Record<string, unknown>[]) => {
-  return hrCall("/api/hr/attendance/import", { records });
+  return hrCall<AttendanceImportResult>("/api/hr/attendance/import", { records });
 };
 
 export const upsertMonthlyRecord = async (payload: {

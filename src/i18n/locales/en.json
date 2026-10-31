@@ -2977,5 +2977,9 @@
   "lifecycle.exit_req_move_to_settlement": "Move to settlement",
   "lifecycle.exit_req_confirm_settlement": "Finance confirms the settlement",
   "lifecycle.exit_req_employee_signature": "Employee signs the statement",
-  "lifecycle.exit_sig_not_sent": "Link not sent yet"
+  "lifecycle.exit_sig_not_sent": "Link not sent yet",
+  "payroll.import_saved_count": "{{count}} records saved",
+  "payroll.import_failed_count": "{{count}} records could not be saved",
+  "payroll.import_failed_unlisted": "and {{count}} more not shown",
+  "payroll.import_request_failed": "Saving stopped: {{error}}"
 }

@@ -1,13 +1,14 @@
 import { useState, useMemo, useRef, useCallback, memo } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/shared/components";
-import * as odooData from "@/shared/api/odooData";
-import { useOdooMutation, type DbEmployee } from "@/shared/hooks";
+import type { DbEmployee } from "@/shared/hooks";
 import { parseAttendanceFile } from "@/features/payroll/services/payslip-parsing";
 import type { RawAttendanceRecord } from "@/features/payroll";
 import { arabicSource } from "@/i18n/source";
+import { useAttendanceImport } from "../hooks/useAttendanceImport";
 import UploadDropzone from "./UploadDropzone";
 import UploadErrorsPanel from "./UploadErrorsPanel";
+import UploadImportOutcome from "./UploadImportOutcome";
 import UploadSummaryCards from "./UploadSummaryCards";
 import UploadSummaryDetails from "./UploadSummaryDetails";
 
@@ -22,10 +23,8 @@ const UploadTab = ({
     errors: string[];
     totalRows: number;
   } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
-  const importAttendanceMutation = useOdooMutation(odooData.importAttendance, "attendance");
+  const { saving, outcome, saveRecords, resetOutcome } = useAttendanceImport(employees);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -67,141 +66,19 @@ const UploadTab = ({
 
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
-    setSaved(false);
+    resetOutcome();
     const result = await parseAttendanceFile(file);
     setParseResult(result);
     setUploading(false);
-  }, []);
+  }, [resetOutcome]);
 
   const handleSaveToSupabase = useCallback(async () => {
     if (!parseResult || parseResult.records.length === 0) return;
-    setSaving(true);
+    await saveRecords(parseResult.records);
+  }, [parseResult, saveRecords]);
 
-    try {
-      const { records } = parseResult;
-      // Group by person+date → build processed attendance records
-      const grouped: Record<string, RawAttendanceRecord[]> = {};
-      for (const r of records) {
-        const key = `${r.personId}__${r.time.substring(0, 10)}`;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(r);
-      }
-
-      const attRows: any[] = [];
-
-      for (const [key, recs] of Object.entries(grouped)) {
-        const [personId, date] = key.split("__");
-        const emp = employees.find((e) => String(e.person_id) === personId);
-        if (!emp) continue;
-
-        const checkIns = recs
-          .filter((r) => r.attendanceStatus === "Check-in")
-          .sort((a, b) => a.time.localeCompare(b.time));
-        const checkOuts = recs
-          .filter((r) => r.attendanceStatus === "Check-out")
-          .sort((a, b) => a.time.localeCompare(b.time));
-
-        let checkInTime: string | null = null;
-        let checkOutTime: string | null = null;
-        let status = "complete";
-
-        if (checkIns.length > 0 && checkOuts.length > 0) {
-          checkInTime = checkIns[0].time.substring(11, 19);
-          checkOutTime = checkOuts[checkOuts.length - 1].time.substring(11, 19);
-        } else if (checkIns.length >= 2) {
-          checkInTime = checkIns[0].time.substring(11, 19);
-          checkOutTime = checkIns[checkIns.length - 1].time.substring(11, 19);
-        } else if (checkOuts.length >= 2) {
-          checkInTime = checkOuts[0].time.substring(11, 19);
-          checkOutTime = checkOuts[checkOuts.length - 1].time.substring(11, 19);
-        } else if (checkIns.length === 1) {
-          checkInTime = checkIns[0].time.substring(11, 19);
-          status = "missing_checkout";
-        } else if (checkOuts.length === 1) {
-          checkOutTime = checkOuts[0].time.substring(11, 19);
-          status = "missing_checkin";
-        } else {
-          status = "absent";
-        }
-
-        // Calculate working hours
-        let workingHours = 0;
-        let overtimeHours = 0;
-        let isLate = false;
-        let lateMinutes = 0;
-        let isEarly = false;
-
-        if (checkInTime && checkOutTime) {
-          const inParts = checkInTime.split(":").map(Number);
-          const outParts = checkOutTime.split(":").map(Number);
-          const inMin = inParts[0] * 60 + inParts[1];
-          const outMin = outParts[0] * 60 + outParts[1];
-          const totalMin = outMin > inMin ? outMin - inMin : 0;
-          workingHours = Math.round((totalMin / 60) * 100) / 100;
-
-          // Check late (assuming 7:00 start + 10 min grace)
-          if (inMin > 7 * 60 + 10) {
-            isLate = true;
-            lateMinutes = inMin - 7 * 60;
-          }
-          // Check overtime (assuming 16:00 end)
-          if (outMin > 16 * 60) {
-            overtimeHours = Math.round(((outMin - 16 * 60) / 60) * 100) / 100;
-          }
-          // Check early
-          if (outMin < 15 * 60 + 50) {
-            isEarly = true;
-          }
-        }
-
-        const d = new Date(date + "T00:00:00Z");
-        const dayNames = [
-          "sunday",
-          "monday",
-          "tuesday",
-          "wednesday",
-          "thursday",
-          "friday",
-          "saturday",
-        ];
-        const dayOfWeek = dayNames[d.getUTCDay()];
-
-        attRows.push({
-          employee_id: emp.id,
-          date,
-          day_of_week: dayOfWeek,
-          check_in_time: checkInTime,
-          check_out_time: checkOutTime,
-          working_hours: workingHours,
-          overtime_hours: overtimeHours,
-          is_late: isLate,
-          late_minutes: lateMinutes,
-          is_early: isEarly,
-          status,
-          auto_checkout_applied: false,
-        });
-      }
-
-      if (attRows.length > 0) {
-        for (let i = 0; i < attRows.length; i += 100) {
-          const batch = attRows.slice(i, i + 100).map((r: any) => ({
-            employee_id: r.employee_id,
-            date: r.date,
-            check_in_time: r.check_in_time,
-            check_out_time: r.check_out_time,
-            status: r.status,
-            source: "manual",
-          }));
-          await importAttendanceMutation.mutateAsync(batch);
-        }
-      }
-
-      setSaved(true);
-    } catch (err: any) {
-      console.error("Error saving:", err);
-    }
-    setSaving(false);
-  }, [parseResult, employees, importAttendanceMutation.mutateAsync]);
+  // A run with refused rows is not "saved": the button stays usable so HR can fix the file and retry.
+  const saved = outcome !== null && outcome.failed === 0;
 
   return (
     <div className="space-y-6">
@@ -264,6 +141,8 @@ const UploadTab = ({
               )}
             </Button>
           </div>
+
+          {outcome && <UploadImportOutcome outcome={outcome} />}
         </div>
       )}
     </div>
