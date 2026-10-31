@@ -9,8 +9,8 @@ import LabeledInput from "./LabeledInput";
 
 const getCountryId = (country: GeoCountry): string => String(country.id);
 // The Odoo geo API has no demonym data, so nationality is picked from the
-// same country list and identified/stored by the plain country name.
-const getNationalityId = (country: GeoCountry): string => country.name;
+// same country list and sent as the country id (`nationality_id`).
+const getNationalityId = (country: GeoCountry): string => String(country.id);
 const getStateId = (state: GeoState): string => String(state.id);
 const geoSearchText = (item: { name: string; name_ar: string }): string => `${item.name} ${item.name_ar}`;
 const fieldLabelClass = "text-foreground block mb-1.5";
@@ -81,7 +81,7 @@ const EmployeeLocationFields = ({
   );
 
   const handleNationalityChange = useCallback(
-    (value: string): void => onFormChange({ nationality: value }),
+    (value: string): void => onFormChange({ nationalityId: value }),
     [onFormChange],
   );
 
@@ -107,7 +107,7 @@ const EmployeeLocationFields = ({
           getId={getNationalityId}
           getLabel={getNationalityLabel}
           getSearchText={geoSearchText}
-          value={addForm.nationality}
+          value={addForm.nationalityId}
           onChange={handleNationalityChange}
           placeholder={arabicSource(
             loadingCountries ? "common.loading" : "employees.select_the_nationality",

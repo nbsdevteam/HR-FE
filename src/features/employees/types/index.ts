@@ -29,7 +29,8 @@ export type EmployeeAddForm = {
   nationalId: string;
   gender: "male" | "female";
   managerId: string;
-  nationality: string;
+  /** `GeoCountry.id` of the picked nationality ("" when none). */
+  nationalityId: string;
   country: string;
   countryId: string;
   state: string;

@@ -171,27 +171,6 @@ export const fetchMyTasks = async (): Promise<MyTask[]> => {
   return rows.map(mapMyTask);
 };
 
-// ─── Clearance sections: approval + ordered signatures ───────────────
-// Who may act is the backend's call (`can_approve` / `can_sign`); a refused
-// call comes back with an `error_code` the exit error map already handles.
-
-export const approveClearanceSection = (sectionId: string | number, comment?: string) =>
-  hrCall<unknown>(`/api/hr/exit/clearance/${eid(sectionId)}/approve`, { comment });
-
-export const rejectClearanceSection = (sectionId: string | number, comment: string) =>
-  hrCall<unknown>(`/api/hr/exit/clearance/${eid(sectionId)}/reject`, { comment });
-
-export const signExitSignature = (
-  signatureId: string | number,
-  payload: { typed_name: string; notes?: string },
-) => hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/sign`, payload);
-
-export const rejectExitSignature = (signatureId: string | number, reason: string) =>
-  hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/reject`, { reason });
-
-export const resendExitSignature = (signatureId: string | number) =>
-  hrCall<unknown>(`/api/hr/exit/signature/${eid(signatureId)}/resend`, {});
-
 /**
  * The backend-owned lifecycle summary for one employee: current contract and
  * history, document and custody counts, the End of Service block, the actions

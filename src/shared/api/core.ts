@@ -177,12 +177,25 @@ export const fetchNextEmployeeCode = async (): Promise<{
   return hrCall("/api/hr/employees/next_code", {});
 }
 
+/**
+ * Create / update answer with `fields_ignored`: the keys the backend did not
+ * use. It should be empty, so a key in it means this app sends a field the
+ * backend does not know. Returns `data` like `hrCall` does.
+ */
+const writeEmployee = async (path: string, payload: Record<string, unknown>): Promise<unknown> => {
+  const envelope = await hrCallEnvelope<{ data?: unknown; fields_ignored?: string[] }>(path, payload);
+  const data = envelope.data ?? envelope;
+  const ignored = envelope.fields_ignored ?? (data as { fields_ignored?: string[] } | null)?.fields_ignored;
+  if (ignored?.length) console.warn(`[${path}] the backend ignored these fields:`, ignored);
+  return data;
+};
+
 export const createEmployee = async (payload: Record<string, unknown>) => {
-  return hrCall("/api/hr/employees/create", payload);
+  return writeEmployee("/api/hr/employees/create", payload);
 }
 
 export const updateEmployee = async (employeeId: string | number, payload: Record<string, unknown>) => {
-  return hrCall(`/api/hr/employees/${eid(employeeId)}/update`, payload);
+  return writeEmployee(`/api/hr/employees/${eid(employeeId)}/update`, payload);
 }
 
 export const setEmployeeStatus = async (employeeId: string | number, status: EmployeeStatusCode | (string & {})) => {

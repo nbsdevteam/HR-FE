@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { usePermissions } from "@/shared/auth/permissions";
 import { empDisplayName, type DbEmployee, type DbExitChecklistItem, type DbExitProcess, type ExitStatus } from "@/shared/hooks";
-import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { useExitChecklistView } from "../hooks/useExitChecklistView";
 import type { ExitChecklistLine } from "../types/lifecycle";
@@ -31,7 +30,6 @@ type ExitProcessDetailViewProps = {
   cardCls: string;
   inputCls: string;
   busy: boolean;
-  clearanceActions: ExitClearanceActions;
   /** The approval, settlement and signing-link actions; the panels are inert without them. */
   decisionActions: ExitDecisionActions;
   onBack: () => void;
@@ -46,13 +44,13 @@ type ExitProcessDetailViewProps = {
  */
 const ExitProcessDetailView = ({
   proc, emp, checklist, exitItems, categoryLabels, exitTypeLabels, statusLabels, statusColors, cardCls,
-  inputCls, busy, clearanceActions, decisionActions, onBack, onTransition, onEditSave, onChecklistToggle,
+  inputCls, busy, decisionActions, onBack, onTransition, onEditSave, onChecklistToggle,
 }: ExitProcessDetailViewProps) => {
   const [editing, setEditing] = useState(false);
   const { hasPermission } = usePermissions();
   const canRecalculate = hasPermission("hr.lifecycle.clearance_finance") || hasPermission("hr.lifecycle.edit");
 
-  const checklistView = useExitChecklistView(proc, checklist, exitItems, categoryLabels);
+  const checklistView = useExitChecklistView(checklist, exitItems, categoryLabels);
 
   const handleEditOpen = useCallback((): void => setEditing(true), []);
   const handleEditCancel = useCallback((): void => setEditing(false), []);
@@ -125,7 +123,6 @@ const ExitProcessDetailView = ({
       <ExitProcessStageSections
         proc={proc}
         checklistView={checklistView}
-        clearanceActions={clearanceActions}
         decisionActions={decisionActions}
         canRecalculate={canRecalculate}
         onChecklistToggle={onChecklistToggle}

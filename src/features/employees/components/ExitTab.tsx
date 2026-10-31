@@ -11,7 +11,6 @@ import {
 import { arabicSource } from "@/i18n/source";
 import { lifecycleCardClass as cardCls, lifecycleInputClass as inputCls } from "../styles/lifecycle";
 import type { EmployeeMap } from "../types/lifecycle";
-import { useExitClearanceActions } from "../hooks/useExitClearanceActions";
 import { useExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { useExitProcessActions } from "../hooks/useExitProcessActions";
 import { useExitProcessFilter } from "../hooks/useExitProcessFilter";
@@ -55,7 +54,6 @@ const ExitTab = ({
   // Fetch checklist for selected process
   const { checklist } = useExitChecklist(selectedProcess || undefined);
   const { busy, createExit, transition, saveEdit, toggleChecklist } = useExitProcessActions(setSelectedProcess);
-  const clearanceActions = useExitClearanceActions();
   const decisionActions = useExitDecisionActions();
   const { tasks } = useMyTasks();
   const { counts, filter, selectFilter, tasksByExit, visible } = useExitProcessFilter(processes, tasks);
@@ -178,7 +176,6 @@ const ExitTab = ({
         cardCls={cardCls}
         inputCls={inputCls}
         busy={busy}
-        clearanceActions={clearanceActions}
         decisionActions={decisionActions}
         onBack={closeDetail}
         onTransition={handleTransition}

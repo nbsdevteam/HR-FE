@@ -38,10 +38,8 @@ export const buildEmployeeUpdatePayload = (
   email: editData.email,
   personal_phone: editData.personalPhone,
   company_phone: editData.companyPhone,
-  phone: editData.personalPhone || editData.companyPhone,
   monthly_salary: editData.salary,
   join_date: editData.startDate || null,
-  end_date: editData.endDate || null,
   // No `status`: the form has no status control, so the value was only ever
   // the stale copy loaded with the panel — and while it was mapped to "Active"
   // for everyone, every save reactivated a suspended, onboarding or exited
@@ -59,5 +57,7 @@ export const buildEmployeeUpdatePayload = (
   blood_type: editData.bloodType || null,
   manager_id: editData.managerId || null,
   ...buildTouchedPatch("birth_date", editData.birthDate, employee.birthDate),
+  // `""` clears the end date, so it only goes out once the user changed it.
+  ...buildTouchedPatch("end_date", editData.endDate ?? "", employee.endDate ?? ""),
   ...buildTouchedPatch("photo", editData.photo, employee.photo),
 });

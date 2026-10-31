@@ -81,9 +81,9 @@ export interface DbExitChecklistItem {
 }
 
 export type {
-  DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitClearanceSection, ExitEsign,
+  DbExitChecklist, DbExitProcess, ExitClearanceNotifications, ExitEsign,
   ExitApproval, ExitApprovalStep, ExitApprovalStepState, ExitSettlement, ExitSettlementLine,
-  ExitSettlementWarning, ExitSigningLink, ExitSigningLinkState, ExitOpenLoans, ExitSectionState, ExitSignature, ExitSignatureState, ExitSignerRole, ExitStatus,
+  ExitSettlementWarning, ExitSigningLink, ExitSigningLinkState, ExitOpenLoans, ExitStatus,
   ExitWarnings, ExitProgress, ExitProgressOwner, ExitProgressPerson, ExitProgressStage, ExitProgressStageKey,
   ExitProgressStageState, ExitRequiredItem, ExitWaitingOn,
 } from "./exitProcessTypes";

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { DbExitChecklistItem, DbExitProcess, ExitClearanceSection } from "@/shared/hooks";
+import type { DbExitChecklistItem } from "@/shared/hooks";
 import { indexBy } from "@/shared/utils/collections";
 import type { ExitChecklistLine } from "../types/lifecycle";
 
@@ -10,14 +10,12 @@ export type ExitChecklistView = {
   totalCount: number;
   categorizedChecklist: ExitCategoryGroup[];
   itemNameById: ReadonlyMap<string, string>;
-  sectionByCategory: ReadonlyMap<string, ExitClearanceSection>;
-  /** Lines the signed-in user may tick by hand now: the backend allows it and no clearance section governs the line. */
+  /** Lines the signed-in user may tick by hand now: the backend allows it (`can_toggle`). */
   toggleableLineIds: ReadonlySet<string>;
 };
 
-/** The record's checklist grouped by category, with the clearance sections that govern them. */
+/** The record's checklist grouped by category. */
 export const useExitChecklistView = (
-  proc: DbExitProcess,
   checklist: ExitChecklistLine[],
   exitItems: DbExitChecklistItem[],
   categoryLabels: Record<string, string>,
@@ -29,11 +27,6 @@ export const useExitChecklistView = (
   const itemNameById = useMemo(
     () => new Map(exitItems.map(i => [i.id, i.name_ar])),
     [exitItems],
-  );
-
-  const sectionByCategory = useMemo(
-    () => new Map(proc.clearance_sections.map(section => [section.category, section])),
-    [proc.clearance_sections],
   );
 
   /** One grouping pass over the checklist instead of a full filter per category. */
@@ -54,18 +47,16 @@ export const useExitChecklistView = (
   const toggleableLineIds = useMemo(() => {
     const ids = new Set<string>();
     for (const line of checklist) {
-      const category = exitItemById.get(line.checklist_item_id)?.category;
-      if (line.can_toggle === true && !(category && sectionByCategory.has(category))) ids.add(line.id);
+      if (line.can_toggle === true) ids.add(line.id);
     }
     return ids;
-  }, [checklist, exitItemById, sectionByCategory]);
+  }, [checklist]);
 
   return {
     completedCount,
     totalCount: checklist.length,
     categorizedChecklist,
     itemNameById,
-    sectionByCategory,
     toggleableLineIds,
   };
 };

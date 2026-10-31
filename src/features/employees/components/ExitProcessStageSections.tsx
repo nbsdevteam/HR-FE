@@ -3,7 +3,6 @@ import { formatDate } from "@/i18n/format";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitProcess } from "@/shared/hooks";
 import type { ExitChecklistView } from "../hooks/useExitChecklistView";
-import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import { exitStageState } from "../utils/exitProgress";
 import ExitApprovalPanel from "./ExitApprovalPanel";
@@ -15,7 +14,6 @@ import ExitStageSection from "./ExitStageSection";
 type ExitProcessStageSectionsProps = {
   proc: DbExitProcess;
   checklistView: ExitChecklistView;
-  clearanceActions: ExitClearanceActions;
   decisionActions: ExitDecisionActions;
   canRecalculate: boolean;
   onChecklistToggle: (checklistId: string, completed: boolean) => void;
@@ -34,7 +32,7 @@ const approvalSummary = (proc: DbExitProcess): string =>
  * and later ones are a grey title.
  */
 const ExitProcessStageSections = ({
-  proc, checklistView, clearanceActions, decisionActions, canRecalculate, onChecklistToggle, cardCls,
+  proc, checklistView, decisionActions, canRecalculate, onChecklistToggle, cardCls,
 }: ExitProcessStageSectionsProps) => {
   const canEdit = proc.my_actions.includes("edit");
   // A process sent back for correction is back at in progress, but its approval trail and reason stay readable.
@@ -60,7 +58,7 @@ const ExitProcessStageSections = ({
         summary={`${checklistView.completedCount}/${checklistView.totalCount}`}
         cardCls={cardCls}
       >
-        <ExitClearanceChecklist view={checklistView} clearanceActions={clearanceActions} onChecklistToggle={onChecklistToggle} />
+        <ExitClearanceChecklist view={checklistView} onChecklistToggle={onChecklistToggle} />
       </ExitStageSection>
 
       <ExitStageSection

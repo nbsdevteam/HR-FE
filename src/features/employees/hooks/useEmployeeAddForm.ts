@@ -10,6 +10,7 @@ import type { EmployeeAddForm } from "../types";
 import { birthDateFieldError } from "../utils/birthDate";
 import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
 import { buildEmployeeCreatePayload } from "../utils/employeeCreatePayload";
+import { employeeWriteErrorMessage } from "../utils/employeeWriteError";
 import { errorMessage } from "../utils/errorMessage";
 import { photoFieldError } from "../utils/photoFieldError";
 import { useDeviceEnrollmentSync } from "./useDeviceEnrollmentSync";
@@ -32,7 +33,7 @@ const defaultAddForm: EmployeeAddForm = {
   nationalId: "",
   gender: "male",
   managerId: "",
-  nationality: "",
+  nationalityId: "",
   country: "",
   countryId: "",
   state: "",
@@ -244,7 +245,7 @@ export const useEmployeeAddForm = (designations: DbPosition[], refetch: () => vo
       if (birthError) setBirthDateError(birthError);
       else if (photoErr) setPhotoError(photoErr);
       else if (rejectedFields) setFieldErrors(rejectedFields);
-      else setAddError(errorMessage(error));
+      else setAddError(employeeWriteErrorMessage(error) ?? errorMessage(error));
     }
     setAddSaving(false);
   }, [addForm, createEmployeeMutation.mutateAsync, facePhotoBase64, facePhotoPreview, nextEmployeeId, refetch, resetAddForm, runEnrollment]);

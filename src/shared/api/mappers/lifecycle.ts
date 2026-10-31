@@ -7,8 +7,6 @@ import type {
   DbExitProcess,
   DbExitChecklist,
   DbCustody,
-  ExitClearanceSection,
-  ExitSignature,
   ExitWarnings,
 } from "../../hooks";
 import { sid, sornull, num, bool, empty, isActive } from "./mapHelpers";
@@ -103,36 +101,6 @@ export const mapExitChecklistItem = (r: any): DbExitChecklistItem => {
   };
 }
 
-export const mapExitSignature = (r: any): ExitSignature => {
-  return {
-    id: sid(r.id),
-    sequence: num(r.sequence),
-    signer_role: r.signer_role || "",
-    signer_name: r.signer_name || "",
-    state: r.state || "pending",
-    sent_at: r.sent_at || null,
-    decided_at: r.decided_at || null,
-    can_sign: bool(r.can_sign),
-    can_resend: bool(r.can_resend),
-  };
-}
-
-export const mapExitClearanceSection = (r: any): ExitClearanceSection => {
-  return {
-    id: sid(r.id),
-    category: r.category || "",
-    state: r.state || "pending_approval",
-    approved_by_name: r.approved_by_name || "",
-    approved_at: r.approved_at || null,
-    completed_at: r.completed_at || null,
-    approver_count: typeof r.approver_count === "number" ? r.approver_count : null,
-    can_approve: bool(r.can_approve),
-    signatures: Array.isArray(r.signatures)
-      ? r.signatures.map(mapExitSignature).sort((a: ExitSignature, b: ExitSignature) => a.sequence - b.sequence)
-      : [],
-  };
-}
-
 /** `warnings` is `[]` or entries like `{ code: "open_loans", count, loan_ids, remaining }`. */
 export const mapExitWarnings = (r: any): ExitWarnings => {
   const loans = Array.isArray(r) ? r.find((w: any) => w?.code === "open_loans") : r?.open_loans;
@@ -191,9 +159,6 @@ export const mapExitProcess = (r: any): DbExitProcess => {
       res_id: r.esign?.res_id || false,
       signed_at: r.esign?.signed_at || null,
     },
-    clearance_sections: Array.isArray(r.clearance_sections)
-      ? r.clearance_sections.map(mapExitClearanceSection)
-      : [],
     warnings: mapExitWarnings(r.warnings),
     approval: mapExitApproval(r.approval),
     approval_submitted_at: r.approval_submitted_at || null,

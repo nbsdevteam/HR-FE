@@ -13,6 +13,7 @@ import type {
 } from "../types";
 import { birthDateFieldError } from "../utils/birthDate";
 import { employeeFieldErrors, NO_EMPLOYEE_FIELD_ERRORS, type EmployeeFieldErrors } from "../utils/employeeFieldErrors";
+import { employeeWriteErrorMessage } from "../utils/employeeWriteError";
 import { errorMessage } from "../utils/errorMessage";
 import { buildEmployeeUpdatePayload } from "../utils/employeeUpdatePayload";
 import { photoFieldError } from "../utils/photoFieldError";
@@ -228,7 +229,7 @@ export const useEmployeeDetailPanel = ({ employee, onSave, onExitRedirect, allEm
       if (birthError) setBirthDateError(birthError);
       else if (photoErr) setPhotoError(photoErr);
       else if (rejectedFields) setFieldErrors(rejectedFields);
-      else setSaveError(errorMessage(e));
+      else setSaveError(employeeWriteErrorMessage(e) ?? errorMessage(e));
     } finally {
       setSaving(false);
     }

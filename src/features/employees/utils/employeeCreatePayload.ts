@@ -31,8 +31,9 @@ export const buildEmployeeCreatePayload = (
   // prefix itself.
   ...(photo ? { photo } : {}),
   email: form.email || null,
+  // Each phone goes under its own key; the old merged `phone` landed on the company phone.
   personal_phone: form.personalPhone || null,
-  phone: form.personalPhone || form.companyPhone || null,
+  company_phone: form.companyPhone || null,
   address: buildAddressPayload(form),
   monthly_salary: parseFloat(form.salary) || 0,
   join_date: form.joinDate || null,
@@ -50,6 +51,7 @@ export const buildEmployeeCreatePayload = (
   manager_id: form.managerId || null,
   department_id: form.departmentId || null,
   designation_id: form.designationId || null,
-  nationality: form.nationality || null,
+  // The country id from the geo list — unlike a name, an id cannot be misspelt.
+  ...(form.nationalityId ? { nationality_id: Number(form.nationalityId) } : {}),
   work_location: form.workLocation || "",
 });

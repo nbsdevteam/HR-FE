@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { arabicSource } from "@/i18n/source";
 import type { DbExitChecklistItem, DbExitProcess } from "@/shared/hooks";
 import { mapExitProcess } from "@/shared/api/mappers/lifecycle";
-import type { ExitClearanceActions } from "../hooks/useExitClearanceActions";
 import type { ExitDecisionActions } from "../hooks/useExitDecisionActions";
 import type { ExitChecklistLine } from "../types/lifecycle";
 import { progressAt } from "../utils/exitProgress.fixtures";
@@ -41,14 +40,6 @@ const lines: ExitChecklistLine[] = [
   { id: "11", checklist_item_id: "2", is_completed: false, can_toggle: false },
 ];
 
-const noopActions = (): ExitClearanceActions => ({
-  approve: vi.fn().mockResolvedValue(true),
-  rejectSection: vi.fn().mockResolvedValue(true),
-  sign: vi.fn().mockResolvedValue(true),
-  rejectSignature: vi.fn().mockResolvedValue(true),
-  resend: vi.fn().mockResolvedValue(true),
-});
-
 const noopDecisionActions = (): ExitDecisionActions => ({
   approve: vi.fn().mockResolvedValue(true),
   reject: vi.fn().mockResolvedValue(true),
@@ -72,7 +63,6 @@ const renderView = (proc: DbExitProcess, overrides: Record<string, unknown> = {}
     cardCls: "",
     inputCls: "",
     busy: false,
-    clearanceActions: noopActions(),
     onBack: vi.fn(),
     onTransition: vi.fn(),
     onEditSave: vi.fn().mockResolvedValue(true),
