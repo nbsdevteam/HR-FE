@@ -2981,5 +2981,10 @@
   "payroll.import_saved_count": "تم حفظ {{count}} سجل",
   "payroll.import_failed_count": "تعذّر حفظ {{count}} سجل",
   "payroll.import_failed_unlisted": "و {{count}} سجل آخر لم يُعرض",
-  "payroll.import_request_failed": "توقف الحفظ: {{error}}"
+  "payroll.import_request_failed": "توقف الحفظ: {{error}}",
+  "payroll.missing_checkin_days": "أيام بلا تسجيل دخول",
+  "payroll.missing_checkout_days": "أيام بلا تسجيل خروج",
+  "payroll.not_yet_due_days": "أيام لم يحن موعدها",
+  "payroll.missing_checkout_deduction": "خصم عدم تسجيل الخروج ({{days}} يوم)",
+  "payroll.error_month_not_over": "لا يمكن إنشاء كشوف هذا الشهر قبل انتهائه. يمكن إنشاؤها من {{date}}."
 }

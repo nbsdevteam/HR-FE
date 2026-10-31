@@ -2981,5 +2981,10 @@
   "payroll.import_saved_count": "{{count}} تۆمار پاشەکەوت کرا",
   "payroll.import_failed_count": "{{count}} تۆمار پاشەکەوت نەکرا",
   "payroll.import_failed_unlisted": "و {{count}} تۆماری تر کە پیشان نەدراون",
-  "payroll.import_request_failed": "پاشەکەوتکردن وەستا: {{error}}"
+  "payroll.import_request_failed": "پاشەکەوتکردن وەستا: {{error}}",
+  "payroll.missing_checkin_days": "ڕۆژانی بێ تۆمارکردنی چوونەژوورەوە",
+  "payroll.missing_checkout_days": "ڕۆژانی بێ تۆمارکردنی دەرچوون",
+  "payroll.not_yet_due_days": "ڕۆژانی کاتیان نەهاتووە",
+  "payroll.missing_checkout_deduction": "کەمکردنەوەی نەتۆمارکردنی دەرچوون ({{days}} ڕۆژ)",
+  "payroll.error_month_not_over": "ئەم مانگە هێشتا تەواو نەبووە؛ لیستی مووچەکانی دەتوانرێت لە {{date}} ەوە دروست بکرێت."
 }

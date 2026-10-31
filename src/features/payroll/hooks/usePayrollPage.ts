@@ -5,7 +5,7 @@ import type { PayrollStatus, PayslipGenerateRequest } from "@/shared/api/payroll
 import { useAppSettings, formatMonthYear } from "@/app/providers";
 import { localizedAlert } from "@/i18n/native";
 import { arabicSource } from "@/i18n/source";
-import { errorMessage } from "../utils/errorMessage";
+import { generateErrorMessage } from "../utils/generateErrorMessage";
 import { usePayrollMetadata } from "./usePayrollMetadata";
 import { usePayrollListPaged } from "./usePayrollListPaged";
 import type { PayrollTabId } from "../types";
@@ -94,7 +94,7 @@ export const usePayrollPage = () => {
       setPayslipsSaved(true);
       setTimeout(() => setPayslipsSaved(false), 3000);
     } catch (e: unknown) {
-      const message = errorMessage(e);
+      const message = generateErrorMessage(e);
       console.error("Failed to generate payslips:", message);
       localizedAlert(`${arabicSource("payroll.error_saving_statements")} ${message}`);
     }

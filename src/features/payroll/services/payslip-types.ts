@@ -65,6 +65,8 @@ export interface SalaryCalculationPerCurrency {
   lateDeduction: number;
   shortfallDeduction: number;
   absenceDeduction: number;
+  /** Charge under the missing check-out policy; 0 when the policy is `none`. */
+  missingCheckoutDeduction: number;
   loan: number;
   tip: number;
   penalty: number;
@@ -92,6 +94,12 @@ export interface SalaryCalculation {
   lateDays: number;
   earlyDays: number;
   shortfallHours: number;
+  /** Days with a check-in but no check-out; priced by the missing check-out policy. */
+  missingCheckoutDays: number;
+  /** Days whose only punch came at or after the scheduled end; 0 hours, for HR to review. */
+  missingCheckinDays: number;
+  /** Working days after today: neither worked nor absent. */
+  notYetDueDays: number;
   calculatedAt: string;
 }
 

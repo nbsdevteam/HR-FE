@@ -59,6 +59,8 @@ const CalendarView = ({
   const restDowSet = useMemo(() => {
     const dowCounts: Record<number, { working: number; rest: number }> = {};
     for (const rec of records) {
+      // Days not yet due are a position in time, not a rest weekday.
+      if (rec.status === "rest_day") continue;
       const d = new Date(rec.date + "T00:00:00Z");
       const dow = d.getUTCDay();
       if (!dowCounts[dow]) dowCounts[dow] = { working: 0, rest: 0 };

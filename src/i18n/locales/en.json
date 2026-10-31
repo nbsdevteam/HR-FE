@@ -2981,5 +2981,10 @@
   "payroll.import_saved_count": "{{count}} records saved",
   "payroll.import_failed_count": "{{count}} records could not be saved",
   "payroll.import_failed_unlisted": "and {{count}} more not shown",
-  "payroll.import_request_failed": "Saving stopped: {{error}}"
+  "payroll.import_request_failed": "Saving stopped: {{error}}",
+  "payroll.missing_checkin_days": "Missing check-in days",
+  "payroll.missing_checkout_days": "Missing check-out days",
+  "payroll.not_yet_due_days": "Days not yet due",
+  "payroll.missing_checkout_deduction": "Missing check-out charge ({{days}} days)",
+  "payroll.error_month_not_over": "This month has not ended yet; its payslips can be generated from {{date}}."
 }

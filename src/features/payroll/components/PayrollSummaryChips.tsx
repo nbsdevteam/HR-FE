@@ -6,7 +6,10 @@ import {
   ArrowDownRight,
   XCircle,
   TreePalm,
+  AlertTriangle,
+  Hourglass,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { SalaryCalculation } from "@/features/payroll";
 import { DEFAULT_SETTINGS } from "@/features/payroll";
 import { formatHoursMinutes } from "@/shared/utils/currency";
@@ -41,6 +44,8 @@ const PayrollSummaryChips = ({
   onShowAbsence,
   onToggleCalendar,
 }: PayrollSummaryChipsProps) => {
+  const { t } = useTranslation();
+
   const chips = useMemo(
     () => [
       {
@@ -91,6 +96,31 @@ const PayrollSummaryChips = ({
         color: "text-destructive",
         onClick: hasAbsenceRecords ? onShowAbsence : undefined,
       },
+      // Days HR has to look at, and days that have not come yet. Shown only when there are some.
+      ...(calc.missingCheckinDays > 0
+        ? [{
+            label: t("payroll.missing_checkin_days"),
+            value: `${calc.missingCheckinDays} ${arabicSource("common.days_2")}`,
+            icon: AlertTriangle,
+            color: "text-amber-400",
+          }]
+        : []),
+      ...(calc.missingCheckoutDays > 0
+        ? [{
+            label: t("payroll.missing_checkout_days"),
+            value: `${calc.missingCheckoutDays} ${arabicSource("common.days_2")}`,
+            icon: AlertTriangle,
+            color: "text-amber-400",
+          }]
+        : []),
+      ...(calc.notYetDueDays > 0
+        ? [{
+            label: t("payroll.not_yet_due_days"),
+            value: `${calc.notYetDueDays} ${arabicSource("common.days_2")}`,
+            icon: Hourglass,
+            color: "text-muted-foreground",
+          }]
+        : []),
       {
         label: arabicSource("common.vacations"),
         value:
@@ -118,6 +148,10 @@ const PayrollSummaryChips = ({
       calc.overtimeHours,
       calc.shortfallHours,
       calc.absenceDays.length,
+      calc.missingCheckinDays,
+      calc.missingCheckoutDays,
+      calc.notYetDueDays,
+      t,
       avgHoursPerDay,
       hasShortfallRecords,
       onShowShortfall,

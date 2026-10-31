@@ -23,7 +23,10 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
   const hasOvertime = Boolean(rec && rec.overtimeHours > 0);
   // The server no longer returns per-punch check-in/check-out times, only a
   // day-level worked-hours total — render the hours block off `status`.
-  const hasData = Boolean(rec && !isAbsent && !isLeave && rec.status !== "holiday");
+  // A "rest_day" record is a working day that has not come yet — drawn like a rest day, nothing worked or owed.
+  const isNotYetDue = rec?.status === "rest_day";
+  const showsAsRest = (isRest && !rec) || isNotYetDue;
+  const hasData = Boolean(rec && !isAbsent && !isLeave && rec.status !== "holiday" && !isNotYetDue);
 
   const handleExcuseAbsence = useCallback(() => {
     if (rec && onExcuseAbsence) onExcuseAbsence(rec.id);
@@ -52,14 +55,14 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
   else if (hasShortfall && !rec?.excusedShortfall) cellBg = "bg-amber-500/6";
   else if (hasShortfall && rec?.excusedShortfall) cellBg = "bg-emerald-500/6";
   else if (hasOvertime) cellBg = "bg-emerald-500/4";
-  else if (isRest && !rec) cellBg += " bg-muted/5";
+  else if (showsAsRest) cellBg += " bg-muted/5";
 
   // Dynamic height: data cells are taller, empty/rest cells shorter
   const cellHeight = hasData || isLeave ? "min-h-[100px]" : isAbsent ? "min-h-[80px]" : "min-h-[68px]";
 
   return (
     <div
-      className={`${cellHeight} border-b border-e border-border/20 p-2 flex flex-col transition-all duration-200 ${cellBg} ${today ? "ring-2 ring-inset ring-primary/40" : ""} ${isRest && !rec ? "bg-[repeating-linear-gradient(135deg,transparent,transparent_4px,rgba(128,128,128,0.03)_4px,rgba(128,128,128,0.03)_8px)]" : ""}`}
+      className={`${cellHeight} border-b border-e border-border/20 p-2 flex flex-col transition-all duration-200 ${cellBg} ${today ? "ring-2 ring-inset ring-primary/40" : ""} ${showsAsRest ? "bg-[repeating-linear-gradient(135deg,transparent,transparent_4px,rgba(128,128,128,0.03)_4px,rgba(128,128,128,0.03)_8px)]" : ""}`}
       onMouseEnter={handleCellMouseEnter}
       onMouseLeave={handleCellMouseLeave}
     >
@@ -68,7 +71,7 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
         <span
           className={`w-6 h-6 flex items-center justify-center rounded-full ${
             today ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
-            : isRest && !rec ? "text-muted-foreground/30"
+            : showsAsRest ? "text-muted-foreground/30"
             : "text-foreground/70"
           }`}
           style={{ fontSize: 12, fontWeight: today ? 700 : 500 }}
@@ -127,7 +130,7 @@ const CalendarDayCell = ({ cell, rec, today, isRest, isFuture, weekBg, settings,
       )}
 
       {/* Rest day */}
-      {!rec && isRest && (
+      {showsAsRest && (
         <div className="flex-1 flex flex-col items-center justify-center">
           <span className="text-muted-foreground/25" style={{ fontSize: 10 }}>{arabicSource("common.leave")}</span>
         </div>

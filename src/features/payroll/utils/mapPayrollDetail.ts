@@ -15,6 +15,7 @@ import type { ProcessedAttendanceRecord, SalaryCalculation } from "../services/p
 
 const dayStatusToRecordStatus = (status: PayrollDayStatus): ProcessedAttendanceRecord["status"] => {
   if (status === "holiday") return "holiday";
+  if (status === "not_yet_due") return "rest_day";
   if (status === "leave_paid" || status === "leave_unpaid") return "leave";
   if (status === "absent" || status === "absent_excused") return "absent";
   return "complete";
@@ -40,7 +41,8 @@ export const mapPayrollDetailToRecords = (
     excusedAbsence: day.status === "absent_excused",
     excusedLate: false,
     excusedShortfall: false,
-    isScheduledWorkingDay: true,
+    // A day that has not come yet is neither worked nor absent, so it must not count toward shortfall.
+    isScheduledWorkingDay: day.status !== "not_yet_due",
     isLeaveDay: day.status === "leave_paid" || day.status === "leave_unpaid",
     leaveType: day.leave_type_name || undefined,
     isUnpaidLeave: day.status === "leave_unpaid",
@@ -61,6 +63,7 @@ export const mapPayrollDetailToCalc = (detail: PayrollEmployeeDetailResponse): S
         lateDeduction: c.late_deduction,
         shortfallDeduction: c.shortfall_deduction,
         absenceDeduction: c.absence_deduction,
+        missingCheckoutDeduction: c.missing_checkout_deduction ?? 0,
         loan: c.ledger_loan,
         tip: c.ledger_tip,
         penalty: c.ledger_penalty,
@@ -84,6 +87,9 @@ export const mapPayrollDetailToCalc = (detail: PayrollEmployeeDetailResponse): S
     lateDays: detail.attendance.late_days,
     earlyDays: detail.attendance.early_days,
     shortfallHours: detail.attendance.shortfall_hours,
+    missingCheckoutDays: detail.attendance.missing_checkout_days ?? c.missing_checkout_days ?? 0,
+    missingCheckinDays: detail.attendance.missing_checkin_days ?? c.missing_checkin_days ?? 0,
+    notYetDueDays: detail.attendance.not_yet_due_days ?? c.not_yet_due_days ?? 0,
     calculatedAt: c.generated_at || new Date().toISOString(),
   };
 };

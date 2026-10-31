@@ -54,8 +54,14 @@ export interface PayrollRow {
   late_days: number;
   early_days: number;
   missing_checkout_days: number;
+  /** Days whose only punch came at or after the scheduled end: 0 hours, left for HR to review, no shortfall and no overtime. */
+  missing_checkin_days?: number;
+  /** Working days of the month after today: neither worked nor absent. */
+  not_yet_due_days?: number;
   total_hours: number;
+  /** Complete days only, at most `attendance.overtime_daily_cap_hours` (4 by default) a day. */
   overtime_hours: number;
+  /** Excludes missing check-out and missing check-in days; those are priced by the missing check-out policy only. */
   shortfall_hours: number;
   chargeable_late_hours: number;
   target_hours_per_day: number;
@@ -72,6 +78,8 @@ export interface PayrollRow {
   late_deduction: number;
   shortfall_deduction: number;
   absence_deduction: number;
+  /** The charge under Settings → Missing check-out policy; 0 under `none`. */
+  missing_checkout_deduction?: number;
   gross_salary: number;
   net_salary: number;
   total_with_overtime: number;
@@ -127,7 +135,7 @@ export interface PayrollListResponse {
 
 export type PayrollDayStatus =
   | "present" | "late" | "absent" | "absent_excused"
-  | "leave_paid" | "leave_unpaid" | "holiday";
+  | "leave_paid" | "leave_unpaid" | "holiday" | "not_yet_due";
 
 export interface PayrollDayRow {
   date: string;
@@ -149,6 +157,8 @@ export interface PayrollAttendanceSummary {
   late_days: number;
   early_days: number;
   missing_checkout_days: number;
+  missing_checkin_days?: number;
+  not_yet_due_days?: number;
   total_hours: number;
   overtime_hours: number;
   shortfall_hours: number;
