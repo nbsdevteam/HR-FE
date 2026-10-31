@@ -1,8 +1,12 @@
-/** First/last day (YYYY-MM-DD) of the current calendar month — the sane default for report date filters. */
-export const getCurrentMonthRange = (): { from: string; to: string } => {
-  const now = new Date();
-  const first = new Date(now.getFullYear(), now.getMonth(), 1);
-  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  const fmt = (d: Date): string => d.toISOString().slice(0, 10);
-  return { from: fmt(first), to: fmt(last) };
+import { defaultMonthRangeBaghdad } from "@/shared/utils/reports/attendanceMonthly";
+
+/**
+ * First/last day (YYYY-MM-DD) of the current calendar month in Baghdad — the
+ * sane default for report date filters. Built from the Baghdad calendar
+ * date, not from local midnights run through `toISOString()`: that converts
+ * to UTC, which in a UTC+3 browser is always the previous day.
+ */
+export const getCurrentMonthRange = (now: Date = new Date()): { from: string; to: string } => {
+  const { date_from, date_to } = defaultMonthRangeBaghdad(now);
+  return { from: date_from, to: date_to };
 };

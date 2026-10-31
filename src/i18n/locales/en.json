@@ -2962,5 +2962,6 @@
   "employees.error_invalid_blood_type": "The blood type is not valid",
   "employees.error_invalid_end_date": "The end date is not valid",
   "employees.error_end_date_before_joining": "The end date cannot be before the joining date",
-  "employees.error_unknown_nationality": "The nationality is not recognised"
+  "employees.error_unknown_nationality": "The nationality is not recognised",
+  "dashboard.on_time": "On time"
 }

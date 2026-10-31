@@ -48,22 +48,31 @@ export type ControlPanelHeadcount = {
   turnover_rate_12m: number;
 };
 
+/** Today's tiles are disjoint and sum to the headcount: `present` is people **on time**; the late are in `late` only. */
 export type ControlPanelAttendance = {
   present: number;
   absent: number;
+  /** Late people who are not on leave (people, not punch rows). */
   late: number;
   on_leave: number;
+  /** Staff outside attendance tracking; not expected at work. */
+  not_tracked?: number;
+  /** (on time + late) ÷ the people expected today. */
   attendance_rate: number;
   prev_attendance_rate: number;
+  /** On time ÷ (on time + late). */
   punctuality_rate: number;
   prev_absent: number;
   prev_late: number;
   rolling_7d_rate: number;
   rolling_30d_rate: number;
+  /** Absent days ÷ expected days over the last 30 days, ending yesterday. */
   absenteeism_rate_30d: number;
   device_events_today: number;
   device_coverage: number;
+  /** Present ÷ expected, last 7 days ending yesterday. */
   by_department_7d: LabelledValue[];
+  /** Present ÷ expected per weekday, last 90 days ending yesterday. */
   by_day_of_week_90d: { day: string; value: number }[];
 };
 

@@ -2885,5 +2885,6 @@
   "فصيلة الدم غير صالحة": "employees.error_invalid_blood_type",
   "تاريخ الانتهاء غير صالح": "employees.error_invalid_end_date",
   "لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ المباشرة": "employees.error_end_date_before_joining",
-  "الجنسية غير معروفة": "employees.error_unknown_nationality"
+  "الجنسية غير معروفة": "employees.error_unknown_nationality",
+  "في الوقت": "dashboard.on_time"
 }

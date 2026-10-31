@@ -10,6 +10,7 @@ import {
   type DbLeaveType, type DbMonthlyRecord, type DbReportTemplate,
 } from "@/shared/hooks";
 import { arabicSource } from "@/i18n/source";
+import { majorityMonthOfRange } from "@/shared/utils/reports/payrollMonthly";
 import { translateCataloguedValue } from "@/i18n/legacy";
 import { downloadExcelCsv } from "@/shared/utils/export";
 import { isBackendReportCode, resolveReportCode } from "../constants/reports";
@@ -73,6 +74,10 @@ export const useReportGeneration = ({
           filters: {
             date_from: dateFrom,
             date_to: dateTo,
+            // Monthly salaries are one month: name it rather than let the backend infer it from the range.
+            ...(resolveReportCode(template.code) === "payroll_monthly"
+              ? { month: majorityMonthOfRange(dateFrom, dateTo) ?? undefined }
+              : {}),
             department_id: departmentIdFromName(departments, filterDept),
             employee_ids: selectedEmployeeIds.map(eid),
           },

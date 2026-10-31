@@ -86,7 +86,7 @@ export type EmployeeDeleteResult = {
   employee_code?: string;
 };
 
-/** Scoped dashboard cards from Odoo (present/absent/on_leave/late). */
+/** Scoped dashboard cards from Odoo (present/absent/on_leave/late). `present` is people on time only; the late are in `late`. */
 export const fetchHrDashboard = async (params?: {
   departmentId?: string | number;
   newJoinerDays?: number;

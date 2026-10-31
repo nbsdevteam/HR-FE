@@ -109,7 +109,8 @@ export const buildDashboardSectionData = (
       deviceCoverage: attendance?.device_coverage ?? 0,
     },
     attendanceChartData: [
-      { name: arabicSource("common.present"), value: attendance?.present ?? 0, color: "#22C55E" },
+      // `present` counts people on time only; the late are their own slice, so the two never overlap.
+      { name: arabicSource("dashboard.on_time"), value: attendance?.present ?? 0, color: "#22C55E" },
       { name: arabicSource("common.late"), value: attendance?.late ?? 0, color: "#D4AF37" },
       { name: arabicSource("common.absent"), value: attendance?.absent ?? 0, color: "#DC2626" },
       { name: arabicSource("common.leave"), value: attendance?.on_leave ?? 0, color: "#3B82F6" },

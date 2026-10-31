@@ -2962,5 +2962,6 @@
   "employees.error_invalid_blood_type": "گروپی خوێن دروست نییە",
   "employees.error_invalid_end_date": "بەرواری کۆتایی دروست نییە",
   "employees.error_end_date_before_joining": "بەرواری کۆتایی ناتوانێت پێش بەرواری دەستپێکردن بێت",
-  "employees.error_unknown_nationality": "نەتەوایەتییەکە نەناسراوە"
+  "employees.error_unknown_nationality": "نەتەوایەتییەکە نەناسراوە",
+  "dashboard.on_time": "لە کاتی خۆیدا"
 }
