@@ -92,6 +92,7 @@ const ReportsWorkspace = () => {
     exportCSV,
     resetGeneratedData,
   } = useReportGeneration({
+    selectedTemplate,
     attendanceRecords,
     monthlyRecords,
     leaveRequests,

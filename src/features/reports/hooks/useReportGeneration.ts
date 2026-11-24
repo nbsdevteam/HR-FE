@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as odooData from "@/shared/api/odooData";
 import { generateHrReport } from "@/shared/api/reporting";
 import { eid } from "@/shared/api/httpHelpers";
@@ -19,6 +19,8 @@ import type { ReportColumn, ReportRow } from "../types";
 import { generateReportRows } from "../utils/reportGenerators";
 
 type UseReportGenerationArgs = {
+  /** The report open in the viewer. A language switch re-runs it while its result is on screen. */
+  selectedTemplate: DbReportTemplate | null;
   attendanceRecords: DbAttendanceRecord[];
   monthlyRecords: DbMonthlyRecord[];
   leaveRequests: DbLeaveRequest[];
@@ -44,7 +46,16 @@ type UseReportGenerationArgs = {
   refetchHistory: () => void;
 };
 
+type GenerateReportOptions = {
+  /**
+   * False when the run shows a report already generated again (in another language): no second
+   * history row and no second export in the audit log.
+   */
+  createHistory?: boolean;
+};
+
 export const useReportGeneration = ({
+  selectedTemplate,
   attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
   employees, contracts, contractTypes, empDocuments, documentTypes,
   empMap, empDeptMap, departments, dateFrom, dateTo, filterDept,
@@ -60,8 +71,18 @@ export const useReportGeneration = ({
   // this beyond the report-history list, so that's the only invalidation.
   const generateHrReportMutation = useOdooMutation(generateHrReport, "reportHistory");
   const createReportHistoryMutation = useOdooMutation(odooData.createReportHistory, "reportHistory");
+  // The number of the newest run. Only that run may write its result, so a slower older response
+  // never replaces a newer one.
+  const latestRequest = useRef(0);
+  // The language the report last followed; a change from it re-runs the report on screen.
+  const seenLang = useRef(lang);
 
-  const generateReport = useCallback(async (template: DbReportTemplate) => {
+  const generateReport = useCallback(async (
+    template: DbReportTemplate,
+    { createHistory = true }: GenerateReportOptions = {},
+  ) => {
+    const request = ++latestRequest.current;
+    const isLatest = () => request === latestRequest.current;
     setGenerating(true);
     setGeneratedData(null);
     setGeneratedColumns(null);
@@ -82,18 +103,22 @@ export const useReportGeneration = ({
             employee_ids: selectedEmployeeIds.map(eid),
           },
           fields: selectedFieldKeys,
-          create_history: true,
+          create_history: createHistory,
           generated_by: arabicSource("common.human_resources_manager"),
+          // The server picks each employee's name and the headings by this, so it stays top-level.
           lang,
         });
 
-        await logAudit({
-          action: "export",
-          entity_type: "report",
-          entity_id: template.id,
-          entity_label: template.name_ar,
-          details: { rows: result.rows.length, filters: result.filters_used },
-        });
+        if (createHistory) {
+          await logAudit({
+            action: "export",
+            entity_type: "report",
+            entity_id: template.id,
+            entity_label: template.name_ar,
+            details: { rows: result.rows.length, filters: result.filters_used },
+          });
+        }
+        if (!isLatest()) return;
 
         setGeneratedColumns(result.columns);
         setGeneratedData(result.rows);
@@ -105,28 +130,31 @@ export const useReportGeneration = ({
           filters: { dateFrom, dateTo, filterDept },
         });
 
-        await createReportHistoryMutation.mutateAsync({
-          report_template_id: template.id,
-          report_name: template.name_ar,
-          filters_used: { dateFrom, dateTo, department: filterDept },
-          row_count: rows.length,
-          generated_by: arabicSource("common.human_resources_manager"),
-        });
-        await logAudit({
-          action: "export",
-          entity_type: "report",
-          entity_id: template.id,
-          entity_label: template.name_ar,
-          details: { rows: rows.length, filters: { dateFrom, dateTo, department: filterDept } },
-        });
+        if (createHistory) {
+          await createReportHistoryMutation.mutateAsync({
+            report_template_id: template.id,
+            report_name: template.name_ar,
+            filters_used: { dateFrom, dateTo, department: filterDept },
+            row_count: rows.length,
+            generated_by: arabicSource("common.human_resources_manager"),
+          });
+          await logAudit({
+            action: "export",
+            entity_type: "report",
+            entity_id: template.id,
+            entity_label: template.name_ar,
+            details: { rows: rows.length, filters: { dateFrom, dateTo, department: filterDept } },
+          });
+        }
+        if (!isLatest()) return;
 
         setGeneratedColumns(template.columns);
         setGeneratedData(rows);
       }
     } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : String(err));
+      if (isLatest()) setGenerateError(err instanceof Error ? err.message : String(err));
     } finally {
-      setGenerating(false);
+      if (isLatest()) setGenerating(false);
     }
   }, [
     attendanceRecords, monthlyRecords, leaveRequests, leaveTypes, leaveBalances,
@@ -154,6 +182,16 @@ export const useReportGeneration = ({
     setGeneratedColumns(null);
     setGenerateError(null);
   }, []);
+
+  // A report on screen, or on its way, follows the app language: the same report runs again with
+  // only `lang` changed. Never on mount, and not while nothing or only an error is shown.
+  useEffect(() => {
+    if (seenLang.current === lang) return;
+    seenLang.current = lang;
+    if (selectedTemplate && (generatedData !== null || generating)) {
+      void generateReport(selectedTemplate, { createHistory: false });
+    }
+  }, [lang, selectedTemplate, generatedData, generating, generateReport]);
 
   return {
     generatedData, generatedColumns, generating, generateError,
